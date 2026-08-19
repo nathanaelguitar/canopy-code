@@ -24,6 +24,12 @@ export {
   type LanCandidate,
 } from './lan-interfaces.js';
 export {
+  AmbiguousTailscaleInterfaceError,
+  listTailscaleCandidates,
+  NoTailscaleInterfaceError,
+  UnknownTailscaleInterfaceError,
+} from './tailscale-interface.js';
+export {
   LocalControlService,
   type LocalControlEnableOptions,
   type LocalControlServiceDeps,

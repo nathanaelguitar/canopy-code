@@ -23,7 +23,7 @@ import {
   type DeviceTokenResponse,
   type ErrorData,
   type CanopyCredentials,
-} from './canopyOAuth2.js';
+} from './canopy-oauth2.js';
 import { HYPERLINK_ENV_KEYS } from '../utils/osc8.js';
 import {
   SharedTokenManager,
@@ -857,7 +857,7 @@ describe('CanopyOAuth2Client', () => {
 
     it('should NOT clear credentials on malformed 200 response (e.g. proxy HTML)', async () => {
       const { CredentialsClearRequiredError } = await import(
-        './canopyOAuth2.js'
+        './canopy-oauth2.js'
       );
 
       const mockResponse = {
@@ -881,7 +881,7 @@ describe('CanopyOAuth2Client', () => {
 
     it('should clear credentials and throw CredentialsClearRequiredError on 401 response', async () => {
       const { CredentialsClearRequiredError } = await import(
-        './canopyOAuth2.js'
+        './canopy-oauth2.js'
       );
 
       const mockResponse = {
@@ -958,7 +958,7 @@ describe('getCanopyOAuthClient', () => {
     const originalGetInstance = SharedTokenManager.getInstance;
     SharedTokenManager.getInstance = vi.fn().mockReturnValue(mockTokenManager);
 
-    const client = await import('./canopyOAuth2.js').then((module) =>
+    const client = await import('./canopy-oauth2.js').then((module) =>
       module.getCanopyOAuthClient(mockConfig),
     );
 
@@ -991,7 +991,7 @@ describe('getCanopyOAuthClient', () => {
 
     // The function should handle the invalid cached credentials and throw the expected error
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow('Device authorization flow failed');
@@ -1014,7 +1014,7 @@ describe('getCanopyOAuthClient', () => {
     vi.mocked(global.fetch).mockResolvedValue({ ok: true } as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig, {
           requireCachedCredentials: true,
         }),
@@ -1054,7 +1054,7 @@ describe('getCanopyOAuthClient', () => {
 
     let thrownError: unknown;
     try {
-      const { getCanopyOAuthClient } = await import('./canopyOAuth2.js');
+      const { getCanopyOAuthClient } = await import('./canopy-oauth2.js');
       await getCanopyOAuthClient(mockConfig);
     } catch (error: unknown) {
       thrownError = error;
@@ -1083,7 +1083,9 @@ describe('getCanopyOAuthClient', () => {
 
 describe('CredentialsClearRequiredError', () => {
   it('should create error with correct name and message', async () => {
-    const { CredentialsClearRequiredError } = await import('./canopyOAuth2.js');
+    const { CredentialsClearRequiredError } = await import(
+      './canopy-oauth2.js'
+    );
 
     const message = 'Test error message';
     const originalError = { status: 400, response: 'Bad Request' };
@@ -1096,7 +1098,9 @@ describe('CredentialsClearRequiredError', () => {
   });
 
   it('should work without originalError', async () => {
-    const { CredentialsClearRequiredError } = await import('./canopyOAuth2.js');
+    const { CredentialsClearRequiredError } = await import(
+      './canopy-oauth2.js'
+    );
 
     const message = 'Test error message';
     const error = new CredentialsClearRequiredError(message);
@@ -1110,7 +1114,7 @@ describe('CredentialsClearRequiredError', () => {
 describe('clearCanopyCredentials', () => {
   it('should successfully clear credentials file', async () => {
     const { promises: fs } = await import('node:fs');
-    const { clearCanopyCredentials } = await import('./canopyOAuth2.js');
+    const { clearCanopyCredentials } = await import('./canopy-oauth2.js');
 
     vi.mocked(fs.unlink).mockResolvedValue(undefined);
 
@@ -1120,7 +1124,7 @@ describe('clearCanopyCredentials', () => {
 
   it('should handle file not found error gracefully', async () => {
     const { promises: fs } = await import('node:fs');
-    const { clearCanopyCredentials } = await import('./canopyOAuth2.js');
+    const { clearCanopyCredentials } = await import('./canopy-oauth2.js');
 
     const notFoundError = new Error('File not found');
     (notFoundError as Error & { code: string }).code = 'ENOENT';
@@ -1131,7 +1135,7 @@ describe('clearCanopyCredentials', () => {
 
   it('should handle other file system errors gracefully', async () => {
     const { promises: fs } = await import('node:fs');
-    const { clearCanopyCredentials } = await import('./canopyOAuth2.js');
+    const { clearCanopyCredentials } = await import('./canopy-oauth2.js');
 
     const permissionError = new Error('Permission denied');
     vi.mocked(fs.unlink).mockRejectedValue(permissionError);
@@ -1231,7 +1235,7 @@ describe('getCanopyOAuthClient - Enhanced Error Scenarios', () => {
     vi.mocked(global.fetch).mockResolvedValue(mockAuthResponse as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow('Device authorization flow failed');
@@ -1280,7 +1284,7 @@ describe('getCanopyOAuthClient - Enhanced Error Scenarios', () => {
       .mockResolvedValue(mockPendingResponse as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow('Authorization timeout, please restart the process.');
@@ -1329,7 +1333,7 @@ describe('getCanopyOAuthClient - Enhanced Error Scenarios', () => {
       .mockResolvedValue(mockRateLimitResponse as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow(
@@ -1367,7 +1371,7 @@ describe('getCanopyOAuthClient - Enhanced Error Scenarios', () => {
     global.fetch = vi.fn().mockResolvedValue(mockAuthResponse as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow('Device authorization flow failed');
@@ -1426,7 +1430,7 @@ describe('authWithCanopyDeviceFlow - Comprehensive Testing', () => {
     global.fetch = vi.fn().mockResolvedValue(mockAuthResponse as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow('Device authorization flow failed');
@@ -1466,7 +1470,7 @@ describe('authWithCanopyDeviceFlow - Comprehensive Testing', () => {
       .mockResolvedValueOnce(mockAuthResponse as Response)
       .mockResolvedValue(mockTokenResponse as Response);
 
-    const client = await import('./canopyOAuth2.js').then((module) =>
+    const client = await import('./canopy-oauth2.js').then((module) =>
       module.getCanopyOAuthClient(mockConfig),
     );
 
@@ -1513,7 +1517,7 @@ describe('authWithCanopyDeviceFlow - Comprehensive Testing', () => {
       .mockResolvedValue(mock401Response as Response);
 
     await expect(
-      import('./canopyOAuth2.js').then((module) =>
+      import('./canopy-oauth2.js').then((module) =>
         module.getCanopyOAuthClient(mockConfig),
       ),
     ).rejects.toThrow(
@@ -1569,7 +1573,7 @@ describe('authWithCanopyDeviceFlow - Comprehensive Testing', () => {
       .mockResolvedValueOnce(mockAuthResponse as Response)
       .mockResolvedValue(mockTokenResponse as Response);
 
-    const client = await import('./canopyOAuth2.js').then((module) =>
+    const client = await import('./canopy-oauth2.js').then((module) =>
       module.getCanopyOAuthClient(mockConfig),
     );
 
@@ -1644,7 +1648,7 @@ describe('Browser Launch and Error Handling', () => {
       .mockResolvedValueOnce(mockAuthResponse as Response)
       .mockResolvedValue(mockTokenResponse as Response);
 
-    const client = await import('./canopyOAuth2.js').then((module) =>
+    const client = await import('./canopy-oauth2.js').then((module) =>
       module.getCanopyOAuthClient(mockConfig),
     );
 
@@ -1696,7 +1700,7 @@ describe('Browser Launch and Error Handling', () => {
       .mockResolvedValueOnce(mockAuthResponse as Response)
       .mockResolvedValue(mockTokenResponse as Response);
 
-    const client = await import('./canopyOAuth2.js').then((module) =>
+    const client = await import('./canopy-oauth2.js').then((module) =>
       module.getCanopyOAuthClient(mockConfig),
     );
 
@@ -1711,12 +1715,12 @@ describe('Browser Launch and Error Handling', () => {
 
 describe('Event Emitter Integration', () => {
   it('should export canopyOAuth2Events as EventEmitter', async () => {
-    const { canopyOAuth2Events } = await import('./canopyOAuth2.js');
+    const { canopyOAuth2Events } = await import('./canopy-oauth2.js');
     expect(canopyOAuth2Events).toBeInstanceOf(EventEmitter);
   });
 
   it('should define correct event enum values', async () => {
-    const { CanopyOAuth2Event } = await import('./canopyOAuth2.js');
+    const { CanopyOAuth2Event } = await import('./canopy-oauth2.js');
     expect(CanopyOAuth2Event.AuthUri).toBe('auth-uri');
     expect(CanopyOAuth2Event.AuthProgress).toBe('auth-progress');
     expect(CanopyOAuth2Event.AuthCancel).toBe('auth-cancel');
@@ -1799,7 +1803,7 @@ describe('Utility Functions', () => {
 
       // Since this is a private function, we test it indirectly through clearCanopyCredentials
       const { promises: fs } = await import('node:fs');
-      const { clearCanopyCredentials } = await import('./canopyOAuth2.js');
+      const { clearCanopyCredentials } = await import('./canopy-oauth2.js');
 
       vi.mocked(fs.unlink).mockResolvedValue(undefined);
 
@@ -2129,7 +2133,7 @@ describe('Enhanced Error Handling and Edge Cases', () => {
 
     it('should throw CredentialsClearRequiredError on 400 error', async () => {
       const { CredentialsClearRequiredError } = await import(
-        './canopyOAuth2.js'
+        './canopy-oauth2.js'
       );
 
       client.setCredentials({
@@ -2303,7 +2307,7 @@ describe('SharedTokenManager Integration in CanopyOAuth2Client', () => {
         .mockResolvedValue(mockTokenResponse as Response);
 
       try {
-        await import('./canopyOAuth2.js').then((module) =>
+        await import('./canopy-oauth2.js').then((module) =>
           module.getCanopyOAuthClient(mockConfig),
         );
       } catch {

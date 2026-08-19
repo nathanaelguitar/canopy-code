@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { ICanopyOAuth2Client } from './canopyOAuth2.js';
-import { type CanopyCredentials, type ErrorData } from './canopyOAuth2.js';
+import type { ICanopyOAuth2Client } from './canopy-oauth2.js';
+import { type CanopyCredentials, type ErrorData } from './canopy-oauth2.js';
 import type {
   GenerateContentParameters,
   GenerateContentResponse,
@@ -16,7 +16,7 @@ import type {
   EmbedContentResponse,
 } from '@google/genai';
 import { FinishReason } from '@google/genai';
-import { CanopyContentGenerator } from './canopyContentGenerator.js';
+import { CanopyContentGenerator } from './canopy-content-generator.js';
 import { SharedTokenManager } from './sharedTokenManager.js';
 import type { Config } from '../config/config.js';
 import { AuthType } from '../core/contentGenerator.js';

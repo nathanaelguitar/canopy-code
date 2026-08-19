@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { DeviceAuthorizationData } from '@canopy-code/canopy-code-core';
-import { useCanopyAuth } from './useCanopyAuth.js';
+import { useCanopyAuth } from './use-canopy-auth.js';
 import {
   AuthType,
   canopyOAuth2Events,

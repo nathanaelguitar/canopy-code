@@ -15,6 +15,7 @@ import type { MutableOriginAllowlist } from '../auth.js';
 import type { CredentialStore } from './credentials.js';
 import { tagListener } from './listener-identity.js';
 import { selectLanAddress, type LanCandidate } from './lan-interfaces.js';
+import { selectTailscaleAddress } from './tailscale-interface.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 
 /** Key under which the LAN origin is registered in the mutable CORS allowlist. */
@@ -48,6 +49,12 @@ export interface LocalControlStatus {
   urlRedacted?: boolean;
   interfaceName?: string;
   address?: string;
+  /**
+   * Which address family was selected: a same-network LAN address, or a
+   * Tailscale/tailnet address reachable from anywhere the operator's tailnet
+   * reaches. Present only while active.
+   */
+  network?: 'lan' | 'tailscale';
   port?: number;
   sleepInhibited?: boolean;
   /**
@@ -59,8 +66,16 @@ export interface LocalControlStatus {
 }
 
 export interface LocalControlEnableOptions {
-  /** Which LAN address to expose, when the host has more than one. */
+  /** Which LAN or tailnet address to expose, when the host has more than one. */
   address?: string;
+  /**
+   * Expose a same-network LAN address (default) or a Tailscale/tailnet
+   * address. Tailnet addresses are reachable from anywhere the operator's
+   * tailnet reaches, not just the host's physical network — that is the
+   * whole point of picking it, so it is opt-in rather than auto-detected
+   * alongside LAN candidates.
+   */
+  network?: 'lan' | 'tailscale';
   /**
    * Path + query the QR should open, e.g. `/?workspace=%2Fsrc%2Fapp`. Lets the
    * phone land on the session the operator was looking at rather than the
@@ -122,6 +137,7 @@ export class LocalControlService {
   #server: Server | undefined;
   #token: PairingToken | undefined;
   #selected: LanCandidate | undefined;
+  #network: 'lan' | 'tailscale' | undefined;
   #sleep: SleepInhibitorHandle | undefined;
   #url: string | undefined;
   #transition: Promise<void> = Promise.resolve();
@@ -143,6 +159,7 @@ export class LocalControlService {
       url: this.#url,
       interfaceName: this.#selected.interfaceName,
       address: this.#selected.address,
+      network: this.#network,
       port: this.#deps.getPort(),
       sleepInhibited: this.#sleep !== undefined && sleepInhibitor.isRunning(),
       encrypted: this.#deps.tlsPaths !== undefined,
@@ -166,7 +183,11 @@ export class LocalControlService {
   ): Promise<LocalControlStatus> {
     if (this.active) return this.status();
 
-    const selected = selectLanAddress(options.address);
+    const network = options.network ?? 'lan';
+    const selected =
+      network === 'tailscale'
+        ? selectTailscaleAddress(options.address)
+        : selectLanAddress(options.address);
     const port = this.#deps.getPort();
     const authority = `${selected.address}:${port}`;
     const token = mintPairingToken();
@@ -224,6 +245,7 @@ export class LocalControlService {
     this.#server = server;
     this.#token = token;
     this.#selected = selected;
+    this.#network = network;
     this.#url = url;
     // Best-effort, and reported as such: the core inhibitor no-ops on headless
     // SSH sessions and on hosts without a usable backend. A phone losing its
@@ -251,6 +273,7 @@ export class LocalControlService {
     this.#server = undefined;
     this.#token = undefined;
     this.#selected = undefined;
+    this.#network = undefined;
     this.#url = undefined;
 
     if (token) this.#deps.credentials.revokePairingToken(token.id);

@@ -6,7 +6,7 @@
 
 import { OpenAIContentGenerator } from '../core/openaiContentGenerator/index.js';
 import { DashScopeOpenAICompatibleProvider } from '../core/openaiContentGenerator/provider/dashscope.js';
-import type { ICanopyOAuth2Client } from './canopyOAuth2.js';
+import type { ICanopyOAuth2Client } from './canopy-oauth2.js';
 import { SharedTokenManager } from './sharedTokenManager.js';
 import { type Config } from '../config/config.js';
 import type {

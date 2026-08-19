@@ -118,6 +118,71 @@ async function startLocalControl(
 }
 
 /**
+ * Turn Remote Control on through the daemon and print the pairing QR.
+ *
+ * Same {@link LocalControlService} as `--local-control`, pointed at a
+ * Tailscale/tailnet address instead of a same-network LAN address. Because a
+ * tailnet address is reachable from anywhere the operator's tailnet reaches —
+ * not just the host's physical network — this is the flag that answers "how
+ * do I reach this daemon when I'm not home."
+ */
+async function startRemoteControl(
+  handle: RunHandle,
+  address: string | undefined,
+): Promise<void> {
+  await handle.runtimeReady;
+  if (!handle.webShellMounted) {
+    throw new Error('Remote Control requires the Web Shell.');
+  }
+  const service = handle.getLocalControl();
+  if (!service) {
+    throw new Error('Remote Control is unavailable on this daemon.');
+  }
+  let status;
+  try {
+    status = await service.enable({ address, network: 'tailscale' });
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err as { code?: string }).code === 'ambiguous_tailscale_interface'
+    ) {
+      throw new Error(`${err.message}. Pass --remote-control-address <ip>.`);
+    }
+    if (
+      err instanceof Error &&
+      (err as { code?: string }).code === 'no_tailscale_interface'
+    ) {
+      throw new Error(err.message);
+    }
+    throw err;
+  }
+  if (!status.url) {
+    throw new Error('Remote Control did not return a pairing URL.');
+  }
+  const { default: qrcode } = (await import('qrcode-terminal')) as {
+    default: typeof import('qrcode-terminal');
+  };
+  qrcode.setErrorLevel('Q');
+  writeStdoutLine(
+    '\nRemote Control is on. Scan this QR code from any device on your tailnet:',
+  );
+  writeStdoutLine(`\n${status.interfaceName}: ${status.url}`);
+  qrcode.generate(status.url, { small: true }, (code) => {
+    writeStdoutLine(code.trimEnd());
+  });
+  writeStdoutLine(
+    '\nKeep this terminal open. ' +
+      (status.sleepInhibited
+        ? 'Sleep is inhibited while this session is active. '
+        : 'Sleep inhibition is unavailable here, so the host may sleep. ') +
+      'This URL is reachable from anywhere your tailnet reaches, not just ' +
+      'this network — Tailscale itself encrypts the link end to end. ' +
+      'Turn Remote Control off from the Web Shell Settings card, or press ' +
+      'Ctrl+C to exit the daemon.',
+  );
+}
+
+/**
  * Open the Web Shell in a browser once the daemon is listening. Extracted from
  * the `serve` handler so it is unit-testable. Best-effort:
  *  - gated on `--open`, the UI actually being mounted (`webShellMounted`), and
@@ -195,6 +260,8 @@ interface ServeArgs {
   open: boolean;
   'local-control': boolean;
   'local-control-address'?: string;
+  'remote-control': boolean;
+  'remote-control-address'?: string;
   // Read from the kebab-case key only — the camelCase mirror that yargs
   // synthesizes is convenient for handlers but type-confusing here. The
   // handler reads `argv['http-bridge']` directly.
@@ -366,6 +433,17 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         description:
           'Which local IPv4 address to share when the host is on more than one network. Only needed if --local-control reports an ambiguous choice.',
       })
+      .option('remote-control', {
+        type: 'boolean',
+        default: false,
+        description:
+          'Share the Web Shell over Tailscale with its own revocable pairing token and terminal QR code, reachable from anywhere your tailnet reaches — not just this network. Requires Tailscale (or another tailnet client handing out a 100.64.0.0/10 address) to already be running on this host. Ctrl+C turns it off by ending the whole daemon; the Web Shell Settings card turns it off while the daemon keeps running.',
+      })
+      .option('remote-control-address', {
+        type: 'string',
+        description:
+          'Which tailnet address to share when the host has more than one. Only needed if --remote-control reports an ambiguous choice.',
+      })
       .check((argv) => {
         // A wildcard or LAN primary bind already owns the port Local Control
         // needs on its selected address. Token and Origin settings remain
@@ -389,6 +467,29 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         }
         if (argv['local-control-address'] === '') {
           throw new Error('--local-control-address must not be empty.');
+        }
+        if (argv['remote-control'] === true && argv['web'] === false) {
+          throw new Error('Remote Control requires the Web Shell.');
+        }
+        if (
+          argv['remote-control'] !== true &&
+          argv['remote-control-address'] !== undefined
+        ) {
+          throw new Error(
+            '--remote-control-address requires --remote-control.',
+          );
+        }
+        if (argv['remote-control-address'] === '') {
+          throw new Error('--remote-control-address must not be empty.');
+        }
+        // The LocalControlService backing both flags owns a single second
+        // listener; it cannot bind a LAN address and a tailnet address at
+        // the same time.
+        if (argv['local-control'] === true && argv['remote-control'] === true) {
+          throw new Error(
+            '--local-control and --remote-control cannot both be set. ' +
+              'Remote Control (Tailscale) already reaches this network too.',
+          );
         }
         return true;
       })
@@ -910,6 +1011,14 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
           // the LAN listener is up and released when it goes down, rather than
           // for the lifetime of the process regardless.
           await startLocalControl(handle, argv['local-control-address']);
+        } catch (err) {
+          await handle.close().catch(() => undefined);
+          throw err;
+        }
+      }
+      if (argv['remote-control']) {
+        try {
+          await startRemoteControl(handle, argv['remote-control-address']);
         } catch (err) {
           await handle.close().catch(() => undefined);
           throw err;
