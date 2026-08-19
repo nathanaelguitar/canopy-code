@@ -133,7 +133,7 @@ describe('commandUtils', () => {
       expect(isSlashCommand('/api/apiFunction/接口的实现')).toBe(false);
       expect(isSlashCommand('/Users/me/project/src/index.ts')).toBe(false);
       expect(isSlashCommand('/var/log/syslog check this')).toBe(false);
-      expect(isSlashCommand('/home/user/.qwen/settings.json')).toBe(false);
+      expect(isSlashCommand('/home/user/.canopy/settings.json')).toBe(false);
       expect(isSlashCommand('/tmp/test.txt')).toBe(false);
       expect(isSlashCommand('/tmp\\test.txt')).toBe(false);
     });

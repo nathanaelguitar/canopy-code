@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,11 +16,11 @@ export const DEFAULT_MAX_INLINE_MEDIA_BYTES = 10 * 1024 * 1024;
 
 /**
  * Resolve the inline-media byte ceiling, allowing override via the
- * `QWEN_CODE_MAX_INLINE_MEDIA_BYTES` env var. Falls back to the default for
+ * `CANOPY_CODE_MAX_INLINE_MEDIA_BYTES` env var. Falls back to the default for
  * missing, non-numeric, non-integer, or non-positive values.
  */
 export function getMaxInlineMediaBytes(): number {
-  const raw = process.env['QWEN_CODE_MAX_INLINE_MEDIA_BYTES'];
+  const raw = process.env['CANOPY_CODE_MAX_INLINE_MEDIA_BYTES'];
   if (raw === undefined || raw.trim() === '') {
     return DEFAULT_MAX_INLINE_MEDIA_BYTES;
   }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,8 +22,8 @@ import type {
   Extension,
   DiscoveredPlugin,
   ExtensionSource,
-} from '@qwen-code/qwen-code-core';
-import { mcpServerRequiresOAuth } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { mcpServerRequiresOAuth } from '@canopy-code/canopy-code-core';
 import type { ExtensionUpdateState } from '../../state/extensions.js';
 
 // The Installed tab reads real user/workspace settings from disk when MCP
@@ -45,7 +45,7 @@ const mockExtension = (name: string, isActive = true): Extension =>
     id: name,
     name,
     version: '1.0.0',
-    path: `/home/user/.qwen/extensions/${name}`,
+    path: `/home/user/.canopy/extensions/${name}`,
     isActive,
     installMetadata: { type: 'git', source: `github:user/${name}` },
     mcpServers: {},

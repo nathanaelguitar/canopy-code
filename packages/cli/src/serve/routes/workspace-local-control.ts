@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -165,7 +165,7 @@ export function registerWorkspaceLocalControlRoutes(
           // local attacker process cannot read over HTTP, so surface the URL
           // there (#9106).
           writeStdoutLineSafe(
-            `qwen serve: Local Control pairing URL: ${ui.url}`,
+            `canopy serve: Local Control pairing URL: ${ui.url}`,
           );
         }
         res.status(200).json(presentStatus(req, ui));
@@ -183,7 +183,7 @@ export function registerWorkspaceLocalControlRoutes(
         queueMicrotask(() => {
           void deps.service.disable().catch((error) => {
             writeStderrLine(
-              `qwen serve: Local Control disable failed: ${error instanceof Error ? error.message : String(error)}`,
+              `canopy serve: Local Control disable failed: ${error instanceof Error ? error.message : String(error)}`,
             );
           });
         });

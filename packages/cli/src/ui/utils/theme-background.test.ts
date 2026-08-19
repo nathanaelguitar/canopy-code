@@ -47,7 +47,7 @@ describe('theme-background', () => {
       // Forcing a light theme onto a dark terminal must still report the
       // terminal's own (dark) background, since the theme background is never
       // painted.
-      themeManager.setActiveTheme('Qwen Light');
+      themeManager.setActiveTheme('Canopy Light');
       setDetectedTerminal('dark');
       expect(getEffectiveTerminalBackground()).toBe('#000000');
     });

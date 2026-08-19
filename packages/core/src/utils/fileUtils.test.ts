@@ -1126,7 +1126,7 @@ describe('fileUtils', () => {
       vi.spyOn(fsService, 'readTextFile').mockRejectedValueOnce({
         code: -32603,
         message:
-          'path escapes workspace: /root/.qwen/skills/dataworks-di-data-processor/instructions/interaction_norms.md',
+          'path escapes workspace: /root/.canopy/skills/dataworks-di-data-processor/instructions/interaction_norms.md',
         data: {
           errorKind: 'path_outside_workspace',
           status: 400,

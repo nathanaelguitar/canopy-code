@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -25,12 +25,12 @@ import {
 } from './trace-context.js';
 import { setSessionIdOnContext } from './session-context.js';
 
-export const DAEMON_TRACEPARENT_META_KEY = 'qwen.telemetry.traceparent';
-export const DAEMON_TRACESTATE_META_KEY = 'qwen.telemetry.tracestate';
+export const DAEMON_TRACEPARENT_META_KEY = 'canopy.telemetry.traceparent';
+export const DAEMON_TRACESTATE_META_KEY = 'canopy.telemetry.tracestate';
 
-const SPAN_DAEMON_REQUEST = 'qwen-code.daemon.request';
-const SPAN_DAEMON_BRIDGE = 'qwen-code.daemon.bridge';
-const EVENT_DAEMON_ERROR = 'qwen-code.daemon.error';
+const SPAN_DAEMON_REQUEST = 'canopy-code.daemon.request';
+const SPAN_DAEMON_BRIDGE = 'canopy-code.daemon.bridge';
+const EVENT_DAEMON_ERROR = 'canopy-code.daemon.error';
 
 type DaemonAttributes = Record<string, string | number | boolean>;
 
@@ -142,25 +142,27 @@ export async function withDaemonRequestSpan<T>(
     {
       'http.request.method': options.method,
       'http.route': options.route,
-      'qwen-code.daemon.operation': 'http_request',
+      'canopy-code.daemon.operation': 'http_request',
       ...(options.workspaceHash
-        ? { 'qwen-code.workspace.hash': options.workspaceHash }
+        ? { 'canopy-code.workspace.hash': options.workspaceHash }
         : {}),
       ...(options.sessionId ? { 'session.id': options.sessionId } : {}),
-      ...(options.clientId ? { 'qwen-code.client_id': options.clientId } : {}),
+      ...(options.clientId
+        ? { 'canopy-code.client_id': options.clientId }
+        : {}),
       ...(options.permissionRequestId
         ? {
-            'qwen-code.daemon.permission.request_id':
+            'canopy-code.daemon.permission.request_id':
               options.permissionRequestId,
           }
         : {}),
       ...(options.deferredRuntimeWaitMs !== undefined
         ? {
-            'qwen-code.daemon.runtime.wait_ms': options.deferredRuntimeWaitMs,
+            'canopy-code.daemon.runtime.wait_ms': options.deferredRuntimeWaitMs,
           }
         : {}),
       ...(options.deferredRuntimePath
-        ? { 'qwen-code.daemon.runtime.path': options.deferredRuntimePath }
+        ? { 'canopy-code.daemon.runtime.path': options.deferredRuntimePath }
         : {}),
     },
     fn,
@@ -176,7 +178,7 @@ export async function withDaemonBridgeSpan<T>(
   return await withDaemonSpan(
     SPAN_DAEMON_BRIDGE,
     {
-      'qwen-code.daemon.operation': operation,
+      'canopy-code.daemon.operation': operation,
       ...attributes,
     },
     async () => await fn(),
@@ -401,7 +403,7 @@ export function createDaemonBridgeTelemetry(): {
             kind: SpanKind.INTERNAL,
             attributes: {
               'event.name': name,
-              'qwen-code.daemon.operation': `event.${name}`,
+              'canopy-code.daemon.operation': `event.${name}`,
               ...attributes,
             },
           });

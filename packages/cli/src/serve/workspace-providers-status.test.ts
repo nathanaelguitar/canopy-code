@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,9 +24,9 @@ const coreMock = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   class TestModelsConfig extends actual.ModelsConfig {
     constructor(options: ConstructorParameters<typeof actual.ModelsConfig>[0]) {
       if (coreMock.throwModelsConfigError) {
@@ -45,25 +45,27 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
 describe('createWorkspaceProvidersStatusProvider', () => {
   let tmpDir: string;
   let workspace: string;
-  let qwenHome: string;
-  const originalQwenHome = process.env['QWEN_HOME'];
-  const originalQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-  const originalSystemSettings = process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
-  const originalSystemDefaults = process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+  let canopyHome: string;
+  const originalCanopyHome = process.env['QWEN_HOME'];
+  const originalCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+  const originalSystemSettings =
+    process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
+  const originalSystemDefaults =
+    process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'providers-status-'));
     workspace = path.join(tmpDir, 'workspace');
-    qwenHome = path.join(tmpDir, 'qwen-home');
+    canopyHome = path.join(tmpDir, 'canopy-home');
     await fs.mkdir(workspace, { recursive: true });
-    await fs.mkdir(qwenHome, { recursive: true });
-    process.env['QWEN_HOME'] = qwenHome;
-    process.env['QWEN_RUNTIME_DIR'] = path.join(tmpDir, 'runtime');
-    process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
+    await fs.mkdir(canopyHome, { recursive: true });
+    process.env['QWEN_HOME'] = canopyHome;
+    process.env['CANOPY_RUNTIME_DIR'] = path.join(tmpDir, 'runtime');
+    process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
       tmpDir,
       'system-settings.json',
     );
-    process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
+    process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
       tmpDir,
       'system-defaults.json',
     );
@@ -75,10 +77,10 @@ describe('createWorkspaceProvidersStatusProvider', () => {
   });
 
   afterEach(async () => {
-    restoreEnv('QWEN_HOME', originalQwenHome);
-    restoreEnv('QWEN_RUNTIME_DIR', originalQwenRuntimeDir);
-    restoreEnv('QWEN_CODE_SYSTEM_SETTINGS_PATH', originalSystemSettings);
-    restoreEnv('QWEN_CODE_SYSTEM_DEFAULTS_PATH', originalSystemDefaults);
+    restoreEnv('QWEN_HOME', originalCanopyHome);
+    restoreEnv('CANOPY_RUNTIME_DIR', originalCanopyRuntimeDir);
+    restoreEnv('CANOPY_CODE_SYSTEM_SETTINGS_PATH', originalSystemSettings);
+    restoreEnv('CANOPY_CODE_SYSTEM_DEFAULTS_PATH', originalSystemDefaults);
     resetHomeEnvBootstrapForTesting();
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
@@ -209,8 +211,8 @@ describe('createWorkspaceProvidersStatusProvider', () => {
       (m) => m.baseUrl === 'https://api-two.example/v1',
     );
 
-    expect(first?.modelId).toMatch(/^qwen-route:v1:/);
-    expect(second?.modelId).toMatch(/^qwen-route:v1:/);
+    expect(first?.modelId).toMatch(/^canopy-route:v1:/);
+    expect(second?.modelId).toMatch(/^canopy-route:v1:/);
     expect(first?.modelId).not.toBe(second?.modelId);
     expect(result.current?.modelId).toBe(second?.modelId);
     expect(first?.isCurrent).toBe(false);
@@ -564,7 +566,7 @@ describe('createWorkspaceProvidersStatusProvider', () => {
 
   async function writeUserSettings(settings: Record<string, unknown>) {
     await fs.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify(settings),
       'utf8',
     );

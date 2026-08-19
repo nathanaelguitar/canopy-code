@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,10 +72,10 @@ describe('runCommentBody', () => {
     const { body } = runCommentBody({
       id: 3773970278,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(ghApiMock).toHaveBeenCalledWith(
-      'repos/QwenLM/qwen-code/pulls/comments/3773970278',
+      'repos/CanopyLM/canopy-code/pulls/comments/3773970278',
     );
     expect(body).toBe('**[Suggestion]** the inline body');
   });
@@ -87,7 +87,7 @@ describe('runCommentBody', () => {
     const { body } = runCommentBody({
       id: 1,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(body).toBe('    indented first line\nrest');
   });
@@ -95,7 +95,8 @@ describe('runCommentBody', () => {
   it('returns an empty string for a null body', () => {
     ghApiMock.mockReturnValue({ body: null });
     expect(
-      runCommentBody({ id: 1, kind: 'inline', repo: 'QwenLM/qwen-code' }).body,
+      runCommentBody({ id: 1, kind: 'inline', repo: 'CanopyLM/canopy-code' })
+        .body,
     ).toBe('');
   });
 
@@ -104,26 +105,26 @@ describe('runCommentBody', () => {
     runCommentBody({
       id: 5277891862,
       kind: 'issue',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(ghApiMock).toHaveBeenCalledWith(
-      'repos/QwenLM/qwen-code/issues/comments/5277891862',
+      'repos/CanopyLM/canopy-code/issues/comments/5277891862',
     );
   });
 
   it('addresses review bodies per-PR and refuses without one', () => {
     expect(() =>
-      runCommentBody({ id: 1, kind: 'review', repo: 'QwenLM/qwen-code' }),
+      runCommentBody({ id: 1, kind: 'review', repo: 'CanopyLM/canopy-code' }),
     ).toThrow(TypeError);
     ghApiMock.mockReturnValue({ body: 'review body' });
     runCommentBody({
       id: 99,
       kind: 'review',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       prNumber: 9073,
     });
     expect(ghApiMock).toHaveBeenCalledWith(
-      'repos/QwenLM/qwen-code/pulls/9073/reviews/99',
+      'repos/CanopyLM/canopy-code/pulls/9073/reviews/99',
     );
   });
 
@@ -132,7 +133,7 @@ describe('runCommentBody', () => {
     const result = runCommentBody({
       id: 1,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: '/tmp/body.md',
     });
     // resolve()d on both sides: a literal '/tmp/...' fails on Windows.
@@ -164,10 +165,10 @@ describe('commentBodyCommand handler', () => {
     try {
       (commentBodyCommand.handler as (a: unknown) => void)({
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
         id: 5,
         kind: 'inline',
-        repo: 'QwenLM/qwen-code',
+        repo: 'CanopyLM/canopy-code',
       });
       expect(stdoutSpy).toHaveBeenCalledWith('the body');
       expect(setGhHostMock).toHaveBeenCalledWith(undefined);
@@ -183,10 +184,10 @@ describe('commentBodyCommand handler', () => {
     ghApiMock.mockReturnValue({ body: 'the body' });
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       host: 'ghe.example.com',
     });
     expect(setGhHostMock).toHaveBeenCalledWith('ghe.example.com');
@@ -206,10 +207,10 @@ describe('commentBodyCommand handler', () => {
   it('exits 2 for --kind review without --pr', () => {
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'review',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(process.exitCode).toBe(2);
     expect(ghApiMock).not.toHaveBeenCalled();
@@ -222,14 +223,14 @@ describe('commentBodyCommand handler', () => {
     ghApiMock.mockReturnValue({ body: 'review body' });
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 99,
       kind: 'review',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       pr: 9073,
     });
     expect(ghApiMock).toHaveBeenCalledWith(
-      'repos/QwenLM/qwen-code/pulls/9073/reviews/99',
+      'repos/CanopyLM/canopy-code/pulls/9073/reviews/99',
     );
     expect(process.exitCode).toBeUndefined();
   });
@@ -237,10 +238,10 @@ describe('commentBodyCommand handler', () => {
   it('exits 2 on a non-positive id or --pr, without calling gh or auth', () => {
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 0,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(process.exitCode).toBe(2);
     // Reset so the second assertion verifies the guard assigns the code,
@@ -248,10 +249,10 @@ describe('commentBodyCommand handler', () => {
     process.exitCode = undefined;
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'review',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       pr: -3,
     });
     expect(process.exitCode).toBe(2);
@@ -265,19 +266,19 @@ describe('commentBodyCommand handler', () => {
     // would ship green and let `1.5` reach the gh call.
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 1.5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(process.exitCode).toBe(2);
     process.exitCode = undefined;
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'review',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       pr: 9073.25,
     });
     expect(process.exitCode).toBe(2);
@@ -288,10 +289,10 @@ describe('commentBodyCommand handler', () => {
   it('exits 2 on an empty --out (classified before any fetch)', () => {
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: '',
     });
     expect(process.exitCode).toBe(2);
@@ -302,10 +303,10 @@ describe('commentBodyCommand handler', () => {
   it('exits 2 on a whitespace-only --out', () => {
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: ' ',
     });
     expect(process.exitCode).toBe(2);
@@ -319,10 +320,10 @@ describe('commentBodyCommand handler', () => {
     });
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       host: 'bad host; rm -rf /',
     });
     expect(process.exitCode).toBe(2);
@@ -333,7 +334,7 @@ describe('commentBodyCommand handler', () => {
   it('exits 2 on a malformed --repo (usage error, not a fetch failure)', () => {
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
       repo: '../escape',
@@ -349,10 +350,10 @@ describe('commentBodyCommand handler', () => {
     ghApiMock.mockReturnValue({ body: 'raw markdown body' });
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: '/tmp/body.md',
     });
     expect(writeStdoutLineMock).toHaveBeenCalledWith(
@@ -371,10 +372,10 @@ describe('commentBodyCommand handler', () => {
     });
     (commentBodyCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       id: 5,
       kind: 'inline',
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(process.exitCode).toBe(1);
     expect(writeStderrLineSafeMock).toHaveBeenCalled();

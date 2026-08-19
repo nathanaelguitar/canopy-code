@@ -5,7 +5,7 @@
  */
 
 import * as path from 'node:path';
-import { getAutoMemoryRoot, Storage } from '@qwen-code/qwen-code-core';
+import { getAutoMemoryRoot, Storage } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 import type { SlashCommand } from './types.js';
 import { CommandKind } from './types.js';

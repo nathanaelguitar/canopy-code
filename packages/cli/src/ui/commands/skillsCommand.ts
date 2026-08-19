@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
 } from './types.js';
 import { MessageType } from '../types.js';
 import { t } from '../../i18n/index.js';
-import { normalizeSkillPriority } from '@qwen-code/qwen-code-core';
+import { normalizeSkillPriority } from '@canopy-code/canopy-code-core';
 import { levelLabel } from '../utils/skill-level-label.js';
 
 export const skillsCommand: SlashCommand = {
@@ -77,7 +77,7 @@ export const skillsCommand: SlashCommand = {
           : userInvocableSkills.length === 0
             ? t('No skills are currently available.')
             : t(
-                'All available skills are disabled. Edit ~/.qwen/settings.json or .qwen/settings.json (skills.disabled) to re-enable.',
+                'All available skills are disabled. Edit ~/.canopy/settings.json or .canopy/settings.json (skills.disabled) to re-enable.',
               );
       return {
         type: 'message' as const,

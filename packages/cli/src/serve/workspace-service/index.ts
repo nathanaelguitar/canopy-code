@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -311,7 +311,7 @@ export function createDaemonWorkspaceService(
       // enumeration below instead of failing the request — matching
       // getWorkspaceEnvStatus / getWorkspacePreflightStatus.
       writeStderrLine(
-        `qwen serve: getWorkspaceSkillsStatus query failed: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: getWorkspaceSkillsStatus query failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       status = createIdleWorkspaceSkillsStatus(boundWorkspace);
     }
@@ -351,7 +351,7 @@ export function createDaemonWorkspaceService(
         return localStatus;
       } catch (err) {
         writeStderrLine(
-          `qwen serve: getWorkspaceSkillsStatus local provider failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: getWorkspaceSkillsStatus local provider failed: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     }
@@ -398,7 +398,7 @@ export function createDaemonWorkspaceService(
       // still succeeded; surface the partial refresh rather than dropping it.
       if ((refreshed.configsFailed ?? 0) > 0) {
         writeStderrLine(
-          `qwen serve: ${refreshed.configsFailed} skill cache refresh(es) failed after mutation`,
+          `canopy serve: ${refreshed.configsFailed} skill cache refresh(es) failed after mutation`,
         );
       }
     } catch (err) {
@@ -407,7 +407,7 @@ export function createDaemonWorkspaceService(
         !(err instanceof BridgeChannelClosedError)
       ) {
         writeStderrLine(
-          `qwen serve: workspace skill refresh after mutation failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: workspace skill refresh after mutation failed: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     } finally {
@@ -490,7 +490,7 @@ export function createDaemonWorkspaceService(
           (err) => {
             try {
               writeStderrLineSafe(
-                `qwen serve: ACP preheat failed: ${err instanceof Error ? err.message : String(err)}`,
+                `canopy serve: ACP preheat failed: ${err instanceof Error ? err.message : String(err)}`,
               );
             } finally {
               if (inFlightAcpPreheat === promise) {
@@ -511,7 +511,7 @@ export function createDaemonWorkspaceService(
       } catch (err) {
         if (err instanceof TimeoutError) {
           writeStderrLineSafe(
-            `qwen serve: ACP preheat timed out after ${opts?.timeoutMs ?? 5_000}ms`,
+            `canopy serve: ACP preheat timed out after ${opts?.timeoutMs ?? 5_000}ms`,
           );
         }
         const live = channelLive();
@@ -532,7 +532,7 @@ export function createDaemonWorkspaceService(
       const live = channelLive();
       if (!live) {
         writeStderrLineSafe(
-          'qwen serve: ACP preheat resolved without a live channel',
+          'canopy serve: ACP preheat resolved without a live channel',
         );
       }
       return live
@@ -566,7 +566,7 @@ export function createDaemonWorkspaceService(
         );
       } catch (err) {
         writeStderrLine(
-          `qwen serve: getEnvStatus failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: getEnvStatus failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         return createIdleEnvStatus(boundWorkspace, acpChannelLive);
       }
@@ -588,7 +588,7 @@ export function createDaemonWorkspaceService(
         } catch (err) {
           // Daemon cells failing is non-fatal; proceed with empty.
           writeStderrLine(
-            `qwen serve: getDaemonPreflightCells failed: ${err instanceof Error ? err.message : String(err)}`,
+            `canopy serve: getDaemonPreflightCells failed: ${err instanceof Error ? err.message : String(err)}`,
           );
         }
       }
@@ -785,7 +785,7 @@ export function createDaemonWorkspaceService(
           } catch (err) {
             assertActiveGeneration();
             writeStderrLine(
-              `qwen serve: workspace voice partial persist error (workspace=${boundWorkspace}, committed=${committed.length}/${writes.length}, failedKey=${write.key}, failedScope=${voiceSettingsScopeToWire(write.scope)}): ${
+              `canopy serve: workspace voice partial persist error (workspace=${boundWorkspace}, committed=${committed.length}/${writes.length}, failedKey=${write.key}, failedScope=${voiceSettingsScopeToWire(write.scope)}): ${
                 err instanceof Error ? err.message : String(err)
               }`,
             );
@@ -914,7 +914,7 @@ export function createDaemonWorkspaceService(
               activation = 'partial';
               sessionsFailed = 1;
               writeStderrLine(
-                `qwen serve: workspace skill refresh failed: ${err instanceof Error ? err.message : String(err)}`,
+                `canopy serve: workspace skill refresh failed: ${err instanceof Error ? err.message : String(err)}`,
               );
             }
           }
@@ -1103,7 +1103,7 @@ export function createDaemonWorkspaceService(
               activation = 'partial';
               sessionsFailed = 1;
               writeStderrLine(
-                `qwen serve: workspace skill refresh failed: ${err instanceof Error ? err.message : String(err)}`,
+                `canopy serve: workspace skill refresh failed: ${err instanceof Error ? err.message : String(err)}`,
               );
             }
           }
@@ -1406,7 +1406,7 @@ export function createDaemonWorkspaceService(
         const entries = Array.isArray(result.entries) ? result.entries : [];
         if (!Array.isArray(result.entries)) {
           writeStderrLine(
-            `qwen serve: pool restart response carried 'entries' field ` +
+            `canopy serve: pool restart response carried 'entries' field ` +
               `but it is not an array (server=${serverName}); ` +
               `treating as empty.`,
           );
@@ -1418,7 +1418,7 @@ export function createDaemonWorkspaceService(
             typeof (entry as { entryIndex?: unknown }).entryIndex !== 'number'
           ) {
             writeStderrLine(
-              `qwen serve: skipping malformed pool restart entry ` +
+              `canopy serve: skipping malformed pool restart entry ` +
                 `(server=${serverName}): ${JSON.stringify(entry)}`,
             );
             continue;
@@ -1476,7 +1476,7 @@ export function createDaemonWorkspaceService(
           await deps.reloadDaemonEnv(boundWorkspace, assertGenerationOpen);
         } catch (err) {
           writeStderrLine(
-            `qwen serve: daemon reload failed: ${err instanceof Error ? err.message : String(err)}`,
+            `canopy serve: daemon reload failed: ${err instanceof Error ? err.message : String(err)}`,
           );
         }
       }
@@ -1512,7 +1512,7 @@ export function createDaemonWorkspaceService(
           childError = 'ACP child not running';
         } else {
           childError = err instanceof Error ? err.message : String(err);
-          writeStderrLine(`qwen serve: reload failed: ${childError}`);
+          writeStderrLine(`canopy serve: reload failed: ${childError}`);
         }
       }
 
@@ -1553,7 +1553,7 @@ export function createDaemonWorkspaceService(
         return await refreshExtensionsForAllSessionsOnBridge();
       } catch (err) {
         writeStderrLine(
-          `qwen serve: refreshExtensionsForAllSessions failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: refreshExtensionsForAllSessions failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         return { refreshed: 0, failed: 1 };
       } finally {

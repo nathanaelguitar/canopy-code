@@ -28,7 +28,7 @@ import {
   DEFAULT_TELEMETRY_TARGET,
   DEFAULT_OTLP_ENDPOINT,
   SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT,
-  QwenLogger,
+  CanopyLogger,
   initializeTelemetry,
   isTelemetrySdkInitialized,
   shutdownTelemetry,
@@ -286,17 +286,17 @@ vi.mock('../tools/read-many-files', () => ({
 }));
 vi.mock('../memory/const.js', () => ({
   setGeminiMdFilename: vi.fn(),
-  getCurrentGeminiMdFilename: vi.fn(() => 'QWEN.md'), // Mock the original filename
-  getAllGeminiMdFilenames: vi.fn(() => ['QWEN.md', 'AGENTS.md']),
-  DEFAULT_CONTEXT_FILENAME: 'QWEN.md',
+  getCurrentGeminiMdFilename: vi.fn(() => 'CANOPY.md'), // Mock the original filename
+  getAllGeminiMdFilenames: vi.fn(() => ['CANOPY.md', 'AGENTS.md']),
+  DEFAULT_CONTEXT_FILENAME: 'CANOPY.md',
 }));
 vi.mock('../tools/memory-config', () => ({
   setGeminiMdFilename: vi.fn(),
-  getCurrentGeminiMdFilename: vi.fn(() => 'QWEN.md'),
-  getAllGeminiMdFilenames: vi.fn(() => ['QWEN.md', 'AGENTS.md']),
-  DEFAULT_CONTEXT_FILENAME: 'QWEN.md',
+  getCurrentGeminiMdFilename: vi.fn(() => 'CANOPY.md'),
+  getAllGeminiMdFilenames: vi.fn(() => ['CANOPY.md', 'AGENTS.md']),
+  DEFAULT_CONTEXT_FILENAME: 'CANOPY.md',
   AGENT_CONTEXT_FILENAME: 'AGENTS.md',
-  MEMORY_SECTION_HEADER: '## Qwen Added Memories',
+  MEMORY_SECTION_HEADER: '## Canopy Added Memories',
 }));
 
 vi.mock('../core/contentGenerator.js');
@@ -382,9 +382,9 @@ vi.mock('../ide/ide-client.js', () => ({
 import { BaseLlmClient } from '../core/baseLlmClient.js';
 
 const MEMORY_PRESSURE_ENV_KEYS = [
-  'QWEN_MEMORY_PRESSURE_SOFT',
-  'QWEN_MEMORY_PRESSURE_HARD',
-  'QWEN_MEMORY_PRESSURE_CRITICAL',
+  'CANOPY_MEMORY_PRESSURE_SOFT',
+  'CANOPY_MEMORY_PRESSURE_HARD',
+  'CANOPY_MEMORY_PRESSURE_CRITICAL',
 ];
 
 let mockAutoMemoryInode = 1;
@@ -501,7 +501,7 @@ describe('Server Config (config.ts)', () => {
   });
   const SANDBOX: SandboxConfig = {
     command: 'docker',
-    image: 'qwen-code-sandbox',
+    image: 'canopy-code-sandbox',
   };
   const TARGET_DIR = '/path/to/target';
   const DEBUG_MODE = false;
@@ -544,7 +544,7 @@ describe('Server Config (config.ts)', () => {
     (fs.unlinkSync as Mock).mockImplementation(() => undefined);
     (fs.readFileSync as Mock).mockImplementation(() => undefined);
     vi.mocked(isTelemetrySdkInitialized).mockReturnValue(false);
-    vi.spyOn(QwenLogger.prototype, 'logStartSessionEvent').mockImplementation(
+    vi.spyOn(CanopyLogger.prototype, 'logStartSessionEvent').mockImplementation(
       async () => undefined,
     );
 
@@ -943,17 +943,17 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('getTeamMemoryEnabled', () => {
-    const prevEnv = process.env['QWEN_CODE_MEMORY_TEAM'];
+    const prevEnv = process.env['CANOPY_CODE_MEMORY_TEAM'];
     afterEach(() => {
       if (prevEnv === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_TEAM'];
+        delete process.env['CANOPY_CODE_MEMORY_TEAM'];
       } else {
-        process.env['QWEN_CODE_MEMORY_TEAM'] = prevEnv;
+        process.env['CANOPY_CODE_MEMORY_TEAM'] = prevEnv;
       }
     });
 
     it('is off by default and follows the enableTeamMemory setting', () => {
-      delete process.env['QWEN_CODE_MEMORY_TEAM'];
+      delete process.env['CANOPY_CODE_MEMORY_TEAM'];
       expect(new Config(baseParams).getTeamMemoryEnabled()).toBe(false);
       expect(
         new Config({
@@ -963,10 +963,10 @@ describe('Server Config (config.ts)', () => {
       ).toBe(true);
     });
 
-    it('QWEN_CODE_MEMORY_TEAM overrides the setting', () => {
-      process.env['QWEN_CODE_MEMORY_TEAM'] = '1';
+    it('CANOPY_CODE_MEMORY_TEAM overrides the setting', () => {
+      process.env['CANOPY_CODE_MEMORY_TEAM'] = '1';
       expect(new Config(baseParams).getTeamMemoryEnabled()).toBe(true);
-      process.env['QWEN_CODE_MEMORY_TEAM'] = '0';
+      process.env['CANOPY_CODE_MEMORY_TEAM'] = '0';
       expect(
         new Config({
           ...baseParams,
@@ -976,7 +976,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('bareMode forces off even with the setting and env both on', () => {
-      process.env['QWEN_CODE_MEMORY_TEAM'] = '1';
+      process.env['CANOPY_CODE_MEMORY_TEAM'] = '1';
       expect(
         new Config({
           ...baseParams,
@@ -988,17 +988,17 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('getCronRecurringMaxAgeDays', () => {
-    const prevEnv = process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+    const prevEnv = process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
     afterEach(() => {
       if (prevEnv === undefined) {
-        delete process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+        delete process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
       } else {
-        process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = prevEnv;
+        process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = prevEnv;
       }
     });
 
     it('defaults to 7 days and follows the setting', () => {
-      delete process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+      delete process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
       expect(new Config(baseParams).getCronRecurringMaxAgeDays()).toBe(7);
       expect(
         new Config({
@@ -1009,7 +1009,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('maps 0 to Infinity (no expiry)', () => {
-      delete process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+      delete process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
       expect(
         new Config({
           ...baseParams,
@@ -1018,24 +1018,24 @@ describe('Server Config (config.ts)', () => {
       ).toBe(Infinity);
     });
 
-    it('QWEN_CODE_CRON_MAX_AGE_DAYS overrides the setting', () => {
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = '90';
+    it('CANOPY_CODE_CRON_MAX_AGE_DAYS overrides the setting', () => {
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = '90';
       expect(
         new Config({
           ...baseParams,
           cronRecurringMaxAgeDays: 30,
         }).getCronRecurringMaxAgeDays(),
       ).toBe(90);
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = '0';
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = '0';
       expect(new Config(baseParams).getCronRecurringMaxAgeDays()).toBe(
         Infinity,
       );
     });
 
     it('falls back to the default on invalid values', () => {
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = 'not-a-number';
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = 'not-a-number';
       expect(new Config(baseParams).getCronRecurringMaxAgeDays()).toBe(7);
-      delete process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+      delete process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
       expect(
         new Config({
           ...baseParams,
@@ -1045,7 +1045,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('warns on the console once at construction for an invalid value', () => {
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = 'not-a-number';
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = 'not-a-number';
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       try {
         const config = new Config(baseParams);
@@ -1054,7 +1054,7 @@ describe('Server Config (config.ts)', () => {
         expect(config.getCronRecurringMaxAgeDays()).toBe(7);
         expect(config.getCronRecurringMaxAgeDays()).toBe(7);
         const cronWarnings = warnSpy.mock.calls.filter((call) =>
-          String(call[0]).includes('QWEN_CODE_CRON_MAX_AGE_DAYS'),
+          String(call[0]).includes('CANOPY_CODE_CRON_MAX_AGE_DAYS'),
         );
         expect(cronWarnings).toHaveLength(1);
       } finally {
@@ -1063,27 +1063,27 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('resolves once at construction, ignoring later env changes (requiresRestart)', () => {
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = '90';
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = '90';
       const config = new Config(baseParams);
-      process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'] = '3';
+      process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'] = '3';
       expect(config.getCronRecurringMaxAgeDays()).toBe(90);
-      delete process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+      delete process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
       expect(config.getCronRecurringMaxAgeDays()).toBe(90);
     });
   });
 
   describe('getTeamMemorySyncEnabled', () => {
-    const prevEnv = process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+    const prevEnv = process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
     afterEach(() => {
       if (prevEnv === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+        delete process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
       } else {
-        process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = prevEnv;
+        process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = prevEnv;
       }
     });
 
     it('is off by default and follows the enableTeamMemorySync setting', () => {
-      delete process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+      delete process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
       expect(new Config(baseParams).getTeamMemorySyncEnabled()).toBe(false);
       expect(
         new Config({
@@ -1093,10 +1093,10 @@ describe('Server Config (config.ts)', () => {
       ).toBe(true);
     });
 
-    it('QWEN_CODE_MEMORY_TEAM_SYNC overrides the setting', () => {
-      process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '1';
+    it('CANOPY_CODE_MEMORY_TEAM_SYNC overrides the setting', () => {
+      process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '1';
       expect(new Config(baseParams).getTeamMemorySyncEnabled()).toBe(true);
-      process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '0';
+      process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '0';
       expect(
         new Config({
           ...baseParams,
@@ -1106,7 +1106,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('stays off in bare mode even with the setting and env both on', () => {
-      process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '1';
+      process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '1';
       expect(
         new Config({
           ...baseParams,
@@ -1541,8 +1541,8 @@ describe('Server Config (config.ts)', () => {
   });
 
   it('wires file history snapshot updates to chat recording', async () => {
-    const projectDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-config-'));
-    const storageDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-storage-'));
+    const projectDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-config-'));
+    const storageDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-storage-'));
     const config = new Config({
       ...baseParams,
       cwd: projectDir,
@@ -1556,8 +1556,8 @@ describe('Server Config (config.ts)', () => {
     vi.spyOn(config, 'getChatRecordingService').mockReturnValue({
       recordFileHistorySnapshot,
     } as unknown as ReturnType<Config['getChatRecordingService']>);
-    const getGlobalQwenDirSpy = vi
-      .spyOn(Storage, 'getGlobalQwenDir')
+    const getGlobalCanopyDirSpy = vi
+      .spyOn(Storage, 'getGlobalCanopyDir')
       .mockReturnValue(storageDir);
 
     try {
@@ -1576,15 +1576,15 @@ describe('Server Config (config.ts)', () => {
         }),
       );
     } finally {
-      getGlobalQwenDirSpy.mockRestore();
+      getGlobalCanopyDirSpy.mockRestore();
       await rm(projectDir, { recursive: true, force: true });
       await rm(storageDir, { recursive: true, force: true });
     }
   });
 
   it('drops stale file history callbacks after session switch', async () => {
-    const projectDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-config-'));
-    const storageDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-storage-'));
+    const projectDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-config-'));
+    const storageDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-storage-'));
     const config = new Config({
       ...baseParams,
       cwd: projectDir,
@@ -1594,8 +1594,8 @@ describe('Server Config (config.ts)', () => {
     vi.spyOn(config, 'getChatRecordingService').mockReturnValue({
       recordFileHistorySnapshot,
     } as unknown as ReturnType<Config['getChatRecordingService']>);
-    const getGlobalQwenDirSpy = vi
-      .spyOn(Storage, 'getGlobalQwenDir')
+    const getGlobalCanopyDirSpy = vi
+      .spyOn(Storage, 'getGlobalCanopyDir')
       .mockReturnValue(storageDir);
 
     try {
@@ -1609,7 +1609,7 @@ describe('Server Config (config.ts)', () => {
 
       expect(recordFileHistorySnapshot).not.toHaveBeenCalled();
     } finally {
-      getGlobalQwenDirSpy.mockRestore();
+      getGlobalCanopyDirSpy.mockRestore();
       await rm(projectDir, { recursive: true, force: true });
       await rm(storageDir, { recursive: true, force: true });
     }
@@ -2122,9 +2122,9 @@ describe('Server Config (config.ts)', () => {
     }
 
     it('applies valid memory pressure env overrides', async () => {
-      process.env['QWEN_MEMORY_PRESSURE_SOFT'] = '0.3';
-      process.env['QWEN_MEMORY_PRESSURE_HARD'] = '0.6';
-      process.env['QWEN_MEMORY_PRESSURE_CRITICAL'] = '0.9';
+      process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = '0.3';
+      process.env['CANOPY_MEMORY_PRESSURE_HARD'] = '0.6';
+      process.env['CANOPY_MEMORY_PRESSURE_CRITICAL'] = '0.9';
 
       const config = new Config(baseParams);
       await config.initialize({ skipGeminiInitialization: true });
@@ -2137,9 +2137,9 @@ describe('Server Config (config.ts)', () => {
 
     it('falls back to defaults and warns on strict env parse failures', async () => {
       const stderrSpy = mockStderrWrite();
-      process.env['QWEN_MEMORY_PRESSURE_SOFT'] = '0.3extra';
-      process.env['QWEN_MEMORY_PRESSURE_HARD'] = '0.6';
-      process.env['QWEN_MEMORY_PRESSURE_CRITICAL'] = '0.9';
+      process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = '0.3extra';
+      process.env['CANOPY_MEMORY_PRESSURE_HARD'] = '0.6';
+      process.env['CANOPY_MEMORY_PRESSURE_CRITICAL'] = '0.9';
 
       const config = new Config(baseParams);
       await config.initialize({ skipGeminiInitialization: true });
@@ -2155,7 +2155,7 @@ describe('Server Config (config.ts)', () => {
 
     it('falls back to defaults and warns on invalid threshold ordering', async () => {
       const stderrSpy = mockStderrWrite();
-      process.env['QWEN_MEMORY_PRESSURE_SOFT'] = '0.7';
+      process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = '0.7';
 
       const config = new Config(baseParams);
       await config.initialize({ skipGeminiInitialization: true });
@@ -2172,7 +2172,7 @@ describe('Server Config (config.ts)', () => {
       'falls back to defaults for invalid soft threshold %s',
       async (value) => {
         const stderrSpy = mockStderrWrite();
-        process.env['QWEN_MEMORY_PRESSURE_SOFT'] = value;
+        process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = value;
 
         const config = new Config(baseParams);
         await config.initialize({ skipGeminiInitialization: true });
@@ -2220,15 +2220,15 @@ describe('Server Config (config.ts)', () => {
     });
 
     it('child Config monitors inherit the parent memory pressure config snapshot', async () => {
-      process.env['QWEN_MEMORY_PRESSURE_SOFT'] = '0.3';
-      process.env['QWEN_MEMORY_PRESSURE_HARD'] = '0.6';
-      process.env['QWEN_MEMORY_PRESSURE_CRITICAL'] = '0.9';
+      process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = '0.3';
+      process.env['CANOPY_MEMORY_PRESSURE_HARD'] = '0.6';
+      process.env['CANOPY_MEMORY_PRESSURE_CRITICAL'] = '0.9';
       const parent = new Config(baseParams);
       await parent.initialize({ skipGeminiInitialization: true });
 
-      process.env['QWEN_MEMORY_PRESSURE_SOFT'] = '0.9';
-      process.env['QWEN_MEMORY_PRESSURE_HARD'] = '0.95';
-      process.env['QWEN_MEMORY_PRESSURE_CRITICAL'] = '0.97';
+      process.env['CANOPY_MEMORY_PRESSURE_SOFT'] = '0.9';
+      process.env['CANOPY_MEMORY_PRESSURE_HARD'] = '0.95';
+      process.env['CANOPY_MEMORY_PRESSURE_CRITICAL'] = '0.97';
       const child = Object.create(parent) as Config;
       mockMemoryRatio(0.35);
 
@@ -3177,7 +3177,9 @@ describe('Server Config (config.ts)', () => {
     );
 
     it('releases a pending lease while a real baseline read is gated', async () => {
-      const root = await mkdtemp(path.join(os.tmpdir(), 'qwen-config-writer-'));
+      const root = await mkdtemp(
+        path.join(os.tmpdir(), 'canopy-config-writer-'),
+      );
       const runtimeBaseDir = path.join(root, 'runtime');
       const projectDir = path.join(root, 'project');
       await mkdir(projectDir, { recursive: true });
@@ -4265,24 +4267,24 @@ describe('Server Config (config.ts)', () => {
     });
 
     describe('isArtifactEnabled', () => {
-      const originalForceEnable = process.env['QWEN_CODE_ENABLE_ARTIFACT'];
-      const originalDisable = process.env['QWEN_CODE_DISABLE_ARTIFACT'];
+      const originalForceEnable = process.env['CANOPY_CODE_ENABLE_ARTIFACT'];
+      const originalDisable = process.env['CANOPY_CODE_DISABLE_ARTIFACT'];
 
       beforeEach(() => {
-        delete process.env['QWEN_CODE_ENABLE_ARTIFACT'];
-        delete process.env['QWEN_CODE_DISABLE_ARTIFACT'];
+        delete process.env['CANOPY_CODE_ENABLE_ARTIFACT'];
+        delete process.env['CANOPY_CODE_DISABLE_ARTIFACT'];
       });
 
       afterEach(() => {
         if (originalForceEnable === undefined) {
-          delete process.env['QWEN_CODE_ENABLE_ARTIFACT'];
+          delete process.env['CANOPY_CODE_ENABLE_ARTIFACT'];
         } else {
-          process.env['QWEN_CODE_ENABLE_ARTIFACT'] = originalForceEnable;
+          process.env['CANOPY_CODE_ENABLE_ARTIFACT'] = originalForceEnable;
         }
         if (originalDisable === undefined) {
-          delete process.env['QWEN_CODE_DISABLE_ARTIFACT'];
+          delete process.env['CANOPY_CODE_DISABLE_ARTIFACT'];
         } else {
-          process.env['QWEN_CODE_DISABLE_ARTIFACT'] = originalDisable;
+          process.env['CANOPY_CODE_DISABLE_ARTIFACT'] = originalDisable;
         }
       });
 
@@ -4312,9 +4314,9 @@ describe('Server Config (config.ts)', () => {
         expect(config.isRecordArtifactEnabled()).toBe(false);
       });
 
-      it('lets QWEN_CODE_DISABLE_ARTIFACT override settings and env enablement', () => {
-        process.env['QWEN_CODE_DISABLE_ARTIFACT'] = '1';
-        process.env['QWEN_CODE_ENABLE_ARTIFACT'] = '1';
+      it('lets CANOPY_CODE_DISABLE_ARTIFACT override settings and env enablement', () => {
+        process.env['CANOPY_CODE_DISABLE_ARTIFACT'] = '1';
+        process.env['CANOPY_CODE_ENABLE_ARTIFACT'] = '1';
 
         const config = new Config({
           ...baseParams,
@@ -4327,7 +4329,7 @@ describe('Server Config (config.ts)', () => {
       });
 
       it('stays disabled in SDK mode even when force-enabled', () => {
-        process.env['QWEN_CODE_ENABLE_ARTIFACT'] = '1';
+        process.env['CANOPY_CODE_ENABLE_ARTIFACT'] = '1';
 
         const config = new Config({
           ...baseParams,
@@ -4339,7 +4341,7 @@ describe('Server Config (config.ts)', () => {
       });
 
       it('keeps the Artifact tool disabled for daemon CLI env enablement', () => {
-        process.env['QWEN_CODE_ENABLE_ARTIFACT'] = '1';
+        process.env['CANOPY_CODE_ENABLE_ARTIFACT'] = '1';
 
         const config = new Config({
           ...baseParams,
@@ -4362,8 +4364,8 @@ describe('Server Config (config.ts)', () => {
         expect(config.isRecordArtifactEnabled()).toBe(true);
       });
 
-      it('lets QWEN_CODE_ENABLE_ARTIFACT force-enable interactive CLI use', () => {
-        process.env['QWEN_CODE_ENABLE_ARTIFACT'] = '1';
+      it('lets CANOPY_CODE_ENABLE_ARTIFACT force-enable interactive CLI use', () => {
+        process.env['CANOPY_CODE_ENABLE_ARTIFACT'] = '1';
 
         const config = new Config({
           ...baseParams,
@@ -4378,7 +4380,7 @@ describe('Server Config (config.ts)', () => {
 
     describe('shouldAutoOpenArtifact', () => {
       const browserEnvKeys = [
-        'QWEN_ARTIFACT_NO_AUTO_OPEN',
+        'CANOPY_ARTIFACT_NO_AUTO_OPEN',
         'BROWSER',
         'CI',
         'DEBIAN_FRONTEND',
@@ -4422,8 +4424,8 @@ describe('Server Config (config.ts)', () => {
         expect(config.shouldAutoOpenArtifact()).toBe(false);
       });
 
-      it('lets QWEN_ARTIFACT_NO_AUTO_OPEN override settings', () => {
-        process.env['QWEN_ARTIFACT_NO_AUTO_OPEN'] = '1';
+      it('lets CANOPY_ARTIFACT_NO_AUTO_OPEN override settings', () => {
+        process.env['CANOPY_ARTIFACT_NO_AUTO_OPEN'] = '1';
         const config = new Config({
           ...baseParams,
           artifactAutoOpen: true,
@@ -4460,9 +4462,9 @@ describe('Server Config (config.ts)', () => {
       expect(ToolRegistry.prototype.discoverAllTools).not.toHaveBeenCalled();
     });
 
-    it('honors QWEN_CODE_LEGACY_MCP_BLOCKING=1 by running MCP discovery inline', async () => {
-      const originalLegacy = process.env['QWEN_CODE_LEGACY_MCP_BLOCKING'];
-      process.env['QWEN_CODE_LEGACY_MCP_BLOCKING'] = '1';
+    it('honors CANOPY_CODE_LEGACY_MCP_BLOCKING=1 by running MCP discovery inline', async () => {
+      const originalLegacy = process.env['CANOPY_CODE_LEGACY_MCP_BLOCKING'];
+      process.env['CANOPY_CODE_LEGACY_MCP_BLOCKING'] = '1';
       try {
         const config = new Config({ ...baseParams });
         await config.initialize();
@@ -4474,9 +4476,9 @@ describe('Server Config (config.ts)', () => {
         );
       } finally {
         if (originalLegacy === undefined) {
-          delete process.env['QWEN_CODE_LEGACY_MCP_BLOCKING'];
+          delete process.env['CANOPY_CODE_LEGACY_MCP_BLOCKING'];
         } else {
-          process.env['QWEN_CODE_LEGACY_MCP_BLOCKING'] = originalLegacy;
+          process.env['CANOPY_CODE_LEGACY_MCP_BLOCKING'] = originalLegacy;
         }
       }
     });
@@ -4582,7 +4584,7 @@ describe('Server Config (config.ts)', () => {
         }
       ).contentGeneratorConfig = {
         model: 'qwen3.8-max',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         reasoning: { effort: 'max' },
         extra_body: { thinking_budget: 4096 },
       };
@@ -4603,7 +4605,7 @@ describe('Server Config (config.ts)', () => {
         }
       ).contentGeneratorConfig = {
         model: 'qwen3.8-max',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         reasoning: { effort: 'max' },
         extra_body: { reasoning_effort: 'max' },
       };
@@ -4685,7 +4687,7 @@ describe('Server Config (config.ts)', () => {
         }
       ).contentGeneratorConfig = {
         model: 'qwen3.8-max',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         reasoning: { effort: 'max' },
         extra_body,
         samplingParams,
@@ -4903,14 +4905,14 @@ describe('Server Config (config.ts)', () => {
     });
   });
 
-  describe('model switching optimization (QWEN_OAUTH)', () => {
-    it('should switch qwen-oauth model in-place without refreshing auth when safe', async () => {
+  describe('model switching optimization (CANOPY_OAUTH)', () => {
+    it('should switch canopy-oauth model in-place without refreshing auth when safe', async () => {
       const config = new Config(baseParams);
 
       const mockContentConfig: ContentGeneratorConfig = {
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         model: 'coder-model',
-        apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN',
+        apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
         baseUrl: DEFAULT_DASHSCOPE_BASE_URL,
         timeout: 60000,
         maxRetries: 3,
@@ -4933,14 +4935,14 @@ describe('Server Config (config.ts)', () => {
         embedContent: vi.fn(),
       } as unknown as ContentGenerator);
 
-      // Establish initial qwen-oauth content generator config/content generator.
-      await config.refreshAuth(AuthType.QWEN_OAUTH);
+      // Establish initial canopy-oauth content generator config/content generator.
+      await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
       // Spy after initial refresh to ensure model switch does not re-trigger refreshAuth.
       const refreshSpy = vi.spyOn(config, 'refreshAuth');
       vi.mocked(resetPreloadedContentGenerator).mockClear();
 
-      await config.switchModel(AuthType.QWEN_OAUTH, 'coder-model');
+      await config.switchModel(AuthType.CANOPY_OAUTH, 'coder-model');
 
       expect(config.getModel()).toBe('coder-model');
       expect(refreshSpy).not.toHaveBeenCalled();
@@ -4959,9 +4961,9 @@ describe('Server Config (config.ts)', () => {
       const config = new Config(baseParams);
 
       const mockContentConfig: ContentGeneratorConfig = {
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         model: 'coder-model',
-        apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN',
+        apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
         baseUrl: DEFAULT_DASHSCOPE_BASE_URL,
         timeout: 60000,
         maxRetries: 3,
@@ -4984,18 +4986,18 @@ describe('Server Config (config.ts)', () => {
         embedContent: vi.fn(),
       } as unknown as ContentGenerator);
 
-      await config.refreshAuth(AuthType.QWEN_OAUTH);
+      await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
-      await config.switchModel(AuthType.QWEN_OAUTH, 'coder-model');
+      await config.switchModel(AuthType.CANOPY_OAUTH, 'coder-model');
     });
 
     it('should notify model change listeners after switchModel', async () => {
       const config = new Config(baseParams);
 
       const mockContentConfig: ContentGeneratorConfig = {
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         model: 'coder-model',
-        apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN',
+        apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
         baseUrl: DEFAULT_DASHSCOPE_BASE_URL,
         timeout: 60000,
         maxRetries: 3,
@@ -5018,12 +5020,12 @@ describe('Server Config (config.ts)', () => {
         embedContent: vi.fn(),
       } as unknown as ContentGenerator);
 
-      await config.refreshAuth(AuthType.QWEN_OAUTH);
+      await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
       const listener = vi.fn();
       const unsubscribe = config.onModelChange(listener);
 
-      await config.switchModel(AuthType.QWEN_OAUTH, 'coder-model');
+      await config.switchModel(AuthType.CANOPY_OAUTH, 'coder-model');
 
       expect(listener).toHaveBeenCalledWith('coder-model');
 
@@ -5061,7 +5063,7 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('model switching with different credentials (OpenAI)', () => {
-    it('returns undefined for bare Qwen OAuth fast models under active OpenAI auth', async () => {
+    it('returns undefined for bare Canopy OAuth fast models under active OpenAI auth', async () => {
       const config = new Config({
         ...baseParams,
         authType: AuthType.USE_OPENAI,
@@ -5118,7 +5120,7 @@ describe('Server Config (config.ts)', () => {
         ...baseParams,
         authType: AuthType.USE_OPENAI,
         model: 'qwen3.7-max',
-        fastModel: 'qwen-oauth:coder-model',
+        fastModel: 'canopy-oauth:coder-model',
         modelProvidersConfig: {
           [AuthType.USE_OPENAI]: [
             {
@@ -5131,7 +5133,7 @@ describe('Server Config (config.ts)', () => {
         },
       });
 
-      expect(config.getFastModel()).toBe('qwen-oauth:coder-model');
+      expect(config.getFastModel()).toBe('canopy-oauth:coder-model');
     });
 
     it('resolves a bare fast model under the current auth type', async () => {
@@ -5628,7 +5630,7 @@ describe('Server Config (config.ts)', () => {
     const config = new Config(baseParams);
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -5653,13 +5655,13 @@ describe('Server Config (config.ts)', () => {
   });
 
   it('refreshHierarchicalMemory seeds the FileReadCache for project and user MEMORY.md indexes', async () => {
-    const originalMemoryBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const originalMemoryBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'auto-memory-cache-'));
     const projectRoot = path.join(tempDir, 'project');
     const memoryBaseDir = path.join(tempDir, 'memory-base');
 
     await mkdir(projectRoot, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
     clearAutoMemoryRootCache();
 
     const managedIndexPath = getAutoMemoryIndexPath(projectRoot);
@@ -5678,7 +5680,7 @@ describe('Server Config (config.ts)', () => {
       });
 
       vi.mocked(loadServerHierarchicalMemory).mockResolvedValueOnce({
-        memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+        memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
         fileCount: 1,
         ruleCount: 0,
         conditionalRules: [],
@@ -5707,9 +5709,9 @@ describe('Server Config (config.ts)', () => {
       ).resolves.toEqual({ ok: true });
     } finally {
       if (originalMemoryBaseDir === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
       }
       clearAutoMemoryRootCache();
       await rm(tempDir, { recursive: true, force: true });
@@ -5717,7 +5719,7 @@ describe('Server Config (config.ts)', () => {
   });
 
   it('refreshHierarchicalMemory records the stats captured with the auto-memory index read', async () => {
-    const originalMemoryBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const originalMemoryBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const tempDir = await mkdtemp(
       path.join(os.tmpdir(), 'auto-memory-cache-race-'),
     );
@@ -5725,7 +5727,7 @@ describe('Server Config (config.ts)', () => {
     const memoryBaseDir = path.join(tempDir, 'memory-base');
 
     await mkdir(projectRoot, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
     clearAutoMemoryRootCache();
 
     const managedIndexPath = getAutoMemoryIndexPath(projectRoot);
@@ -5747,7 +5749,7 @@ describe('Server Config (config.ts)', () => {
       });
 
       vi.mocked(loadServerHierarchicalMemory).mockResolvedValueOnce({
-        memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+        memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
         fileCount: 1,
         ruleCount: 0,
         conditionalRules: [],
@@ -5772,9 +5774,9 @@ describe('Server Config (config.ts)', () => {
       });
     } finally {
       if (originalMemoryBaseDir === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
       }
       clearAutoMemoryRootCache();
       await rm(tempDir, { recursive: true, force: true });
@@ -5785,7 +5787,7 @@ describe('Server Config (config.ts)', () => {
     const config = new Config({ ...baseParams, enableTeamMemory: true });
     vi.spyOn(config, 'isTrustedFolder').mockReturnValue(false);
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -5808,8 +5810,8 @@ describe('Server Config (config.ts)', () => {
     // The indexer THROWS when the team root is a symlink that could redirect the
     // committed index outside the repo. Sync must respect that refusal: it must
     // never git add/commit/push a dir that failed the safety check.
-    const prevSync = process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
-    process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '1';
+    const prevSync = process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
+    process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '1';
     try {
       const config = new Config({
         ...baseParams,
@@ -5818,7 +5820,7 @@ describe('Server Config (config.ts)', () => {
       });
       vi.spyOn(config, 'isTrustedFolder').mockReturnValue(true);
       vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-        memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+        memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
         fileCount: 1,
         ruleCount: 0,
         conditionalRules: [],
@@ -5828,7 +5830,7 @@ describe('Server Config (config.ts)', () => {
       // is the only class that blocks sync (see indexer.ts).
       vi.mocked(rebuildTeamAutoMemoryIndex).mockRejectedValueOnce(
         new TeamMemoryRootSecurityError(
-          'Refusing to write team memory index: /tmp/.qwen/team-memory is a ' +
+          'Refusing to write team memory index: /tmp/.canopy/team-memory is a ' +
             'symlink, which could redirect the committed index outside the repository.',
         ),
       );
@@ -5842,9 +5844,9 @@ describe('Server Config (config.ts)', () => {
       expect(syncTeamMemory).not.toHaveBeenCalled();
     } finally {
       if (prevSync === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+        delete process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
       } else {
-        process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = prevSync;
+        process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = prevSync;
       }
     }
   });
@@ -5853,8 +5855,8 @@ describe('Server Config (config.ts)', () => {
     // An EACCES/ENOSPC/EPERM rebuild failure is not a security escape, so it must
     // NOT permanently gate legitimate sync — it self-corrects on the next
     // successful rebuild. Only TeamMemoryRootSecurityError blocks sync.
-    const prevSync = process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
-    process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '1';
+    const prevSync = process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
+    process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '1';
     try {
       const config = new Config({
         ...baseParams,
@@ -5863,7 +5865,7 @@ describe('Server Config (config.ts)', () => {
       });
       vi.spyOn(config, 'isTrustedFolder').mockReturnValue(true);
       vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-        memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+        memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
         fileCount: 1,
         ruleCount: 0,
         conditionalRules: [],
@@ -5887,9 +5889,9 @@ describe('Server Config (config.ts)', () => {
       expect(syncTeamMemory).toHaveBeenCalledTimes(1);
     } finally {
       if (prevSync === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+        delete process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
       } else {
-        process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = prevSync;
+        process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = prevSync;
       }
     }
   });
@@ -5898,8 +5900,8 @@ describe('Server Config (config.ts)', () => {
     // Complement to the negative branches: a successful rebuild on a trusted
     // folder with sync enabled MUST call syncTeamMemory. Inverting or removing
     // the sync condition is caught here.
-    const prevSync = process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
-    process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = '1';
+    const prevSync = process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
+    process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = '1';
     try {
       const config = new Config({
         ...baseParams,
@@ -5908,7 +5910,7 @@ describe('Server Config (config.ts)', () => {
       });
       vi.spyOn(config, 'isTrustedFolder').mockReturnValue(true);
       vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-        memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+        memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
         fileCount: 1,
         ruleCount: 0,
         conditionalRules: [],
@@ -5924,9 +5926,9 @@ describe('Server Config (config.ts)', () => {
       expect(syncTeamMemory).toHaveBeenCalledTimes(1);
     } finally {
       if (prevSync === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+        delete process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
       } else {
-        process.env['QWEN_CODE_MEMORY_TEAM_SYNC'] = prevSync;
+        process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'] = prevSync;
       }
     }
   });
@@ -5935,14 +5937,14 @@ describe('Server Config (config.ts)', () => {
     const config = new Config({ ...baseParams, enableTeamMemory: true });
     vi.spyOn(config, 'isTrustedFolder').mockReturnValue(true);
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
       projectRoot: '/tmp',
     });
     vi.mocked(getTeamMemoryShareabilityWarning).mockReturnValue(
-      'Team memory is enabled, but /tmp/.qwen/team-memory is git-ignored',
+      'Team memory is enabled, but /tmp/.canopy/team-memory is git-ignored',
     );
 
     await config.refreshHierarchicalMemory();
@@ -5978,7 +5980,7 @@ describe('Server Config (config.ts)', () => {
 
     expect(config.getWarnings()).toContainEqual(
       expect.stringContaining(
-        'Loaded always-on context (QWEN.md context files + auto-memory)',
+        'Loaded always-on context (CANOPY.md context files + auto-memory)',
       ),
     );
   });
@@ -6001,7 +6003,7 @@ describe('Server Config (config.ts)', () => {
 
     expect(config.getWarnings()).toContainEqual(
       expect.stringContaining(
-        'Loaded always-on context (QWEN.md context files + auto-memory)',
+        'Loaded always-on context (CANOPY.md context files + auto-memory)',
       ),
     );
     expect(config.getWarnings()).toContainEqual(
@@ -6021,7 +6023,7 @@ describe('Server Config (config.ts)', () => {
 
     expect(config.getWarnings()).toContainEqual(
       expect.stringContaining(
-        'Loaded always-on context (QWEN.md context files + auto-memory)',
+        'Loaded always-on context (CANOPY.md context files + auto-memory)',
       ),
     );
   });
@@ -6064,7 +6066,7 @@ describe('Server Config (config.ts)', () => {
         .getWarnings()
         .some((warning) =>
           warning.includes(
-            'Loaded always-on context (QWEN.md context files + auto-memory)',
+            'Loaded always-on context (CANOPY.md context files + auto-memory)',
           ),
         ),
     ).toBe(false);
@@ -6369,11 +6371,11 @@ describe('Server Config (config.ts)', () => {
     expect(writeRuntimeStatusSpy).toHaveBeenCalledWith(newRuntimeStatusPath, {
       sessionId,
       workDir: newDir,
-      qwenVersion: null,
+      canopyVersion: null,
     });
     // The registry's DIRECTORY column is how a user tells two live
     // sessions apart; the switch must reach it (and the directory-derived
-    // name) or `qwen sessions ps` keeps showing the folder that was left.
+    // name) or `canopy sessions ps` keeps showing the folder that was left.
     await vi.waitFor(() => {
       expect(patchSessionRecordSpy).toHaveBeenCalledWith({
         cwd: newDir,
@@ -6465,7 +6467,7 @@ describe('Server Config (config.ts)', () => {
     expect(writeRuntimeStatusSpy).toHaveBeenCalledWith(newRuntimeStatusPath, {
       sessionId,
       workDir: newDir,
-      qwenVersion: null,
+      canopyVersion: null,
     });
     expect(patchSessionRecordSpy).not.toHaveBeenCalled();
 
@@ -6829,7 +6831,7 @@ describe('Server Config (config.ts)', () => {
     const config = new Config(baseParams);
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -6854,7 +6856,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -6877,7 +6879,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -6925,7 +6927,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -6947,7 +6949,7 @@ describe('Server Config (config.ts)', () => {
     } as unknown as HookSystem;
 
     vi.mocked(loadServerHierarchicalMemory).mockResolvedValue({
-      memoryContent: '--- Context from: QWEN.md ---\nProject rules',
+      memoryContent: '--- Context from: CANOPY.md ---\nProject rules',
       fileCount: 1,
       ruleCount: 0,
       conditionalRules: [],
@@ -6963,7 +6965,7 @@ describe('Server Config (config.ts)', () => {
     expect(options?.onInstructionsLoaded).toEqual(expect.any(Function));
 
     await options?.onInstructionsLoaded?.({
-      filePath: '/tmp/project/QWEN.md',
+      filePath: '/tmp/project/CANOPY.md',
       memoryType: 'project',
       loadReason: 'include',
       triggerFilePath: '/tmp/project/AGENTS.md',
@@ -6971,7 +6973,7 @@ describe('Server Config (config.ts)', () => {
     });
 
     expect(fireInstructionsLoadedEvent).toHaveBeenCalledWith(
-      '/tmp/project/QWEN.md',
+      '/tmp/project/CANOPY.md',
       'project',
       'include',
       {
@@ -7018,8 +7020,8 @@ describe('Server Config (config.ts)', () => {
     expect(config.getFileFilteringOptions().customIgnoreFiles).toEqual([
       '.cursorignore',
     ]);
-    expect(config.getFileService().getQwenIgnoreFileNamesDisplay()).toBe(
-      '.qwenignore, .cursorignore',
+    expect(config.getFileService().getCanopyIgnoreFileNamesDisplay()).toBe(
+      '.canopyignore, .cursorignore',
     );
   });
 
@@ -7158,7 +7160,9 @@ describe('Server Config (config.ts)', () => {
       });
       await config.initialize();
 
-      expect(QwenLogger.prototype.logStartSessionEvent).toHaveBeenCalledOnce();
+      expect(
+        CanopyLogger.prototype.logStartSessionEvent,
+      ).toHaveBeenCalledOnce();
     });
   });
 
@@ -8231,7 +8235,7 @@ describe('Server Config (config.ts)', () => {
   // `Config.setMcpBudgetEventCallback → pendingMcpBudgetCallback →
   // createToolRegistry → registry.getMcpClientManager().setOnBudgetEvent`
   // boundary previously had NO test. The acpAgent test stubs the
-  // setter (proves QwenAgent calls it pre-`initialize`); the manager
+  // setter (proves CanopyAgent calls it pre-`initialize`); the manager
   // tests bypass Config by passing `onBudgetEvent` directly to
   // `McpClientManager`. Neither covers the actual stash + apply path
   // inside Config — and that path is the safety net that prevents
@@ -9564,7 +9568,7 @@ describe('Model Switching and Config Updates', () => {
     // Initialize with first model
     const initialConfig: ContentGeneratorConfig = {
       ['model']: 'qwen3-coder-plus',
-      ['authType']: AuthType.QWEN_OAUTH,
+      ['authType']: AuthType.CANOPY_OAUTH,
       ['apiKey']: 'test-key',
       ['contextWindowSize']: 1_000_000,
       ['samplingParams']: { temperature: 0.7 },
@@ -9580,7 +9584,7 @@ describe('Model Switching and Config Updates', () => {
       },
     });
 
-    await config.refreshAuth(AuthType.QWEN_OAUTH);
+    await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
     // Verify initial config
     const contentGenConfig = config.getContentGeneratorConfig();
@@ -9590,7 +9594,7 @@ describe('Model Switching and Config Updates', () => {
     // Switch to a different model with different token limits
     const newConfig: ContentGeneratorConfig = {
       ['model']: 'qwen-max',
-      ['authType']: AuthType.QWEN_OAUTH,
+      ['authType']: AuthType.CANOPY_OAUTH,
       ['apiKey']: 'test-key',
       ['contextWindowSize']: 128_000,
       ['samplingParams']: { temperature: 0.8 },
@@ -9621,7 +9625,7 @@ describe('Model Switching and Config Updates', () => {
           requiresRefresh: boolean,
         ) => Promise<void>;
       }
-    ).handleModelChange(AuthType.QWEN_OAUTH, false);
+    ).handleModelChange(AuthType.CANOPY_OAUTH, false);
 
     // Verify all fields are updated
     const updatedConfig = config.getContentGeneratorConfig();
@@ -9649,13 +9653,13 @@ describe('Model Switching and Config Updates', () => {
     expect(sources['modalities']?.kind).toBe('computed');
   });
 
-  it('should trigger full refresh when switching to non-qwen-oauth provider', async () => {
+  it('should trigger full refresh when switching to non-canopy-oauth provider', async () => {
     const config = new Config(baseParams);
 
-    // Initialize with qwen-oauth
+    // Initialize with canopy-oauth
     const initialConfig: ContentGeneratorConfig = {
       ['model']: 'qwen3-coder-plus',
-      ['authType']: AuthType.QWEN_OAUTH,
+      ['authType']: AuthType.CANOPY_OAUTH,
       ['apiKey']: 'test-key',
       ['contextWindowSize']: 1_000_000,
     };
@@ -9665,7 +9669,7 @@ describe('Model Switching and Config Updates', () => {
       sources: {},
     });
 
-    await config.refreshAuth(AuthType.QWEN_OAUTH);
+    await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
     // Switch to different auth type (should trigger full refresh)
     const newConfig: ContentGeneratorConfig = {
@@ -9707,7 +9711,7 @@ describe('Model Switching and Config Updates', () => {
     // Initialize with config that has undefined token limits
     const initialConfig: ContentGeneratorConfig = {
       ['model']: 'qwen3-coder-plus',
-      ['authType']: AuthType.QWEN_OAUTH,
+      ['authType']: AuthType.CANOPY_OAUTH,
       ['apiKey']: 'test-key',
       ['contextWindowSize']: undefined,
     };
@@ -9717,12 +9721,12 @@ describe('Model Switching and Config Updates', () => {
       sources: {},
     });
 
-    await config.refreshAuth(AuthType.QWEN_OAUTH);
+    await config.refreshAuth(AuthType.CANOPY_OAUTH);
 
     // Switch to model with defined limits
     const newConfig: ContentGeneratorConfig = {
       ['model']: 'qwen-max',
-      ['authType']: AuthType.QWEN_OAUTH,
+      ['authType']: AuthType.CANOPY_OAUTH,
       ['apiKey']: 'test-key',
       ['contextWindowSize']: 128_000,
     };
@@ -9739,7 +9743,7 @@ describe('Model Switching and Config Updates', () => {
           requiresRefresh: boolean,
         ) => Promise<void>;
       }
-    ).handleModelChange(AuthType.QWEN_OAUTH, false);
+    ).handleModelChange(AuthType.CANOPY_OAUTH, false);
 
     // Verify limits are now defined
     const updatedConfig = config.getContentGeneratorConfig();
@@ -9812,7 +9816,7 @@ describe('Model Switching and Config Updates', () => {
       } as unknown as ContentGenerator;
       const parentGeneratorConfig: ContentGeneratorConfig = {
         model: 'parent-model',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         apiKey: 'parent-key',
       };
       setInstanceFields(config, parentGenerator, parentGeneratorConfig);
@@ -9830,7 +9834,7 @@ describe('Model Switching and Config Updates', () => {
       expect(config.getContentGenerator()).toBe(parentGenerator);
       expect(config.getContentGeneratorConfig()).toBe(parentGeneratorConfig);
       expect(config.getModel()).toBe('parent-model');
-      expect(config.getAuthType()).toBe(AuthType.QWEN_OAUTH);
+      expect(config.getAuthType()).toBe(AuthType.CANOPY_OAUTH);
 
       // Inside the frame, every getter resolves to the agent's view.
       await runWithRuntimeContentGenerator(
@@ -9861,7 +9865,7 @@ describe('Model Switching and Config Updates', () => {
         { generateContentStream: vi.fn() } as unknown as ContentGenerator,
         {
           model: 'parent-model',
-          authType: AuthType.QWEN_OAUTH,
+          authType: AuthType.CANOPY_OAUTH,
         } as ContentGeneratorConfig,
       );
 

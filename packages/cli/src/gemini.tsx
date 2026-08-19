@@ -12,7 +12,7 @@ import {
   isDebugLoggingDegraded,
   isBareMode,
   logUserPrompt,
-  QWEN_CODE_SIMPLE_ENV_VAR,
+  CANOPY_CODE_SIMPLE_ENV_VAR,
   Storage,
   SessionService,
   setStartupEventSink,
@@ -20,7 +20,7 @@ import {
   persistSessionUsage,
   PRIVATE_ACP_CAPABILITY_ENV,
   uiTelemetryService,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   EXTERNAL_TOOL_GUARD_PROVIDER_ATTACHED_VALUE,
   EXTERNAL_TOOL_GUARD_REQUIRED_VALUE,
@@ -36,7 +36,7 @@ import v8 from 'node:v8';
 import { validateAuthMethod } from './config/auth.js';
 import * as cliConfig from './config/config.js';
 import { scrubAndReportInheritedLoaderEnv } from './config/shared-env-keys.js';
-import { QWEN_CODE_SERVE_ENV } from './config/acp-channel-fallback.js';
+import { CANOPY_CODE_SERVE_ENV } from './config/acp-channel-fallback.js';
 import {
   buildDisabledSkillNamesProvider,
   loadCliConfig,
@@ -346,7 +346,7 @@ export async function main() {
   const acpStartupProfilerEnabled = isAcpStartupProfilerEnabled();
   // Bridge core-package startup events (Config.initialize, MCP discovery,
   // GeminiClient.setTools) into the cli's startup profiler. Gated on
-  // `isStartupProfilerEnabled()` so that when QWEN_CODE_PROFILE_STARTUP is
+  // `isStartupProfilerEnabled()` so that when CANOPY_CODE_PROFILE_STARTUP is
   // unset (the common case) every core-side `recordStartupEvent()` call
   // sees a null sink and short-circuits at the first comparison, instead
   // of going through this arrow wrapper and the profiler's own enabled
@@ -377,7 +377,7 @@ export async function main() {
   delete process.env[PRIVATE_EXTERNAL_TOOL_GUARD_PROVIDER_ENV];
 
   if (process.argv.includes('--bare')) {
-    process.env[QWEN_CODE_SIMPLE_ENV_VAR] = '1';
+    process.env[CANOPY_CODE_SIMPLE_ENV_VAR] = '1';
   }
 
   // Run before yargs parses subcommands — handlers like `channel status`/`stop`
@@ -414,16 +414,16 @@ export async function main() {
 
   if (
     (argv.acp || argv.experimentalAcp) &&
-    process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1'
+    process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1'
   ) {
     delete process.env['ELECTRON_RUN_AS_NODE'];
     if (process.env['QWEN_CODE_NO_RELAUNCH'] || process.env['SANDBOX']) {
-      delete process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'];
+      delete process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'];
     }
   }
 
   if (isBareMode(argv.bare)) {
-    process.env[QWEN_CODE_SIMPLE_ENV_VAR] = '1';
+    process.env[CANOPY_CODE_SIMPLE_ENV_VAR] = '1';
   }
 
   // Load user settings — bare mode uses minimal config, normal mode loads full.
@@ -531,7 +531,7 @@ export async function main() {
     const sandboxConfig = await loadSandboxConfig(settings.merged, argv);
     const customSandboxImage =
       argv.sandboxImage ??
-      process.env['QWEN_SANDBOX_IMAGE'] ??
+      process.env['CANOPY_SANDBOX_IMAGE'] ??
       settings.merged.tools?.sandboxImage;
     if (
       sandboxConfig &&
@@ -683,7 +683,7 @@ export async function main() {
     }
   }
 
-  if (isAcpMode && process.env[QWEN_CODE_SERVE_ENV] === '1') {
+  if (isAcpMode && process.env[CANOPY_CODE_SERVE_ENV] === '1') {
     // A daemon-spawned ACP child hosts sessions for arbitrary workspaces.
     // Loader vars from the daemon's launch environment were only needed to
     // boot this process (e.g. the dev harness tsx loader); left in
@@ -697,7 +697,7 @@ export async function main() {
     // respawn this process with process.env and still need the loader to
     // boot, and the respawned child re-runs this scrub itself. Only the
     // final process (no relaunch) reaches here.
-    scrubAndReportInheritedLoaderEnv(process.env, 'qwen', 'ACP child');
+    scrubAndReportInheritedLoaderEnv(process.env, 'canopy', 'ACP child');
   }
 
   // When --worktree is going to chdir us into a worktree below, resolve
@@ -835,7 +835,7 @@ export async function main() {
   }
 
   // We are now past the logic handling potentially launching a child process
-  // to run Qwen Code. It is now safe to perform expensive initialization that
+  // to run Canopy Code. It is now safe to perform expensive initialization that
   // may have side effects.
   profileCheckpoint('after_sandbox_check');
 
@@ -1103,7 +1103,7 @@ export async function main() {
       ...new Set([
         ...(config.isSafeMode()
           ? [
-              '⚠ SAFE MODE — all customizations disabled (hooks, extensions, skills, MCP servers, QWEN.md). Restart without --safe-mode to resume normal operation.',
+              '⚠ SAFE MODE — all customizations disabled (hooks, extensions, skills, MCP servers, CANOPY.md). Restart without --safe-mode to resume normal operation.',
             ]
           : []),
         ...(await getStartupWarnings()),
@@ -1115,9 +1115,9 @@ export async function main() {
         ...getSettingsWarnings(settings),
         ...config.getWarnings(),
         ...(config.getModelsConfig().getCurrentAuthType() ===
-        AuthType.QWEN_OAUTH
+        AuthType.CANOPY_OAUTH
           ? [
-              'Qwen OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan or another provider.',
+              'Canopy OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan or another provider.',
             ]
           : []),
       ]),
@@ -1144,7 +1144,7 @@ export async function main() {
       // runNonInteractive's main/drain loops. In TUI mode the same call
       // would just emit "Structured output accepted." and keep the chat
       // alive, which silently strands the user's run. Parse-time gating
-      // can't catch this case (`qwen --json-schema '...'` on a TTY with
+      // can't catch this case (`canopy --json-schema '...'` on a TTY with
       // no prompt routes to interactive only after stdin TTY detection),
       // so reject here before the UI launches.
       if (config.getJsonSchema?.()) {
@@ -1203,7 +1203,7 @@ export async function main() {
           `Logging to: ${Storage.getDebugLogPath(config.getSessionId())}`,
         );
       } else {
-        writeStderrLine('Debug log file disabled by QWEN_DEBUG_LOG_FILE');
+        writeStderrLine('Debug log file disabled by CANOPY_DEBUG_LOG_FILE');
       }
       if (isDebugLoggingDegraded()) {
         writeStderrLine(
@@ -1265,7 +1265,7 @@ export async function main() {
         writeStderrLine(
           `Warning: MCP server(s) failed to start: ${failedMcpServers.join(', ')}. ` +
             `Continuing with built-in tools and any servers that did connect. ` +
-            `Re-run with QWEN_CODE_DEBUG=1 to see per-server reasons.`,
+            `Re-run with CANOPY_CODE_DEBUG=1 to see per-server reasons.`,
         );
       }
       // Finalize the non-interactive startup profile here so MCP events

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -313,13 +313,13 @@ export class AcpConnection {
 
   /**
    * Allocate a fresh JSON-RPC id for an agent→client request. STRING-typed
-   * (`_qwen_perm_<conn>_N`) so it can never collide with a client-originated id —
+   * (`_canopy_perm_<conn>_N`) so it can never collide with a client-originated id —
    * JSON-RPC 2.0 permits clients to use any number (incl. negatives) or
    * string, so a numeric namespace wasn't actually safe.
    */
   nextId(): string {
     this.idCounter += 1;
-    return `_qwen_perm_${this.connectionId}_${this.idCounter}`;
+    return `_canopy_perm_${this.connectionId}_${this.idCounter}`;
   }
 
   touch(): void {
@@ -643,7 +643,7 @@ export class AcpConnection {
       clearTimeout(binding.graceTimer);
       binding.graceTimer = undefined;
       writeStderrLine(
-        `qwen serve: /acp session reclaimed within grace (${logSafe(sessionId)})`,
+        `canopy serve: /acp session reclaimed within grace (${logSafe(sessionId)})`,
       );
     }
     const prevStream = binding.stream;
@@ -709,7 +709,7 @@ export class AcpConnection {
       // trace. Logging the arm gives operators a starting point when responses
       // look stuck behind the replay window.
       writeStderrLine(
-        `qwen serve: /acp replay deferral armed (${logSafe(sessionId)}, from id ${resumeFromEventId ?? 'initial'})`,
+        `canopy serve: /acp replay deferral armed (${logSafe(sessionId)}, from id ${resumeFromEventId ?? 'initial'})`,
       );
     }
     // Drain the gap buffer into a separate array first: on the resume path the
@@ -835,7 +835,7 @@ export class AcpConnection {
     // disconnect→reconnect gap against the grace window (the reclaim/expiry
     // logs alone can't tell "reclaimed with 0.5s to spare" from "9.5s").
     writeStderrLine(
-      `qwen serve: /acp session stream detached (${logSafe(sessionId)}), ` +
+      `canopy serve: /acp session stream detached (${logSafe(sessionId)}), ` +
         `grace=${graceMs}ms`,
     );
     // Stop the closing stream's event pump; the prompt + ownership live on.
@@ -850,7 +850,7 @@ export class AcpConnection {
       // debugging a vanished session can tell grace-expiry teardown apart from
       // an explicit `session/close` or connection drop.
       writeStderrLine(
-        `qwen serve: /acp session grace expired (${logSafe(sessionId)}), ` +
+        `canopy serve: /acp session grace expired (${logSafe(sessionId)}), ` +
           `no reconnect within ${graceMs}ms — tearing down`,
       );
       // `closeSessionStream` → `teardownBinding` runs external callbacks
@@ -862,7 +862,7 @@ export class AcpConnection {
         this.closeSessionStream(sessionId);
       } catch (err) {
         writeStderrLine(
-          `qwen serve: /acp teardown failed during grace expiry ` +
+          `canopy serve: /acp teardown failed during grace expiry ` +
             `(${logSafe(sessionId)}): ` +
             (err instanceof Error ? err.message : String(err)),
         );
@@ -877,7 +877,7 @@ export class AcpConnection {
         this.onSessionGraceExpired?.();
       } catch (err) {
         writeStderrLine(
-          `qwen serve: /acp onSessionGraceExpired failed during grace expiry ` +
+          `canopy serve: /acp onSessionGraceExpired failed during grace expiry ` +
             `(${logSafe(sessionId)}): ` +
             (err instanceof Error ? err.message : String(err)),
         );
@@ -924,7 +924,7 @@ export class AcpConnection {
         this.teardownBinding(binding);
       } catch (err) {
         writeStderrLine(
-          `qwen serve: /acp teardownBinding(${logSafe(binding.sessionId)}) failed during destroy: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: /acp teardownBinding(${logSafe(binding.sessionId)}) failed during destroy: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     }
@@ -1396,7 +1396,7 @@ export class AcpConnection {
         receipt[outcome]();
       }
     } catch {
-      writeStderrLine(`qwen serve: /acp ${outcome} receipt callback failed`);
+      writeStderrLine(`canopy serve: /acp ${outcome} receipt callback failed`);
     }
   }
 
@@ -1406,7 +1406,7 @@ export class AcpConnection {
   ): void {
     this.preAttachBudget.recordGuardFailure();
     this.onPreAttachGuardFailure?.();
-    writeStderrLine(`qwen serve: /acp resource guard: ${message}`);
+    writeStderrLine(`canopy serve: /acp resource guard: ${message}`);
     if (
       !binding ||
       binding.usesConnectionStream === true ||
@@ -1421,7 +1421,7 @@ export class AcpConnection {
       this.closeSessionStream(binding.sessionId);
     } catch (error) {
       writeStderrLine(
-        `qwen serve: /acp resource guard session teardown failed: ${
+        `canopy serve: /acp resource guard session teardown failed: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1429,14 +1429,14 @@ export class AcpConnection {
   }
 
   private failSerializationOwner(binding: SessionBinding | undefined): void {
-    writeStderrLine('qwen serve: /acp response serialization failed');
+    writeStderrLine('canopy serve: /acp response serialization failed');
     if (binding) this.failOwner(binding, 'ACP response serialization failed');
   }
 
   private failConnection(message: string, recordFailure = true): void {
     if (recordFailure) this.preAttachBudget.recordGuardFailure();
     this.onPreAttachGuardFailure?.();
-    writeStderrLine(`qwen serve: /acp resource guard: ${message}`);
+    writeStderrLine(`canopy serve: /acp resource guard: ${message}`);
     this.retireConnection(message);
   }
 
@@ -1466,7 +1466,7 @@ export class AcpConnection {
       const cancelled = this.onAbandonPending?.(req, clientId) ?? true;
       if (!cancelled) {
         writeStderrLine(
-          `qwen serve: /acp MEDIATOR STUCK: abandonPendingForSession(${logSafe(sessionId)}) cancel failed for ${logSafe(req.bridgeRequestId)}`,
+          `canopy serve: /acp MEDIATOR STUCK: abandonPendingForSession(${logSafe(sessionId)}) cancel failed for ${logSafe(req.bridgeRequestId)}`,
         );
       }
     }
@@ -1531,12 +1531,12 @@ export class ConnectionRegistry {
 
   findPendingClientRequest(id: string): PendingClientRequestRef | undefined {
     // Fast path: server-minted ids embed their originating connection
-    // (`_qwen_perm_<connectionId>_<counter>`, connectionId is a hyphenated
+    // (`_canopy_perm_<connectionId>_<counter>`, connectionId is a hyphenated
     // `randomUUID()` with no underscores), so the owning connection is the
     // substring before the last `_` — an O(1) lookup instead of scanning all
     // connections on every client response.
-    if (id.startsWith('_qwen_perm_')) {
-      const body = id.slice('_qwen_perm_'.length);
+    if (id.startsWith('_canopy_perm_')) {
+      const body = id.slice('_canopy_perm_'.length);
       const lastUnderscore = body.lastIndexOf('_');
       if (lastUnderscore > 0) {
         const conn = this.byId.get(body.slice(0, lastUnderscore));
@@ -1559,7 +1559,7 @@ export class ConnectionRegistry {
    *
    * NOTE: `requestId` is unique per *request*, not per *pending entry*. The
    * per-entry unique id is the `conn.pending` map key
-   * (`_qwen_perm_<connectionId>_N`), which is NOT what is matched here. A
+   * (`_canopy_perm_<connectionId>_N`), which is NOT what is matched here. A
    * `permission_request` is delivered to every live subscriber of its session,
    * so when connections co-own a session (multi-client attach) each mints its
    * own entry sharing the same `bridgeRequestId`. More than one entry can
@@ -1674,7 +1674,7 @@ export class ConnectionRegistry {
       // froze". Note that `touch()` fires on inbound HTTP AND on event
       // delivery (pumpSessionEvents), so a long quiet prompt isn't reaped.
       writeStderrLine(
-        `qwen serve: /acp reaping idle connection ${id} ` +
+        `canopy serve: /acp reaping idle connection ${id} ` +
           `(idle > ${Math.round(this.idleTtlMs / 60_000)}m, ` +
           `${conn.sessions.size} session(s))`,
       );

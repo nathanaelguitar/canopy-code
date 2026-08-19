@@ -1,13 +1,16 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import express from 'express';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchGitLog, fetchGitCommitDetail } from '@qwen-code/qwen-code-core';
+import {
+  fetchGitLog,
+  fetchGitCommitDetail,
+} from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import { sendBridgeError } from '../server/error-response.js';
 import {
@@ -20,8 +23,8 @@ import {
   registerWorkspaceQualifiedGitLogRoutes,
 } from './workspace-git-log.js';
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   fetchGitLog: vi.fn(),
   fetchGitCommitDetail: vi.fn(),
 }));

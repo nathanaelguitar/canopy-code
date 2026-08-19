@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -70,12 +70,12 @@ import type {
   ProviderSetupInputs,
   TelemetryRuntimeConfig,
   TelemetrySettings,
-} from '@qwen-code/qwen-code-core';
-import { MEMORY_PROJECT_SCOPES } from '@qwen-code/qwen-code-core/memoryScopes';
+} from '@canopy-code/canopy-code-core';
+import { MEMORY_PROJECT_SCOPES } from '@canopy-code/canopy-code-core/memoryScopes';
 import { createBridgeFileSystemAdapter } from './bridge-file-system-adapter.js';
 // Dynamic-imported below (not at module scope) so the serve fast-path bundle
 // closure check doesn't trace create-sub-session's transitive deps through
-// the run-qwen-serve chunk. The launcher is only needed after listen().
+// the run-canopy-serve chunk. The launcher is only needed after listen().
 import { PathMutexRegistry } from './fs/path-mutex-registry.js';
 import { isDeepHealthQuery } from './health-query.js';
 import { isLoopbackBind } from './loopback-binds.js';
@@ -175,7 +175,7 @@ import type {
   ChannelWorkerSnapshot,
   CreateChannelWorkerSupervisorOptions,
 } from './channel-worker-supervisor.js';
-import { QWEN_SERVER_TOKEN_ENV } from './channel-worker-env.js';
+import { CANOPY_SERVER_TOKEN_ENV } from './channel-worker-env.js';
 import { ChannelWebhookEnqueueError } from './channel-webhook-ipc.js';
 import {
   ChannelDeliveryError,
@@ -221,12 +221,12 @@ import {
 } from './server/request-helpers.js';
 
 // Reverse MCP channel; enabled only by explicit option or env opt-in.
-const QWEN_SERVE_CLIENT_MCP_OVER_WS_ENV = 'QWEN_SERVE_CLIENT_MCP_OVER_WS';
+const CANOPY_SERVE_CLIENT_MCP_OVER_WS_ENV = 'CANOPY_SERVE_CLIENT_MCP_OVER_WS';
 // CDP tunnel; default-on for Chrome-extension origins or explicit env opt-in.
-const QWEN_SERVE_CDP_TUNNEL_OVER_WS_ENV = 'QWEN_SERVE_CDP_TUNNEL_OVER_WS';
-const QWEN_SERVE_PROMPT_DEADLINE_MS_ENV = 'QWEN_SERVE_PROMPT_DEADLINE_MS';
-const QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV =
-  'QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS';
+const CANOPY_SERVE_CDP_TUNNEL_OVER_WS_ENV = 'CANOPY_SERVE_CDP_TUNNEL_OVER_WS';
+const CANOPY_SERVE_PROMPT_DEADLINE_MS_ENV = 'CANOPY_SERVE_PROMPT_DEADLINE_MS';
+const CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV =
+  'CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS';
 const SHUTDOWN_FORCE_CLOSE_MS = 5_000;
 const DAEMON_LOG_FORCED_FLUSH_BUDGET_MS = 250;
 const DEFAULT_LIVE_DISCOVERY_RETRY_MS = 5_000;
@@ -395,7 +395,7 @@ const DEFAULT_RUNTIME_STARTUP_TIMEOUT_MS = 120_000;
 const FAST_PATH_RUNTIME_START_AFTER_HEALTH_MS = 50;
 // Keep manual/non-probed starts moving; health probes cancel this fallback.
 const FAST_PATH_RUNTIME_START_FALLBACK_MS = 1_000;
-const RUNTIME_STARTUP_TIMEOUT_ENV = 'QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS';
+const RUNTIME_STARTUP_TIMEOUT_ENV = 'CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS';
 const MAX_EVENT_RING_SIZE = 1_000_000;
 const DEFAULT_MAX_SESSIONS = 32;
 const DEFAULT_MAX_PENDING_PROMPTS_PER_SESSION = 5;
@@ -404,7 +404,7 @@ const DEFAULT_SESSION_IDLE_TIMEOUT_MS = 30 * 60_000;
 const WORKSPACE_SETTING_SCOPE =
   'Workspace' as import('../config/settings.js').SettingScope;
 
-type RunQwenServeOptions = Omit<ServeOptions, 'token' | 'workspace'> & {
+type RunCanopyServeOptions = Omit<ServeOptions, 'token' | 'workspace'> & {
   token?: string;
   workspace?: string | string[];
 };
@@ -473,7 +473,7 @@ function parseDeadlineEnv(
   // Don't early-return on empty/whitespace: `Number('')` and
   // `Number(' ')` both yield `0`, which the positive-integer check
   // below rejects with the standard error message. Silently treating
-  // `QWEN_SERVE_PROMPT_DEADLINE_MS=" "` as "not set" would let a
+  // `CANOPY_SERVE_PROMPT_DEADLINE_MS=" "` as "not set" would let a
   // shell-substitution typo slip past.
   const trimmed = raw.trim();
   const parsed = Number(trimmed);
@@ -536,7 +536,7 @@ function createDaemonTelemetryRuntimeConfig(
 }
 
 /**
- * Boot-time policy validation error. The catch block in `runQwenServe`
+ * Boot-time policy validation error. The catch block in `runCanopyServe`
  * matches with `instanceof InvalidPolicyConfigError` to distinguish
  * operator-misconfiguration (rethrow → fail boot loudly) from
  * settings-read failures (fall back to defaults).
@@ -599,7 +599,7 @@ export function validatePolicyConfig(
       !validSet.has(permissionStrategy))
   ) {
     throw new InvalidPolicyConfigError(
-      `qwen serve: invalid policy.permissionStrategy ` +
+      `canopy serve: invalid policy.permissionStrategy ` +
         `"${String(permissionStrategy)}"; must be one of ` +
         `${Array.from(validSet).join(', ')}`,
     );
@@ -611,7 +611,7 @@ export function validatePolicyConfig(
       consensusQuorum < 1)
   ) {
     throw new InvalidPolicyConfigError(
-      `qwen serve: invalid policy.consensusQuorum ` +
+      `canopy serve: invalid policy.consensusQuorum ` +
         `${String(consensusQuorum)}; must be a positive integer`,
     );
   }
@@ -623,7 +623,7 @@ export function validatePolicyConfig(
     consensusQuorum !== undefined && permissionStrategy === 'consensus';
   if (consensusQuorum !== undefined && permissionStrategy !== 'consensus') {
     onWarning(
-      'qwen serve: policy.consensusQuorum is set but ' +
+      'canopy serve: policy.consensusQuorum is set but ' +
         'policy.permissionStrategy is not "consensus"; the override will ' +
         'be ignored.',
     );
@@ -746,7 +746,7 @@ export function subSessionConcurrencyCapsFromSettings(
       return value;
     }
     onWarning(
-      `qwen serve: ignoring invalid ${key} (${JSON.stringify(value)}); ` +
+      `canopy serve: ignoring invalid ${key} (${JSON.stringify(value)}); ` +
         `expected a positive integer, falling back to the built-in default.`,
     );
     return undefined;
@@ -938,7 +938,8 @@ function writeServeChannelReservation(
 }
 
 function channelServicePidfileConflictError(info: ServiceInfo): Error {
-  const owner = info.owner === 'serve' ? 'qwen serve' : 'qwen channel start';
+  const owner =
+    info.owner === 'serve' ? 'canopy serve' : 'canopy channel start';
   return Object.assign(
     new Error(
       `Channel service is already running under ${owner} (PID ${info.pid}). Stop it before enabling daemon-managed channels.`,
@@ -994,7 +995,7 @@ function buildProviderSetupInputs(
   };
 }
 
-export interface RunQwenServeDeps {
+export interface RunCanopyServeDeps {
   /** Bridge instance; tests inject a fake. Defaults to a fresh real one. */
   bridge?: AcpSessionBridge;
   /** Test/embed override for the plain HTTP server constructor. */
@@ -1006,7 +1007,7 @@ export interface RunQwenServeDeps {
    */
   preheatBridge?: boolean;
   /**
-   * Workspace filesystem factory. When omitted, `runQwenServe`
+   * Workspace filesystem factory. When omitted, `runCanopyServe`
    * constructs one using `boundWorkspace`, `trustedWorkspace`, and a
    * default warning-emit hook. Tests inject a real factory + custom
    * emit to capture audit events.
@@ -1056,7 +1057,7 @@ export interface RunQwenServeDeps {
   deferRuntimeUntilFirstHealth?: boolean;
   /**
    * Bounds background runtime mounting after the listener is ready. Defaults to
-   * QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS, then 120s. Use 0 to disable.
+   * CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS, then 120s. Use 0 to disable.
    */
   runtimeStartupTimeoutMs?: number;
   channelWorkerSupervisorFactory?: (
@@ -1066,7 +1067,7 @@ export interface RunQwenServeDeps {
   workspaceRegistrationStore?: WorkspaceRegistrationStore;
   /** Test/embed override; production uses the private user Conversations root. */
   liveConversationWorkspace?: ConversationWorkspace;
-  /** Test/embed override; production uses ~/.qwen for the Live Host locator. */
+  /** Test/embed override; production uses ~/.canopy for the Live Host locator. */
   liveDiscoveryStableBaseDir?: string;
   /** Test/embed override for stable Live locator ownership handoff. */
   liveDiscoveryRetryDelayMs?: number;
@@ -1074,7 +1075,7 @@ export interface RunQwenServeDeps {
   runtimePlatform?: NodeJS.Platform;
 }
 
-function shouldPreheatBridge(deps: RunQwenServeDeps): boolean {
+function shouldPreheatBridge(deps: RunCanopyServeDeps): boolean {
   if (deps.preheatBridge !== undefined) return deps.preheatBridge;
   return process.env['VITEST_WORKER_ID'] === undefined;
 }
@@ -1092,7 +1093,7 @@ function loadLiveDiscoveryRuntime(): Promise<LiveDiscoveryRuntime> {
 }
 
 async function resolveDaemonLogBaseDirForRun(input: {
-  deps: RunQwenServeDeps;
+  deps: RunCanopyServeDeps;
   bootSettings: ServeFastPathSettings | undefined;
   boundWorkspace: string;
 }): Promise<string> {
@@ -1101,7 +1102,9 @@ async function resolveDaemonLogBaseDirForRun(input: {
   }
   if (input.deps.bootSettings === undefined) {
     const core = await loadCoreRuntime();
-    if (core.Storage.getRuntimeBaseDir() !== core.Storage.getGlobalQwenDir()) {
+    if (
+      core.Storage.getRuntimeBaseDir() !== core.Storage.getGlobalCanopyDir()
+    ) {
       return core.Storage.getGlobalDebugDir();
     }
   }
@@ -1248,7 +1251,7 @@ function sessionIdleTimeoutMs(value: number | undefined): number {
     : DEFAULT_SESSION_IDLE_TIMEOUT_MS;
 }
 
-function currentServeFeaturesForRunQwenServe(
+function currentServeFeaturesForRunCanopyServe(
   opts: ServeOptions,
   sessionShellCommandEnabled: boolean,
   sessionArtifactsPersistenceAvailable: boolean,
@@ -1289,7 +1292,7 @@ function currentServeFeaturesForRunQwenServe(
 function createBootstrapCapabilities(input: {
   opts: ServeOptions;
   boundWorkspace: string;
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   sessionShellCommandEnabled: boolean;
   sessionArtifactsPersistenceAvailable: boolean;
   permissionPolicy: PermissionPolicy | undefined;
@@ -1298,11 +1301,11 @@ function createBootstrapCapabilities(input: {
   return {
     v: CAPABILITIES_SCHEMA_VERSION,
     protocolVersions: getServeProtocolVersions(),
-    ...(input.qwenCodeVersion
-      ? { qwenCodeVersion: input.qwenCodeVersion }
+    ...(input.canopyCodeVersion
+      ? { canopyCodeVersion: input.canopyCodeVersion }
       : {}),
     mode: input.opts.mode,
-    features: currentServeFeaturesForRunQwenServe(
+    features: currentServeFeaturesForRunCanopyServe(
       input.opts,
       input.sessionShellCommandEnabled,
       input.sessionArtifactsPersistenceAvailable,
@@ -1496,7 +1499,7 @@ function createBootstrapServeApp(input: {
   boundWorkspace: string;
   startup: DaemonStartupSnapshot;
   daemonLog: DaemonLogger;
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   sessionShellCommandEnabled: boolean;
   sessionArtifactsPersistenceAvailable: boolean;
   permissionPolicy: PermissionPolicy | undefined;
@@ -1514,7 +1517,7 @@ function createBootstrapServeApp(input: {
     boundWorkspace,
     startup,
     daemonLog,
-    qwenCodeVersion,
+    canopyCodeVersion,
     sessionShellCommandEnabled,
     sessionArtifactsPersistenceAvailable,
     permissionPolicy,
@@ -1579,7 +1582,7 @@ function createBootstrapServeApp(input: {
       createBootstrapCapabilities({
         opts,
         boundWorkspace,
-        qwenCodeVersion,
+        canopyCodeVersion,
         sessionShellCommandEnabled,
         sessionArtifactsPersistenceAvailable,
         permissionPolicy,
@@ -1598,7 +1601,7 @@ function createBootstrapServeApp(input: {
       return;
     }
     const runtimeError = getRuntimeError();
-    // Same gate the runtime applies (see runQwenServeImpl): pinned journal
+    // Same gate the runtime applies (see runCanopyServeImpl): pinned journal
     // flags or a budget with no usable pool disable growth, so the
     // bootstrap response matches what the runtime will wire.
     const bootstrapJournalGrowthPoolMb =
@@ -1648,7 +1651,7 @@ function createBootstrapServeApp(input: {
           ...startup,
           preheat: { ...startup.preheat },
         },
-        ...(qwenCodeVersion ? { qwenCodeVersion } : {}),
+        ...(canopyCodeVersion ? { canopyCodeVersion } : {}),
         ...(daemonLog.getDaemonId()
           ? { daemonId: daemonLog.getDaemonId() }
           : {}),
@@ -1717,7 +1720,7 @@ function createBootstrapServeApp(input: {
       },
       capabilities: {
         protocolVersions: getServeProtocolVersions(),
-        features: currentServeFeaturesForRunQwenServe(
+        features: currentServeFeaturesForRunCanopyServe(
           opts,
           sessionShellCommandEnabled,
           sessionArtifactsPersistenceAvailable,
@@ -1921,7 +1924,7 @@ function createDeferredChannelWebhookAuth(
       source,
       configSource.env,
     );
-    if (!matchesWebhookSecret(req.get('x-qwen-webhook-secret'), secret)) {
+    if (!matchesWebhookSecret(req.get('x-canopy-webhook-secret'), secret)) {
       daemonLog.warn('deferred webhook auth failed', {
         channelName,
         source,
@@ -2033,7 +2036,7 @@ interface DaemonLoggerLifecycleCallbacks {
   published(): void;
   signalOwned(): void;
   // Called once the startup scrub has mutated the host process.env, with
-  // the restore close() would run. runQwenServe's catch invokes it when
+  // the restore close() would run. runCanopyServe's catch invokes it when
   // startup fails after the scrub — the close() path is unreachable then,
   // and an embedded caller must not keep a permanently scrubbed env.
   scrubApplied(restoreScrubbedLoaderEnv: () => void): void;
@@ -2045,7 +2048,7 @@ interface DaemonLoggerLifecycleCallbacks {
 
 /**
  * Validates and canonicalizes a `--workspace` boot argument. Extracted to
- * module scope (from the runQwenServe closure) so the #7139 sandbox path
+ * module scope (from the runCanopyServe closure) so the #7139 sandbox path
  * translation ahead of the absolute-path guard is testable — this is the
  * primary reproduction path of that issue.
  */
@@ -2097,16 +2100,16 @@ export function validateAndCanonicalizeWorkspaceInput(
   return canonicalizeWorkspace(workspace);
 }
 
-export async function runQwenServe(
-  optsIn: RunQwenServeOptions,
-  deps: RunQwenServeDeps = {},
+export async function runCanopyServe(
+  optsIn: RunCanopyServeOptions,
+  deps: RunCanopyServeDeps = {},
 ): Promise<RunHandle> {
   let daemonLog: DaemonLogger | undefined;
   let owner: 'startup' | 'handle' | 'signal' = 'startup';
   let restoreScrubbedLoaderEnv: (() => void) | undefined;
   let installedLoaderRejectionReporter: LoaderKeyRejectionReporter | undefined;
   try {
-    return await runQwenServeImpl(optsIn, deps, {
+    return await runCanopyServeImpl(optsIn, deps, {
       initialized: (logger) => {
         daemonLog = logger;
       },
@@ -2147,9 +2150,9 @@ export async function runQwenServe(
   }
 }
 
-async function runQwenServeImpl(
-  optsIn: RunQwenServeOptions,
-  deps: RunQwenServeDeps,
+async function runCanopyServeImpl(
+  optsIn: RunCanopyServeOptions,
+  deps: RunCanopyServeDeps,
   loggerLifecycle: DaemonLoggerLifecycleCallbacks,
 ): Promise<RunHandle> {
   const runStartedAt = performance.now();
@@ -2186,7 +2189,7 @@ async function runQwenServeImpl(
   preResolveServeFastPathHomeEnvOverrides();
   const baseEnv: NodeJS.ProcessEnv = { ...process.env };
   const launchMemoryProjectScopeValue =
-    baseEnv['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+    baseEnv['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
   const launchMemoryProjectScope = launchMemoryProjectScopeValue?.trim()
     ? launchMemoryProjectScopeValue
     : undefined;
@@ -2202,7 +2205,7 @@ async function runQwenServeImpl(
     memoryProjectScopeValue.trim().toLowerCase() === 'workspace'
       ? 'workspace'
       : 'git-root';
-  baseEnv['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = memoryProjectScopeValue;
+  baseEnv['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = memoryProjectScopeValue;
   // The dev harness (scripts/dev.js) stamps DEV=true into the same env that
   // carries the tsx loader's NODE_OPTIONS, so only then does the base env
   // keep loader vars — dev-mode ACP children and channel workers need the
@@ -2227,7 +2230,7 @@ async function runQwenServeImpl(
   // environment back.
   const loaderEnvScrub = acquireInheritedLoaderEnvScrub(
     process.env,
-    'qwen serve',
+    'canopy serve',
     'daemon',
   );
   const scrubbedLoaderEnvKeys = loaderEnvScrub.removedKeys;
@@ -2242,7 +2245,7 @@ async function runQwenServeImpl(
   // send. Every request returns the generic 401 with no breadcrumb
   // pointing at the whitespace, and operators chase ghosts. Trim once
   // at boot so the comparison is over what humans intended to set.
-  const rawToken = optsIn.token ?? process.env[QWEN_SERVER_TOKEN_ENV];
+  const rawToken = optsIn.token ?? process.env[CANOPY_SERVER_TOKEN_ENV];
   const token =
     typeof rawToken === 'string' && rawToken.trim().length > 0
       ? rawToken.trim()
@@ -2255,29 +2258,29 @@ async function runQwenServeImpl(
     optsIn.enableSessionShell === true && token !== undefined;
   if (optsIn.enableSessionShell === true && token === undefined) {
     writeStderrLine(
-      `qwen serve: --enable-session-shell ignored because no bearer token ` +
-        `is configured. Set ${QWEN_SERVER_TOKEN_ENV} or pass --token to ` +
+      `canopy serve: --enable-session-shell ignored because no bearer token ` +
+        `is configured. Set ${CANOPY_SERVER_TOKEN_ENV} or pass --token to ` +
         `enable direct session shell.`,
     );
   }
   // Env-var fallback for the deadline options. Explicit option
   // beats the env beats unset (= unlimited). `parseDeadlineEnv` throws
-  // on malformed values so an `export QWEN_SERVE_PROMPT_DEADLINE_MS=abc`
+  // on malformed values so an `export CANOPY_SERVE_PROMPT_DEADLINE_MS=abc`
   // typo fails boot loudly instead of silently disabling the cap.
   const promptDeadlineMs =
     optsIn.promptDeadlineMs ??
     parseDeadlineEnv(
-      QWEN_SERVE_PROMPT_DEADLINE_MS_ENV,
-      process.env[QWEN_SERVE_PROMPT_DEADLINE_MS_ENV],
+      CANOPY_SERVE_PROMPT_DEADLINE_MS_ENV,
+      process.env[CANOPY_SERVE_PROMPT_DEADLINE_MS_ENV],
     );
   const writerIdleTimeoutMs =
     optsIn.writerIdleTimeoutMs ??
     parseDeadlineEnv(
-      QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV,
-      process.env[QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV],
+      CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV,
+      process.env[CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV],
     );
-  const clientMcpOverWsEnv = process.env[QWEN_SERVE_CLIENT_MCP_OVER_WS_ENV];
-  const cdpTunnelOverWsEnv = process.env[QWEN_SERVE_CDP_TUNNEL_OVER_WS_ENV];
+  const clientMcpOverWsEnv = process.env[CANOPY_SERVE_CLIENT_MCP_OVER_WS_ENV];
+  const cdpTunnelOverWsEnv = process.env[CANOPY_SERVE_CDP_TUNNEL_OVER_WS_ENV];
   const chromeExtensionOriginAllowed = hasChromeExtensionOrigin(
     optsIn.allowOrigins,
   );
@@ -2478,7 +2481,7 @@ async function runQwenServeImpl(
   if (!isLoopbackBind(opts.hostname) && !token) {
     throw new Error(
       `Refusing to bind ${opts.hostname}:${opts.port} without a bearer token. ` +
-        `Set ${QWEN_SERVER_TOKEN_ENV} or pass --token, or rebind to loopback ` +
+        `Set ${CANOPY_SERVER_TOKEN_ENV} or pass --token, or rebind to loopback ` +
         `(127.0.0.1, localhost, ::1, or [::1]).`,
     );
   }
@@ -2491,7 +2494,7 @@ async function runQwenServeImpl(
   if (opts.requireAuth && !token) {
     throw new Error(
       `Refusing to start with --require-auth set but no bearer token ` +
-        `configured. Set ${QWEN_SERVER_TOKEN_ENV} or pass --token, or omit ` +
+        `configured. Set ${CANOPY_SERVER_TOKEN_ENV} or pass --token, or omit ` +
         `--require-auth to keep the loopback developer default.`,
     );
   }
@@ -2522,12 +2525,12 @@ async function runQwenServeImpl(
         `Refusing to start with --allow-origin '*' but no bearer token ` +
           `configured. '*' admits any cross-origin browser to the API; ` +
           `without a token, any local page can drive the daemon. Set ` +
-          `${QWEN_SERVER_TOKEN_ENV} or pass --token, or list specific ` +
+          `${CANOPY_SERVER_TOKEN_ENV} or pass --token, or list specific ` +
           `origins instead of '*'.`,
       );
     }
     writeStderrLine(
-      `qwen serve: --allow-origin: ${opts.allowOrigins.join(', ')}` +
+      `canopy serve: --allow-origin: ${opts.allowOrigins.join(', ')}` +
         (parsed.allowAny
           ? ' (WARNING: `*` admits any cross-origin browser — bearer ' +
             'token gates API routes; the Web Shell static assets stay ' +
@@ -2538,7 +2541,7 @@ async function runQwenServeImpl(
   }
   if (opts.allowPrivateAuthBaseUrl) {
     writeStderrLine(
-      'qwen serve: --allow-private-auth-base-url enabled; ' +
+      'canopy serve: --allow-private-auth-base-url enabled; ' +
         '/workspace/auth/provider may install localhost/private-network ' +
         'model endpoints. Use only for local development with trusted clients.',
     );
@@ -2702,7 +2705,7 @@ async function runQwenServeImpl(
   let workspaceRegistrationStore = deps.workspaceRegistrationStore;
   if (
     workspaceRegistrationStore === undefined &&
-    process.env['QWEN_SERVE_NO_PERSISTENT_REGISTRATION'] !== '1'
+    process.env['CANOPY_SERVE_NO_PERSISTENT_REGISTRATION'] !== '1'
   ) {
     const { WorkspaceRegistrationStore } = await import(
       './workspace-registration-store.js'
@@ -2717,7 +2720,7 @@ async function runQwenServeImpl(
         const displayName = stored.displayNames?.[registrationId];
         if (isReservedConversationWorkspace(storedWorkspace)) {
           writeStderrLine(
-            `qwen serve: skipping persisted workspace registration ${JSON.stringify(
+            `canopy serve: skipping persisted workspace registration ${JSON.stringify(
               storedWorkspace,
             )}: path is reserved for Conversations`,
           );
@@ -2728,7 +2731,7 @@ async function runQwenServeImpl(
           cwd = validateAndCanonicalizeWorkspace(storedWorkspace);
         } catch (err) {
           writeStderrLine(
-            `qwen serve: skipping persisted workspace registration ${JSON.stringify(
+            `canopy serve: skipping persisted workspace registration ${JSON.stringify(
               storedWorkspace,
             )}: ${err instanceof Error ? err.message : String(err)}`,
           );
@@ -2736,7 +2739,7 @@ async function runQwenServeImpl(
         }
         if (isReservedConversationWorkspace(cwd)) {
           writeStderrLine(
-            `qwen serve: skipping persisted workspace registration ${JSON.stringify(
+            `canopy serve: skipping persisted workspace registration ${JSON.stringify(
               storedWorkspace,
             )}: path is reserved for Conversations`,
           );
@@ -2757,7 +2760,7 @@ async function runQwenServeImpl(
         );
         if (nested) {
           writeStderrLine(
-            `qwen serve: skipping persisted workspace registration ${JSON.stringify(
+            `canopy serve: skipping persisted workspace registration ${JSON.stringify(
               storedWorkspace,
             )}: path nests with an explicit or earlier restored workspace`,
           );
@@ -2765,7 +2768,7 @@ async function runQwenServeImpl(
         }
         if (workspaceInputs.length >= MAX_REGISTERED_WORKSPACES) {
           writeStderrLine(
-            `qwen serve: skipping persisted workspace registration ${JSON.stringify(
+            `canopy serve: skipping persisted workspace registration ${JSON.stringify(
               storedWorkspace,
             )}: workspace limit reached`,
           );
@@ -2781,7 +2784,7 @@ async function runQwenServeImpl(
       }
     } catch (err) {
       writeStderrLine(
-        `qwen serve: failed to read persisted workspace registrations: ${
+        `canopy serve: failed to read persisted workspace registrations: ${
           err instanceof Error ? err.message : String(err)
         }; continuing with explicit workspaces only`,
       );
@@ -2790,7 +2793,7 @@ async function runQwenServeImpl(
   if (workspaceInputs.length > 1 && deps.bridge) {
     throw new Error(
       'Injected bridge dependencies are only supported with a single workspace; ' +
-        'multiple --workspace values require runQwenServe to construct one bridge per workspace.',
+        'multiple --workspace values require runCanopyServe to construct one bridge per workspace.',
     );
   }
   // Canonicalize ONCE here so `/capabilities` and the POST /session
@@ -2829,7 +2832,7 @@ async function runQwenServeImpl(
     // All other settings-read failures (corrupted JSON, transient
     // disk IO) fall back to defaults so the daemon stays bootable.
     writeStderrLine(
-      `qwen serve: could not read settings for context.fileName / ` +
+      `canopy serve: could not read settings for context.fileName / ` +
         `policy.* (${err instanceof Error ? err.message : String(err)}); ` +
         `falling back to defaults. Restart with a valid settings.json ` +
         `to apply context.fileName / policy.* overrides.`,
@@ -2893,7 +2896,7 @@ async function runQwenServeImpl(
   let loggerPublished = false;
   let loggerSignalOwned = false;
   writeStderrLine(
-    `qwen serve: daemon log → ${daemonLog.getLogPath() || '(disabled)'}`,
+    `canopy serve: daemon log → ${daemonLog.getLogPath() || '(disabled)'}`,
   );
 
   // The MCP client guardrails enforce in the ACP child process (where
@@ -3019,7 +3022,7 @@ async function runQwenServeImpl(
   const sessionRestoreTimeoutMs = resolveSessionRestoreTimeoutMs(opts);
   opts.sessionRestoreTimeoutMs = sessionRestoreTimeoutMs;
   // Validate here (not just in the yargs handler) so embedded callers of
-  // `runQwenServe({ permissionResponseTimeoutMs })` also fail loud: the
+  // `runCanopyServe({ permissionResponseTimeoutMs })` also fail loud: the
   // bridge treats a non-finite / negative value as the "disabled"
   // sentinel, which would silently drop the permission deadline. Mirrors
   // `channelIdleTimeoutMs`; out-of-range values are clamped by the bridge.
@@ -3058,10 +3061,10 @@ async function runQwenServeImpl(
   // options, with no inheritance from process.env's current state.
   //
   // If the daemon parent process has the pool kill switch
-  // (`QWEN_SERVE_NO_MCP_POOL=1`) in its own env, infer
+  // (`CANOPY_SERVE_NO_MCP_POOL=1`) in its own env, infer
   // `mcpPoolActive: false` so the capabilities envelope drops the
   // `mcp_workspace_pool` + `mcp_pool_restart` tags.
-  const inheritedNoPool = process.env['QWEN_SERVE_NO_MCP_POOL'] === '1';
+  const inheritedNoPool = process.env['CANOPY_SERVE_NO_MCP_POOL'] === '1';
   if (opts.mcpPoolActive === undefined && inheritedNoPool) {
     opts.mcpPoolActive = false;
   }
@@ -3085,7 +3088,7 @@ async function runQwenServeImpl(
     await provider.initialize();
     externalToolGuardHandler = provider.prepare;
     writeStderrLine(
-      'qwen serve: required external tool guard handshake succeeded.',
+      'canopy serve: required external tool guard handshake succeeded.',
     );
   }
   // Keep the guard's core helper imports out of the serve fast-path bundle.
@@ -3096,12 +3099,12 @@ async function runQwenServeImpl(
     externalToolGuardHandler,
   );
   const childEnvOverrides: Record<string, string | undefined> = {
-    QWEN_SERVE_MCP_CLIENT_BUDGET:
+    CANOPY_SERVE_MCP_CLIENT_BUDGET:
       opts.mcpClientBudget !== undefined
         ? String(opts.mcpClientBudget)
         : undefined,
-    QWEN_SERVE_MCP_BUDGET_MODE: opts.mcpBudgetMode,
-    QWEN_SERVE_CDP_TUNNEL_OVER_WS: opts.cdpTunnelOverWs ? '1' : undefined,
+    CANOPY_SERVE_MCP_BUDGET_MODE: opts.mcpBudgetMode,
+    CANOPY_SERVE_CDP_TUNNEL_OVER_WS: opts.cdpTunnelOverWs ? '1' : undefined,
     [PRIVATE_EXTERNAL_TOOL_GUARD_ENV]: EXTERNAL_TOOL_GUARD_REQUIRED_VALUE,
     [PRIVATE_EXTERNAL_TOOL_GUARD_PROVIDER_ENV]: externalToolGuardHandler
       ? EXTERNAL_TOOL_GUARD_PROVIDER_ATTACHED_VALUE
@@ -3125,16 +3128,16 @@ async function runQwenServeImpl(
   if (opts.serveWebShell !== false) {
     if (!webShellDir) {
       writeStderrLine(
-        'qwen serve: Web Shell assets not found; serving API only. ' +
+        'canopy serve: Web Shell assets not found; serving API only. ' +
           'Build the web-shell workspace (npm run build) or pass --no-web to silence this.',
       );
     } else {
       // Positive happy-path breadcrumb so operators can confirm the UI is live
       // (the only other lines are negative-path warnings).
-      writeStderrLine(`qwen serve: Web Shell UI served from ${webShellDir}`);
+      writeStderrLine(`canopy serve: Web Shell UI served from ${webShellDir}`);
       if (!isLoopbackBind(opts.hostname)) {
         writeStderrLine(
-          'qwen serve: Web Shell UI is served WITHOUT auth on a non-loopback ' +
+          'canopy serve: Web Shell UI is served WITHOUT auth on a non-loopback ' +
             'bind (the static shell has no secrets; the API stays token-gated). ' +
             'Pass --no-web to disable the UI.',
         );
@@ -3146,7 +3149,7 @@ async function runQwenServeImpl(
         // --allow-origin <origin>, to make mutations work.
         if (!opts.allowOrigins || opts.allowOrigins.length === 0) {
           writeStderrLine(
-            'qwen serve: without --allow-origin the Web Shell is read-only on a ' +
+            'canopy serve: without --allow-origin the Web Shell is read-only on a ' +
               'non-loopback bind — same-origin POSTs are blocked by CORS (403). ' +
               'Pass --allow-origin <origin> or front it with a same-origin proxy.',
           );
@@ -3159,7 +3162,7 @@ async function runQwenServeImpl(
   const webShellMounted = !!webShellDir;
   const serveAppLifecycle = new ServeAppLifecycleController();
   const liveDiscoveryStableBaseDir = path.resolve(
-    deps.liveDiscoveryStableBaseDir ?? path.join(os.homedir(), '.qwen'),
+    deps.liveDiscoveryStableBaseDir ?? path.join(os.homedir(), '.canopy'),
   );
   let resolveServeAppStartup!: () => void;
   let rejectServeAppStartup!: (error: Error) => void;
@@ -3576,12 +3579,12 @@ async function runQwenServeImpl(
       // Root acceptance is fail-closed and happens only after every startup
       // workspace (including restored registrations) has been resolved.
       managedScratchRoot = prepareManagedScratchRoot(
-        path.join(core.Storage.getGlobalQwenDir(), 'scratch-workspaces'),
+        path.join(core.Storage.getGlobalCanopyDir(), 'scratch-workspaces'),
         workspaceInputs.map((workspace) => workspace.cwd),
       );
     } catch (err) {
       writeStderrLine(
-        `qwen serve: managed scratch workspaces are unavailable: ${
+        `canopy serve: managed scratch workspaces are unavailable: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -3600,7 +3603,7 @@ async function runQwenServeImpl(
       );
     } catch (err) {
       writeStderrLine(
-        `qwen serve: could not read full settings for runtime startup ` +
+        `canopy serve: could not read full settings for runtime startup ` +
           `(${err instanceof Error ? err.message : String(err)}); falling back to defaults.`,
       );
     }
@@ -3652,7 +3655,7 @@ async function runQwenServeImpl(
               : configuredPath;
         return path.resolve(relativeTo, expanded);
       };
-      const runtimeDir = effectiveEnv['QWEN_RUNTIME_DIR'];
+      const runtimeDir = effectiveEnv['CANOPY_RUNTIME_DIR'];
       if (runtimeDir) {
         return resolveConfiguredPath(runtimeDir, process.cwd());
       }
@@ -3660,14 +3663,14 @@ async function runQwenServeImpl(
       if (settingsDir) {
         return resolveConfiguredPath(settingsDir, workspace);
       }
-      const qwenHome = effectiveEnv['QWEN_HOME'];
-      if (qwenHome) {
-        return resolveConfiguredPath(qwenHome, process.cwd());
+      const canopyHome = effectiveEnv['QWEN_HOME'];
+      if (canopyHome) {
+        return resolveConfiguredPath(canopyHome, process.cwd());
       }
       const homeDir = os.homedir();
       return homeDir
-        ? path.join(homeDir, '.qwen')
-        : path.join(os.tmpdir(), '.qwen');
+        ? path.join(homeDir, '.canopy')
+        : path.join(os.tmpdir(), '.canopy');
     };
     const logRuntimeEnvFileReadFailures = (
       workspace: string,
@@ -3694,7 +3697,7 @@ async function runQwenServeImpl(
     );
     const runtimeEffectiveEnv: NodeJS.ProcessEnv = {
       ...runtimeEnvSnapshot.effectiveEnv,
-      QWEN_RUNTIME_DIR: primarySessionRuntimeBaseDir,
+      CANOPY_RUNTIME_DIR: primarySessionRuntimeBaseDir,
     };
     const replaceRuntimeEffectiveEnv = (
       nextEnv: Readonly<NodeJS.ProcessEnv>,
@@ -3703,7 +3706,7 @@ async function runQwenServeImpl(
         delete runtimeEffectiveEnv[key];
       }
       Object.assign(runtimeEffectiveEnv, nextEnv);
-      runtimeEffectiveEnv['QWEN_RUNTIME_DIR'] = primarySessionRuntimeBaseDir;
+      runtimeEffectiveEnv['CANOPY_RUNTIME_DIR'] = primarySessionRuntimeBaseDir;
     };
     const primaryRuntimeEnv: {
       mode: 'runtime-overlay';
@@ -3815,10 +3818,10 @@ async function runQwenServeImpl(
           core.emitDaemonLog(
             `Session ${action}.`,
             {
-              'qwen-code.workspace.hash': workspaceHash,
+              'canopy-code.workspace.hash': workspaceHash,
             },
             {
-              eventName: `qwen-code.daemon.session.${action}`,
+              eventName: `canopy-code.daemon.session.${action}`,
             },
           );
         },
@@ -3830,11 +3833,11 @@ async function runQwenServeImpl(
               : `ACP channel exited (expected=${expected ?? true}).`,
             {
               ...(action === 'exit'
-                ? { 'qwen-code.daemon.channel.expected': expected ?? true }
+                ? { 'canopy-code.daemon.channel.expected': expected ?? true }
                 : {}),
             },
             {
-              eventName: `qwen-code.daemon.channel.${action}`,
+              eventName: `canopy-code.daemon.channel.${action}`,
               ...(expected === false && action === 'exit'
                 ? { severityNumber: 13 }
                 : {}),
@@ -3904,7 +3907,7 @@ async function runQwenServeImpl(
     daemonLog.info('daemon workspace roots initialized', {
       primary: boundWorkspaces[0],
       secondary: boundWorkspaces.slice(1),
-      ideEnvPresent: !!process.env['QWEN_CODE_IDE_WORKSPACE_PATH'],
+      ideEnvPresent: !!process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'],
     });
     const primaryGenerationGuard = runtime.createWorkspaceGenerationGuard();
     const primaryTrustMaterialization = JSON.stringify({
@@ -4262,7 +4265,7 @@ async function runQwenServeImpl(
           const message = `persistSettings partial failure (workspace=${workspace}, committed=${committed}/${writes.length}, failedKey=${failedWrite?.key ?? '<unknown>'}, failedScope=${failedWrite?.scope ?? '<unknown>'}): ${
             err instanceof Error ? err.message : String(err)
           }`;
-          writeStderrLine(`qwen serve: ${message}`);
+          writeStderrLine(`canopy serve: ${message}`);
           throw new runtime.WorkspaceSettingsPartialPersistError(
             message,
             writes.filter((write) => committedScopes.has(write.scope)),
@@ -4395,7 +4398,7 @@ async function runQwenServeImpl(
       boundWorkspace,
       isWorkspaceTrusted: () => trustedWorkspace,
       assertGenerationOpen: () => primaryGenerationGuard.assertOpen(),
-      contextFilename: contextFilenameForInit ?? 'QWEN.md',
+      contextFilename: contextFilenameForInit ?? 'CANOPY.md',
       statusProvider,
       workspaceProvidersStatusProvider,
       workspaceSkillsStatusProvider,
@@ -4557,7 +4560,7 @@ async function runQwenServeImpl(
       );
       const effectiveEnv: NodeJS.ProcessEnv = {
         ...snapshot.effectiveEnv,
-        QWEN_RUNTIME_DIR: sessionRuntimeBaseDir,
+        CANOPY_RUNTIME_DIR: sessionRuntimeBaseDir,
       };
       const metadata: {
         mode: 'runtime-overlay';
@@ -4584,7 +4587,7 @@ async function runQwenServeImpl(
             delete effectiveEnv[key];
           }
           Object.assign(effectiveEnv, nextEnv);
-          effectiveEnv['QWEN_RUNTIME_DIR'] = sessionRuntimeBaseDir;
+          effectiveEnv['CANOPY_RUNTIME_DIR'] = sessionRuntimeBaseDir;
         },
       };
     };
@@ -4626,7 +4629,7 @@ async function runQwenServeImpl(
         );
       } catch (err) {
         writeStderrLine(
-          `qwen serve: could not read full settings for secondary workspace ` +
+          `canopy serve: could not read full settings for secondary workspace ` +
             `${workspaceInput.cwd} (${err instanceof Error ? err.message : String(err)}); ` +
             `falling back to defaults.`,
         );
@@ -4647,7 +4650,7 @@ async function runQwenServeImpl(
       const secondaryContextFilename =
         extractContextFilename(secondarySettings?.merged.context?.fileName) ??
         contextFilenameForInit ??
-        'QWEN.md';
+        'CANOPY.md';
       const secondaryWorkspaceHash = core.hashDaemonWorkspace(
         workspaceInput.cwd,
       );
@@ -4998,7 +5001,7 @@ async function runQwenServeImpl(
         prevRateRejected = rejectedTotal;
         // ACP child resource: read this tick's cached snapshot synchronously
         // and kick an async refresh for the next tick, keeping the sampler
-        // sync. Optional-chained: an injected bridge (RunQwenServeDeps.bridge)
+        // sync. Optional-chained: an injected bridge (RunCanopyServeDeps.bridge)
         // built against the older contract may not implement these hooks.
         const primaryEntry = workspaceRegistry.primaryEntry;
         const primaryRuntimeBridge =
@@ -5172,7 +5175,7 @@ async function runQwenServeImpl(
         // Match the startup secondary-workspace path: surface why full settings
         // couldn't be read instead of silently falling back to defaults.
         writeStderrLine(
-          `qwen serve: could not read full settings for dynamic workspace ` +
+          `canopy serve: could not read full settings for dynamic workspace ` +
             `${cwd} (${err instanceof Error ? err.message : String(err)}); ` +
             `falling back to defaults.`,
         );
@@ -5183,7 +5186,7 @@ async function runQwenServeImpl(
       const wsContextFilename =
         extractContextFilename(wsSettings?.merged.context?.fileName) ??
         contextFilenameForInit ??
-        'QWEN.md';
+        'CANOPY.md';
       const wsHash = core.hashDaemonWorkspace(cwd);
       const generationGuard =
         buildOptions?.generationGuard ??
@@ -5938,7 +5941,7 @@ async function runQwenServeImpl(
       bridge,
       webShellDir,
       boundWorkspace,
-      qwenCodeVersion: resolvedCliVersion,
+      canopyCodeVersion: resolvedCliVersion,
       startup,
       // The real long-running daemon keeps scheduled-task sessions resident
       // (keepalive) and reloads them on boot (rehydration). Off by default so
@@ -6046,8 +6049,8 @@ async function runQwenServeImpl(
             });
             assertGenerationOpen?.();
             core.emitDaemonLog('Auth provider installed.', {
-              'qwen-code.daemon.auth.provider_id': provider.id,
-              'qwen-code.daemon.auth.auth_type': plan.authType,
+              'canopy-code.daemon.auth.provider_id': provider.id,
+              'canopy-code.daemon.auth.auth_type': plan.authType,
             });
             const effectiveModelId =
               (adapter.getValue('model.name') as string | undefined) ??
@@ -6309,7 +6312,7 @@ async function runQwenServeImpl(
     boundWorkspace,
     startup,
     daemonLog,
-    qwenCodeVersion: cliVersion,
+    canopyCodeVersion: cliVersion,
     sessionShellCommandEnabled,
     sessionArtifactsPersistenceAvailable,
     permissionPolicy,
@@ -6353,7 +6356,7 @@ async function runQwenServeImpl(
   // operators conventionally type `[::1]` (or copy/paste from URLs that
   // need the brackets to disambiguate the port). Strip brackets at
   // bind-time, keep them for the printed URL — without this fixup
-  // `qwen serve --hostname [::1]` would pass the loopback/token check
+  // `canopy serve --hostname [::1]` would pass the loopback/token check
   // and then fail to start with ENOTFOUND.
   //
   // Only accept *pure* bracketed forms: `[…]` with no trailing `:port`
@@ -6543,7 +6546,7 @@ async function runQwenServeImpl(
 
       startup.listenerReadyAt = new Date().toISOString();
       startup.processToListenMs = Math.round(process.uptime() * 1000);
-      startup.runQwenServeToListenMs = Math.round(
+      startup.runCanopyServeToListenMs = Math.round(
         performance.now() - runStartedAt,
       );
       profileCheckpoint('serve_listener_ready');
@@ -6983,7 +6986,7 @@ async function runQwenServeImpl(
           startup.preheat.status = 'failed';
           startup.preheat.error = message;
         }
-        writeStderrLine(`qwen serve: runtime startup failed: ${message}`);
+        writeStderrLine(`canopy serve: runtime startup failed: ${message}`);
         daemonLog.error('runtime startup failed', error);
         markRuntimeFailed(error);
         if (closeServerAfterChannelWorkerStartupFailure && server.listening) {
@@ -7245,7 +7248,7 @@ async function runQwenServeImpl(
             );
             startup.preheat.error = message;
             writeStderrLine(
-              `qwen serve: ACP preheat failed, will retry on first session: ${message}`,
+              `canopy serve: ACP preheat failed, will retry on first session: ${message}`,
             );
           });
       };
@@ -7320,11 +7323,11 @@ async function runQwenServeImpl(
           // Match standard daemon behavior (nginx, redis, etc.):
           // first signal = graceful drain; second = hard exit.
           //
-          // Synchronously SIGKILL every live `qwen --acp`
+          // Synchronously SIGKILL every live `canopy --acp`
           // child BEFORE `process.exit(1)`. Otherwise the daemon
           // vanishes but its child processes keep running with
           // dangling stdin/stdout pipes — visible as orphan
-          // `qwen` processes in the operator's `ps` output.
+          // `canopy` processes in the operator's `ps` output.
           daemonLog.warn(`received ${signal} during drain — forcing exit`);
           try {
             managedProcessRegistry?.killAllSync();
@@ -7485,7 +7488,7 @@ async function runQwenServeImpl(
               )
                 .catch((telemetryErr) => {
                   writeStderrLine(
-                    `qwen serve: telemetry shutdown error: ${
+                    `canopy serve: telemetry shutdown error: ${
                       telemetryErr instanceof Error
                         ? telemetryErr.message
                         : String(telemetryErr)
@@ -7726,12 +7729,12 @@ async function runQwenServeImpl(
         }
         if (opts.channelSelection?.mode === 'all') {
           writeStderrLine(
-            'qwen serve: --channel all is primary-workspace only; non-primary workspace channels are not hosted.',
+            'canopy serve: --channel all is primary-workspace only; non-primary workspace channels are not hosted.',
           );
         }
       }
       writeStdoutLine(
-        `qwen serve listening on ${url} (mode=${opts.mode}, ` +
+        `canopy serve listening on ${url} (mode=${opts.mode}, ` +
           `workspace=${boundWorkspace})`,
       );
       // Operator log on stderr too (systemd/docker/k8s default
@@ -7747,20 +7750,20 @@ async function runQwenServeImpl(
       // somehow contained one — operator-controlled today, but
       // cheap defense-in-depth).
       writeStderrLine(
-        `qwen serve: bound to workspace ${JSON.stringify(boundWorkspace)}`,
+        `canopy serve: bound to workspace ${JSON.stringify(boundWorkspace)}`,
       );
       writeStderrLine(
-        `qwen serve: startup timing: processToListenMs=${startup.processToListenMs} ` +
-          `runQwenServeToListenMs=${startup.runQwenServeToListenMs}`,
+        `canopy serve: startup timing: processToListenMs=${startup.processToListenMs} ` +
+          `runCanopyServeToListenMs=${startup.runCanopyServeToListenMs}`,
       );
       if (!token) {
         writeStderrLine(
-          `qwen serve: bearer auth disabled (loopback default). Set ${QWEN_SERVER_TOKEN_ENV} to enable.`,
+          `canopy serve: bearer auth disabled (loopback default). Set ${CANOPY_SERVER_TOKEN_ENV} to enable.`,
         );
         if (opts.clientMcpOverWs === true) {
           writeStderrLine(
-            `qwen serve: client-hosted MCP tools are accepted over the WebSocket without auth. ` +
-              `Set ${QWEN_SERVE_CLIENT_MCP_OVER_WS_ENV}=0 to disable.`,
+            `canopy serve: client-hosted MCP tools are accepted over the WebSocket without auth. ` +
+              `Set ${CANOPY_SERVE_CLIENT_MCP_OVER_WS_ENV}=0 to disable.`,
           );
         }
       } else if (opts.requireAuth) {
@@ -7771,7 +7774,7 @@ async function runQwenServeImpl(
         // `/capabilities` (and is a useful breadcrumb when triaging
         // "why is loopback returning 401" tickets).
         writeStderrLine(
-          'qwen serve: --require-auth enabled (bearer token mandatory ' +
+          'canopy serve: --require-auth enabled (bearer token mandatory ' +
             'on every route, including loopback /health).',
         );
       }
@@ -7839,7 +7842,7 @@ async function runQwenServeImpl(
                 if (hasRetryableChannelWorkerShutdownError(closeErr)) {
                   writeDaemonLifecycleBestEffort(() =>
                     daemonLog.error(
-                      'runtime startup failed, but qwen serve remains alive to retain the channel service lease until worker exit is confirmed',
+                      'runtime startup failed, but canopy serve remains alive to retain the channel service lease until worker exit is confirmed',
                     ),
                   );
                   return;
@@ -7901,14 +7904,14 @@ async function runQwenServeImpl(
           attempt < MAX_PORT_ATTEMPTS - 1
         ) {
           writeStderrLine(
-            `qwen serve: port ${attemptPort} is in use, trying ${nextPort}...`,
+            `canopy serve: port ${attemptPort} is in use, trying ${nextPort}...`,
           );
           tryListen(nextPort, attempt + 1);
           return;
         }
         if (err.code === 'EADDRINUSE' && attempt > 0) {
           writeStderrLine(
-            `qwen serve: all ports ${opts.port}–${attemptPort} are in use`,
+            `canopy serve: all ports ${opts.port}–${attemptPort} are in use`,
           );
         }
         removeCurrentServePidfile();

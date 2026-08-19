@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,14 +22,14 @@ import {
 describe('getAgentViewSupervisorSocketPath', () => {
   it('returns a named pipe on win32', () => {
     const socketPath = getAgentViewSupervisorSocketPath({
-      globalDir: '/tmp/qwen-agent-view-win',
+      globalDir: '/tmp/canopy-agent-view-win',
       platform: 'win32',
     });
-    expect(socketPath.startsWith('\\\\.\\pipe\\qwen-agent-view-')).toBe(true);
+    expect(socketPath.startsWith('\\\\.\\pipe\\canopy-agent-view-')).toBe(true);
   });
 
   it('returns a daemon-dir socket for short unix paths', () => {
-    const globalDir = '/tmp/qwen-av';
+    const globalDir = '/tmp/canopy-av';
     const socketPath = getAgentViewSupervisorSocketPath({
       globalDir,
       platform: 'linux',
@@ -38,8 +38,8 @@ describe('getAgentViewSupervisorSocketPath', () => {
   });
 
   it('falls back to the runtime dir for long unix paths', () => {
-    const globalDir = path.join(os.tmpdir(), `qwen-${'x'.repeat(200)}`);
-    const runtimeDir = '/tmp/qwen-runtime';
+    const globalDir = path.join(os.tmpdir(), `canopy-${'x'.repeat(200)}`);
+    const runtimeDir = '/tmp/canopy-runtime';
     const socketPath = getAgentViewSupervisorSocketPath({
       globalDir,
       platform: 'linux',
@@ -52,7 +52,7 @@ describe('getAgentViewSupervisorSocketPath', () => {
   });
 
   it('is deterministic for the same global dir', () => {
-    const globalDir = '/tmp/qwen-agent-view-deterministic';
+    const globalDir = '/tmp/canopy-agent-view-deterministic';
     expect(
       getAgentViewSupervisorSocketPath({ globalDir, platform: 'linux' }),
     ).toBe(getAgentViewSupervisorSocketPath({ globalDir, platform: 'linux' }));
@@ -60,14 +60,14 @@ describe('getAgentViewSupervisorSocketPath', () => {
 
   it('isolates the tmpdir fallback socket in a per-uid directory', () => {
     if (process.platform === 'win32') return;
-    const globalDir = path.join(os.tmpdir(), `qwen-${'x'.repeat(200)}`);
+    const globalDir = path.join(os.tmpdir(), `canopy-${'x'.repeat(200)}`);
     const socketPath = getAgentViewSupervisorSocketPath({
       globalDir,
       platform: 'linux',
     });
     const uid = process.getuid?.();
     expect(socketPath).toContain(
-      `${path.sep}qwen-agent-view-${uid}${path.sep}`,
+      `${path.sep}canopy-agent-view-${uid}${path.sep}`,
     );
     expect(socketPath.endsWith('.sock')).toBe(true);
   });
@@ -86,7 +86,7 @@ describe('createAgentViewSupervisorHandler', () => {
 
   async function makeGlobalDir(): Promise<string> {
     const dir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-agent-view-process-'),
+      path.join(os.tmpdir(), 'canopy-agent-view-process-'),
     );
     cleanupDirs.push(dir);
     return dir;
@@ -156,7 +156,7 @@ describe('createAgentViewSupervisorHandler', () => {
 
   it('acknowledges subscribers and registers a close handler', () => {
     const handler = createAgentViewSupervisorHandler({
-      globalDir: '/tmp/qwen-agent-view-subscribe',
+      globalDir: '/tmp/canopy-agent-view-subscribe',
     });
     const writes: string[] = [];
     let onClose: (() => void) | undefined;

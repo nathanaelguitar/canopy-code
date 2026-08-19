@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   HookEventName,
   HooksConfigSource,
   HookType,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { HookConfigDetailStep } from './HookConfigDetailStep.js';
 import type { HookEventDisplayInfo, HookConfigDisplayInfo } from './types.js';
 
@@ -38,7 +38,7 @@ vi.mock('../../semantic-colors.js', () => ({
 describe('HookConfigDetailStep', () => {
   const createMockHookEvent = (): HookEventDisplayInfo => ({
     event: HookEventName.Stop,
-    shortDescription: 'Right before Qwen Code concludes its response',
+    shortDescription: 'Right before Canopy Code concludes its response',
     description: '',
     exitCodes: [
       { code: 0, description: 'stdout/stderr not shown' },
@@ -133,7 +133,7 @@ describe('HookConfigDetailStep', () => {
     const hookConfig = createMockHookConfig(
       HooksConfigSource.Extensions,
       'ralph-wiggum',
-      '/Users/test/.qwen/extensions/ralph-wiggum',
+      '/Users/test/.canopy/extensions/ralph-wiggum',
     );
 
     const { lastFrame } = render(
@@ -141,7 +141,9 @@ describe('HookConfigDetailStep', () => {
     );
 
     expect(lastFrame()).toContain('Extensions');
-    expect(lastFrame()).toContain('/Users/test/.qwen/extensions/ralph-wiggum');
+    expect(lastFrame()).toContain(
+      '/Users/test/.canopy/extensions/ralph-wiggum',
+    );
   });
 
   it('should render Extension field for extensions', () => {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -136,7 +136,7 @@ export interface CollectMemoryPressureSamplesOptions {
 }
 
 function defaultHeapSnapshotDir(): string {
-  return path.join(os.homedir(), '.qwen', 'memory-snapshots');
+  return path.join(os.homedir(), '.canopy', 'memory-snapshots');
 }
 
 function formatSnapshotTimestamp(now: Date): string {
@@ -185,7 +185,7 @@ function cleanupOldHeapSnapshots(
     .readdirSync(outputDir)
     .filter(
       (name) =>
-        name.startsWith('qwen-code-heap-') && name.endsWith('.heapsnapshot'),
+        name.startsWith('canopy-code-heap-') && name.endsWith('.heapsnapshot'),
     )
     .map((name) => path.join(outputDir, name))
     .sort((a, b) => {
@@ -220,7 +220,7 @@ function extractHeapSnapshotTimestamp(filePath: string): string {
   return (
     path
       .basename(filePath)
-      .match(/^qwen-code-heap-\d+-(.+)\.heapsnapshot$/)?.[1] ?? ''
+      .match(/^canopy-code-heap-\d+-(.+)\.heapsnapshot$/)?.[1] ?? ''
   );
 }
 
@@ -283,7 +283,7 @@ export function writeMemoryHeapSnapshot({
 
   const filePath = path.join(
     outputDir,
-    `qwen-code-heap-${process.pid}-${formatSnapshotTimestamp(now)}.heapsnapshot`,
+    `canopy-code-heap-${process.pid}-${formatSnapshotTimestamp(now)}.heapsnapshot`,
   );
 
   let writtenPath: string;
@@ -424,7 +424,7 @@ function buildMemoryInsights(diagnostics: MemoryDiagnostics): MemoryInsights {
       'V8 heap statistics are unavailable; heap pressure assessment may be incomplete.',
     );
     recommendations.push(
-      'Re-run /doctor memory after restarting Qwen Code; if V8 diagnostics remain unavailable, include this report when filing an issue.',
+      'Re-run /doctor memory after restarting Canopy Code; if V8 diagnostics remain unavailable, include this report when filing an issue.',
     );
   }
 
@@ -433,7 +433,7 @@ function buildMemoryInsights(diagnostics: MemoryDiagnostics): MemoryInsights {
       'V8 heap usage is high; the process is close to its configured heap limit.',
     );
     recommendations.push(
-      'If the CLI is sluggish or near OOM, restart Qwen Code to recover memory, then capture a heap snapshot before the next restart to identify retained objects.',
+      'If the CLI is sluggish or near OOM, restart Canopy Code to recover memory, then capture a heap snapshot before the next restart to identify retained objects.',
     );
   }
 

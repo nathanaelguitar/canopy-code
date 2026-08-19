@@ -935,12 +935,12 @@ describe('BaseLlmClient', () => {
         getSessionId: vi.fn().mockReturnValue('test-session-id'),
         getContentGeneratorConfig: vi
           .fn()
-          .mockReturnValue({ authType: AuthType.QWEN_OAUTH }),
+          .mockReturnValue({ authType: AuthType.CANOPY_OAUTH }),
         getEmbeddingModel: vi.fn().mockReturnValue('test-embedding-model'),
         getModel: vi.fn().mockReturnValue('main-model'),
         getFastModel: vi.fn().mockReturnValue(undefined),
         getAllConfiguredModels: vi.fn((authTypes?: AuthType[]) =>
-          authTypes?.includes(AuthType.QWEN_OAUTH)
+          authTypes?.includes(AuthType.CANOPY_OAUTH)
             ? []
             : [
                 {
@@ -959,7 +959,7 @@ describe('BaseLlmClient', () => {
       const resolved = await c.resolveForModel('main-model');
 
       expect(resolved.contentGenerator).toBe(mockContentGenerator);
-      expect(resolved.retryAuthType).toBe(AuthType.QWEN_OAUTH);
+      expect(resolved.retryAuthType).toBe(AuthType.CANOPY_OAUTH);
       expect(getResolvedModel).not.toHaveBeenCalled();
       expect(mockCreateContentGenerator).not.toHaveBeenCalled();
     });
@@ -988,9 +988,9 @@ describe('BaseLlmClient', () => {
     });
 
     it('builds a per-model generator when model differs and is registered under another authType', async () => {
-      // Main authType is QWEN_OAUTH; fast model only resolves under USE_ANTHROPIC.
+      // Main authType is CANOPY_OAUTH; fast model only resolves under USE_ANTHROPIC.
       getResolvedModel.mockImplementation((authType: string, model: string) => {
-        if (authType === AuthType.QWEN_OAUTH) return undefined;
+        if (authType === AuthType.CANOPY_OAUTH) return undefined;
         if (authType === AuthType.USE_ANTHROPIC && model === fastModel) {
           return {
             authType: AuthType.USE_ANTHROPIC,
@@ -1139,7 +1139,7 @@ describe('BaseLlmClient', () => {
       await c.resolveForModel(`qwen3.7-plus\0${selectedBaseUrl}`);
 
       expect(getResolvedModel).toHaveBeenCalledWith(
-        AuthType.QWEN_OAUTH,
+        AuthType.CANOPY_OAUTH,
         'qwen3.7-plus',
         selectedBaseUrl,
       );
@@ -1334,7 +1334,7 @@ describe('BaseLlmClient', () => {
 
       expect(resolved.contentGenerator).toBe(mockContentGenerator);
       // Falls back to main authType for retry classification.
-      expect(resolved.retryAuthType).toBe(AuthType.QWEN_OAUTH);
+      expect(resolved.retryAuthType).toBe(AuthType.CANOPY_OAUTH);
       expect(mockCreateContentGenerator).not.toHaveBeenCalled();
     });
 

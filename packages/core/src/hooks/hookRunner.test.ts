@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -123,7 +123,7 @@ describe('HookRunner', () => {
       expect(mockSpawn).toHaveBeenCalled();
     });
 
-    it('strips Qwen-internal daemon secrets from the hook child env (#6601)', async () => {
+    it('strips Canopy-internal daemon secrets from the hook child env (#6601)', async () => {
       const originalServerToken = process.env['QWEN_SERVER_TOKEN'];
       const originalDaemonToken = process.env['QWEN_DAEMON_TOKEN'];
       process.env['QWEN_SERVER_TOKEN'] = 'serve-secret';
@@ -151,7 +151,7 @@ describe('HookRunner', () => {
         expect(spawnOptions.env['QWEN_DAEMON_TOKEN']).toBeUndefined();
         // Benign inherited env and the hook's own vars are still present.
         expect(spawnOptions.env['PATH']).toBeDefined();
-        expect(spawnOptions.env['QWEN_PROJECT_DIR']).toBe('/test');
+        expect(spawnOptions.env['CANOPY_PROJECT_DIR']).toBe('/test');
       } finally {
         if (originalServerToken === undefined) {
           delete process.env['QWEN_SERVER_TOKEN'];

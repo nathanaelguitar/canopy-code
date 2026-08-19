@@ -9,7 +9,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import {
-  convertClaudeToQwenConfig,
+  convertClaudeToCanopyConfig,
   convertClaudeAgentConfig,
   mergeClaudeConfigs,
   isClaudePluginConfig,
@@ -36,14 +36,14 @@ vi.mock('./github.js', async (importOriginal) => {
   };
 });
 
-describe('convertClaudeToQwenConfig', () => {
+describe('convertClaudeToCanopyConfig', () => {
   it('should convert basic Claude config', () => {
     const claudeConfig: ClaudePluginConfig = {
       name: 'claude-plugin',
       version: '1.0.0',
     };
 
-    const result = convertClaudeToQwenConfig(claudeConfig);
+    const result = convertClaudeToCanopyConfig(claudeConfig);
 
     expect(result.name).toBe('claude-plugin');
     expect(result.version).toBe('1.0.0');
@@ -58,7 +58,7 @@ describe('convertClaudeToQwenConfig', () => {
       skills: ['skills/skill1'],
     };
 
-    const result = convertClaudeToQwenConfig(claudeConfig);
+    const result = convertClaudeToCanopyConfig(claudeConfig);
 
     // Commands, skills, agents are collected as directories, not in config
     expect(result.name).toBe('full-plugin');
@@ -81,7 +81,7 @@ describe('convertClaudeToQwenConfig', () => {
       },
     };
 
-    const result = convertClaudeToQwenConfig(claudeConfig);
+    const result = convertClaudeToCanopyConfig(claudeConfig);
 
     expect(result.lspServers).toEqual(claudeConfig.lspServers);
   });
@@ -93,7 +93,7 @@ describe('convertClaudeToQwenConfig', () => {
       description: 'A plugin with a description',
     };
 
-    const result = convertClaudeToQwenConfig(claudeConfig);
+    const result = convertClaudeToCanopyConfig(claudeConfig);
 
     expect(result.description).toBe('A plugin with a description');
   });
@@ -104,7 +104,7 @@ describe('convertClaudeToQwenConfig', () => {
       version: '1.0.0',
     };
 
-    const result = convertClaudeToQwenConfig(claudeConfig);
+    const result = convertClaudeToCanopyConfig(claudeConfig);
 
     expect(result.description).toBeUndefined();
   });
@@ -114,12 +114,12 @@ describe('convertClaudeToQwenConfig', () => {
       version: '1.0.0',
     } as ClaudePluginConfig;
 
-    expect(() => convertClaudeToQwenConfig(invalidConfig)).toThrow();
+    expect(() => convertClaudeToCanopyConfig(invalidConfig)).toThrow();
   });
 });
 
 describe('convertClaudeAgentConfig', () => {
-  it('should map Claude NotebookEdit to Qwen NotebookEdit', () => {
+  it('should map Claude NotebookEdit to Canopy NotebookEdit', () => {
     const result = convertClaudeAgentConfig({
       name: 'notebook-agent',
       description: 'Works on notebooks',
@@ -129,8 +129,8 @@ describe('convertClaudeAgentConfig', () => {
     expect(result['tools']).toEqual(['ReadFile', 'NotebookEdit', 'Edit']);
   });
 
-  it('should map Claude WebSearch to Qwen WebSearch', () => {
-    // WebSearch used to map to 'None' before qwen-code shipped a built-in
+  it('should map Claude WebSearch to Canopy WebSearch', () => {
+    // WebSearch used to map to 'None' before canopy-code shipped a built-in
     // web_search; reverting the mapping would silently strip search from
     // converted Claude extensions.
     const result = convertClaudeAgentConfig({
@@ -647,7 +647,7 @@ describe('convertClaudePluginPackage', () => {
       'crlf-agents-plugin',
     );
 
-    // Verify: agent file was properly parsed and converted into .qwen/agents folder structure
+    // Verify: agent file was properly parsed and converted into .canopy/agents folder structure
     const convertedAgentsDir = path.join(result.convertedDir, 'agents');
     expect(fs.existsSync(convertedAgentsDir)).toBe(true);
 
@@ -666,7 +666,7 @@ describe('convertClaudePluginPackage', () => {
   });
 
   it('should populate commands/skills/agents when marketplace references the whole folder (deep-wiki shape)', async () => {
-    // Regression test for https://github.com/QwenLM/qwen-code/issues/4452.
+    // Regression test for https://github.com/QwenLM/canopy-code/issues/4452.
     //
     // microsoft/skills/.../deep-wiki declares its resources as
     //   commands: ["./commands/"]
@@ -804,7 +804,7 @@ describe('convertClaudePluginPackage', () => {
     fs.rmSync(result.convertedDir, { recursive: true, force: true });
   });
 
-  it('should convert hooks from Claude plugin format to Qwen format with variable substitution', async () => {
+  it('should convert hooks from Claude plugin format to Canopy format with variable substitution', async () => {
     // Setup: Create a plugin with hooks in Claude format
     const pluginSourceDir = path.join(testDir, 'plugin-with-hooks');
     fs.mkdirSync(pluginSourceDir, { recursive: true });
@@ -1043,13 +1043,13 @@ describe('convertClaudePluginStandalone', () => {
 
     const result = await convertClaudePluginStandalone(testDir);
 
-    // A qwen-extension.json must exist so the installer can load it.
+    // A canopy-extension.json must exist so the installer can load it.
     expect(
-      fs.existsSync(path.join(result.convertedDir, 'qwen-extension.json')),
+      fs.existsSync(path.join(result.convertedDir, 'canopy-extension.json')),
     ).toBe(true);
     expect(result.config.name).toBe('clickhouse');
     expect(result.config.version).toBe('1.0.0');
-    // MCP server folded in from .mcp.json and remapped to Qwen's transport
+    // MCP server folded in from .mcp.json and remapped to Canopy's transport
     // shape: Claude `type: 'http'` + `url` becomes `httpUrl` (streamable HTTP).
     const mcp = result.config.mcpServers?.['clickhouse'] as
       | { httpUrl?: string; url?: string; type?: string }
@@ -1283,7 +1283,7 @@ describe('performVariableReplacement for Claude extensions', () => {
     }
   });
 
-  it('should replace .claude with .qwen in shell scripts', () => {
+  it('should replace .claude with .canopy in shell scripts', () => {
     const extDir = path.join(testDir, 'ext-sh');
     fs.mkdirSync(extDir, { recursive: true });
 
@@ -1296,9 +1296,9 @@ describe('performVariableReplacement for Claude extensions', () => {
     performVariableReplacement(extDir);
 
     const result = fs.readFileSync(path.join(extDir, 'setup.sh'), 'utf-8');
-    expect(result).toContain('$HOME/.qwen/config');
-    expect(result).toContain('~/.qwen/cache');
-    expect(result).toContain('./.qwen/local');
+    expect(result).toContain('$HOME/.canopy/config');
+    expect(result).toContain('~/.canopy/cache');
+    expect(result).toContain('./.canopy/local');
     expect(result).not.toContain('.claude');
   });
 
@@ -1555,7 +1555,7 @@ describe('normalizeClaudeMcpServer', () => {
   });
 
   it('drops a bogus non-sdk type from a websocket (tcp) config', () => {
-    // qwen reserves `type` for 'sdk' and selects websocket via the `tcp` field;
+    // canopy reserves `type` for 'sdk' and selects websocket via the `tcp` field;
     // any stray non-sdk `type` is meaningless and is removed.
     expect(norm({ type: 'tcp', tcp: 'localhost:8000' })).toEqual({
       tcp: 'localhost:8000',
@@ -1577,7 +1577,7 @@ describe('normalizeClaudeMcpServer', () => {
     });
   });
 
-  it('passes through an already-Qwen-shaped config unchanged', () => {
+  it('passes through an already-Canopy-shaped config unchanged', () => {
     expect(norm({ httpUrl: 'https://example.com/mcp' })).toEqual({
       httpUrl: 'https://example.com/mcp',
     });

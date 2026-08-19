@@ -7,7 +7,7 @@
 import {
   type ExtensionManager,
   getExtensionDisplayName,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getCurrentLanguage } from '../../i18n/index.js';
 import { getErrorMessage } from '../../utils/errors.js';
 import {

@@ -452,9 +452,9 @@ describe('Telemetry SDK', () => {
       .mockResolvedValue(undefined);
     const unlinkSpy = vi.spyOn(fs, 'unlink').mockResolvedValue(undefined);
     const symlinkSpy = vi.spyOn(fs, 'symlink').mockResolvedValue(undefined);
-    const previousDebugLogFileEnv = process.env['QWEN_DEBUG_LOG_FILE'];
+    const previousDebugLogFileEnv = process.env['CANOPY_DEBUG_LOG_FILE'];
     try {
-      process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+      process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
       setDebugLogSession({
         getSessionId: () => '11111111-2222-4333-8444-555555555555',
       });
@@ -504,9 +504,9 @@ describe('Telemetry SDK', () => {
       setDebugLogSession(null);
       resetDebugLoggingState();
       if (previousDebugLogFileEnv === undefined) {
-        delete process.env['QWEN_DEBUG_LOG_FILE'];
+        delete process.env['CANOPY_DEBUG_LOG_FILE'];
       } else {
-        process.env['QWEN_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
+        process.env['CANOPY_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
       }
     }
   });
@@ -646,9 +646,9 @@ describe('Telemetry SDK', () => {
     const appendFileSpy = vi
       .spyOn(fs, 'appendFile')
       .mockResolvedValue(undefined);
-    const previousDebugLogFileEnv = process.env['QWEN_DEBUG_LOG_FILE'];
+    const previousDebugLogFileEnv = process.env['CANOPY_DEBUG_LOG_FILE'];
     try {
-      process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+      process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
       setDebugLogSession({ getSessionId: () => 'log-to-span-sink-test' });
 
       await initializeTelemetry(mockConfig);
@@ -668,9 +668,9 @@ describe('Telemetry SDK', () => {
       });
     } finally {
       if (previousDebugLogFileEnv === undefined) {
-        delete process.env['QWEN_DEBUG_LOG_FILE'];
+        delete process.env['CANOPY_DEBUG_LOG_FILE'];
       } else {
-        process.env['QWEN_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
+        process.env['CANOPY_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
       }
       setDebugLogSession(null);
       resetDebugLoggingState();
@@ -902,7 +902,7 @@ describe('Telemetry SDK', () => {
     it('always sets service.name and service.version from runtime', async () => {
       await initializeTelemetry(mockConfig);
       const attrs = getResourceAttributes();
-      expect(attrs['service.name']).toBe('qwen-code');
+      expect(attrs['service.name']).toBe('canopy-code');
       expect(attrs['service.version']).toBe('1.0.0-test');
     });
 
@@ -919,10 +919,10 @@ describe('Telemetry SDK', () => {
 
     it('user-provided service.name wins over default', async () => {
       vi.spyOn(mockConfig, 'getTelemetryResourceAttributes').mockReturnValue({
-        'service.name': 'qwen-code-ci',
+        'service.name': 'canopy-code-ci',
       });
       await initializeTelemetry(mockConfig);
-      expect(getResourceAttributes()['service.name']).toBe('qwen-code-ci');
+      expect(getResourceAttributes()['service.name']).toBe('canopy-code-ci');
     });
 
     it('user-provided service.version is ignored (runtime value wins)', async () => {
@@ -940,7 +940,7 @@ describe('Telemetry SDK', () => {
         'service.name': '',
       });
       await initializeTelemetry(mockConfig);
-      expect(getResourceAttributes()['service.name']).toBe('qwen-code');
+      expect(getResourceAttributes()['service.name']).toBe('canopy-code');
     });
 
     it('whitespace-only service.name from settings falls back to default', async () => {
@@ -951,7 +951,7 @@ describe('Telemetry SDK', () => {
         'service.name': '   ',
       });
       await initializeTelemetry(mockConfig);
-      expect(getResourceAttributes()['service.name']).toBe('qwen-code');
+      expect(getResourceAttributes()['service.name']).toBe('canopy-code');
     });
 
     it('emits a console summary when resource-attribute warnings are present', async () => {

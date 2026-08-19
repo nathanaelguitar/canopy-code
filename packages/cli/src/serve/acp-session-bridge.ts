@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@
  * `defaultSpawnChannelFactory`, `createAcpSessionBridge` factory closure,
  * plus the supporting types/errors/options/status) to
  * `@qwen-code/acp-bridge`. This shim preserves the CLI-local bridge import
- * surface so `server.ts`, `run-qwen-serve.ts`, `workspace-agents.ts`,
+ * surface so `server.ts`, `run-canopy-serve.ts`, `workspace-agents.ts`,
  * `workspace-memory.ts`, `index.ts`, plus the bridge test suite, keep resolving
  * through one module.
  *

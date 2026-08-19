@@ -80,7 +80,7 @@ describe('getSoftwareCursorBackground terminal-derived default', () => {
     // The TUI never paints the theme background, so a light theme forced onto a
     // dark terminal must still yield a light cursor that stays visible on the
     // dark terminal.
-    themeManager.setActiveTheme('Qwen Light');
+    themeManager.setActiveTheme('Canopy Light');
     setDetectedTerminal('dark');
     expect(getSoftwareCursorBackground()).toBe('#D4D4D4');
   });

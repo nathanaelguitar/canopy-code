@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review extract-step`: lift one workflow step's `run:` script out of a
+// `canopy review extract-step`: lift one workflow step's `run:` script out of a
 // workflow file, verbatim, into an executable — so a claim about what a
 // workflow DOES can be settled by running the real step instead of reading it.
 //

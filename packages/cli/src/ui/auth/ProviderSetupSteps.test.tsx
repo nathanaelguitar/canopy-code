@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { renderWithProviders } from '../../test-utils/render.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import type { KeypressHandler, Key } from '../contexts/KeypressContext.js';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { ProviderSetupSteps } from './ProviderSetupSteps.js';

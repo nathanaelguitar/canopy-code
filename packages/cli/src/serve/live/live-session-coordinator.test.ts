@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import type {
   BridgePendingInteraction,
 } from '@qwen-code/acp-bridge/bridgeTypes';
 import type { BridgeEvent } from '@qwen-code/acp-bridge/eventBus';
-import type { SessionListItem } from '@qwen-code/qwen-code-core';
+import type { SessionListItem } from '@canopy-code/canopy-code-core';
 import type {
   WorkspaceRegistry,
   WorkspaceRuntime,
@@ -21,20 +21,20 @@ import {
   type LiveSessionHostControl,
 } from './live-session-coordinator.js';
 import {
-  QwenRealtimeError,
-  type QwenRealtimeCallbacks,
-  type QwenRealtimeSession,
+  CanopyRealtimeError,
+  type CanopyRealtimeCallbacks,
+  type CanopyRealtimeSession,
   type RealtimeTranscriptEntry,
-} from './qwen-realtime-session.js';
+} from './canopy-realtime-session.js';
 
 const readPersistedParentSessionId = vi.hoisted(() => vi.fn());
 const buildRealtimeStartupContext = vi.hoisted(() =>
   vi.fn(async () => '<startup_context>test context</startup_context>'),
 );
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     SessionService: class {
@@ -67,7 +67,7 @@ interface PendingTurn {
   resolve: () => void;
 }
 
-type FakeRealtimeSession = QwenRealtimeSession & {
+type FakeRealtimeSession = CanopyRealtimeSession & {
   pushAudio: ReturnType<typeof vi.fn>;
   commitInputAudio: ReturnType<typeof vi.fn>;
   clearInputAudio: ReturnType<typeof vi.fn>;
@@ -88,7 +88,7 @@ function makeHarness(
   options: {
     recent?: SessionListItem[];
     enqueueAccepted?: boolean;
-    providerError?: QwenRealtimeError;
+    providerError?: CanopyRealtimeError;
     transcriptTail?: RealtimeTranscriptEntry[];
     transcriptPersistenceError?: Error;
     pendingInteractions?: BridgePendingInteraction[];
@@ -236,7 +236,7 @@ function makeHarness(
     setCaption: vi.fn(() => true),
     setStatusText: vi.fn(() => true),
   } satisfies LiveSessionHostControl;
-  let callbacks: QwenRealtimeCallbacks | undefined;
+  let callbacks: CanopyRealtimeCallbacks | undefined;
   let resolveClosed!: (value: { reason: 'client' }) => void;
   const realtime = {
     callEpoch: 1,
@@ -257,8 +257,8 @@ function makeHarness(
   const openRealtimeSession = vi.fn(
     async (
       _config: unknown,
-      nextCallbacks: QwenRealtimeCallbacks,
-    ): Promise<QwenRealtimeSession> => {
+      nextCallbacks: CanopyRealtimeCallbacks,
+    ): Promise<CanopyRealtimeSession> => {
       if (options.providerError) throw options.providerError;
       callbacks = nextCallbacks;
       nextCallbacks.onReady?.({ callEpoch: 1, sessionId: 'realtime-1' });
@@ -432,7 +432,11 @@ describe('LiveSessionCoordinator', () => {
     const harness = makeHarness();
     harness.host.setCoordinator.mockReturnValueOnce(false);
 
-    await harness.coordinator.start({ epoch: 1, callId: 'call-1', mode: 'new' });
+    await harness.coordinator.start({
+      epoch: 1,
+      callId: 'call-1',
+      mode: 'new',
+    });
 
     expect(harness.host.failCall).toHaveBeenCalledWith(
       1,
@@ -1019,7 +1023,7 @@ describe('LiveSessionCoordinator', () => {
       {
         type: 'tool_update',
         toolName: 'create_sub_session',
-        rawOutput: '[🧵 worker-1](qwen-session://worker-1) started',
+        rawOutput: '[🧵 worker-1](canopy-session://worker-1) started',
       },
       { type: 'message', text: '任务已创建。' },
     ]);
@@ -1086,7 +1090,7 @@ describe('LiveSessionCoordinator', () => {
       data: {
         requestId: 'question-1',
         toolCall: {
-          _meta: { qwenInteractionKind: 'user_question' },
+          _meta: { canopyInteractionKind: 'user_question' },
         },
       },
     });
@@ -1315,7 +1319,7 @@ describe('LiveSessionCoordinator', () => {
 
   it('reports provider configuration failures without retrying', async () => {
     const harness = makeHarness({
-      providerError: new QwenRealtimeError(
+      providerError: new CanopyRealtimeError(
         'Invalid API key.',
         'invalid_api_key',
         true,

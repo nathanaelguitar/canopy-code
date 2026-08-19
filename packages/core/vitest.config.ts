@@ -15,7 +15,7 @@ export default defineConfig({
     // Assertions still fail instantly; only the timeout ceiling grows.
     testTimeout: 15000,
     // ECS hosts run several jobs at once; leave capacity for neighboring jobs.
-    maxWorkers: process.env['RUNNER_NAME']?.startsWith('ecs-qwen-')
+    maxWorkers: process.env['RUNNER_NAME']?.startsWith('ecs-canopy-')
       ? '25%'
       : undefined,
     reporters: ['default', 'junit'],

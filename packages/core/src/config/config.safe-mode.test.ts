@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -112,10 +112,10 @@ vi.mock('../skills/skill-manager.js', () => {
 });
 
 vi.mock('../core/contentGenerator.js', () => ({
-  AuthType: { QWEN_API_KEY: 'qwen_api_key' },
+  AuthType: { CANOPY_API_KEY: 'canopy_api_key' },
   Protocol: {
     OPENAI: 'openai',
-    QWEN_OAUTH: 'qwen-oauth',
+    CANOPY_OAUTH: 'canopy-oauth',
     GEMINI: 'gemini',
     ANTHROPIC: 'anthropic',
   },
@@ -152,7 +152,7 @@ vi.mock('../telemetry/index.js', () => ({
   logStartSession: vi.fn(),
   logRipgrepFallback: vi.fn(),
   StartSessionEvent: vi.fn(),
-  QwenLogger: vi.fn().mockImplementation(() => ({
+  CanopyLogger: vi.fn().mockImplementation(() => ({
     logStartSessionEvent: vi.fn(),
   })),
 }));
@@ -197,7 +197,7 @@ describe('Config safe mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env = { ...originalEnv };
-    delete process.env['QWEN_CODE_SAFE_MODE'];
+    delete process.env['CANOPY_CODE_SAFE_MODE'];
     (fs.existsSync as Mock).mockReturnValue(true);
     (fs.readdirSync as Mock).mockReturnValue([]);
     vi.mocked(fs.realpathSync).mockImplementation((p) => p.toString());
@@ -218,32 +218,32 @@ describe('Config safe mode', () => {
       expect(config.isSafeMode()).toBe(true);
     });
 
-    it('returns true when QWEN_CODE_SAFE_MODE=true', () => {
-      process.env['QWEN_CODE_SAFE_MODE'] = 'true';
+    it('returns true when CANOPY_CODE_SAFE_MODE=true', () => {
+      process.env['CANOPY_CODE_SAFE_MODE'] = 'true';
       const config = new Config(baseParams);
       expect(config.isSafeMode()).toBe(true);
     });
 
-    it('returns true when QWEN_CODE_SAFE_MODE=1', () => {
-      process.env['QWEN_CODE_SAFE_MODE'] = '1';
+    it('returns true when CANOPY_CODE_SAFE_MODE=1', () => {
+      process.env['CANOPY_CODE_SAFE_MODE'] = '1';
       const config = new Config(baseParams);
       expect(config.isSafeMode()).toBe(true);
     });
 
-    it('returns false when QWEN_CODE_SAFE_MODE is set to other values', () => {
-      process.env['QWEN_CODE_SAFE_MODE'] = 'false';
+    it('returns false when CANOPY_CODE_SAFE_MODE is set to other values', () => {
+      process.env['CANOPY_CODE_SAFE_MODE'] = 'false';
       const config = new Config(baseParams);
       expect(config.isSafeMode()).toBe(false);
     });
 
     it('explicit false param overrides env var (--no-safe-mode)', () => {
-      process.env['QWEN_CODE_SAFE_MODE'] = 'true';
+      process.env['CANOPY_CODE_SAFE_MODE'] = 'true';
       const config = new Config({ ...baseParams, safeMode: false });
       expect(config.isSafeMode()).toBe(false);
     });
 
     it('undefined param falls through to env var', () => {
-      process.env['QWEN_CODE_SAFE_MODE'] = 'true';
+      process.env['CANOPY_CODE_SAFE_MODE'] = 'true';
       const config = new Config({ ...baseParams, safeMode: undefined });
       expect(config.isSafeMode()).toBe(true);
     });
@@ -417,7 +417,7 @@ describe('Config safe mode', () => {
     // param exactly the same way it does safe mode's `topTierMcpServers`
     // field (`packages/cli/src/config/config.ts`'s `bareMode || safeMode ?
     // { ...topTierMcpServers } : assembleMcpServers(...)`) — found
-    // live-testing `qwen --bare --mcp-config`, same stranded-server symptom.
+    // live-testing `canopy --bare --mcp-config`, same stranded-server symptom.
     // Unlike the safe-mode tests above, bare mode has no redundant
     // `getMcpServers()`-level short-circuit of its own — bare mode's
     // "local sources dropped" guarantee lives entirely in that CLI-layer

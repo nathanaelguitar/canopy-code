@@ -1,4 +1,4 @@
-// Copyright 2026 Qwen Team
+// Copyright 2026 Canopy Team
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -70,9 +70,9 @@ vi.mock('../../services/review-worktree-lease.js', () => ({
   readReviewWorktreeLease: mocks.readReviewWorktreeLease,
   reviewLeaseHeldByAnotherSession: mocks.reviewLeaseHeldByAnotherSession,
   reviewLeasePath: (repositoryRoot: string, target: string) =>
-    `${repositoryRoot}/.qwen/tmp/qwen-review-lease-${target}.json`,
+    `${repositoryRoot}/.canopy/tmp/canopy-review-lease-${target}.json`,
   isReviewLeaseFile: (fileName: string) =>
-    /^qwen-review-lease-pr-\d+\.json$/.test(fileName),
+    /^canopy-review-lease-pr-\d+\.json$/.test(fileName),
 }));
 
 vi.mock('./lib/git.js', () => ({
@@ -88,15 +88,15 @@ vi.mock('./lib/gh.js', () => ({
 }));
 
 vi.mock('./lib/paths.js', () => ({
-  worktreePath: (prNumber: string) => `/repo/.qwen/tmp/review-pr-${prNumber}`,
+  worktreePath: (prNumber: string) => `/repo/.canopy/tmp/review-pr-${prNumber}`,
   probeWorktreePath: (path: string) => `${path}-probe`,
   baseWorktreePath: (path: string) => `${path}-base`,
-  reviewBranch: (prNumber: string) => `qwen-review/pr-${prNumber}`,
-  LEASE_PREFIX: 'qwen-review-lease-',
-  REVIEW_TMP_DIR: '/repo/.qwen/tmp',
+  reviewBranch: (prNumber: string) => `canopy-review/pr-${prNumber}`,
+  LEASE_PREFIX: 'canopy-review-lease-',
+  REVIEW_TMP_DIR: '/repo/.canopy/tmp',
   tmpFile: (target: string, suffix: string) =>
-    `/repo/.qwen/tmp/qwen-review-${target}-${suffix}`,
-  tmpPrefix: (target: string) => `qwen-review-${target}-`,
+    `/repo/.canopy/tmp/canopy-review-${target}-${suffix}`,
+  tmpPrefix: (target: string) => `canopy-review-${target}-`,
 }));
 
 import {
@@ -131,11 +131,11 @@ describe('runCleanup', () => {
 
     expect(mocks.execFileSync).toHaveBeenCalledWith(
       'git',
-      ['branch', '-D', 'qwen-review/pr-123'],
+      ['branch', '-D', 'canopy-review/pr-123'],
       { stdio: 'pipe' },
     );
     expect(mocks.writeStderrLine).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to delete branch qwen-review/pr-123'),
+      expect.stringContaining('Failed to delete branch canopy-review/pr-123'),
     );
     expect(mocks.clearReviewWorktreeLease).not.toHaveBeenCalled();
   });
@@ -158,7 +158,7 @@ describe('runCleanup', () => {
     // every later cleanup, and nothing sweeps it automatically.
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
-    mocks.readdirSync.mockReturnValue(['qwen-review-pr-123-diff.txt']);
+    mocks.readdirSync.mockReturnValue(['canopy-review-pr-123-diff.txt']);
     mocks.rmSync.mockImplementation(() => {
       throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
     });
@@ -183,8 +183,8 @@ describe('runCleanup', () => {
       promptId: 'prompt-a',
       target: 'pr-123',
       repositoryRoot: '/repo',
-      worktreePath: '/repo/.qwen/tmp/review-pr-123',
-      branch: 'qwen-review/pr-123',
+      worktreePath: '/repo/.canopy/tmp/review-pr-123',
+      branch: 'canopy-review/pr-123',
     };
     mocks.readReviewWorktreeLease.mockReturnValueOnce(lease);
     mocks.reviewLeaseHeldByAnotherSession.mockImplementationOnce(
@@ -195,7 +195,7 @@ describe('runCleanup', () => {
     // gate would reach for the holder's side files and trip the
     // rmSync-not-called assertion below.
     mocks.existsSync.mockReturnValue(true);
-    mocks.readdirSync.mockReturnValue(['qwen-review-pr-123-diff.txt']);
+    mocks.readdirSync.mockReturnValue(['canopy-review-pr-123-diff.txt']);
 
     runCleanup('pr-123');
 
@@ -219,7 +219,7 @@ describe('runCleanup', () => {
     // The note must name the lease file itself — the operator cannot act on
     // "delete the lease file" without knowing which file that is.
     expect(mocks.writeStdoutLine).toHaveBeenCalledWith(
-      expect.stringContaining('qwen-review-lease-pr-123.json'),
+      expect.stringContaining('canopy-review-lease-pr-123.json'),
     );
   });
 
@@ -229,8 +229,8 @@ describe('runCleanup', () => {
       promptId: 'prompt-b',
       target: 'pr-123',
       repositoryRoot: '/repo',
-      worktreePath: '/repo/.qwen/tmp/review-pr-123',
-      branch: 'qwen-review/pr-123',
+      worktreePath: '/repo/.canopy/tmp/review-pr-123',
+      branch: 'canopy-review/pr-123',
     };
     mocks.readReviewWorktreeLease.mockReturnValueOnce(lease);
     mocks.reviewLeaseHeldByAnotherSession.mockReturnValueOnce(false);
@@ -256,8 +256,8 @@ describe('runCleanup', () => {
       promptId: 'prompt-b',
       target: 'pr-123',
       repositoryRoot: '/repo',
-      worktreePath: '/repo/.qwen/tmp/review-pr-123',
-      branch: 'qwen-review/pr-123',
+      worktreePath: '/repo/.canopy/tmp/review-pr-123',
+      branch: 'canopy-review/pr-123',
     };
     // First read (the gate): no lease yet. Second read (post-audit): session B
     // has acquired one.
@@ -319,9 +319,9 @@ describe('runCleanup', () => {
     runCleanup('pr-123');
 
     expect(mocks.releaseWorktree.mock.calls.map((c) => c[0])).toEqual([
-      '/repo/.qwen/tmp/review-pr-123',
-      '/repo/.qwen/tmp/review-pr-123-probe',
-      '/repo/.qwen/tmp/review-pr-123-base',
+      '/repo/.canopy/tmp/review-pr-123',
+      '/repo/.canopy/tmp/review-pr-123-probe',
+      '/repo/.canopy/tmp/review-pr-123-base',
     ]);
   });
 
@@ -335,7 +335,7 @@ describe('runCleanup', () => {
     runCleanup('pr-123');
 
     expect(mocks.rmSync).toHaveBeenCalledWith(
-      '/repo/.qwen/tmp/review-pr-123-base.lock',
+      '/repo/.canopy/tmp/review-pr-123-base.lock',
       { recursive: true, force: true },
     );
   });
@@ -348,17 +348,17 @@ describe('runCleanup', () => {
     // Lease removal belongs to `clearReviewWorktreeLease` alone.
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
-    mocks.readdirSync.mockReturnValue(['qwen-review-lease-pr-123.json']);
+    mocks.readdirSync.mockReturnValue(['canopy-review-lease-pr-123.json']);
 
     runCleanup('lease');
 
     expect(mocks.rmSync).not.toHaveBeenCalledWith(
-      join('/repo/.qwen/tmp', 'qwen-review-lease-pr-123.json'),
+      join('/repo/.canopy/tmp', 'canopy-review-lease-pr-123.json'),
       expect.anything(),
     );
     expect(
       mocks.writeStdoutLine.mock.calls.map((c) => String(c[0])).join('\n'),
-    ).not.toContain('qwen-review-lease-pr-123.json');
+    ).not.toContain('canopy-review-lease-pr-123.json');
   });
 
   it('sweeps the side files of a lease-named target that share the lease prefix', () => {
@@ -370,20 +370,20 @@ describe('runCleanup', () => {
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
     mocks.readdirSync.mockReturnValue([
-      'qwen-review-lease-diff.txt',
-      'qwen-review-lease-pr-999.json',
+      'canopy-review-lease-diff.txt',
+      'canopy-review-lease-pr-999.json',
     ]);
 
     runCleanup('lease');
 
-    const sideFile = join('/repo/.qwen/tmp', 'qwen-review-lease-diff.txt');
+    const sideFile = join('/repo/.canopy/tmp', 'canopy-review-lease-diff.txt');
     expect(mocks.rmSync).toHaveBeenCalledWith(sideFile, {
       recursive: true,
       force: true,
     });
     // A live foreign lease survives the very same sweep.
     expect(mocks.rmSync).not.toHaveBeenCalledWith(
-      join('/repo/.qwen/tmp', 'qwen-review-lease-pr-999.json'),
+      join('/repo/.canopy/tmp', 'canopy-review-lease-pr-999.json'),
       expect.anything(),
     );
   });
@@ -393,11 +393,11 @@ describe('runCleanup', () => {
     // prefix, not on the sweep itself.
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
-    mocks.readdirSync.mockReturnValue(['qwen-review-local-diff.txt']);
+    mocks.readdirSync.mockReturnValue(['canopy-review-local-diff.txt']);
 
     runCleanup('local');
 
-    const sideFile = join('/repo/.qwen/tmp', 'qwen-review-local-diff.txt');
+    const sideFile = join('/repo/.canopy/tmp', 'canopy-review-local-diff.txt');
     expect(mocks.rmSync).toHaveBeenCalledWith(sideFile, {
       recursive: true,
       force: true,
@@ -415,9 +415,9 @@ describe('runCleanup', () => {
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
     mocks.readdirSync.mockReturnValue([
-      'qwen-review-pr-123-fetch.json',
-      'qwen-review-pr-123-fetch-prompts',
-      'qwen-review-pr-123-diff.txt',
+      'canopy-review-pr-123-fetch.json',
+      'canopy-review-pr-123-fetch-prompts',
+      'canopy-review-pr-123-diff.txt',
     ]);
     mocks.readFileSync.mockImplementation((path: string): string => {
       if (path.endsWith('budget-stop.json')) {
@@ -439,14 +439,18 @@ describe('runCleanup', () => {
     runCleanup('pr-123');
 
     const removed = mocks.rmSync.mock.calls.map((c) => c[0]);
-    expect(removed).toContain('/repo/.qwen/tmp/qwen-review-pr-123-fetch.json');
-    expect(removed).toContain('/repo/.qwen/tmp/qwen-review-pr-123-diff.txt');
+    expect(removed).toContain(
+      '/repo/.canopy/tmp/canopy-review-pr-123-fetch.json',
+    );
+    expect(removed).toContain(
+      '/repo/.canopy/tmp/canopy-review-pr-123-diff.txt',
+    );
     expect(removed).not.toContain(
-      '/repo/.qwen/tmp/qwen-review-pr-123-fetch-prompts',
+      '/repo/.canopy/tmp/canopy-review-pr-123-fetch-prompts',
     );
     expect(mocks.writeStdoutLine).toHaveBeenCalledWith(
       expect.stringContaining(
-        'Kept /repo/.qwen/tmp/qwen-review-pr-123-fetch-prompts',
+        'Kept /repo/.canopy/tmp/canopy-review-pr-123-fetch-prompts',
       ),
     );
   });
@@ -458,15 +462,15 @@ describe('runCleanup', () => {
     mocks.execFileSync.mockReturnValue(Buffer.from(''));
     mocks.existsSync.mockReturnValue(true);
     mocks.readdirSync.mockReturnValue([
-      'qwen-review-pr-123-fetch.json',
-      'qwen-review-pr-123-fetch-prompts',
+      'canopy-review-pr-123-fetch.json',
+      'canopy-review-pr-123-fetch-prompts',
     ]);
     mocks.readFileSync.mockReturnValue(JSON.stringify({}));
 
     runCleanup('pr-123');
 
     expect(mocks.rmSync).toHaveBeenCalledWith(
-      '/repo/.qwen/tmp/qwen-review-pr-123-fetch-prompts',
+      '/repo/.canopy/tmp/canopy-review-pr-123-fetch-prompts',
       { recursive: true, force: true },
     );
   });
@@ -524,7 +528,7 @@ describe('findUnsanctionedIssueComments', () => {
       [
         comment({
           id: 9,
-          body: 'summary quoting:\n<!-- qwen-triage stage=1 -->',
+          body: 'summary quoting:\n<!-- canopy-triage stage=1 -->',
         }),
       ],
       'reviewer',
@@ -538,7 +542,7 @@ describe('findUnsanctionedIssueComments', () => {
       [
         comment({
           id: 7,
-          body: '<!-- qwen-pr-precheck:manual-required -->\nchecks…',
+          body: '<!-- canopy-pr-precheck:manual-required -->\nchecks…',
         }),
         comment({ id: 8, body: 'a human sentence' }),
       ],
@@ -637,7 +641,7 @@ describe('runCleanup — bypass-write audit', () => {
     runCleanup('pr-123');
 
     expect(mocks.readFileSync).toHaveBeenCalledWith(
-      '/repo/.qwen/tmp/qwen-review-pr-123-fetch.json',
+      '/repo/.canopy/tmp/canopy-review-pr-123-fetch.json',
       'utf8',
     );
     expect(mocks.setGhHost).toHaveBeenCalledWith('ghe.example.com');
@@ -649,7 +653,7 @@ describe('runCleanup — bypass-write audit', () => {
       .filter((l) => l.startsWith('warning:'));
     expect(warnings.join('\n')).toContain('posted comment 42');
     expect(warnings.join('\n')).not.toContain('comment 43');
-    expect(warnings.join('\n')).toContain('qwen review submit');
+    expect(warnings.join('\n')).toContain('canopy review submit');
   });
 
   it('stays silent when the window is clean', () => {

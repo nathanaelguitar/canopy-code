@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,8 +10,8 @@ import type { WizardStepProps } from '../types.js';
 import type {
   SubagentManager,
   SubagentConfig,
-} from '@qwen-code/qwen-code-core';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { theme } from '../../../semantic-colors.js';
 import { shouldShowColor, getColorForDisplay } from '../utils.js';
 import { useLaunchEditor } from '../../../hooks/useLaunchEditor.js';
@@ -263,8 +263,8 @@ export function CreationSummary({
           <Text color={theme.text.primary}>{t('Location: ')}</Text>
           <Text>
             {state.location === 'project'
-              ? t('Project Level (.qwen/agents/)')
-              : t('User Level (~/.qwen/agents/)')}
+              ? t('Project Level (.canopy/agents/)')
+              : t('User Level (~/.canopy/agents/)')}
           </Text>
         </Box>
 

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review base-tree`: stand up a BUILT tree at the merge base, so a claim
+// `canopy review base-tree`: stand up a BUILT tree at the merge base, so a claim
 // about changed behaviour can be measured instead of read.
 //
 // Every other step in this pipeline looks at one tree. The agents read the PR's
@@ -160,8 +160,8 @@ export function runBaseTree(args: BaseTreeArgs): BaseTreeReport {
   // the FIRST build can still collide — the window is narrow and the failure
   // is a build error, not a wrong verdict. A marker of the wrong SHA — a
   // rebase between runs — falls through to the rebuild below.)
-  const marker = () => join(tree, '.qwen-review-base-ok');
-  const failedMarker = () => join(tree, '.qwen-review-base-failed');
+  const marker = () => join(tree, '.canopy-review-base-ok');
+  const failedMarker = () => join(tree, '.canopy-review-base-failed');
   try {
     if (
       existsSync(tree) &&

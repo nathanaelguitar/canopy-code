@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,8 +34,8 @@ export const openRouterProvider: ProviderConfig = {
     }
   },
   customHeaders: {
-    'HTTP-Referer': 'https://github.com/QwenLM/qwen-code.git',
-    'X-OpenRouter-Title': 'Qwen Code',
+    'HTTP-Referer': 'https://github.com/QwenLM/canopy-code.git',
+    'X-OpenRouter-Title': 'Canopy Code',
   },
   documentationUrl: 'https://openrouter.ai/docs',
   uiGroup: 'third-party',

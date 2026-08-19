@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,12 +35,15 @@ import {
   constants,
 } from 'node:fs';
 import { join } from 'node:path';
-import { createDebugLogger, sessionIdContext } from '@qwen-code/qwen-code-core';
+import {
+  createDebugLogger,
+  sessionIdContext,
+} from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('SKILL_ARGS_FILE');
 
 /** Where a skill finds the arguments it was invoked with. */
-export const SKILL_ARGS_DIR = join('.qwen', 'tmp');
+export const SKILL_ARGS_DIR = join('.canopy', 'tmp');
 
 /** A component safe to put in a filename. */
 function safe(s: string): string {
@@ -51,7 +54,7 @@ function safe(s: string): string {
  * The current session id.
  *
  * Prefers the async-local `sessionIdContext` over the process-global
- * `QWEN_CODE_SESSION_ID`, and in that order for a reason: in daemon mode a single
+ * `CANOPY_CODE_SESSION_ID`, and in that order for a reason: in daemon mode a single
  * process serves many sessions, the env var holds whichever `Config` booted
  * first, and each turn binds its own session through `sessionIdContext.run(...)`.
  * Reading only the env would make a later session write under the first
@@ -65,7 +68,7 @@ function safe(s: string): string {
 export function currentSessionId(): string {
   return (
     sessionIdContext.getStore()?.trim() ||
-    process.env['QWEN_CODE_SESSION_ID']?.trim() ||
+    process.env['CANOPY_CODE_SESSION_ID']?.trim() ||
     ''
   );
 }
@@ -74,7 +77,7 @@ export function currentSessionId(): string {
  * Directory holding this session's skill-args files.
  *
  * The session scope lives in the **directory**, not the filename, so the file is
- * always `qwen-skill-args-<skill>.txt` — a stable name the skill prompt and the
+ * always `canopy-skill-args-<skill>.txt` — a stable name the skill prompt and the
  * cleanup step can reference without knowing the session id. A concurrent review
  * in another session writes into a different directory, so the two do not race,
  * and a stale file from an earlier session sits under that session's directory
@@ -100,7 +103,7 @@ export function skillArgsPath(
 ): string {
   return join(
     skillArgsDir(sessionId),
-    `qwen-skill-args-${safe(skillName)}.txt`,
+    `canopy-skill-args-${safe(skillName)}.txt`,
   );
 }
 
@@ -121,7 +124,7 @@ export function writeSkillArgs(skillName: string, args: string): string | null {
     mkdirSync(dir, { recursive: true });
     // `O_NOFOLLOW` protects the final filename, but not the parent: a symlinked
     // `s-<session>` directory — `s-attacker -> victim/` — redirects the write
-    // into `victim/qwen-skill-args-review.txt`, truncating an arbitrary
+    // into `victim/canopy-skill-args-review.txt`, truncating an arbitrary
     // user-writable file and leaving its 0644 mode to expose the raw arguments.
     // Refuse a session directory that is a symlink; `mkdirSync(recursive)` above
     // is a no-op on an existing one, so this is the only place to catch it.

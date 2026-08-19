@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  *
  * Inspired by gemini-cli's MouseContext (Google LLC, Apache-2.0): enable SGR
@@ -166,7 +166,7 @@ export function useMouseEvents(
 
   // Never write SGR mouse-mode escapes (?1002h ?1006h) unless stdout is a TTY.
   // `isRawModeSupported` only reflects stdin; with stdout piped/redirected
-  // (`qwen | tee log`) an active, raw-mode-capable surface — e.g. the non-TTY
+  // (`canopy | tee log`) an active, raw-mode-capable surface — e.g. the non-TTY
   // focused ScrollableList (`bypassVpGate`) — would otherwise emit
   // raw control bytes into the captured output. Mirrors the repo-wide
   // `process.stdout.isTTY` convention so the non-TTY fallback stays byte-clean.

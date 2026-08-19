@@ -2422,7 +2422,7 @@ export class CoreToolScheduler {
             const ruleInfo = matchingRule
               ? ` Matching deny rule: "${matchingRule}".`
               : '';
-            const permissionErrorMessage = `Qwen Code requires permission to use "${reqInfo.name}", but that permission was declined.${ruleInfo}`;
+            const permissionErrorMessage = `Canopy Code requires permission to use "${reqInfo.name}", but that permission was declined.${ruleInfo}`;
             newToolCalls.push({
               status: 'error',
               request: reqInfo,
@@ -2448,7 +2448,7 @@ export class CoreToolScheduler {
                   excludedTool.toLowerCase().trim() === normalizedToolName,
               );
               if (excludedMatch) {
-                const permissionErrorMessage = `Qwen Code requires permission to use ${excludedMatch}, but that permission was declined.`;
+                const permissionErrorMessage = `Canopy Code requires permission to use ${excludedMatch}, but that permission was declined.`;
                 newToolCalls.push({
                   status: 'error',
                   request: reqInfo,
@@ -3197,7 +3197,7 @@ export class CoreToolScheduler {
               const errorMessage =
                 planShellDecision.classification === 'unknown'
                   ? planShellDecision.noApprovalMessage
-                  : `Qwen Code requires permission to use "${reqInfo.name}", but that permission was declined (non-interactive mode cannot prompt for confirmation).`;
+                  : `Canopy Code requires permission to use "${reqInfo.name}", but that permission was declined (non-interactive mode cannot prompt for confirmation).`;
               if (planShellDecision.classification === 'unknown') {
                 rejectPlanShell(errorMessage);
                 continue;
@@ -3582,7 +3582,7 @@ export class CoreToolScheduler {
             if (hooksEnabled && messageBus) {
               fireNotificationHook(
                 messageBus,
-                `Qwen Code needs your permission to use ${reqInfo.name}`,
+                `Canopy Code needs your permission to use ${reqInfo.name}`,
                 NotificationType.PermissionPrompt,
                 'Permission needed',
               ).catch((error) => {
@@ -3883,7 +3883,7 @@ export class CoreToolScheduler {
           if (toolSpan) {
             try {
               toolSpan.setAttributes({
-                'qwen-code.tool.modify_with_editor_unavailable': true,
+                'canopy-code.tool.modify_with_editor_unavailable': true,
               });
             } catch {
               // OTel errors must not block API behavior.
@@ -4182,7 +4182,7 @@ export class CoreToolScheduler {
     signal: AbortSignal,
   ): Promise<void> {
     const maxConcurrency = parsePositiveIntegerEnv(
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'],
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'],
       10,
     );
     const executing = new Set<Promise<void>>();
@@ -4383,7 +4383,7 @@ export class CoreToolScheduler {
     if (!this.config.getDisableAllHooks() && messageBus) {
       fireNotificationHook(
         messageBus,
-        `Qwen Code needs your permission to use ${toolName}`,
+        `Canopy Code needs your permission to use ${toolName}`,
         NotificationType.PermissionPrompt,
         'Permission needed',
       ).catch((error) => {
@@ -4680,7 +4680,7 @@ export class CoreToolScheduler {
     //
     const sleepInhibitorHandle = acquireSleepInhibitor(
       this.config,
-      `Qwen Code is executing tool ${canonicalName}`,
+      `Canopy Code is executing tool ${canonicalName}`,
     );
     let removeParentAbortForward: (() => void) | undefined;
     let executionStatus: ToolExecutionStatus = 'not_started';
@@ -4692,13 +4692,13 @@ export class CoreToolScheduler {
       let promise: Promise<ToolResult>;
 
       // Per-tool-call execution timeout. Disabled by default (experimental):
-      // set QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS to a positive number of
+      // set CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS to a positive number of
       // milliseconds to cap how long a single tool call may run.
       // Cap at 2^31-1 to avoid setTimeout integer overflow (Node truncates
       // larger values to 1ms with TimeoutOverflowWarning).
       const toolExecutionTimeoutMs = Math.min(
         parsePositiveIntegerEnv(
-          process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'],
+          process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'],
           0,
         ),
         2_147_483_647,

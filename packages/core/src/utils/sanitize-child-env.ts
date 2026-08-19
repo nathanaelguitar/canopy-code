@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { PRIVATE_ACP_CAPABILITY_ENV } from './invocation-context.js';
 
 /**
- * Env vars that carry Qwen-internal credentials or private parent
+ * Env vars that carry Canopy-internal credentials or private parent
  * capabilities. These must never be inherited by a child process the agent
  * launches on the user's behalf — shell commands, the monitor tool, or a stdio
  * MCP server — because no legitimate user command needs them and leaking them
@@ -19,7 +19,7 @@ import { PRIVATE_ACP_CAPABILITY_ENV } from './invocation-context.js';
  * child. Their direct consumers already scrub them from `process.env` after
  * reading them.
  *
- * This denylist is intentionally NARROW: it strips only Qwen-internal secrets,
+ * This denylist is intentionally NARROW: it strips only Canopy-internal secrets,
  * NOT third-party credentials such as `GH_TOKEN`, `AWS_*`, or `NPM_TOKEN`.
  * Real shell workflows legitimately depend on inheriting those (`gh`, the AWS
  * CLI, `npm publish`, …), so stripping them here would break user commands.
@@ -33,7 +33,7 @@ export const INTERNAL_SECRET_ENV_VARS: readonly string[] = [
 ];
 
 /**
- * Return a shallow copy of `env` with Qwen-internal secrets removed, so it is
+ * Return a shallow copy of `env` with Canopy-internal secrets removed, so it is
  * safe to pass to a child process spawned on the user's behalf. Does not
  * mutate the input.
  *

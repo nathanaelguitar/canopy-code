@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,12 +20,12 @@ export const MAX_COMPUTER_USE_IDLE_TIMEOUT_MS = 2_147_483_647;
  * Singleton stdio MCP client for the cua-driver binary.
  *
  * Spawned via `<binary> mcp`, where `<binary>` is the pinned cua-driver
- * downloaded under `~/.qwen/computer-use/` (the bootstrap state machine
+ * downloaded under `~/.canopy/computer-use/` (the bootstrap state machine
  * downloads + verifies it before the first spawn). Spawns are sub-second
  * — there is no npx/download cost on this path anymore.
  *
  * Lifecycle: lazy spawn on first `callTool` invocation. The process is
- * stopped by `stop()`, qwen-code exit, or the idle timeout after the last
+ * stopped by `stop()`, canopy-code exit, or the idle timeout after the last
  * tool call. State (element_index map per window) lives in the process — if
  * the process restarts, the model must call `get_window_state` again before
  * any element-targeted action.
@@ -149,7 +149,7 @@ export class ComputerUseClient {
       env: { ...process.env } as Record<string, string>,
     });
     const client = new Client(
-      { name: 'qwen-code-computer-use', version: '1.0.0' },
+      { name: 'canopy-code-computer-use', version: '1.0.0' },
       { capabilities: {} },
     );
     await client.connect(transport);
@@ -197,7 +197,7 @@ export class ComputerUseClient {
   }
 
   /**
-   * Call a tool by upstream name (NOT the qwen-code-facing
+   * Call a tool by upstream name (NOT the canopy-code-facing
    * `computer_use__` prefixed name). Returns the raw MCP result so the
    * caller can inspect `isError` and parse text content.
    *

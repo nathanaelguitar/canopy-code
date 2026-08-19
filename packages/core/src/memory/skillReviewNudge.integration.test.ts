@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -433,7 +433,7 @@ describe('Skill Nudge E2E Integration Tests', () => {
       // Directory may not exist yet, but the path should be valid
       // Use path.normalize-friendly comparison for cross-platform (Windows uses backslash)
       const normalizedPath = skillsRootPath.split(path.sep).join('/');
-      expect(normalizedPath.includes('.qwen/skills')).toBe(true);
+      expect(normalizedPath.includes('.canopy/skills')).toBe(true);
     });
   });
 });

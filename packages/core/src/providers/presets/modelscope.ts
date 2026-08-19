@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,7 @@ export const modelscopeProvider: ProviderConfig = {
       enableThinking: true,
     },
     {
-      id: 'Qwen/Qwen3.5-397B-A17B',
+      id: 'Canopy/Canopy3.5-397B-A17B',
       contextWindowSize: 1000000,
       enableThinking: true,
     },

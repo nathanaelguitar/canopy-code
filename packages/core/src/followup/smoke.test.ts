@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Smoke Tests — E2E verification of core followup modules working together.
@@ -108,7 +108,7 @@ describe('SMOKE TESTS — E2E Verification', () => {
       const writeArgs: Record<string, unknown> = { file_path: filePath };
       await rewritePathArgs(writeArgs, overlay);
       const op = writeArgs['file_path'] as string;
-      expect(op).toContain('qwen-speculation');
+      expect(op).toContain('canopy-speculation');
       await writeFile(op, 'speculated content');
 
       const readArgs: Record<string, unknown> = { file_path: filePath };

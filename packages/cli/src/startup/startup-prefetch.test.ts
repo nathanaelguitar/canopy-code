@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Code
+ * Copyright 2026 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import {
   AppEvent,
@@ -34,7 +34,7 @@ const mockGetIdeClientInstance = vi.hoisted(() =>
 const mockInitializeTelemetry = vi.hoisted(() => vi.fn());
 const mockStartBackgroundHousekeeping = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({
     debug: mockDebug,
     warn: mockWarn,
@@ -58,9 +58,9 @@ vi.mock('../ui/utils/updateCheck.js', async (importOriginal) => ({
 }));
 
 vi.mock('../utils/processUtils.js', () => ({
-  CUSTOM_SANDBOX_IMAGE_ENV_VAR: 'QWEN_CODE_CUSTOM_SANDBOX_IMAGE',
-  HOST_UPDATE_RELAUNCH_ENV_VAR: 'QWEN_CODE_HOST_UPDATE_RELAUNCH',
-  SKIP_UPDATE_CHECK_ENV_VAR: 'QWEN_CODE_SKIP_UPDATE_CHECK_ONCE',
+  CUSTOM_SANDBOX_IMAGE_ENV_VAR: 'CANOPY_CODE_CUSTOM_SANDBOX_IMAGE',
+  HOST_UPDATE_RELAUNCH_ENV_VAR: 'CANOPY_CODE_HOST_UPDATE_RELAUNCH',
+  SKIP_UPDATE_CHECK_ENV_VAR: 'CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE',
   requestUpdateOnExit: (...args: unknown[]) => mockRequestUpdateOnExit(...args),
 }));
 
@@ -124,16 +124,16 @@ function makeSettings(
 describe('startupPrefetch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'];
-    delete process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'];
-    delete process.env['QWEN_CODE_SKIP_UPDATE_CHECK_ONCE'];
+    delete process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'];
+    delete process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'];
+    delete process.env['CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE'];
     vi.useRealTimers();
     mockCheckForUpdatesDetailed.mockResolvedValue({
       status: 'up-to-date',
       currentVersion: '1.0.0',
     });
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
       packageManager: 'npm',
       isStandalone: false,
     });
@@ -277,7 +277,7 @@ describe('startupPrefetch', () => {
   it('prompts non-npm installs when no parent supervisor is available', async () => {
     mockRequestUpdateOnExit.mockReturnValue(false);
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'pnpm add -g @qwen-code/qwen-code@latest',
+      updateCommand: 'pnpm add -g @canopy-code/canopy-code@latest',
       packageManager: 'pnpm',
       isGlobal: true,
     });
@@ -310,7 +310,7 @@ describe('startupPrefetch', () => {
       updateCommand: 'standalone update',
       packageManager: 'standalone',
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
 
     startPostRenderPrefetches(config, makeSettings());
@@ -322,7 +322,7 @@ describe('startupPrefetch', () => {
   });
 
   it('keeps a container running until the user updates the host', async () => {
-    process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
+    process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
     mockCheckForUpdatesDetailed.mockResolvedValue({
       status: 'update',
       info: {
@@ -343,7 +343,7 @@ describe('startupPrefetch', () => {
   });
 
   it('keeps a container running when the host requires manual updates', async () => {
-    process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = 'false';
+    process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = 'false';
     mockCheckForUpdatesDetailed.mockResolvedValue({
       status: 'update',
       info: {
@@ -359,12 +359,12 @@ describe('startupPrefetch', () => {
     expect(mockHandleAutoUpdate).not.toHaveBeenCalled();
     expect(mockUpdateEventEmit).toHaveBeenCalledWith('update-info', {
       message:
-        'Update available\nUpdate Qwen Code on the host, then restart the sandbox.',
+        'Update available\nUpdate Canopy Code on the host, then restart the sandbox.',
     });
   });
 
   it('skips one automatic update check after an update relaunch', async () => {
-    process.env['QWEN_CODE_SKIP_UPDATE_CHECK_ONCE'] = 'true';
+    process.env['CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE'] = 'true';
 
     try {
       startPostRenderPrefetches(makeConfig(), makeSettings());
@@ -372,13 +372,13 @@ describe('startupPrefetch', () => {
 
       expect(mockCheckForUpdatesDetailed).not.toHaveBeenCalled();
     } finally {
-      delete process.env['QWEN_CODE_SKIP_UPDATE_CHECK_ONCE'];
+      delete process.env['CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE'];
     }
   });
 
   it('leaves explicitly configured sandbox images user-managed', async () => {
-    process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'] =
-      'example.com/custom-qwen:1.0.0';
+    process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'] =
+      'example.com/custom-canopy:1.0.0';
 
     try {
       startPostRenderPrefetches(makeConfig(), makeSettings());
@@ -387,7 +387,7 @@ describe('startupPrefetch', () => {
       expect(mockCheckForUpdatesDetailed).not.toHaveBeenCalled();
       expect(mockRequestUpdateOnExit).not.toHaveBeenCalled();
     } finally {
-      delete process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'];
+      delete process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'];
     }
   });
 

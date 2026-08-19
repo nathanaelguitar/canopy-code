@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -44,9 +44,9 @@ export async function registerComputerUseTools(
 ): Promise<void> {
   for (const upstreamName of COMPUTER_USE_TOOL_NAMES) {
     const schema = COMPUTER_USE_SCHEMAS[upstreamName];
-    const qwenName = `computer_use__${upstreamName}` as ToolName;
+    const canopyName = `computer_use__${upstreamName}` as ToolName;
     await registerLazy(
-      qwenName,
+      canopyName,
       async () => new ComputerUseTool(upstreamName, schema, config),
     );
   }

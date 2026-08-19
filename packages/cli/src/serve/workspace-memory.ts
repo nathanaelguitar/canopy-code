@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   WorkspaceMemoryWriteTimeoutError,
   getAllGeminiMdFilenames,
   writeWorkspaceContextFile,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
 import { isServeDebugMode } from './debug-mode.js';
 import type { AcpSessionBridge } from './acp-session-bridge.js';
@@ -35,8 +35,8 @@ import type { WorkspaceRegistry } from './workspace-registry.js';
  * Issue #4175 PR 16: workspace memory CRUD routes.
  *
  * `GET /workspace/memory` returns the daemon's snapshot of explicit
- * `QWEN.md` / `AGENTS.md` files reachable from the bound workspace
- * plus the user's `~/.qwen/` global. Read-only; returns
+ * `CANOPY.md` / `AGENTS.md` files reachable from the bound workspace
+ * plus the user's `~/.canopy/` global. Read-only; returns
  * `initialized: false` and an empty `files` list when no files exist
  * (no synthetic 500s, mirroring PR 12's read-only routes).
  *
@@ -48,11 +48,11 @@ import type { WorkspaceRegistry } from './workspace-registry.js';
  * Both routes are filesystem-only — neither spawns the ACP child.
  *
  * **Absolute filePath disclosure note**: success / 413 / GET-list
- * responses include absolute on-disk paths (`/work/<x>/QWEN.md`,
- * `/Users/<x>/.qwen/QWEN.md`). This is by design for a daemon
+ * responses include absolute on-disk paths (`/work/<x>/CANOPY.md`,
+ * `/Users/<x>/.canopy/CANOPY.md`). This is by design for a daemon
  * contract: clients pre-flight `caps.workspaceCwd` to learn the
  * bound workspace root and can compute relative paths if they
- * prefer; the global scope (`~/.qwen/QWEN.md`) is NOT under the
+ * prefer; the global scope (`~/.canopy/CANOPY.md`) is NOT under the
  * workspace root, so rewriting to a workspace-relative form would
  * lose information. The bearer-token gate + the daemon's loopback-
  * default binding already restrict who can see these paths. If a
@@ -127,7 +127,7 @@ function sendWorkspaceMemoryWriteError(
   if (sendGenerationClosedError(res, err)) return;
   if (err instanceof WorkspaceMemoryWriteTimeoutError) {
     writeStderrLine(
-      `qwen serve: ${route} timeout — file lock at ` +
+      `canopy serve: ${route} timeout — file lock at ` +
         `${err.filePath} did not acquire within ${err.timeoutMs}ms ` +
         `(stalled FS / OneDrive / NFS)`,
     );
@@ -146,7 +146,7 @@ function sendWorkspaceMemoryWriteError(
   }
   if (err instanceof WorkspaceMemoryFileTooLargeError) {
     writeStderrLine(
-      `qwen serve: ${route} refused — existing file ` +
+      `canopy serve: ${route} refused — existing file ` +
         `${err.filePath} is ${err.bytes} bytes (cap ${err.limit})`,
     );
     const debug = isServeDebugMode();
@@ -164,7 +164,7 @@ function sendWorkspaceMemoryWriteError(
     return;
   }
   writeStderrLine(
-    `qwen serve: ${route} failed (scope=${scope} mode=${mode}): ${
+    `canopy serve: ${route} failed (scope=${scope} mode=${mode}): ${
       err instanceof Error ? (err.stack ?? err.message) : String(err)
     }`,
   );
@@ -213,7 +213,7 @@ export function mountWorkspaceMemoryRoutes(
       // exactly the silent-failure mode PR 12's read-only routes
       // avoided by routing bridge errors through `sendBridgeError`.
       writeStderrLine(
-        `qwen serve: GET /workspace/memory failed: ${
+        `canopy serve: GET /workspace/memory failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -365,7 +365,7 @@ export function mountWorkspaceQualifiedMemoryRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspaces/:workspace/memory failed: ${
+        `canopy serve: GET /workspaces/:workspace/memory failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -486,9 +486,9 @@ interface DiscoveredFile {
 }
 
 /**
- * Filesystem-only discovery of explicit `QWEN.md` / `AGENTS.md`
+ * Filesystem-only discovery of explicit `CANOPY.md` / `AGENTS.md`
  * files reachable from the daemon's bound workspace plus the user's
- * `~/.qwen/` global directory.
+ * `~/.canopy/` global directory.
  *
  * Discovers the bound-workspace-root file(s) (no parent-directory
  * walk in this version) plus the global dir. `walkWorkspaceForMemory`
@@ -497,7 +497,7 @@ interface DiscoveredFile {
  * surface as "workspace root + global". Auto-memory (the `MEMORY.md`
  * index + per-type files) is intentionally NOT included; that's PR
  * 16.5's responsibility per scope decision in issue #4175. Path-
- * based rules (`.qwen/rules/`) are also out of scope for v1.
+ * based rules (`.canopy/rules/`) are also out of scope for v1.
  */
 export async function collectWorkspaceMemoryStatus(
   boundWorkspace: string,
@@ -513,7 +513,7 @@ export async function collectWorkspaceMemoryStatus(
   );
   files.push(...workspaceFiles);
 
-  const globalDir = Storage.getGlobalQwenDir();
+  const globalDir = Storage.getGlobalCanopyDir();
   for (const filename of filenames) {
     const candidate = path.join(globalDir, filename);
     try {
@@ -564,7 +564,7 @@ export async function collectWorkspaceMemoryStatus(
 }
 
 /**
- * Stat each known memory filename (`QWEN.md`, `AGENTS.md`) at the
+ * Stat each known memory filename (`CANOPY.md`, `AGENTS.md`) at the
  * bound workspace root and return the matches. v1 does not walk
  * parent directories — that's reserved for PR 16.5's hierarchical
  * mode, which will replace this helper with a real upward walk

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -136,7 +136,7 @@ export interface WorkflowTask extends TaskBase<WorkflowStatus> {
    */
   tokensSpent: number;
   /**
-   * P5: per-run token cap from `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW`. `null`
+   * P5: per-run token cap from `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW`. `null`
    * when no cap is set — the dialog renders `tokensSpent` alone in that
    * case rather than the `M / N` form. Set at register time from
    * `budget.total` and re-affirmed by every `budgetUpdated` fire (the
@@ -156,7 +156,7 @@ export interface WorkflowTask extends TaskBase<WorkflowStatus> {
    * P7b: the workflow script source (verbatim, as the tool received it).
    * Used by the run-snapshot writer (so a persisted run carries its
    * script) and the save-to-disk dialog (so a completed run can be saved
-   * to `.qwen/workflows/<name>.js`). Empty string for legacy callers that
+   * to `.canopy/workflows/<name>.js`). Empty string for legacy callers that
    * don't supply it.
    */
   script: string;
@@ -279,7 +279,7 @@ export class WorkflowRunRegistry {
    * P5 T7: one-time usage-warning latch. The first `Workflow` tool
    * invocation per session checks `shouldShowUsageWarning()`; if true,
    * the tool prepends a one-line banner to the result describing the
-   * token-budget knob (`QWEN_CODE_MAX_TOKENS_PER_WORKFLOW`) and how to
+   * token-budget knob (`CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW`) and how to
    * suppress (`skipWorkflowUsageWarning` setting). The latch flips on
    * the same call so subsequent runs are quiet. Survives `reset()` —
    * the warning is per-session, not per-clear.

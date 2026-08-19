@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,7 +30,7 @@ import { homedir } from 'node:os';
 type ComputerUseParams = Record<string, unknown>;
 
 const INSTALL_REASON =
-  'This downloads the Computer Use driver (~20MB, signed + notarized) into ~/.qwen/computer-use/ the first time. ' +
+  'This downloads the Computer Use driver (~20MB, signed + notarized) into ~/.canopy/computer-use/ the first time. ' +
   'Computer Use can click, type, and read your desktop apps in the background. ' +
   "On macOS you'll be guided through Accessibility / Screen Recording permissions next.";
 
@@ -140,7 +140,7 @@ class ComputerUseInvocation extends BaseToolInvocation<
    * access.
    *
    * On Cancel: install state is NOT written; execute() / runBootstrap()
-   * will use the env-var fallback (QWEN_COMPUTER_USE_AUTO_APPROVE),
+   * will use the env-var fallback (CANOPY_COMPUTER_USE_AUTO_APPROVE),
    * which defaults to refusing — producing a clear error message.
    */
   override async getConfirmationDetails(
@@ -301,10 +301,10 @@ export class ComputerUseTool extends BaseDeclarativeTool<
     schema: ComputerUseToolSchema,
     private readonly config?: Config,
   ) {
-    const qwenName = `computer_use__${upstreamName}`;
+    const canopyName = `computer_use__${upstreamName}`;
     super(
-      qwenName,
-      qwenName, // displayName == name; no MCP branding in UI
+      canopyName,
+      canopyName, // displayName == name; no MCP branding in UI
       schema.description,
       Kind.Other,
       schema.parameterSchema,
@@ -319,7 +319,7 @@ export class ComputerUseTool extends BaseDeclarativeTool<
   /**
    * Coerce parameter types before schema validation.
    * Models can send the wrong JS type for a field:
-   *  - qwen3.6 sends `element_index: 2` (number) but upstream wants "2" (string)
+   *  - canopy3.6 sends `element_index: 2` (number) but upstream wants "2" (string)
    *  - Some models send `x: "500"` (string) but upstream wants 500 (number)
    * Pre-coercing avoids spurious validation failures without loosening schema types.
    */
@@ -389,7 +389,7 @@ export function coerceTypes(
       }
     }
     // Direction 2: number value, schema wants string → stringify
-    // (qwen3.6 sometimes sends element_index: 2 instead of "2")
+    // (canopy3.6 sometimes sends element_index: 2 instead of "2")
     else if (fieldType === 'string' && typeof value === 'number') {
       result[key] = String(value);
     }

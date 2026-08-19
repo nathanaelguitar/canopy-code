@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,7 +19,7 @@ import {
 import * as os from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import * as ts from 'typescript';
-import { QWEN_DIR, Storage } from '@qwen-code/qwen-code-core';
+import { CANOPY_DIR, Storage } from '@canopy-code/canopy-code-core';
 
 import {
   bootstrapServeFastPathEnvironment,
@@ -36,7 +36,7 @@ import {
 } from './fast-path-settings.js';
 import { resetLoaderKeyRejectionReportingForTesting } from '../config/shared-env-keys.js';
 import {
-  getGlobalQwenDirLite,
+  getGlobalCanopyDirLite,
   SETTINGS_DIRECTORY_NAME,
 } from '../config/storage-paths-lite.js';
 import { RUNTIME_STARTUP_CANCELLED_MESSAGE } from './runtime-startup-errors.js';
@@ -45,37 +45,37 @@ import {
   TrustLevel,
 } from '../config/trustedFolders.js';
 import { HEADLESS_YOLO_NO_SANDBOX_WARNING } from '../utils/headlessSafetyWarnings.js';
-import * as runQwenServeModule from './run-qwen-serve.js';
+import * as runCanopyServeModule from './run-canopy-serve.js';
 import type { ServeFastPathSettings } from './fast-path-settings.js';
 import type { Settings } from '../config/settingsSchema.js';
 import { serveCommand } from '../commands/serve.js';
 
 let tempWorkspace: string | undefined;
 let tempLaunchCwd: string | undefined;
-let tempQwenHome: string | undefined;
+let tempCanopyHome: string | undefined;
 let tempSymlink: string | undefined;
 const originalToken = process.env['QWEN_SERVER_TOKEN'];
-const originalQwenHome = process.env['QWEN_HOME'];
+const originalCanopyHome = process.env['QWEN_HOME'];
 const originalHome = process.env['HOME'];
 const originalUserProfile = process.env['USERPROFILE'];
-const originalQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-const originalMcpApprovalsPath = process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+const originalCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+const originalMcpApprovalsPath = process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
 const originalSystemSettingsPath =
-  process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+  process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
 const originalSystemDefaultsPath =
-  process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+  process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
 const originalTrustedFoldersPath =
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 const originalReferencedToken = process.env['FAST_PATH_REFERENCED_TOKEN'];
-const originalRateLimit = process.env['QWEN_SERVE_RATE_LIMIT'];
-const originalRateLimitPrompt = process.env['QWEN_SERVE_RATE_LIMIT_PROMPT'];
+const originalRateLimit = process.env['CANOPY_SERVE_RATE_LIMIT'];
+const originalRateLimitPrompt = process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT'];
 const originalCloudShell = process.env['CLOUD_SHELL'];
 const originalGoogleCloudProject = process.env['GOOGLE_CLOUD_PROJECT'];
 const originalNodeCompileCache = process.env['NODE_COMPILE_CACHE'];
 const originalNodeDisableCompileCache =
   process.env['NODE_DISABLE_COMPILE_CACHE'];
 const originalPendingCompileCache =
-  process.env['QWEN_CODE_PENDING_COMPILE_CACHE'];
+  process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'];
 const originalCwd = process.cwd();
 const cliPackageRoot = process.cwd();
 
@@ -191,25 +191,25 @@ function collectStaticSourceGraph(entryFile: string): StaticSourceGraph {
   return { localFiles, externalValueImports, unresolvedLocalImports };
 }
 
-function useTempQwenHome(): string {
-  tempQwenHome = realpathSync(
+function useTempCanopyHome(): string {
+  tempCanopyHome = realpathSync(
     mkdtempSync(join(os.tmpdir(), 'qws-fast-path-home-')),
   );
-  process.env['QWEN_HOME'] = tempQwenHome;
+  process.env['QWEN_HOME'] = tempCanopyHome;
   // getUserLevelEnvPathsFastPath always includes os.homedir() candidates,
-  // so redirect HOME/USERPROFILE too — a real ~/.env or ~/.qwen/.env would
+  // so redirect HOME/USERPROFILE too — a real ~/.env or ~/.canopy/.env would
   // otherwise leak keys and warning counts into these tests.
-  process.env['HOME'] = tempQwenHome;
-  process.env['USERPROFILE'] = tempQwenHome;
-  process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = join(
-    tempQwenHome,
+  process.env['HOME'] = tempCanopyHome;
+  process.env['USERPROFILE'] = tempCanopyHome;
+  process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] = join(
+    tempCanopyHome,
     'system-settings.json',
   );
-  process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] = join(
-    tempQwenHome,
+  process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] = join(
+    tempCanopyHome,
     'system-defaults.json',
   );
-  return tempQwenHome;
+  return tempCanopyHome;
 }
 
 function buildServeCommandParser(): Argv {
@@ -291,10 +291,10 @@ afterEach(() => {
   } else {
     process.env['QWEN_SERVER_TOKEN'] = originalToken;
   }
-  if (originalQwenHome === undefined) {
+  if (originalCanopyHome === undefined) {
     delete process.env['QWEN_HOME'];
   } else {
-    process.env['QWEN_HOME'] = originalQwenHome;
+    process.env['QWEN_HOME'] = originalCanopyHome;
   }
   if (originalHome === undefined) {
     delete process.env['HOME'];
@@ -307,19 +307,22 @@ afterEach(() => {
     process.env['USERPROFILE'] = originalUserProfile;
   }
   if (originalSystemSettingsPath === undefined) {
-    delete process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+    delete process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
   } else {
-    process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = originalSystemSettingsPath;
+    process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] =
+      originalSystemSettingsPath;
   }
   if (originalSystemDefaultsPath === undefined) {
-    delete process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+    delete process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
   } else {
-    process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] = originalSystemDefaultsPath;
+    process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] =
+      originalSystemDefaultsPath;
   }
   if (originalTrustedFoldersPath === undefined) {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   } else {
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
+      originalTrustedFoldersPath;
   }
   if (originalReferencedToken === undefined) {
     delete process.env['FAST_PATH_REFERENCED_TOKEN'];
@@ -327,14 +330,14 @@ afterEach(() => {
     process.env['FAST_PATH_REFERENCED_TOKEN'] = originalReferencedToken;
   }
   if (originalRateLimit === undefined) {
-    delete process.env['QWEN_SERVE_RATE_LIMIT'];
+    delete process.env['CANOPY_SERVE_RATE_LIMIT'];
   } else {
-    process.env['QWEN_SERVE_RATE_LIMIT'] = originalRateLimit;
+    process.env['CANOPY_SERVE_RATE_LIMIT'] = originalRateLimit;
   }
   if (originalRateLimitPrompt === undefined) {
-    delete process.env['QWEN_SERVE_RATE_LIMIT_PROMPT'];
+    delete process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT'];
   } else {
-    process.env['QWEN_SERVE_RATE_LIMIT_PROMPT'] = originalRateLimitPrompt;
+    process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT'] = originalRateLimitPrompt;
   }
   if (originalCloudShell === undefined) {
     delete process.env['CLOUD_SHELL'];
@@ -357,20 +360,20 @@ afterEach(() => {
     process.env['NODE_DISABLE_COMPILE_CACHE'] = originalNodeDisableCompileCache;
   }
   if (originalPendingCompileCache === undefined) {
-    delete process.env['QWEN_CODE_PENDING_COMPILE_CACHE'];
+    delete process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'];
   } else {
-    process.env['QWEN_CODE_PENDING_COMPILE_CACHE'] =
+    process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'] =
       originalPendingCompileCache;
   }
-  if (originalQwenRuntimeDir === undefined) {
-    delete process.env['QWEN_RUNTIME_DIR'];
+  if (originalCanopyRuntimeDir === undefined) {
+    delete process.env['CANOPY_RUNTIME_DIR'];
   } else {
-    process.env['QWEN_RUNTIME_DIR'] = originalQwenRuntimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = originalCanopyRuntimeDir;
   }
   if (originalMcpApprovalsPath === undefined) {
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
   } else {
-    process.env['QWEN_CODE_MCP_APPROVALS_PATH'] = originalMcpApprovalsPath;
+    process.env['CANOPY_CODE_MCP_APPROVALS_PATH'] = originalMcpApprovalsPath;
   }
   resetServeFastPathHomeEnvBootstrapForTesting();
   resetTrustedFoldersForTesting();
@@ -382,9 +385,9 @@ afterEach(() => {
     rmSync(tempLaunchCwd, { recursive: true, force: true });
     tempLaunchCwd = undefined;
   }
-  if (tempQwenHome) {
-    rmSync(tempQwenHome, { recursive: true, force: true });
-    tempQwenHome = undefined;
+  if (tempCanopyHome) {
+    rmSync(tempCanopyHome, { recursive: true, force: true });
+    tempCanopyHome = undefined;
   }
   if (tempSymlink) {
     rmSync(tempSymlink, { force: true });
@@ -407,7 +410,7 @@ describe('CLI entry import boundary', () => {
 
     expect(fastPathSource).not.toContain('../config/settings.js');
     expect(fastPathSource).not.toContain('../config/environment.js');
-    expect(fastPathSource).not.toContain('@qwen-code/qwen-code-core');
+    expect(fastPathSource).not.toContain('@canopy-code/canopy-code-core');
     expect(fastPathSource).toContain('bootSettings: settings');
     expect(fastPathSource).toContain('resolveOnListen: true');
     expect(fastPathSource).toContain(
@@ -431,7 +434,7 @@ describe('CLI entry import boundary', () => {
     );
 
     expect(helperSource).not.toMatch(
-      /import\s+(?!type\b)[^;]*from ['"]@qwen-code\/qwen-code-core['"]/,
+      /import\s+(?!type\b)[^;]*from ['"]@canopy-code\/canopy-code-core['"]/,
     );
   });
 
@@ -450,8 +453,11 @@ describe('CLI entry import boundary', () => {
     expect(updateCommandSource).not.toContain('../../ui/');
   });
 
-  it('keeps runQwenServe from statically loading the full server and ACP runtime', () => {
-    const runServeSource = readFileSync('src/serve/run-qwen-serve.ts', 'utf8');
+  it('keeps runCanopyServe from statically loading the full server and ACP runtime', () => {
+    const runServeSource = readFileSync(
+      'src/serve/run-canopy-serve.ts',
+      'utf8',
+    );
 
     expect(runServeSource).not.toMatch(/from ['"]\.\/server\.js['"]/);
     expect(runServeSource).not.toMatch(/from ['"]\.\/web-shell-static\.js['"]/);
@@ -459,10 +465,10 @@ describe('CLI entry import boundary', () => {
       /from ['"]\.\/acp-session-bridge\.js['"]/,
     );
     expect(runServeSource).not.toMatch(
-      /from ['"]@qwen-code\/acp-bridge\/bridge['"]/,
+      /from ['"]@canopy-code\/acp-bridge\/bridge['"]/,
     );
     expect(runServeSource).not.toMatch(
-      /from ['"]@qwen-code\/acp-bridge\/spawnChannel['"]/,
+      /from ['"]@canopy-code\/acp-bridge\/spawnChannel['"]/,
     );
     expect(runServeSource).toContain("import('./server.js')");
     expect(runServeSource).toContain("import('@qwen-code/acp-bridge/bridge')");
@@ -484,14 +490,16 @@ describe('CLI entry import boundary', () => {
     // translation) must come from the workspacePaths subpath — never the
     // acp-bridge barrel or the compatibility shim.
     expect(requestHelpersSource).toMatch(
-      /import \{[^}]*\bMAX_WORKSPACE_PATH_LENGTH\b[^}]*\} from '@qwen-code\/acp-bridge\/workspacePaths';/,
+      /import \{[^}]*\bMAX_WORKSPACE_PATH_LENGTH\b[^}]*\} from '@canopy-code\/acp-bridge\/workspacePaths';/,
     );
-    expect(requestHelpersSource).not.toMatch(/from '@qwen-code\/acp-bridge';/);
+    expect(requestHelpersSource).not.toMatch(
+      /from '@canopy-code\/acp-bridge';/,
+    );
   });
 
-  it('keeps the runQwenServe static source graph free of ACP runtime modules', () => {
+  it('keeps the runCanopyServe static source graph free of ACP runtime modules', () => {
     const graph = collectStaticSourceGraph(
-      resolve(cliPackageRoot, 'src/serve/run-qwen-serve.ts'),
+      resolve(cliPackageRoot, 'src/serve/run-canopy-serve.ts'),
     );
 
     expect(graph.unresolvedLocalImports).toEqual([]);
@@ -692,10 +700,7 @@ describe('serve fast path argument parsing', () => {
       ['web', ['--no-web']],
       ['open', ['--open']],
       ['local-control', ['--local-control']],
-      [
-        'local-control-address',
-        ['--local-control-address', '192.168.1.2'],
-      ],
+      ['local-control-address', ['--local-control-address', '192.168.1.2']],
       ['http-bridge', ['--no-http-bridge']],
       ['memory-budget-mb', ['--memory-budget-mb', '8192']],
       ['memory-pressure-mode', ['--memory-pressure-mode', 'observe']],
@@ -758,7 +763,7 @@ describe('serve fast path argument parsing', () => {
     }
   });
 
-  it('matches yargs defaults for options materialized before runQwenServe', () => {
+  it('matches yargs defaults for options materialized before runCanopyServe', () => {
     const yargsParsed = buildServeCommandParser().parseSync('');
     const fastPathParsed = parseServeFastPathArgs(['serve']);
 
@@ -859,8 +864,8 @@ describe('serve fast path argument parsing', () => {
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-fallback-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
-    writeFileSync(join(tempWorkspace, '.qwen', 'settings.json'), '{');
+    mkdirSync(join(tempWorkspace, '.canopy'));
+    writeFileSync(join(tempWorkspace, '.canopy', 'settings.json'), '{');
     const stderrWrites: string[] = [];
     vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
       stderrWrites.push(String(chunk));
@@ -872,40 +877,40 @@ describe('serve fast path argument parsing', () => {
     ).resolves.toBe(false);
 
     expect(stderrWrites.join('')).toContain(
-      'qwen serve: fast-path bootstrap failed, falling back to full startup:',
+      'canopy serve: fast-path bootstrap failed, falling back to full startup:',
     );
   });
 
   it.each([
     [
       ['serve', '--mcp-client-budget', '0'],
-      'qwen serve: --mcp-client-budget must be a positive integer.',
+      'canopy serve: --mcp-client-budget must be a positive integer.',
     ],
     [
       ['serve', '--mcp-budget-mode', 'enforce'],
-      'qwen serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.',
+      'canopy serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.',
     ],
     [
       ['serve', '--max-pending-prompts-per-session=-1'],
-      'qwen serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).',
+      'canopy serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).',
     ],
     [
       ['serve', '--compacted-replay-max-bytes=0'],
-      'qwen serve: --compacted-replay-max-bytes must be a positive safe integer in [1, 268435456].',
+      'canopy serve: --compacted-replay-max-bytes must be a positive safe integer in [1, 268435456].',
     ],
     [
       ['serve', '--rate-limit', '--rate-limit-prompt=0'],
-      'qwen serve: --rate-limit-prompt must be a positive integer.',
+      'canopy serve: --rate-limit-prompt must be a positive integer.',
     ],
     [
       ['serve', '--memory-budget-mb', '512'],
-      'qwen serve: --memory-budget-mb must be an integer in [1024, 1048576].',
+      'canopy serve: --memory-budget-mb must be an integer in [1024, 1048576].',
     ],
   ])(
     'validates %s before bootstrapping settings and environment',
     async (argv, message) => {
-      const qwenHome = useTempQwenHome();
-      writeFileSync(join(qwenHome, 'settings.json'), '{');
+      const canopyHome = useTempCanopyHome();
+      writeFileSync(join(canopyHome, 'settings.json'), '{');
       const stderrWrites: string[] = [];
       vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
         stderrWrites.push(String(chunk));
@@ -928,8 +933,8 @@ describe('serve fast path argument parsing', () => {
     [['serve', '--memory-budget-mb', '8192'], 'valid --memory-budget-mb'],
     [['serve'], 'absent --memory-budget-mb'],
   ])('accepts %s without a range error', async (argv, _label) => {
-    const qwenHome = useTempQwenHome();
-    writeFileSync(join(qwenHome, 'settings.json'), '{');
+    const canopyHome = useTempCanopyHome();
+    writeFileSync(join(canopyHome, 'settings.json'), '{');
     const stderrWrites: string[] = [];
     vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
       stderrWrites.push(String(chunk));
@@ -968,8 +973,8 @@ describe('serve fast path argument parsing', () => {
 
   it('enables rate limiting from env and applies env tuning values', () => {
     const parsed = parseServeFastPathArgs(['serve'], {
-      QWEN_SERVE_RATE_LIMIT: '1',
-      QWEN_SERVE_RATE_LIMIT_PROMPT: '10',
+      CANOPY_SERVE_RATE_LIMIT: '1',
+      CANOPY_SERVE_RATE_LIMIT_PROMPT: '10',
     });
 
     expect(parsed.kind).toBe('serve');
@@ -980,7 +985,7 @@ describe('serve fast path argument parsing', () => {
 
   it('discards rate limit env tuning when rate limiting is disabled', () => {
     const parsed = parseServeFastPathArgs(['serve'], {
-      QWEN_SERVE_RATE_LIMIT_PROMPT: '10',
+      CANOPY_SERVE_RATE_LIMIT_PROMPT: '10',
     });
 
     expect(parsed.kind).toBe('serve');
@@ -991,7 +996,7 @@ describe('serve fast path argument parsing', () => {
 
   it('rejects unsafe rate limit env integers instead of rounding them', () => {
     const parsed = parseServeFastPathArgs(['serve', '--rate-limit'], {
-      QWEN_SERVE_RATE_LIMIT_PROMPT: String(Number.MAX_SAFE_INTEGER + 1),
+      CANOPY_SERVE_RATE_LIMIT_PROMPT: String(Number.MAX_SAFE_INTEGER + 1),
     });
 
     expect(parsed.kind).toBe('serve');
@@ -1001,34 +1006,34 @@ describe('serve fast path argument parsing', () => {
 });
 
 describe('serve fast path environment bootstrap', () => {
-  it('keeps the lite settings directory name in sync with core QWEN_DIR', () => {
-    expect(SETTINGS_DIRECTORY_NAME).toBe(QWEN_DIR);
+  it('keeps the lite settings directory name in sync with core CANOPY_DIR', () => {
+    expect(SETTINGS_DIRECTORY_NAME).toBe(CANOPY_DIR);
   });
 
-  it('matches Storage.getGlobalQwenDir path resolution', () => {
+  it('matches Storage.getGlobalCanopyDir path resolution', () => {
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-storage-cwd-')),
     );
-    tempQwenHome = realpathSync(
+    tempCanopyHome = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-storage-home-')),
     );
     process.chdir(tempWorkspace);
 
-    for (const qwenHome of [
+    for (const canopyHome of [
       undefined,
-      tempQwenHome,
+      tempCanopyHome,
       '~',
-      '~/qwen-fast-path',
-      '~\\qwen-fast-path',
-      'relative-qwen-home',
+      '~/canopy-fast-path',
+      '~\\canopy-fast-path',
+      'relative-canopy-home',
     ]) {
-      if (qwenHome === undefined) {
+      if (canopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = qwenHome;
+        process.env['QWEN_HOME'] = canopyHome;
       }
 
-      expect(getGlobalQwenDirLite()).toBe(Storage.getGlobalQwenDir());
+      expect(getGlobalCanopyDirLite()).toBe(Storage.getGlobalCanopyDir());
     }
   });
 
@@ -1054,7 +1059,7 @@ describe('serve fast path environment bootstrap', () => {
 
     expect(close).toHaveBeenCalledTimes(1);
     expect(stderrWrites.join('')).toContain(
-      'qwen serve: runtime startup failed after listener was ready: runtime boom',
+      'canopy serve: runtime startup failed after listener was ready: runtime boom',
     );
     expect(process.exit).toHaveBeenCalledWith(1);
   });
@@ -1089,17 +1094,17 @@ describe('serve fast path environment bootstrap', () => {
   });
 
   it('validates rate limit env after settings bootstrap enables rate limiting', async () => {
-    useTempQwenHome();
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-rate-limit-env-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify({
         env: {
-          QWEN_SERVE_RATE_LIMIT: '1',
-          QWEN_SERVE_RATE_LIMIT_PROMPT: '0',
+          CANOPY_SERVE_RATE_LIMIT: '1',
+          CANOPY_SERVE_RATE_LIMIT_PROMPT: '0',
         },
       }),
     );
@@ -1129,14 +1134,14 @@ describe('serve fast path environment bootstrap', () => {
     ).rejects.toThrow('process.exit(1)');
 
     expect(stderrWrites.join('')).toContain(
-      'qwen serve: --rate-limit-prompt must be a positive integer.',
+      'canopy serve: --rate-limit-prompt must be a positive integer.',
     );
     expect(process.exit).toHaveBeenCalledWith(1);
   });
 
-  it('exits when runQwenServe fails after settings bootstrap succeeds', async () => {
-    useTempQwenHome();
-    vi.spyOn(runQwenServeModule, 'runQwenServe').mockRejectedValue(
+  it('exits when runCanopyServe fails after settings bootstrap succeeds', async () => {
+    useTempCanopyHome();
+    vi.spyOn(runCanopyServeModule, 'runCanopyServe').mockRejectedValue(
       new Error('listen boom'),
     );
     const stderrWrites: string[] = [];
@@ -1162,28 +1167,28 @@ describe('serve fast path environment bootstrap', () => {
       ]),
     ).rejects.toThrow('process.exit(1)');
 
-    expect(stderrWrites.join('')).toContain('qwen serve: listen boom');
+    expect(stderrWrites.join('')).toContain('canopy serve: listen boom');
     expect(process.exit).toHaveBeenCalledWith(1);
   });
 
   it('keeps headless yolo warning best-effort after listening', async () => {
     const originalSandbox = process.env['SANDBOX'];
-    const originalSuppress = process.env['QWEN_CODE_SUPPRESS_YOLO_WARNING'];
+    const originalSuppress = process.env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'];
     delete process.env['SANDBOX'];
-    delete process.env['QWEN_CODE_SUPPRESS_YOLO_WARNING'];
-    const qwenHome = useTempQwenHome();
+    delete process.env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'];
+    const canopyHome = useTempCanopyHome();
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ tools: { approvalMode: 'yolo', sandbox: false } }),
     );
     const runtimeReady = Promise.reject(new Error('runtime boom'));
     void runtimeReady.catch(() => undefined);
     const close = vi.fn().mockResolvedValue(undefined);
-    vi.spyOn(runQwenServeModule, 'runQwenServe').mockResolvedValue({
+    vi.spyOn(runCanopyServeModule, 'runCanopyServe').mockResolvedValue({
       runtimeReady,
       close,
     } as unknown as Awaited<
-      ReturnType<typeof runQwenServeModule.runQwenServe>
+      ReturnType<typeof runCanopyServeModule.runCanopyServe>
     >);
     const stderrWrites: string[] = [];
     vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
@@ -1207,9 +1212,11 @@ describe('serve fast path environment bootstrap', () => {
 
       expect(stderrWrites.join('')).toContain(HEADLESS_YOLO_NO_SANDBOX_WARNING);
       expect(stderrWrites.join('')).toContain(
-        'qwen serve: runtime startup failed after listener was ready: runtime boom',
+        'canopy serve: runtime startup failed after listener was ready: runtime boom',
       );
-      expect(stderrWrites.join('')).not.toContain('qwen serve: stderr closed');
+      expect(stderrWrites.join('')).not.toContain(
+        'canopy serve: stderr closed',
+      );
       expect(close).toHaveBeenCalledTimes(1);
       expect(process.exit).toHaveBeenCalledWith(1);
     } finally {
@@ -1219,16 +1226,16 @@ describe('serve fast path environment bootstrap', () => {
         process.env['SANDBOX'] = originalSandbox;
       }
       if (originalSuppress === undefined) {
-        delete process.env['QWEN_CODE_SUPPRESS_YOLO_WARNING'];
+        delete process.env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'];
       } else {
-        process.env['QWEN_CODE_SUPPRESS_YOLO_WARNING'] = originalSuppress;
+        process.env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'] = originalSuppress;
       }
     }
   });
 
   it('rejects malformed user settings so the full settings loader can handle it', async () => {
-    const qwenHome = useTempQwenHome();
-    writeFileSync(join(qwenHome, 'settings.json'), '{');
+    const canopyHome = useTempCanopyHome();
+    writeFileSync(join(canopyHome, 'settings.json'), '{');
 
     await expect(bootstrapServeFastPathEnvironment(undefined)).rejects.toThrow(
       /settings/i,
@@ -1236,8 +1243,8 @@ describe('serve fast path environment bootstrap', () => {
   }, 10_000);
 
   it('falls back to the full CLI when fast-path settings bootstrap fails', async () => {
-    const qwenHome = useTempQwenHome();
-    writeFileSync(join(qwenHome, 'settings.json'), '{');
+    const canopyHome = useTempCanopyHome();
+    writeFileSync(join(canopyHome, 'settings.json'), '{');
 
     await expect(
       tryRunServeFastPath(['serve', '--port', '0', '--no-open', '--no-web']),
@@ -1251,7 +1258,7 @@ describe('serve fast path environment bootstrap', () => {
     ],
     [
       'advanced.runtimeOutputDir',
-      { advanced: { runtimeOutputDir: ['.qwen-runtime'] } },
+      { advanced: { runtimeOutputDir: ['.canopy-runtime'] } },
     ],
     [
       'security.folderTrust.enabled',
@@ -1260,9 +1267,9 @@ describe('serve fast path environment bootstrap', () => {
   ])(
     'falls back to the full CLI when %s has an incompatible shape',
     async (_field, settingsJson) => {
-      const qwenHome = useTempQwenHome();
+      const canopyHome = useTempCanopyHome();
       writeFileSync(
-        join(qwenHome, 'settings.json'),
+        join(canopyHome, 'settings.json'),
         JSON.stringify(settingsJson),
       );
 
@@ -1274,13 +1281,13 @@ describe('serve fast path environment bootstrap', () => {
 
   it('loads QWEN_SERVER_TOKEN from the workspace .env before the daemon starts', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    useTempQwenHome();
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-env-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', '.env'),
+      join(tempWorkspace, '.canopy', '.env'),
       'QWEN_SERVER_TOKEN=from-workspace-env\n',
     );
     process.chdir(tempWorkspace);
@@ -1293,35 +1300,35 @@ describe('serve fast path environment bootstrap', () => {
   it('preserves workspace .env compile cache over the pending default', async () => {
     delete process.env['NODE_COMPILE_CACHE'];
     delete process.env['NODE_DISABLE_COMPILE_CACHE'];
-    process.env['QWEN_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
-    useTempQwenHome();
+    process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-compile-cache-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', '.env'),
+      join(tempWorkspace, '.canopy', '.env'),
       'NODE_COMPILE_CACHE=/tmp/operator-cache\n',
     );
 
     await bootstrapServeFastPathEnvironment(tempWorkspace);
 
     expect(process.env['NODE_COMPILE_CACHE']).toBe('/tmp/operator-cache');
-    expect(process.env['QWEN_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
   });
 
   it('loads .env from --workspace even when launched from another directory', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    useTempQwenHome();
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-workspace-env-')),
     );
     tempLaunchCwd = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-launch-cwd-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', '.env'),
+      join(tempWorkspace, '.canopy', '.env'),
       'QWEN_SERVER_TOKEN=from-explicit-workspace-env\n',
     );
     process.chdir(tempLaunchCwd);
@@ -1335,33 +1342,35 @@ describe('serve fast path environment bootstrap', () => {
 
   it('loads home .env after workspace .env for daemon boot-time keys', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    delete process.env['QWEN_SERVE_RATE_LIMIT'];
-    delete process.env['QWEN_SERVE_RATE_LIMIT_PROMPT'];
-    const qwenHome = useTempQwenHome();
+    delete process.env['CANOPY_SERVE_RATE_LIMIT'];
+    delete process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT'];
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-layered-env-')),
     );
     writeFileSync(
       join(tempWorkspace, '.env'),
-      'QWEN_SERVE_RATE_LIMIT_PROMPT=123\n',
+      'CANOPY_SERVE_RATE_LIMIT_PROMPT=123\n',
     );
     writeFileSync(
-      join(qwenHome, '.env'),
-      ['QWEN_SERVER_TOKEN=from-home-env', 'QWEN_SERVE_RATE_LIMIT=1'].join('\n'),
+      join(canopyHome, '.env'),
+      ['QWEN_SERVER_TOKEN=from-home-env', 'CANOPY_SERVE_RATE_LIMIT=1'].join(
+        '\n',
+      ),
     );
 
     await bootstrapServeFastPathEnvironment(tempWorkspace);
 
-    expect(process.env['QWEN_SERVE_RATE_LIMIT_PROMPT']).toBe('123');
+    expect(process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT']).toBe('123');
     expect(process.env['QWEN_SERVER_TOKEN']).toBe('from-home-env');
-    expect(process.env['QWEN_SERVE_RATE_LIMIT']).toBe('1');
+    expect(process.env['CANOPY_SERVE_RATE_LIMIT']).toBe('1');
   });
 
   it('applies legacy excludedProjectEnvVars before loading workspace .env', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ excludedProjectEnvVars: ['QWEN_SERVER_TOKEN'] }),
     );
     tempWorkspace = realpathSync(
@@ -1380,13 +1389,13 @@ describe('serve fast path environment bootstrap', () => {
 
   it('loads QWEN_SERVER_TOKEN from workspace settings.env without the full settings loader', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    useTempQwenHome();
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-settings-env-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify({
         env: { QWEN_SERVER_TOKEN: 'from-workspace-settings-env' },
       }),
@@ -1402,77 +1411,77 @@ describe('serve fast path environment bootstrap', () => {
 
   it('pre-resolves home env overrides in the same order as the full loader', () => {
     delete process.env['QWEN_HOME'];
-    delete process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     delete process.env['QWEN_CODE_SERVE'];
-    delete process.env['QWEN_CODE_DESKTOP'];
+    delete process.env['CANOPY_CODE_DESKTOP'];
     tempLaunchCwd = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-fake-home-')),
     );
     process.env['HOME'] = tempLaunchCwd;
     process.env['USERPROFILE'] = tempLaunchCwd;
-    tempQwenHome = realpathSync(
+    tempCanopyHome = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-discovered-home-')),
     );
-    mkdirSync(join(tempLaunchCwd, '.qwen'), { recursive: true });
+    mkdirSync(join(tempLaunchCwd, '.canopy'), { recursive: true });
     writeFileSync(
-      join(tempLaunchCwd, '.qwen', '.env'),
-      `QWEN_HOME=${tempQwenHome}\n`,
+      join(tempLaunchCwd, '.canopy', '.env'),
+      `QWEN_HOME=${tempCanopyHome}\n`,
     );
     writeFileSync(
       join(tempLaunchCwd, '.env'),
       [
-        'QWEN_RUNTIME_DIR=from-home-env',
+        'CANOPY_RUNTIME_DIR=from-home-env',
         'QWEN_CODE_SERVE=1',
-        'QWEN_CODE_DESKTOP=1',
+        'CANOPY_CODE_DESKTOP=1',
       ].join('\n'),
     );
     writeFileSync(
-      join(tempQwenHome, '.env'),
+      join(tempCanopyHome, '.env'),
       [
-        'QWEN_CODE_MCP_APPROVALS_PATH=from-discovered-home',
-        'QWEN_CODE_TRUSTED_FOLDERS_PATH=from-discovered-trust',
+        'CANOPY_CODE_MCP_APPROVALS_PATH=from-discovered-home',
+        'CANOPY_CODE_TRUSTED_FOLDERS_PATH=from-discovered-trust',
       ].join('\n'),
     );
 
     preResolveServeFastPathHomeEnvOverrides();
 
-    expect(process.env['QWEN_HOME']).toBe(tempQwenHome);
-    expect(process.env['QWEN_RUNTIME_DIR']).toBe('from-home-env');
-    expect(process.env['QWEN_CODE_MCP_APPROVALS_PATH']).toBe(
+    expect(process.env['QWEN_HOME']).toBe(tempCanopyHome);
+    expect(process.env['CANOPY_RUNTIME_DIR']).toBe('from-home-env');
+    expect(process.env['CANOPY_CODE_MCP_APPROVALS_PATH']).toBe(
       'from-discovered-home',
     );
-    expect(process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']).toBe(
+    expect(process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']).toBe(
       'from-discovered-trust',
     );
     expect(process.env['QWEN_CODE_SERVE']).toBeUndefined();
-    expect(process.env['QWEN_CODE_DESKTOP']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_DESKTOP']).toBeUndefined();
   });
 
   it('still pre-resolves missing home-scoped keys when QWEN_HOME and runtime are already set', () => {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
-    const qwenHome = useTempQwenHome();
-    process.env['QWEN_RUNTIME_DIR'] = join(qwenHome, 'runtime');
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
+    const canopyHome = useTempCanopyHome();
+    process.env['CANOPY_RUNTIME_DIR'] = join(canopyHome, 'runtime');
     writeFileSync(
-      join(qwenHome, '.env'),
-      'QWEN_CODE_TRUSTED_FOLDERS_PATH=from-existing-home\n',
+      join(canopyHome, '.env'),
+      'CANOPY_CODE_TRUSTED_FOLDERS_PATH=from-existing-home\n',
     );
 
     preResolveServeFastPathHomeEnvOverrides();
 
-    expect(process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']).toBe(
+    expect(process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']).toBe(
       'from-existing-home',
     );
   });
 
   it('applies legacy settings keys consumed by the serve fast path', () => {
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-legacy-settings-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({
         approvalMode: 'yolo',
         contextFileName: 'LEGACY.md',
@@ -1497,11 +1506,11 @@ describe('serve fast path environment bootstrap', () => {
   });
 
   it('matches the full settings loader for fields consumed before listen', async () => {
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-settings-parity-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     const { SETTINGS_VERSION, loadSettings } = await import(
       '../config/settings.js'
     );
@@ -1510,7 +1519,7 @@ describe('serve fast path environment bootstrap', () => {
       ...settings,
     });
     writeFileSync(
-      process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH']!,
+      process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH']!,
       JSON.stringify(
         versioned({
           env: {
@@ -1531,7 +1540,7 @@ describe('serve fast path environment bootstrap', () => {
       ),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify(
         versioned({
           env: {
@@ -1547,7 +1556,7 @@ describe('serve fast path environment bootstrap', () => {
       ),
     );
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify(
         versioned({
           env: {
@@ -1566,7 +1575,7 @@ describe('serve fast path environment bootstrap', () => {
       ),
     );
     writeFileSync(
-      process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH']!,
+      process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH']!,
       JSON.stringify(
         versioned({
           env: {
@@ -1586,29 +1595,29 @@ describe('serve fast path environment bootstrap', () => {
   });
 
   it('loads runtimeOutputDir for daemon startup artifacts', () => {
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-runtime-dir-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({
-        advanced: { runtimeOutputDir: '.qwen-runtime' },
+        advanced: { runtimeOutputDir: '.canopy-runtime' },
       }),
     );
 
     const settings = loadServeFastPathSettings(tempWorkspace);
 
-    expect(settings.advanced?.runtimeOutputDir).toBe('.qwen-runtime');
+    expect(settings.advanced?.runtimeOutputDir).toBe('.canopy-runtime');
   });
 
   it('ignores stale legacy keys in current-version settings files', () => {
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-stale-legacy-settings-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({
         $version: 5,
         approvalMode: 'yolo',
@@ -1630,19 +1639,19 @@ describe('serve fast path environment bootstrap', () => {
 
   it('uses trusted-folders path from home .env before loading workspace env', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    delete process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
-    const qwenHome = useTempQwenHome();
-    const customTrustedFoldersPath = join(qwenHome, 'custom-trusted.json');
+    delete process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
+    const canopyHome = useTempCanopyHome();
+    const customTrustedFoldersPath = join(canopyHome, 'custom-trusted.json');
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-home-trust-env-')),
     );
     writeFileSync(
-      join(qwenHome, '.env'),
-      `QWEN_CODE_TRUSTED_FOLDERS_PATH=${customTrustedFoldersPath}\n`,
+      join(canopyHome, '.env'),
+      `CANOPY_CODE_TRUSTED_FOLDERS_PATH=${customTrustedFoldersPath}\n`,
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
     writeFileSync(
@@ -1656,7 +1665,7 @@ describe('serve fast path environment bootstrap', () => {
 
     await bootstrapServeFastPathEnvironment(tempWorkspace);
 
-    expect(process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']).toBe(
+    expect(process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']).toBe(
       customTrustedFoldersPath,
     );
     expect(process.env['QWEN_SERVER_TOKEN']).toBeUndefined();
@@ -1664,20 +1673,20 @@ describe('serve fast path environment bootstrap', () => {
 
   it('uses legacy folderTrust before loading workspace env', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-legacy-trust-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ folderTrust: true }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({ [tempWorkspace]: TrustLevel.DO_NOT_TRUST }),
     );
     writeFileSync(
@@ -1692,27 +1701,27 @@ describe('serve fast path environment bootstrap', () => {
 
   it('caches trusted folders during a single fast-path bootstrap', () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trust-cache-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({ [tempWorkspace]: TrustLevel.TRUST_FOLDER }),
     );
     writeFileSync(join(tempWorkspace, '.env'), 'QWEN_SERVER_TOKEN=trusted\n');
 
     const settings = loadServeFastPathSettings(tempWorkspace);
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({ [tempWorkspace]: TrustLevel.DO_NOT_TRUST }),
     );
 
@@ -1721,14 +1730,14 @@ describe('serve fast path environment bootstrap', () => {
     expect(process.env['QWEN_SERVER_TOKEN']).toBe('trusted');
   });
 
-  // Regression for #8653: the fast path runs before runQwenServeImpl freezes
+  // Regression for #8653: the fast path runs before runCanopyServeImpl freezes
   // daemonRuntimeBaseEnv, so any loader key it applies is baked into the base
   // env distributed to every workspace's session subprocesses — the exact
   // cross-workspace vector the daemon-side scrub closes.
   it('never applies loader-affecting keys from .env files or settings.env', () => {
     // Hermetic: the walk-up reaches the user-level candidates, so the real
-    // ~/.qwen/.env must not leak into this test.
-    useTempQwenHome();
+    // ~/.canopy/.env must not leak into this test.
+    useTempCanopyHome();
     const trackedKeys = [
       'NODE_OPTIONS',
       'npm_config_node_options',
@@ -1769,7 +1778,7 @@ describe('serve fast path environment bootstrap', () => {
       expect(process.env['FASTPATH_DOTENV_ALLOWED']).toBe('allowed');
       rmSync(tempWorkspace, { recursive: true, force: true });
 
-      // The privileged .qwen/.env scope bypasses excludedEnvVars, so pin it
+      // The privileged .canopy/.env scope bypasses excludedEnvVars, so pin it
       // separately: exempting it would ship green without this case.
       tempWorkspace = realpathSync(
         mkdtempSync(join(os.tmpdir(), 'qws-fast-path-loader-env-')),
@@ -1779,13 +1788,13 @@ describe('serve fast path environment bootstrap', () => {
         join(tempWorkspace, SETTINGS_DIRECTORY_NAME, '.env'),
         [
           'NODE_PATH=/workspace-a/node_modules',
-          'FASTPATH_QWEN_ALLOWED=allowed',
+          'FASTPATH_CANOPY_ALLOWED=allowed',
           '',
         ].join('\n'),
       );
       loadServeFastPathEnvironment({}, tempWorkspace);
       expect(process.env['NODE_PATH']).toBeUndefined();
-      expect(process.env['FASTPATH_QWEN_ALLOWED']).toBe('allowed');
+      expect(process.env['FASTPATH_CANOPY_ALLOWED']).toBe('allowed');
 
       loadServeFastPathEnvironment(
         {
@@ -1812,7 +1821,7 @@ describe('serve fast path environment bootstrap', () => {
         }
       }
       delete process.env['FASTPATH_DOTENV_ALLOWED'];
-      delete process.env['FASTPATH_QWEN_ALLOWED'];
+      delete process.env['FASTPATH_CANOPY_ALLOWED'];
       delete process.env['FASTPATH_SETTINGS_ALLOWED'];
     }
   });
@@ -1828,12 +1837,12 @@ describe('serve fast path environment bootstrap', () => {
       delete process.env[key];
     }
 
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-loader-home-')),
     );
     writeFileSync(
-      join(qwenHome, '.env'),
+      join(canopyHome, '.env'),
       [
         'NODE_OPTIONS=--import file:///workspace-a/harness.mjs',
         'npm_config_node_options=--import file:///workspace-a/hook.mjs',
@@ -1860,12 +1869,12 @@ describe('serve fast path environment bootstrap', () => {
   });
 
   // QWEN_CLI_ENTRY is the spawned session-process entrypoint: a start-dir
-  // .env fixing it turns `qwen serve` in an untrusted repo into arbitrary
+  // .env fixing it turns `canopy serve` in an untrusted repo into arbitrary
   // script execution for every workspace's sessions. The fast path consults
   // no reload tier, so the key must be hardcoded-excluded here.
   it('never applies QWEN_CLI_ENTRY from a project .env on the fast path', () => {
-    useTempQwenHome();
-    const trackedKeys = ['QWEN_CLI_ENTRY', 'qwen_cli_entry'] as const;
+    useTempCanopyHome();
+    const trackedKeys = ['QWEN_CLI_ENTRY', 'canopy_cli_entry'] as const;
     const previous: Record<string, string | undefined> = {};
     for (const key of trackedKeys) {
       previous[key] = process.env[key];
@@ -1880,7 +1889,7 @@ describe('serve fast path environment bootstrap', () => {
         'QWEN_CLI_ENTRY=/workspace-a/evil-entry.js',
         // Windows env lookup is case-insensitive, so the gate must reject
         // case variants too.
-        'qwen_cli_entry=/workspace-a/evil-entry-lower.js',
+        'canopy_cli_entry=/workspace-a/evil-entry-lower.js',
         '',
       ].join('\n'),
     );
@@ -1888,7 +1897,7 @@ describe('serve fast path environment bootstrap', () => {
     try {
       loadServeFastPathEnvironment({}, tempWorkspace);
       expect(process.env['QWEN_CLI_ENTRY']).toBeUndefined();
-      expect(process.env['qwen_cli_entry']).toBeUndefined();
+      expect(process.env['canopy_cli_entry']).toBeUndefined();
     } finally {
       for (const key of trackedKeys) {
         if (previous[key] === undefined) {
@@ -1906,10 +1915,10 @@ describe('serve fast path environment bootstrap', () => {
   // exact-case membership would ship green — this pins a lowercase hardcoded
   // key (the entrypoint hijack) being rejected from settings.env.
   it('never applies a case-variant hardcoded exclusion from settings.env on the fast path', () => {
-    useTempQwenHome();
+    useTempCanopyHome();
     const trackedKeys = [
       'QWEN_CLI_ENTRY',
-      'qwen_cli_entry',
+      'canopy_cli_entry',
       'node_extra_ca_certs',
     ] as const;
     const previous: Record<string, string | undefined> = {};
@@ -1925,13 +1934,13 @@ describe('serve fast path environment bootstrap', () => {
       loadServeFastPathEnvironment(
         {
           env: {
-            qwen_cli_entry: '/workspace-a/evil-entry-lower.js',
+            canopy_cli_entry: '/workspace-a/evil-entry-lower.js',
             node_extra_ca_certs: '/workspace-a/evil-ca.pem',
           },
         },
         tempWorkspace,
       );
-      expect(process.env['qwen_cli_entry']).toBeUndefined();
+      expect(process.env['canopy_cli_entry']).toBeUndefined();
       expect(process.env['QWEN_CLI_ENTRY']).toBeUndefined();
       expect(process.env['node_extra_ca_certs']).toBeUndefined();
     } finally {
@@ -1950,7 +1959,7 @@ describe('serve fast path environment bootstrap', () => {
   // boot would vanish without a breadcrumb unless the fast path reports it.
   it('warns when loader-affecting keys are rejected on the fast path', () => {
     resetLoaderKeyRejectionReportingForTesting();
-    useTempQwenHome();
+    useTempCanopyHome();
     const trackedKeys = ['NODE_OPTIONS', 'LD_PRELOAD'] as const;
     const previous: Record<string, string | undefined> = {};
     for (const key of trackedKeys) {
@@ -2004,7 +2013,7 @@ describe('serve fast path environment bootstrap', () => {
   // persist them; the reset keeps a later consume (a second consumer or a
   // re-entered boot path in one process) from re-logging the same keys.
   it('resets the rejected-loader-key stash after one consume', () => {
-    useTempQwenHome();
+    useTempCanopyHome();
     const trackedKeys = ['NODE_OPTIONS'] as const;
     const previous: Record<string, string | undefined> = {};
     for (const key of trackedKeys) {
@@ -2040,7 +2049,7 @@ describe('serve fast path environment bootstrap', () => {
   // A second fast-path load must not clobber the keys rejected by the
   // first, and the same key rejected by both loads lands in the stash once.
   it('accumulates rejected loader keys across loads without duplicates', () => {
-    useTempQwenHome();
+    useTempCanopyHome();
     const trackedKeys = ['NODE_OPTIONS', 'LD_PRELOAD'] as const;
     const previous: Record<string, string | undefined> = {};
     for (const key of trackedKeys) {
@@ -2090,22 +2099,22 @@ describe('serve fast path environment bootstrap', () => {
 
   it('does not load env from an explicitly untrusted nested workspace', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trust-precedence-')),
     );
     const childWorkspace = join(tempWorkspace, 'child');
     mkdirSync(childWorkspace);
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempWorkspace]: TrustLevel.TRUST_FOLDER,
         [childWorkspace]: TrustLevel.DO_NOT_TRUST,
@@ -2120,7 +2129,7 @@ describe('serve fast path environment bootstrap', () => {
 
   it('does not load env from a descendant of an explicitly untrusted workspace', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trust-descendant-')),
     );
@@ -2128,15 +2137,15 @@ describe('serve fast path environment bootstrap', () => {
     const subDir = join(childWorkspace, 'packages', 'foo');
     mkdirSync(subDir, { recursive: true });
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempWorkspace]: TrustLevel.TRUST_FOLDER,
         [childWorkspace]: TrustLevel.DO_NOT_TRUST,
@@ -2154,7 +2163,7 @@ describe('serve fast path environment bootstrap', () => {
 
   it('allows a trusted child rule to override an untrusted parent', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trust-opt-in-')),
     );
@@ -2162,15 +2171,15 @@ describe('serve fast path environment bootstrap', () => {
     const subDir = join(trustedWorkspace, 'src');
     mkdirSync(subDir, { recursive: true });
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempWorkspace]: TrustLevel.DO_NOT_TRUST,
         [trustedWorkspace]: TrustLevel.TRUST_FOLDER,
@@ -2188,7 +2197,7 @@ describe('serve fast path environment bootstrap', () => {
 
   it('does not load a distrusted parent .env for a trusted child workspace', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trusted-child-')),
     );
@@ -2199,15 +2208,15 @@ describe('serve fast path environment bootstrap', () => {
       'QWEN_SERVER_TOKEN=from-distrusted-parent-env\n',
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempWorkspace]: TrustLevel.DO_NOT_TRUST,
         [childWorkspace]: TrustLevel.TRUST_FOLDER,
@@ -2221,20 +2230,20 @@ describe('serve fast path environment bootstrap', () => {
 
   it('treats TRUST_PARENT as trusting the containing folder', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trust-parent-')),
     );
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [join(tempWorkspace, 'marker')]: TrustLevel.TRUST_PARENT,
       }),
@@ -2249,7 +2258,7 @@ describe('serve fast path environment bootstrap', () => {
   it('matches Cloud Shell default project behavior for empty env values', async () => {
     delete process.env['GOOGLE_CLOUD_PROJECT'];
     process.env['CLOUD_SHELL'] = 'true';
-    useTempQwenHome();
+    useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-cloud-shell-')),
     );
@@ -2262,14 +2271,14 @@ describe('serve fast path environment bootstrap', () => {
 
   it('expands process environment placeholders in workspace settings.env', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    useTempQwenHome();
+    useTempCanopyHome();
     process.env['FAST_PATH_REFERENCED_TOKEN'] = 'from-referenced-env';
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-settings-env-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify({
         env: { QWEN_SERVER_TOKEN: '${FAST_PATH_REFERENCED_TOKEN}' },
       }),
@@ -2284,17 +2293,17 @@ describe('serve fast path environment bootstrap', () => {
   it('expands home .env fallback placeholders in workspace settings.env', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
     delete process.env['FAST_PATH_REFERENCED_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     writeFileSync(
-      join(qwenHome, '.env'),
+      join(canopyHome, '.env'),
       'FAST_PATH_REFERENCED_TOKEN=from-home-env\n',
     );
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-settings-env-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify({
         env: { QWEN_SERVER_TOKEN: '${FAST_PATH_REFERENCED_TOKEN}' },
       }),
@@ -2313,13 +2322,13 @@ describe('serve fast path environment bootstrap', () => {
     'rejects %s workspace settings so the full settings loader can handle it',
     async (_name, settingsJson) => {
       delete process.env['QWEN_SERVER_TOKEN'];
-      useTempQwenHome();
+      useTempCanopyHome();
       tempWorkspace = realpathSync(
         mkdtempSync(join(os.tmpdir(), 'qws-fast-path-bad-settings-')),
       );
-      mkdirSync(join(tempWorkspace, '.qwen'));
+      mkdirSync(join(tempWorkspace, '.canopy'));
       writeFileSync(
-        join(tempWorkspace, '.qwen', 'settings.json'),
+        join(tempWorkspace, '.canopy', 'settings.json'),
         settingsJson,
       );
       process.chdir(tempWorkspace);
@@ -2332,24 +2341,24 @@ describe('serve fast path environment bootstrap', () => {
   );
 
   it('still reads invalid workspace settings before dropping an untrusted workspace from the merge', () => {
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-untrusted-settings-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({ [tempWorkspace]: TrustLevel.DO_NOT_TRUST }),
     );
-    writeFileSync(join(tempWorkspace, '.qwen', 'settings.json'), '[]');
+    writeFileSync(join(tempWorkspace, '.canopy', 'settings.json'), '[]');
     process.chdir(tempWorkspace);
 
     expect(() => loadServeFastPathSettings(tempWorkspace!)).toThrow(
@@ -2359,24 +2368,24 @@ describe('serve fast path environment bootstrap', () => {
 
   it('does not load env from an explicit untrusted workspace when launched elsewhere', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-untrusted-env-')),
     );
     tempLaunchCwd = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-trusted-launch-')),
     );
-    mkdirSync(join(tempWorkspace, '.qwen'));
+    mkdirSync(join(tempWorkspace, '.canopy'));
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempLaunchCwd]: TrustLevel.TRUST_FOLDER,
         [tempWorkspace]: TrustLevel.DO_NOT_TRUST,
@@ -2387,7 +2396,7 @@ describe('serve fast path environment bootstrap', () => {
       'QWEN_SERVER_TOKEN=from-untrusted-workspace-env\n',
     );
     writeFileSync(
-      join(tempWorkspace, '.qwen', 'settings.json'),
+      join(tempWorkspace, '.canopy', 'settings.json'),
       JSON.stringify({
         env: { QWEN_SERVER_TOKEN: 'from-untrusted-workspace-settings' },
       }),
@@ -2401,7 +2410,7 @@ describe('serve fast path environment bootstrap', () => {
 
   it('checks trust against the canonical explicit workspace path', async () => {
     delete process.env['QWEN_SERVER_TOKEN'];
-    const qwenHome = useTempQwenHome();
+    const canopyHome = useTempCanopyHome();
     tempWorkspace = realpathSync(
       mkdtempSync(join(os.tmpdir(), 'qws-fast-path-real-untrusted-env-')),
     );
@@ -2411,15 +2420,15 @@ describe('serve fast path environment bootstrap', () => {
     tempSymlink = join(tempLaunchCwd, 'workspace-link');
     symlinkSync(tempWorkspace, tempSymlink, 'dir');
     writeFileSync(
-      join(qwenHome, 'settings.json'),
+      join(canopyHome, 'settings.json'),
       JSON.stringify({ security: { folderTrust: { enabled: true } } }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = join(
-      qwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = join(
+      canopyHome,
       'trustedFolders.json',
     );
     writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'],
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'],
       JSON.stringify({
         [tempLaunchCwd]: TrustLevel.TRUST_FOLDER,
         [tempWorkspace]: TrustLevel.DO_NOT_TRUST,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -74,7 +74,7 @@ export interface FsAccessAuditPayload {
    * routes that have no session context.
    */
   sessionId?: string;
-  /** Workspace-relative path; only populated when QWEN_AUDIT_RAW_PATHS=1. */
+  /** Workspace-relative path; only populated when CANOPY_AUDIT_RAW_PATHS=1. */
   relPath?: string;
   sizeBytes?: number;
   truncated?: boolean;
@@ -211,7 +211,7 @@ function relForAudit(raw: string, boundWorkspace: string): string {
  * operators tailing logs.
  */
 function rawPathsEnabled(): boolean {
-  return process.env['QWEN_AUDIT_RAW_PATHS'] === '1';
+  return process.env['CANOPY_AUDIT_RAW_PATHS'] === '1';
 }
 
 export interface CreateAuditPublisherDeps {
@@ -262,7 +262,7 @@ export function createAuditPublisher(
       // `/Users/alice/ws/**`), so emitting the literal pattern in
       // privacy mode would bypass the same redaction the other
       // path-bearing fields honor. Operators wanting full forensic
-      // context opt in via `QWEN_AUDIT_RAW_PATHS=1`.
+      // context opt in via `CANOPY_AUDIT_RAW_PATHS=1`.
       if (record.pattern !== undefined && includeRawPaths) {
         payload.pattern = record.pattern;
       }
@@ -297,7 +297,7 @@ export function createAuditPublisher(
       // Gate the field on `includeRawPaths` so privacy mode means
       // privacy mode for ALL path-bearing audit content (relPath
       // AND message). Operators who want full forensic context
-      // opt in via `QWEN_AUDIT_RAW_PATHS=1`.
+      // opt in via `CANOPY_AUDIT_RAW_PATHS=1`.
       if (record.message && includeRawPaths) {
         payload.message = record.message;
       }

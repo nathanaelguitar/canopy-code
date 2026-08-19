@@ -6,7 +6,7 @@
 
 import { AuthType } from '../core/contentGenerator.js';
 import { isAbortError } from './errors.js';
-import { isQwenQuotaExceededError } from './quotaErrorDetection.js';
+import { isCanopyQuotaExceededError } from './quotaErrorDetection.js';
 import { getRateLimitErrorDetails, isRateLimitError } from './rateLimit.js';
 
 export type RetryErrorKind =
@@ -72,13 +72,13 @@ export function classifyRetryError(
   };
 
   if (
-    context.authType === AuthType.QWEN_OAUTH &&
-    isQwenQuotaExceededError(error)
+    context.authType === AuthType.CANOPY_OAUTH &&
+    isCanopyQuotaExceededError(error)
   ) {
     return {
       kind: 'provider-business',
       diagnosis: 'fail-fast',
-      reason: 'qwen-oauth-free-tier-quota',
+      reason: 'canopy-oauth-free-tier-quota',
       ...common,
     };
   }

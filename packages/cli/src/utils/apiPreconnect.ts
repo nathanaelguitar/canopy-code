@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,7 @@ import {
   getOrCreateSharedDispatcher,
   preloadRuntimeFetchModule,
   redactProxyCredentials,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadUndici } from './load-undici.js';
 
 const debugLogger = createDebugLogger('PRECONNECT');
@@ -35,7 +35,7 @@ let preconnectInFlight: Promise<void> | undefined;
  */
 const DEFAULT_BASE_URLS: Record<string, string> = {
   openai: 'https://api.openai.com',
-  'qwen-oauth': 'https://coding.dashscope.aliyuncs.com',
+  'canopy-oauth': 'https://coding.dashscope.aliyuncs.com',
   anthropic: 'https://api.anthropic.com',
   dashscope: 'https://dashscope.aliyuncs.com',
 };
@@ -127,7 +127,7 @@ function getPreconnectTargetUrl(
  * Use HEAD request to establish TCP+TLS connection without sending actual request body.
  * Uses the shared undici dispatcher to ensure connection pool is shared with SDK clients.
  *
- * @param authType - Authentication type (openai, qwen-oauth, anthropic, etc.)
+ * @param authType - Authentication type (openai, canopy-oauth, anthropic, etc.)
  * @param options - Configuration options
  */
 export function preconnectApi(
@@ -142,7 +142,7 @@ export function preconnectApi(
   }
 
   // Check if disabled
-  if (process.env['QWEN_CODE_DISABLE_PRECONNECT'] === '1') {
+  if (process.env['CANOPY_CODE_DISABLE_PRECONNECT'] === '1') {
     debugLogger.debug('Preconnect disabled by environment variable');
     preconnectFired = true;
     return;
@@ -209,7 +209,7 @@ export function preconnectApi(
       method: 'HEAD',
       signal: AbortSignal.timeout(5_000),
       headers: {
-        'User-Agent': 'QwenCode-Preconnect/1.0',
+        'User-Agent': 'CanopyCode-Preconnect/1.0',
       },
       dispatcher,
     });

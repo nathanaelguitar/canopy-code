@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -126,10 +126,10 @@ export class ArenaManager {
     this.callbacks = callbacks;
     this.eventEmitter = new ArenaEventEmitter();
     const arenaSettings = config.getAgentsSettings().arena;
-    // Use the user-configured base dir, or default to ~/.qwen/arena.
+    // Use the user-configured base dir, or default to ~/.canopy/arena.
     this.arenaBaseDir =
       arenaSettings?.worktreeBaseDir ??
-      path.join(Storage.getGlobalQwenDir(), 'arena');
+      path.join(Storage.getGlobalCanopyDir(), 'arena');
     this.worktreeService = new GitWorktreeService(
       config.getWorkingDir(),
       this.arenaBaseDir,
@@ -1050,7 +1050,7 @@ export class ArenaManager {
     // Construct env vars for the agent
     const arenaSessionDir = this.getArenaSessionDir();
     const env: Record<string, string> = {
-      QWEN_CODE: '1',
+      CANOPY_CODE: '1',
       ARENA_AGENT_ID: agentId,
       ARENA_SESSION_ID: this.arenaConfig?.sessionId ?? '',
       ARENA_SESSION_DIR: arenaSessionDir,
@@ -1058,10 +1058,10 @@ export class ArenaManager {
 
     // If the model has auth overrides, pass them via env
     if (model.apiKey) {
-      env['QWEN_API_KEY'] = model.apiKey;
+      env['CANOPY_API_KEY'] = model.apiKey;
     }
     if (model.baseUrl) {
-      env['QWEN_BASE_URL'] = model.baseUrl;
+      env['CANOPY_BASE_URL'] = model.baseUrl;
     }
 
     const spawnConfig: AgentSpawnConfig = {
@@ -1264,7 +1264,7 @@ export class ArenaManager {
    * All status and control files are stored here.
    *
    * Returns the absolute path to the session directory, e.g.
-   * `~/.qwen/worktrees/<sessionId>/`.  The directory contains:
+   * `~/.canopy/worktrees/<sessionId>/`.  The directory contains:
    * - `config.json` — consolidated session config + per-agent status
    * - `agents/<safeAgentId>.json` — individual agent status files
    * - `control/` — control signals (shutdown, cancel)

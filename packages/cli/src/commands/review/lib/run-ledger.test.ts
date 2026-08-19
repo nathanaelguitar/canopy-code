@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,8 +46,8 @@ let root: string;
 let plan: string;
 
 const envOf = (sessionId: string): NodeJS.ProcessEnv => ({
-  QWEN_CODE_PROJECT_DIR: root,
-  QWEN_CODE_SESSION_ID: sessionId,
+  CANOPY_CODE_PROJECT_DIR: root,
+  CANOPY_CODE_SESSION_ID: sessionId,
 });
 
 /**
@@ -62,7 +62,7 @@ function authorize(sessionId: string, atMs: number = Date.now()): void {
 
 beforeEach(() => {
   root = realpathSync(mkdtempSync(join(tmpdir(), 'run-ledger-')));
-  plan = join(root, 'qwen-review-pr-7-fetch.json');
+  plan = join(root, 'canopy-review-pr-7-fetch.json');
   writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -110,7 +110,7 @@ describe('sessionEntryCount — the cap term the gate must not swallow', () => {
       atMs: now,
       planMtimeMs: mtime,
     }));
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(runSessionsPath(plan), JSON.stringify(entries));
@@ -274,7 +274,7 @@ describe('appendRunSession / priorSessionIds', () => {
   it('swallows an unwritable record dir', () => {
     // The record dir path collides with an existing FILE: mkdir fails. The
     // append must not throw — bookkeeping never takes the review down.
-    writeFileSync(join(root, 'qwen-review-pr-7-fetch-prompts'), 'a file');
+    writeFileSync(join(root, 'canopy-review-pr-7-fetch-prompts'), 'a file');
     expect(() => appendRunSession(plan, envOf('S1'))).not.toThrow();
   });
 });
@@ -323,7 +323,7 @@ describe('resume marker', () => {
   });
 
   it('reads an unknown schemaVersion as the empty history', () => {
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(
@@ -439,7 +439,7 @@ describe('the properties the threat model rests on', () => {
 
   it('refuses a ledger path that is not a regular file', () => {
     // A planted FIFO blocks readFileSync forever — a hang, not an error.
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     const target = join(root, 'elsewhere.json');
@@ -496,7 +496,7 @@ describe('the properties the threat model rests on', () => {
     // The byte bound: a planted multi-gigabyte file would otherwise be read
     // fully into memory by every consumer. 256 KiB + 1 of valid JSON reads
     // as no ledger at all.
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     const pad = 'x'.repeat(256 * 1024 + 1);
@@ -571,7 +571,7 @@ describe('the properties the threat model rests on', () => {
     utimesSync(plan, past, past);
     const mtime = statSync(plan).mtimeMs;
     const base = Math.floor(mtime);
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(
@@ -598,7 +598,7 @@ describe('the properties the threat model rests on', () => {
     utimesSync(plan, past, past);
     const mtime = statSync(plan).mtimeMs;
     const base = Math.floor(mtime);
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(
@@ -730,7 +730,7 @@ describe('the properties the threat model rests on', () => {
     () => {
       // The noFollow property, pinned for BOTH ledger writes as the sibling
       // test's comment promises — this is the resume.json half.
-      mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+      mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
         recursive: true,
       });
       const target = join(root, 'marker-outside.json');
@@ -747,7 +747,7 @@ describe('the properties the threat model rests on', () => {
     // The "bookkeeping never takes the review down" property, pinned for
     // the writer that lacked it: a FILE standing where the record dir must
     // be makes mkdir throw, and that throw must not escape.
-    writeFileSync(join(root, 'qwen-review-pr-7-fetch-prompts'), 'a file');
+    writeFileSync(join(root, 'canopy-review-pr-7-fetch-prompts'), 'a file');
     expect(() => recordResume(plan, envOf('S1'))).not.toThrow();
     expect(() => recordRestart(plan, 'head-moved')).not.toThrow();
   });
@@ -758,7 +758,7 @@ describe('the properties the threat model rests on', () => {
     // survivors — laundering the plant permanently.
     const mtime = statSync(plan).mtimeMs;
     const now = Date.now();
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     const dupes = Array.from({ length: 64 }, () => ({
@@ -786,7 +786,7 @@ describe('the properties the threat model rests on', () => {
     utimesSync(plan, past, past);
     const mtime = statSync(plan).mtimeMs;
     const base = Math.floor(mtime);
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(
@@ -814,7 +814,7 @@ describe('the properties the threat model rests on', () => {
   it('writes through a planted symlink without following it', () => {
     // `noFollow: true` on both ledger writes: without it atomicWriteFileSync
     // resolves the chain and the rename lands on the TARGET.
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     const target = join(root, 'outside.json');
@@ -855,7 +855,7 @@ describe('plant shapes — heal what cannot be legitimate, preserve what can', (
     // Treated as a transient fault it froze every future append: nothing
     // ever removed the file, so the ledger was dead for the life of the
     // plan — the resume cap's backstop read 0 permanently.
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(runSessionsPath(plan), 'x'.repeat(262 * 1024));
@@ -905,7 +905,7 @@ describe('plant shapes — heal what cannot be legitimate, preserve what can', (
       atMs: base + i,
       planMtimeMs: mtime,
     }));
-    mkdirSync(join(root, 'qwen-review-pr-7-fetch-prompts'), {
+    mkdirSync(join(root, 'canopy-review-pr-7-fetch-prompts'), {
       recursive: true,
     });
     writeFileSync(runSessionsPath(plan), JSON.stringify(flood));

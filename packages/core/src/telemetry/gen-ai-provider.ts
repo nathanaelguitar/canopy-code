@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ export type GenAiOperationName = 'chat' | 'generate_content';
 export type GenAiOutputType = 'text' | 'json' | 'image' | 'speech';
 export type GenAiAuthType =
   | 'openai'
-  | 'qwen-oauth'
+  | 'canopy-oauth'
   | 'gemini'
   | 'vertex-ai'
   | 'anthropic';
@@ -104,7 +104,7 @@ export function resolveGenAiProviderName(
   config: ProviderConfig,
   dashscopeProxyBaseUrl?: string,
 ): string {
-  if (config.authType === 'qwen-oauth') return 'dashscope';
+  if (config.authType === 'canopy-oauth') return 'dashscope';
 
   const baseUrl = normalizedEndpoint(config.baseUrl);
   const proxyUrl = normalizedEndpoint(dashscopeProxyBaseUrl);

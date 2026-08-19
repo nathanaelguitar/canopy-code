@@ -206,7 +206,7 @@ export async function startTelemetrySdk(
   if (attrWarnings.length > 0) {
     // eslint-disable-next-line no-console
     console.warn(
-      `[qwen-code telemetry] ${attrWarnings.length} resource attribute issue(s):`,
+      `[canopy-code telemetry] ${attrWarnings.length} resource attribute issue(s):`,
     );
     for (const w of attrWarnings) {
       // eslint-disable-next-line no-console
@@ -273,7 +273,7 @@ export async function startTelemetrySdk(
             // the canonical diagnostic channel for batch runs.
             //
             // Caveat for interactive mode: when the user has explicitly
-            // disabled file logging via QWEN_DEBUG_LOG_FILE=0, debugLogger.warn
+            // disabled file logging via CANOPY_DEBUG_LOG_FILE=0, debugLogger.warn
             // silently no-ops and bridge diagnostics are fully lost — accepted
             // trade-off, since falling back to stderr would re-introduce the
             // TUI pollution this injection was added to prevent.
@@ -496,7 +496,7 @@ export async function startTelemetrySdk(
       // Modern fetch (`globalThis.fetch` / undici) is the HTTP layer used by
       // `openai`, `@google/genai`, and `@anthropic-ai/sdk`. Without this
       // instrumentation, outbound LLM requests carry no `traceparent` header
-      // and the trace tree terminates at the qwen-code process boundary.
+      // and the trace tree terminates at the canopy-code process boundary.
       new UndiciInstrumentation({
         ignoreRequestHook: (request) => {
           if (otlpUrlPrefixes.length === 0) return false;

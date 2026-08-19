@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,7 +32,7 @@ import {
   readAgentViewSupervisor,
   writeAgentViewSupervisor,
 } from './supervisor-store.js';
-import { buildCurrentQwenCliArgv } from './current-cli-argv.js';
+import { buildCurrentCanopyCliArgv } from './current-cli-argv.js';
 
 export const INTERNAL_AGENT_VIEW_SUPERVISOR_ARG =
   '--internal-agent-view-supervisor';
@@ -469,7 +469,7 @@ async function readSupervisorAuthToken(
 }
 
 function defaultSpawnSupervisor(args: readonly string[]): ChildProcess {
-  const argv = buildCurrentQwenCliArgv(args);
+  const argv = buildCurrentCanopyCliArgv(args);
   return spawn(argv[0]!, argv.slice(1), {
     detached: true,
     stdio: 'ignore',

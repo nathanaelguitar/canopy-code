@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,14 +22,14 @@ vi.mock('./theme.js', () => ({
 vi.mock('../i18n/index.js', () => ({
   initializeI18n: (...args: unknown[]) => mockInitializeI18n(...args),
   resolveLanguageSetting: (settingsLang?: string) =>
-    process.env['QWEN_CODE_LANG'] || settingsLang || 'auto',
+    process.env['CANOPY_CODE_LANG'] || settingsLang || 'auto',
 }));
 
 const mockConnect = vi.fn();
 const mockGetInstance = vi.fn().mockResolvedValue({ connect: mockConnect });
 const mockLogIdeConnection = vi.fn();
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
@@ -79,8 +79,8 @@ describe('initializeApp', () => {
     expect(mockInitializeI18n).toHaveBeenCalledWith('en');
   });
 
-  it('should initialize i18n with QWEN_CODE_LANG env var if set', async () => {
-    vi.stubEnv('QWEN_CODE_LANG', 'zh');
+  it('should initialize i18n with CANOPY_CODE_LANG env var if set', async () => {
+    vi.stubEnv('CANOPY_CODE_LANG', 'zh');
 
     await initializeApp(mockConfig as never, mockSettings as never);
     expect(mockInitializeI18n).toHaveBeenCalledWith('zh');

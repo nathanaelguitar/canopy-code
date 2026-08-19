@@ -15,7 +15,7 @@ function createHarness() {
   const installWorkspaceSkill = vi.fn().mockResolvedValue({
     skillName: 'demo-skill',
     scope: 'workspace',
-    installedPath: '/workspace/.qwen/skills/demo-skill/SKILL.md',
+    installedPath: '/workspace/.canopy/skills/demo-skill/SKILL.md',
   });
   const deleteWorkspaceSkill = vi.fn().mockResolvedValue({
     skillName: 'demo-skill',
@@ -253,7 +253,7 @@ describe('workspace Skill management routes', () => {
         enabled: false,
       });
     // The cap counts raw entries before deduplication (contract stated in
-    // docs/developers/qwen-serve-protocol.md), so duplicates cannot bypass it.
+    // docs/developers/canopy-serve-protocol.md), so duplicates cannot bypass it.
     const duplicatesOverCap = await request(harness.app)
       .post('/workspace/skills/enable')
       .send({

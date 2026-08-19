@@ -190,7 +190,7 @@ lOTTGqPpwFUbw2EMOOpFYuIyzGMIpUNMBjE2gvJiqFQ=
 -----END CERTIFICATE-----`;
 
     // Pins the isTlsVerificationDisabled() branch of the dispatcher: the
-    // env probe uses QWEN_TLS_INSECURE (read only by that helper) rather
+    // env probe uses CANOPY_TLS_INSECURE (read only by that helper) rather
     // than NODE_TLS_REJECT_UNAUTHORIZED, which Node's own TLS layer also
     // honors and would make the positive phase pass without our branch.
     it('honors the TLS-insecure switch for self-signed MCP endpoints', async () => {
@@ -225,7 +225,7 @@ lOTTGqPpwFUbw2EMOOpFYuIyzGMIpUNMBjE2gvJiqFQ=
 
         // TLS-insecure switch set when the dispatcher is (re)built: the
         // self-signed endpoint connects.
-        vi.stubEnv('QWEN_TLS_INSECURE', '1');
+        vi.stubEnv('CANOPY_TLS_INSECURE', '1');
         _resetMcpFetchDispatcherForTest();
         const res = await request();
         expect(res.status).toBe(200);
@@ -249,13 +249,13 @@ lOTTGqPpwFUbw2EMOOpFYuIyzGMIpUNMBjE2gvJiqFQ=
   describe('getMcpOAuthDialogInstruction', () => {
     it('builds an authenticate instruction for the named MCP server', () => {
       expect(getMcpOAuthDialogInstruction('authenticate', 'foo')).toBe(
-        "In interactive Qwen Code sessions, open the /mcp dialog to authenticate with MCP server 'foo'. For headless or SDK usage, configure MCP OAuth with qwen mcp add --oauth-* or settings.json, then authenticate once in an interactive session before connecting.",
+        "In interactive Canopy Code sessions, open the /mcp dialog to authenticate with MCP server 'foo'. For headless or SDK usage, configure MCP OAuth with canopy mcp add --oauth-* or settings.json, then authenticate once in an interactive session before connecting.",
       );
     });
 
     it('builds a re-authenticate instruction for the named MCP server', () => {
       expect(getMcpOAuthDialogInstruction('re-authenticate', 'foo')).toBe(
-        "In interactive Qwen Code sessions, open the /mcp dialog to re-authenticate with MCP server 'foo'. For headless or SDK usage, configure MCP OAuth with qwen mcp add --oauth-* or settings.json, then re-authenticate once in an interactive session before connecting.",
+        "In interactive Canopy Code sessions, open the /mcp dialog to re-authenticate with MCP server 'foo'. For headless or SDK usage, configure MCP OAuth with canopy mcp add --oauth-* or settings.json, then re-authenticate once in an interactive session before connecting.",
       );
     });
   });
@@ -2774,7 +2774,7 @@ lOTTGqPpwFUbw2EMOOpFYuIyzGMIpUNMBjE2gvJiqFQ=
       });
     });
 
-    it('strips Qwen-internal daemon secrets from the stdio child env (#6601)', async () => {
+    it('strips Canopy-internal daemon secrets from the stdio child env (#6601)', async () => {
       process.env = {
         ...ORIGINAL_ENV,
         QWEN_SERVER_TOKEN: 'serve-secret',

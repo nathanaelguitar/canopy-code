@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,11 +46,11 @@ export const DEFAULT_STALL_MS = 60_000;
 /** Total attempts (initial + retries) for a single `agent()` dispatch. */
 export const MAX_STALL_ATTEMPTS = 3;
 
-export const MAX_WORKFLOW_STALL_MS_ENV = 'QWEN_CODE_WORKFLOW_STALL_SECONDS';
+export const MAX_WORKFLOW_STALL_MS_ENV = 'CANOPY_CODE_WORKFLOW_STALL_SECONDS';
 
 /**
  * Resolve the per-dispatch stall timeout. Precedence: the per-call
- * `agent({stallMs})` override, then `QWEN_CODE_WORKFLOW_STALL_SECONDS`
+ * `agent({stallMs})` override, then `CANOPY_CODE_WORKFLOW_STALL_SECONDS`
  * (whole seconds), then `DEFAULT_STALL_MS`. A non-positive / non-finite
  * override falls back to the default. A value of `0` disables the watchdog
  * (returns `0` — callers treat 0 as "no watchdog").

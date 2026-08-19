@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -66,7 +66,7 @@ const PROTOTYPE_POLLUTION_KEYS: ReadonlySet<string> = new Set([
   'prototype',
 ]);
 
-export const CLIENT_ID_HEADER = 'x-qwen-client-id';
+export const CLIENT_ID_HEADER = 'x-canopy-client-id';
 export const MAX_CLIENT_ID_LENGTH = 128;
 export const MAX_TOOL_NAME_LENGTH = 256;
 export const MAX_SKILL_NAME_LENGTH = 256;
@@ -178,7 +178,7 @@ export function parseClientIdHeader(
   if (raw.length > MAX_CLIENT_ID_LENGTH || !CLIENT_ID_RE.test(raw)) {
     res.status(400).json({
       error:
-        '`X-Qwen-Client-Id` must be a non-empty token of 128 characters or fewer',
+        '`X-Canopy-Client-Id` must be a non-empty token of 128 characters or fewer',
       code: 'invalid_client_id',
     });
     return null;
@@ -254,7 +254,7 @@ export function validateMcpRuntimeServerName(
 }
 
 /**
- * Workspace-level mutation routes validate the parsed `X-Qwen-Client-Id`
+ * Workspace-level mutation routes validate the parsed `X-Canopy-Client-Id`
  * against the supplied bridge set so the `originatorClientId` stamped
  * onto fan-out events is grounded in a known identity. Returns the
  * validated client id (or `undefined` when no header was supplied),
@@ -357,7 +357,7 @@ export function parseMaxQueuedQuery(
     // a fresh entry). Matches the `workspace_mismatch` log style in
     // `sendBridgeError`.
     writeStderrLine(
-      `qwen serve: rejected ?maxQueued ${safeLogValue(raw)} ` +
+      `canopy serve: rejected ?maxQueued ${safeLogValue(raw)} ` +
         `(not a decimal integer)`,
     );
     res.status(400).json({
@@ -373,7 +373,7 @@ export function parseMaxQueuedQuery(
     n > MAX_QUERY_MAX_QUEUED
   ) {
     writeStderrLine(
-      `qwen serve: rejected ?maxQueued ${safeLogValue(raw)} ` +
+      `canopy serve: rejected ?maxQueued ${safeLogValue(raw)} ` +
         `(outside [${MIN_QUERY_MAX_QUEUED}, ${MAX_QUERY_MAX_QUEUED}])`,
     );
     res.status(400).json({
@@ -409,7 +409,7 @@ export function parseLastEventId(raw: unknown): number | undefined {
     // "first connect, no resume").
     if (typeof raw === 'string' && raw.length > 0) {
       writeStderrLine(
-        `qwen serve: rejected Last-Event-ID ${safeLogValue(raw)} ` +
+        `canopy serve: rejected Last-Event-ID ${safeLogValue(raw)} ` +
           `(not a decimal integer)`,
       );
     }
@@ -421,7 +421,7 @@ export function parseLastEventId(raw: unknown): number | undefined {
   // tries to resume from beyond that is either malicious or broken.
   if (!Number.isFinite(n) || n > Number.MAX_SAFE_INTEGER) {
     writeStderrLine(
-      `qwen serve: rejected Last-Event-ID ${safeLogValue(raw)} ` +
+      `canopy serve: rejected Last-Event-ID ${safeLogValue(raw)} ` +
         `(exceeds Number.MAX_SAFE_INTEGER)`,
     );
     return undefined;

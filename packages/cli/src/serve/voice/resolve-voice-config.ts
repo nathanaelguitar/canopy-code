@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ModelsConfig } from '@qwen-code/qwen-code-core';
+import { ModelsConfig } from '@canopy-code/canopy-code-core';
 import { loadSettings } from '../../config/settings.js';
 import type { LoadedSettings } from '../../config/settings.js';
 import {

@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { render } from 'ink-testing-library';
 import { describe, it, expect } from 'vitest';
 import { AutoAcceptIndicator } from './AutoAcceptIndicator.js';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { setLanguageAsync } from '../../i18n/index.js';
 
 describe('<AutoAcceptIndicator />', () => {

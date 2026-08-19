@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,7 +38,7 @@ let ENV: NodeJS.ProcessEnv;
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'transcripts-'));
-  ENV = { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S1' };
+  ENV = { CANOPY_CODE_PROJECT_DIR: dir, CANOPY_CODE_SESSION_ID: 'S1' };
   mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
 });
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -53,10 +53,10 @@ describe('transcriptDir — resolved from the environment only', () => {
   });
 
   it('throws when only one key is present', () => {
-    expect(() => transcriptDir({ QWEN_CODE_SESSION_ID: 'S1' })).toThrow(
+    expect(() => transcriptDir({ CANOPY_CODE_SESSION_ID: 'S1' })).toThrow(
       TranscriptsUnavailableError,
     );
-    expect(() => transcriptDir({ QWEN_CODE_PROJECT_DIR: '/p' })).toThrow(
+    expect(() => transcriptDir({ CANOPY_CODE_PROJECT_DIR: '/p' })).toThrow(
       TranscriptsUnavailableError,
     );
   });
@@ -67,8 +67,8 @@ describe('readTranscripts — defensive parsing', () => {
     // Not a verdict about the agents — an infrastructure fact.
     expect(() =>
       readTranscripts(undefined, {
-        QWEN_CODE_PROJECT_DIR: join(dir, 'gone'),
-        QWEN_CODE_SESSION_ID: 'S1',
+        CANOPY_CODE_PROJECT_DIR: join(dir, 'gone'),
+        CANOPY_CODE_SESSION_ID: 'S1',
       }),
     ).toThrow(TranscriptsUnavailableError);
   });
@@ -281,9 +281,9 @@ describe('readRunTranscripts — the run across its sessions', () => {
   // The run ledger fetch-pr would have written: sessions S0 (interrupted
   // attempt) then S1 (current). Entries must postdate the plan's epoch.
   function planWithLedger(...sessionIds: string[]): string {
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
-    const recordDir = join(dir, 'qwen-review-pr-7-fetch-prompts');
+    const recordDir = join(dir, 'canopy-review-pr-7-fetch-prompts');
     mkdirSync(recordDir, { recursive: true });
     // Prior attempts first, the current one stamped slightly later: each
     // attempt's window closes when the next one opened, and a fixture that
@@ -292,7 +292,7 @@ describe('readRunTranscripts — the run across its sessions', () => {
     sessionIds.forEach((id, i) => {
       appendRunSession(
         plan,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === sessionIds.length - 1 ? now + 1500 : now,
       );
     });
@@ -327,7 +327,7 @@ describe('readRunTranscripts — the run across its sessions', () => {
   it('reads only the current session when no ledger exists', () => {
     // The orphan-invisibility guard: without a ledger entry, a prior
     // session's transcripts do not exist to any reader.
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
     priorFile('S0', 'agent-a0.jsonl', transcript('a0'));
     file('agent-a1.jsonl', transcript('a1'));
@@ -347,8 +347,8 @@ describe('readRunTranscripts — the run across its sessions', () => {
     priorFile('S0', 'agent-a0.jsonl', transcript('a0'));
     expect(() =>
       readRunTranscripts(plan, undefined, {
-        QWEN_CODE_PROJECT_DIR: dir,
-        QWEN_CODE_SESSION_ID: 'S-gone',
+        CANOPY_CODE_PROJECT_DIR: dir,
+        CANOPY_CODE_SESSION_ID: 'S-gone',
       }),
     ).toThrow(TranscriptsUnavailableError);
   });
@@ -392,7 +392,10 @@ describe('readRunTranscripts — the run across its sessions', () => {
     // ("room for prefixed variants"). Joined raw, an id like `resume.1`
     // reaches a path that does not exist and every reader silently sees
     // nothing, one underscore away from the records.
-    const env = { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S.dot' };
+    const env = {
+      CANOPY_CODE_PROJECT_DIR: dir,
+      CANOPY_CODE_SESSION_ID: 'S.dot',
+    };
     mkdirSync(join(dir, 'subagents', 'S_dot'), { recursive: true });
     writeFileSync(
       join(dir, 'subagents', 'S_dot', 'agent-a9.jsonl'),
@@ -494,17 +497,20 @@ describe('readRunTranscripts — currentDirOptional', () => {
     }) + '\n';
 
   it('absorbs a missing CURRENT dir when asked — the pre-launch resume read', () => {
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
     const now = Date.now();
-    appendRunSession(plan, { QWEN_CODE_SESSION_ID: 'S0' }, now);
+    appendRunSession(plan, { CANOPY_CODE_SESSION_ID: 'S0' }, now);
     mkdirSync(join(dir, 'subagents', 'S0'), { recursive: true });
     writeFileSync(
       join(dir, 'subagents', 'S0', 'agent-a0.jsonl'),
       transcript('a0'),
     );
 
-    const env = { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S-new' };
+    const env = {
+      CANOPY_CODE_PROJECT_DIR: dir,
+      CANOPY_CODE_SESSION_ID: 'S-new',
+    };
     // Reading prior evidence requires this session's own authorized resume.
     // (The stamp's position relative to the transcripts is fixture realism,
     // not a requirement — no code compares a resume's atMs to any transcript
@@ -525,7 +531,7 @@ describe('readRunTranscripts — currentDirOptional', () => {
   });
 
   it('still throws on a missing ENVIRONMENT even with the option', () => {
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
     expect(() =>
       readRunTranscripts(plan, undefined, {}, undefined, {
@@ -545,15 +551,15 @@ describe('readRunTranscripts — containment and fault handling', () => {
     }) + '\n';
 
   function planWithLedger(...sessionIds: string[]): string {
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
-    const recordDir = join(dir, 'qwen-review-pr-7-fetch-prompts');
+    const recordDir = join(dir, 'canopy-review-pr-7-fetch-prompts');
     mkdirSync(recordDir, { recursive: true });
     const now = Date.now();
     sessionIds.forEach((id, i) => {
       appendRunSession(
         plan,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === sessionIds.length - 1 ? now + 1500 : now,
       );
     });
@@ -606,13 +612,13 @@ describe('readRunTranscripts — containment and fault handling', () => {
 
   it('throws on a missing current dir when the run has no prior evidence', () => {
     // No ledger: this is a run that has shown nothing, not a continuation.
-    const plan = join(dir, 'qwen-review-pr-7-fetch.json');
+    const plan = join(dir, 'canopy-review-pr-7-fetch.json');
     writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
     expect(() =>
       readRunTranscripts(
         plan,
         undefined,
-        { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S-none' },
+        { CANOPY_CODE_PROJECT_DIR: dir, CANOPY_CODE_SESSION_ID: 'S-none' },
         undefined,
         { currentDirOptional: true },
       ),

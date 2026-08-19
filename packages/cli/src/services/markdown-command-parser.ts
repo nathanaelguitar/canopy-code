@@ -8,7 +8,7 @@ import { z } from 'zod';
 import {
   parse as parseYaml,
   normalizeContent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 /**
  * Defines the Zod schema for a Markdown command definition file.

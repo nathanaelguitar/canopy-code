@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,7 +32,7 @@ export function safeWsSend(
       if (isServeDebugMode()) {
         try {
           writeStderrLine(
-            `qwen serve: failed to send ${context} frame on /acp socket: ${
+            `canopy serve: failed to send ${context} frame on /acp socket: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -46,7 +46,7 @@ export function safeWsSend(
   if (isServeDebugMode()) {
     try {
       writeStderrLine(
-        `qwen serve: dropped ${context} frame on non-OPEN /acp socket (readyState=${ws.readyState})`,
+        `canopy serve: dropped ${context} frame on non-OPEN /acp socket (readyState=${ws.readyState})`,
       );
     } catch {
       // stderr gone (e.g. EPIPE on a piped/closed log) — preserve the no-throw

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,12 +11,12 @@ import {
   resolveBaseUrl,
   getDefaultBaseUrlForProtocol,
   getDefaultModelIds,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   InputModalities,
   ProviderConfig,
   ProviderSetupInputs,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 import { normalizeModelIds, maskApiKey } from './useAuth.js';
 

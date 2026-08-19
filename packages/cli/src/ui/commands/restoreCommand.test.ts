@@ -11,7 +11,7 @@ import * as path from 'node:path';
 import { restoreCommand } from './restoreCommand.js';
 import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 
 describe('restoreCommand', () => {
   let mockContext: CommandContext;
@@ -90,7 +90,7 @@ describe('restoreCommand', () => {
       ).toEqual({
         type: 'message',
         messageType: 'error',
-        content: 'Could not determine the .qwen directory path.',
+        content: 'Could not determine the .canopy directory path.',
       });
     });
 

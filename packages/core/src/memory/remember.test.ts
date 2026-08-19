@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -45,7 +45,7 @@ function createConfig(
   return {
     isManagedMemoryAvailable: vi.fn().mockReturnValue(managed),
     getProjectRoot: vi.fn().mockReturnValue(projectRoot),
-    getUserMemory: vi.fn().mockReturnValue('QWEN/AGENTS guidance'),
+    getUserMemory: vi.fn().mockReturnValue('CANOPY/AGENTS guidance'),
     getMemoryAgentTimeoutMinutes: vi.fn().mockReturnValue(undefined),
     getMemoryAgentMaxTurns: vi.fn().mockReturnValue(undefined),
     ...overrides,
@@ -53,7 +53,7 @@ function createConfig(
 }
 
 describe('remember memory helper', () => {
-  const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+  const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
   let tempDir: string;
   let projectRoot: string;
 
@@ -61,7 +61,7 @@ describe('remember memory helper', () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'remember-helper-'));
     projectRoot = path.join(tempDir, 'project');
     await fs.mkdir(projectRoot, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
     clearAutoMemoryRootCache();
     vi.mocked(runForkedAgent).mockReset();
     vi.mocked(rebuildManagedAutoMemoryIndex).mockReset();
@@ -72,9 +72,9 @@ describe('remember memory helper', () => {
 
   afterEach(async () => {
     if (originalMemoryBase === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
     }
     clearAutoMemoryRootCache();
     await fs.rm(tempDir, { recursive: true, force: true });
@@ -106,9 +106,9 @@ describe('remember memory helper', () => {
       '<user-content>\nhidden context\n</user-content>',
     );
 
-    const bare = buildBareRememberPrompt('  appends to qwen  ');
+    const bare = buildBareRememberPrompt('  appends to canopy  ');
     expect(bare).toBe(
-      'Please save the following fact to memory (e.g. append to QWEN.md in the project root):\n\nappends to qwen',
+      'Please save the following fact to memory (e.g. append to CANOPY.md in the project root):\n\nappends to canopy',
     );
   });
 
@@ -206,12 +206,12 @@ describe('remember memory helper', () => {
       expect.objectContaining({ maxTimeMinutes: 30 }),
     );
     // Non-clean mode still suppresses the duplicate auto-memory append while
-    // keeping the session's context files (QWEN.md/AGENTS.md) intact.
+    // keeping the session's context files (CANOPY.md/AGENTS.md) intact.
     const params = vi.mocked(runForkedAgent).mock.calls[0]?.[0] as {
       config: Config;
     };
     expect(params.config.getAutoMemoryPrompt()).toBe('');
-    expect(params.config.getUserMemory()).toBe('QWEN/AGENTS guidance');
+    expect(params.config.getUserMemory()).toBe('CANOPY/AGENTS guidance');
   });
 
   it('keeps the built-in 5-minute default when no timeout is configured', async () => {

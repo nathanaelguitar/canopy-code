@@ -33,7 +33,7 @@ const formatUpdateInstructions = vi.fn(
         `  ${resolveUpdateCommand(installationInfo.updateCommand, latestVersion)}`,
       ];
     }
-    return ['Manual update required. Please reinstall Qwen Code.'];
+    return ['Manual update required. Please reinstall Canopy Code.'];
   },
 );
 vi.mock('../utils/updateCheck.js', async (importOriginal) => ({
@@ -41,8 +41,8 @@ vi.mock('../utils/updateCheck.js', async (importOriginal) => ({
   checkForUpdatesDetailed,
 }));
 vi.mock('../../utils/processUtils.js', () => ({
-  CUSTOM_SANDBOX_IMAGE_ENV_VAR: 'QWEN_CODE_CUSTOM_SANDBOX_IMAGE',
-  HOST_UPDATE_RELAUNCH_ENV_VAR: 'QWEN_CODE_HOST_UPDATE_RELAUNCH',
+  CUSTOM_SANDBOX_IMAGE_ENV_VAR: 'CANOPY_CODE_CUSTOM_SANDBOX_IMAGE',
+  HOST_UPDATE_RELAUNCH_ENV_VAR: 'CANOPY_CODE_HOST_UPDATE_RELAUNCH',
   relaunchForUpdate,
 }));
 vi.mock('../../utils/standalone-update.js', () => ({
@@ -76,8 +76,8 @@ describe('updateCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     relaunchForUpdate.mockReset();
-    delete process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'];
-    delete process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'];
+    delete process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'];
+    delete process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'];
     checkForUpdatesDetailed.mockResolvedValue({
       status: 'update',
       info: {
@@ -87,7 +87,7 @@ describe('updateCommand', () => {
     });
     getInstallationInfo.mockReturnValue({
       isStandalone: false,
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
     });
   });
 
@@ -111,7 +111,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @qwen-code/qwen-code@1.2.3',
+        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @canopy-code/canopy-code@1.2.3',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
   });
@@ -125,7 +125,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @qwen-code/qwen-code@1.2.3',
+        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @canopy-code/canopy-code@1.2.3',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
     expect(
@@ -136,7 +136,7 @@ describe('updateCommand', () => {
   it('does not update standalone installs in interactive mode when auto-update is disabled', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
 
     const result = await updateCommand.action!(
@@ -148,7 +148,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nManual update required. Please reinstall Qwen Code.',
+        'Update available: 1.2.3\nManual update required. Please reinstall Canopy Code.',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
     expect(performStandaloneUpdate).not.toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe('updateCommand', () => {
   it('hands standalone updates off to the parent process', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     const commandContext = context('interactive');
 
@@ -192,7 +192,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nManual update required. Please reinstall Qwen Code.',
+        'Update available: 1.2.3\nManual update required. Please reinstall Canopy Code.',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
   });
@@ -204,13 +204,13 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @qwen-code/qwen-code@1.2.3',
+        'Update available: 1.2.3\nRun the following to update:\n  npm install -g @canopy-code/canopy-code@1.2.3',
     });
   });
 
   it('keeps explicitly configured sandbox images user-managed', async () => {
-    process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'] =
-      'example.com/custom-qwen:1.0.0';
+    process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'] =
+      'example.com/custom-canopy:1.0.0';
 
     try {
       const result = await updateCommand.action!(context('interactive'), '');
@@ -219,16 +219,16 @@ describe('updateCommand', () => {
         type: 'message',
         messageType: 'info',
         content:
-          'Update available: 1.2.3\nThis session uses the custom sandbox image example.com/custom-qwen:1.0.0. Update that image and restart Qwen Code.',
+          'Update available: 1.2.3\nThis session uses the custom sandbox image example.com/custom-canopy:1.0.0. Update that image and restart Canopy Code.',
       });
       expect(relaunchForUpdate).not.toHaveBeenCalled();
     } finally {
-      delete process.env['QWEN_CODE_CUSTOM_SANDBOX_IMAGE'];
+      delete process.env['CANOPY_CODE_CUSTOM_SANDBOX_IMAGE'];
     }
   });
 
   it('uses the host update capability inside a container', async () => {
-    process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
+    process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
 
     const result = await updateCommand.action!(context('interactive'), '');
 
@@ -237,7 +237,7 @@ describe('updateCommand', () => {
   });
 
   it('respects disabled auto-update for a supported host installation', async () => {
-    process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
+    process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = 'true';
 
     const result = await updateCommand.action!(
       context('interactive', false),
@@ -248,13 +248,13 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nUpdate Qwen Code on the host, then restart the sandbox.',
+        'Update available: 1.2.3\nUpdate Canopy Code on the host, then restart the sandbox.',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
   });
 
   it('shows manual guidance for an unsupported host installation', async () => {
-    process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = 'false';
+    process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = 'false';
 
     const result = await updateCommand.action!(context('interactive'), '');
 
@@ -262,7 +262,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nUpdate Qwen Code on the host, then restart the sandbox.',
+        'Update available: 1.2.3\nUpdate Canopy Code on the host, then restart the sandbox.',
     });
     expect(relaunchForUpdate).not.toHaveBeenCalled();
   });
@@ -286,14 +286,14 @@ describe('updateCommand', () => {
   it('updates standalone installs in non-interactive mode', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockResolvedValue('done');
 
     const result = await updateCommand.action!(context('non_interactive'), '');
 
     expect(performStandaloneUpdate).toHaveBeenCalledWith(
-      '/tmp/qwen-code',
+      '/tmp/canopy-code',
       '1.2.3',
     );
     expect(result).toEqual({
@@ -307,7 +307,7 @@ describe('updateCommand', () => {
   it('returns deferred message when standalone update is not yet active', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockResolvedValue('deferred');
 
@@ -324,7 +324,7 @@ describe('updateCommand', () => {
   it('returns an error when standalone update fails in non-interactive mode', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockRejectedValue(new Error('boom'));
 
@@ -348,7 +348,7 @@ describe('updateCommand', () => {
       type: 'message',
       messageType: 'info',
       content:
-        'Update available: 1.2.3\nManual update required. Please reinstall Qwen Code.',
+        'Update available: 1.2.3\nManual update required. Please reinstall Canopy Code.',
     });
   });
 
@@ -363,7 +363,7 @@ describe('updateCommand', () => {
     expect(result).toEqual({
       type: 'message',
       messageType: 'info',
-      content: 'Qwen Code 1.0.0 is up to date!',
+      content: 'Canopy Code 1.0.0 is up to date!',
     });
   });
 

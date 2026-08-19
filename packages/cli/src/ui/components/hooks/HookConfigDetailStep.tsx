@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { Box, Text } from 'ink';
 import { theme } from '../../semantic-colors.js';
 import { useTerminalSize } from '../../hooks/useTerminalSize.js';
 import type { HookConfigDisplayInfo, HookEventDisplayInfo } from './types.js';
-import { HooksConfigSource } from '@qwen-code/qwen-code-core';
+import { HooksConfigSource } from '@canopy-code/canopy-code-core';
 import { t } from '../../../i18n/index.js';
 import {
   getTranslatedSourceDisplayMap,
@@ -189,7 +189,7 @@ export function HookConfigDetailStep({
       <Box marginTop={1}>
         <Text color={theme.text.secondary}>
           {t(
-            'To modify or remove this hook, edit settings.json directly or ask Qwen to help.',
+            'To modify or remove this hook, edit settings.json directly or ask Canopy to help.',
           )}
         </Text>
       </Box>

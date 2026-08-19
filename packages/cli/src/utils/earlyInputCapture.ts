@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@
  * user input being lost during startup.
  */
 
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('EARLY_INPUT');
 
@@ -243,7 +243,7 @@ export function startEarlyInputCapture(): void {
   }
 
   // Check if disabled
-  if (process.env['QWEN_CODE_DISABLE_EARLY_CAPTURE'] === '1') {
+  if (process.env['CANOPY_CODE_DISABLE_EARLY_CAPTURE'] === '1') {
     debugLogger.debug('Early input capture disabled by environment variable');
     return;
   }

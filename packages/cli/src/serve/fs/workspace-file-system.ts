@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,7 +30,7 @@ import {
   isWithinRoot,
   type Ignore,
   type WriteTextFileOptions,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { BridgeEvent } from '@qwen-code/acp-bridge/eventBus';
 import type { WorkspaceGenerationGuard } from '../workspace-registry.js';
 import {
@@ -85,7 +85,7 @@ export interface FsStat {
 export interface FsEntry {
   name: string;
   kind: 'file' | 'directory' | 'symlink' | 'other';
-  /** True iff the entry matched a `.gitignore`/`.qwenignore` rule. */
+  /** True iff the entry matched a `.gitignore`/`.canopyignore` rule. */
   ignored: boolean;
 }
 
@@ -338,7 +338,7 @@ export interface CreateWorkspaceFileSystemFactoryDeps {
    * one per workspace via `loadIgnoreRules`.
    */
   ignore?: Ignore;
-  /** Override audit raw-path mode. Defaults to env `QWEN_AUDIT_RAW_PATHS=1`. */
+  /** Override audit raw-path mode. Defaults to env `CANOPY_AUDIT_RAW_PATHS=1`. */
   includeRawPaths?: boolean;
   /** Custom AI ignore files from context.fileFiltering.customIgnoreFiles. */
   customIgnoreFiles?: string[];
@@ -368,7 +368,7 @@ export function createWorkspaceFileSystemFactory(
       loadIgnoreRules({
         projectRoot: workspace,
         useGitignore: true,
-        useQwenignore: true,
+        useCanopyignore: true,
         ...(deps.customIgnoreFiles !== undefined
           ? { customIgnoreFiles: deps.customIgnoreFiles }
           : {}),

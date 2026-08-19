@@ -13,7 +13,7 @@ import {
   Storage,
   atomicWriteFile,
   type MCPServerConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import stripJsonComments from 'strip-json-comments';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
 
@@ -46,12 +46,12 @@ export interface McpApprovalsError {
 }
 
 export function getMcpApprovalsPath(): string {
-  if (process.env['QWEN_CODE_MCP_APPROVALS_PATH']) {
-    return process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+  if (process.env['CANOPY_CODE_MCP_APPROVALS_PATH']) {
+    return process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
   }
   // Resolve lazily on every call (mirrors getTrustedFoldersPath): a top-level
   // const would be stale after home-env overrides are applied.
-  return path.join(Storage.getGlobalQwenDir(), MCP_APPROVALS_FILENAME);
+  return path.join(Storage.getGlobalCanopyDir(), MCP_APPROVALS_FILENAME);
 }
 
 /** Keys are stored normalized so the same project resolves consistently. */
@@ -161,7 +161,7 @@ export function loadMcpApprovals(): LoadedMcpApprovals {
 /**
  * Names of gated servers in `mcpServers` that are NOT approved (pending or
  * rejected) for `projectRoot`. Only checked-in / shareable scopes are gated —
- * project `.mcp.json` and workspace `.qwen/settings.json` (see
+ * project `.mcp.json` and workspace `.canopy/settings.json` (see
  * {@link isGatedMcpScope}); user/system/extension servers are ignored. The
  * returned list is what the discovery layer skips
  * (`Config.isMcpServerPendingApproval`). See issue #4615.

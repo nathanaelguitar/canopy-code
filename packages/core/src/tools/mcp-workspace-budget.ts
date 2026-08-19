@@ -46,7 +46,7 @@ const debugLogger = createDebugLogger('McpPool:Budget');
  *     length-1 batches inline for shape consistency.
  *
  * The legacy `McpClientManager` budget machinery STAYS as-is for
- * standalone qwen and SDK MCP servers (which bypass the pool per
+ * standalone canopy and SDK MCP servers (which bypass the pool per
  * ). Pool mode → pool's `WorkspaceMcpBudget` enforces;
  * standalone / SDK MCP → manager's inline machinery enforces. No
  * double-counting because pool mode's `discoverAllMcpToolsViaPool`

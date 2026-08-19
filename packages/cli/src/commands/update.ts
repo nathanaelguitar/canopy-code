@@ -10,7 +10,7 @@ import { initializeI18n, resolveLanguageSetting, t } from '../i18n/index.js';
 export const updateCommand: CommandModule = {
   command: 'update',
   get describe() {
-    return t('Check for Qwen Code updates and install if available');
+    return t('Check for Canopy Code updates and install if available');
   },
   handler: async () => {
     const [
@@ -44,7 +44,7 @@ export const updateCommand: CommandModule = {
 
     if (updateCheck.status === 'up-to-date') {
       writeStdoutLine(
-        t('Qwen Code {{version}} is up to date!', {
+        t('Canopy Code {{version}} is up to date!', {
           version: updateCheck.currentVersion,
         }),
       );

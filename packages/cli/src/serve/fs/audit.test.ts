@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -238,9 +238,9 @@ describe('createAuditPublisher', () => {
     expect(events[0].data).not.toHaveProperty('pattern');
   });
 
-  it('respects QWEN_AUDIT_RAW_PATHS=1 via env when includeRawPaths is unset', () => {
-    const original = process.env['QWEN_AUDIT_RAW_PATHS'];
-    process.env['QWEN_AUDIT_RAW_PATHS'] = '1';
+  it('respects CANOPY_AUDIT_RAW_PATHS=1 via env when includeRawPaths is unset', () => {
+    const original = process.env['CANOPY_AUDIT_RAW_PATHS'];
+    process.env['CANOPY_AUDIT_RAW_PATHS'] = '1';
     try {
       const events: BridgeEvent[] = [];
       const workspace = path.join(os.tmpdir(), 'audit-env');
@@ -258,8 +258,8 @@ describe('createAuditPublisher', () => {
       );
       expect((events[0].data as { relPath?: string }).relPath).toBe('foo');
     } finally {
-      if (original === undefined) delete process.env['QWEN_AUDIT_RAW_PATHS'];
-      else process.env['QWEN_AUDIT_RAW_PATHS'] = original;
+      if (original === undefined) delete process.env['CANOPY_AUDIT_RAW_PATHS'];
+      else process.env['CANOPY_AUDIT_RAW_PATHS'] = original;
     }
   });
 

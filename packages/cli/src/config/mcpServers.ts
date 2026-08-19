@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
+import type { MCPServerConfig } from '@canopy-code/canopy-code-core';
 import { loadProjectMcpServers } from './mcpJson.js';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
 

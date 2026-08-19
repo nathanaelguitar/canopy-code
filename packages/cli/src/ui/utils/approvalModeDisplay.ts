@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 export function formatApprovalModeName(mode: ApprovalMode): string {

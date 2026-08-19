@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -89,11 +89,11 @@ describe('createServeApp default bridge wiring', () => {
     });
     await expect(
       bridgeOptions!.fileSystem!.writeText({
-        path: '/var/tmp/qwen-default-embed-external.txt',
+        path: '/var/tmp/canopy-default-embed-external.txt',
         content: 'must-not-write',
         sessionId: 'session-default-embed',
         _meta: {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },
@@ -170,11 +170,11 @@ describe('createServeApp default bridge wiring', () => {
 
     await expect(
       bridgeOptions!.fileSystem!.writeText({
-        path: '/var/tmp/qwen-injected-factory-external.txt',
+        path: '/var/tmp/canopy-injected-factory-external.txt',
         content: 'must-not-write',
         sessionId: 'session-injected-factory',
         _meta: {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },

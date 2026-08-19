@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { _setSandboxMountExistsForTest } from '@qwen-code/acp-bridge/workspacePaths';
-import { validateAndCanonicalizeWorkspaceInput } from './run-qwen-serve.js';
+import { validateAndCanonicalizeWorkspaceInput } from './run-canopy-serve.js';
 
-// #7139 wiring for the PRIMARY reproduction path: `qwen serve --workspace
-// C:\qwen-repro` relaunched into a Linux Docker sandbox. The boot validator
+// #7139 wiring for the PRIMARY reproduction path: `canopy serve --workspace
+// C:\canopy-repro` relaunched into a Linux Docker sandbox. The boot validator
 // must translate to the bind mount BEFORE its absolute-path guard. statSync
 // is mocked so the (root-level, uncreatable) translated mount stats as a
 // directory; acp-bridge's canonicalizeWorkspace then falls back to the
@@ -19,7 +19,7 @@ vi.mock('node:fs', async (importOriginal) => {
   return {
     ...actual,
     statSync: ((p: unknown, ...rest: unknown[]) =>
-      p === '/c/qwen-repro'
+      p === '/c/canopy-repro'
         ? ({ isDirectory: () => true } as ReturnType<typeof actual.statSync>)
         : (actual.statSync as (...a: unknown[]) => unknown)(
             p,
@@ -37,10 +37,10 @@ describe('validateAndCanonicalizeWorkspaceInput inside a POSIX container sandbox
   it.skipIf(process.platform === 'win32')(
     'boots a Windows-shaped --workspace via its bind-mount location',
     () => {
-      vi.stubEnv('SANDBOX', 'qwen-code-sandbox-0');
-      _setSandboxMountExistsForTest((p) => p === '/c/qwen-repro');
-      expect(validateAndCanonicalizeWorkspaceInput('C:\\qwen-repro')).toBe(
-        '/c/qwen-repro',
+      vi.stubEnv('SANDBOX', 'canopy-code-sandbox-0');
+      _setSandboxMountExistsForTest((p) => p === '/c/canopy-repro');
+      expect(validateAndCanonicalizeWorkspaceInput('C:\\canopy-repro')).toBe(
+        '/c/canopy-repro',
       );
     },
   );
@@ -50,7 +50,7 @@ describe('validateAndCanonicalizeWorkspaceInput inside a POSIX container sandbox
     () => {
       vi.stubEnv('SANDBOX', '');
       expect(() =>
-        validateAndCanonicalizeWorkspaceInput('C:\\qwen-repro'),
+        validateAndCanonicalizeWorkspaceInput('C:\\canopy-repro'),
       ).toThrow('must be an absolute path');
     },
   );

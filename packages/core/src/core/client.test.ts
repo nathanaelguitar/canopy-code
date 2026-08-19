@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -79,7 +79,7 @@ import {
   getCustomSystemPrompt,
   getPlanModeSystemReminder,
 } from './prompts.js';
-import { DEFAULT_QWEN_FLASH_MODEL } from '../config/models.js';
+import { DEFAULT_CANOPY_FLASH_MODEL } from '../config/models.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { promptIdContext } from '../utils/promptIdContext.js';
 import { setSimulate429 } from '../utils/testUtils.js';
@@ -371,7 +371,7 @@ vi.mock('../telemetry/index.js', async (importOriginal) => {
       }
     },
     // We keep the real implementations of logChatCompression, etc.
-    // but we can spy on QwenLogger if needed
+    // but we can spy on CanopyLogger if needed
   };
 });
 vi.mock('../ide/ideContext.js');
@@ -1721,7 +1721,7 @@ describe('Gemini Client (client.ts)', () => {
       await client.startChat(undefined, SessionStartSource.Startup);
 
       expect(client.getChat()['generationConfig'].systemInstruction).toBe(
-        'Base instruction\n\n---\n\nUser memory\n\n---\n\nAppended rule\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</qwen:session-start-context>',
+        'Base instruction\n\n---\n\nUser memory\n\n---\n\nAppended rule\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</canopy:session-start-context>',
       );
     });
 
@@ -1750,7 +1750,7 @@ describe('Gemini Client (client.ts)', () => {
       await client.refreshSystemInstruction();
 
       expect(client.getChat()['generationConfig'].systemInstruction).toBe(
-        'Updated instruction\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</qwen:session-start-context>',
+        'Updated instruction\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</canopy:session-start-context>',
       );
     });
 
@@ -3210,7 +3210,7 @@ describe('Gemini Client (client.ts)', () => {
     }
 
     beforeEach(async () => {
-      mcTmpDir = await mkdtemp(join(tmpdir(), 'qwen-mc-cache-'));
+      mcTmpDir = await mkdtemp(join(tmpdir(), 'canopy-mc-cache-'));
       mockTurnRunFn.mockReturnValue(
         (async function* () {
           yield { type: GeminiEventType.Content, value: 'response' };
@@ -4070,7 +4070,7 @@ describe('Gemini Client (client.ts)', () => {
     // Real on-disk files so client.ts's `fsPromises.stat(filePath)` succeeds.
     // `node:fs` is mocked but `node:fs/promises` is not.
     beforeEach(async () => {
-      mcTmpDir = await mkdtemp(join(tmpdir(), 'qwen-compress-fast-'));
+      mcTmpDir = await mkdtemp(join(tmpdir(), 'canopy-compress-fast-'));
     });
     afterEach(async () => {
       await rm(mcTmpDir, { recursive: true, force: true });
@@ -5101,7 +5101,7 @@ hello
         selectedDocs: [
           {
             type: 'user',
-            filePath: '/test/project/root/.qwen/memory/user.md',
+            filePath: '/test/project/root/.canopy/memory/user.md',
             relativePath: 'user.md',
             filename: 'user.md',
             title: 'User Memory',
@@ -5160,7 +5160,7 @@ hello
           selectedDocs: [
             {
               type: 'user',
-              filePath: '/test/project/root/.qwen/memory/user.md',
+              filePath: '/test/project/root/.canopy/memory/user.md',
               relativePath: 'user.md',
               filename: 'user.md',
               title: 'User Memory',
@@ -5212,7 +5212,7 @@ hello
         'Keep it short again',
         expect.objectContaining({
           excludedFilePaths: new Set([
-            '/test/project/root/.qwen/memory/user.md',
+            '/test/project/root/.canopy/memory/user.md',
           ]),
         }),
       );
@@ -5295,7 +5295,7 @@ hello
         selectedDocs: [
           {
             type: 'user',
-            filePath: '/test/project/root/.qwen/memory/user.md',
+            filePath: '/test/project/root/.canopy/memory/user.md',
             relativePath: 'user.md',
             filename: 'user.md',
             title: 'User Memory',
@@ -5461,7 +5461,7 @@ hello
         selectedDocs: [
           {
             type: 'user',
-            filePath: '/test/project/root/.qwen/memory/user.md',
+            filePath: '/test/project/root/.canopy/memory/user.md',
             relativePath: 'user.md',
             filename: 'user.md',
             title: 'User Memory',
@@ -5492,7 +5492,7 @@ hello
         // consume
       }
 
-      // Memory must come AFTER the functionResponse part so the Qwen API
+      // Memory must come AFTER the functionResponse part so the Canopy API
       // call/response pairing isn't broken (see client.ts:1209-1213).
       const lastCallArgs = mockTurnRunFn.mock.lastCall;
       const requestArr = lastCallArgs![1] as unknown[];
@@ -7893,7 +7893,7 @@ hello
         expect(client['skillsModifiedInSession']).toBe(false);
 
         client.recordCompletedToolCall('write_file', {
-          file_path: '/project/.qwen/skills/my-skill.md',
+          file_path: '/project/.canopy/skills/my-skill.md',
         });
 
         expect(client['skillsModifiedInSession']).toBe(true);
@@ -7914,7 +7914,7 @@ hello
           '/project',
         );
         client.recordCompletedToolCall('edit', {
-          path: '/project/.qwen/skills/my-skill.md',
+          path: '/project/.canopy/skills/my-skill.md',
         });
         expect(client['skillsModifiedInSession']).toBe(true);
       });
@@ -7924,7 +7924,7 @@ hello
           '/project',
         );
         client.recordCompletedToolCall('read_file', {
-          file_path: '/project/.qwen/skills/my-skill.md',
+          file_path: '/project/.canopy/skills/my-skill.md',
         });
         expect(client['skillsModifiedInSession']).toBe(false);
       });
@@ -10792,9 +10792,9 @@ Other open files:
             { text: 'expanded model prompt' },
             {
               text: [
-                '<qwen:user-prompt-submit-context>',
+                '<canopy:user-prompt-submit-context>',
                 '&lt;hook-only context&gt;',
-                '</qwen:user-prompt-submit-context>',
+                '</canopy:user-prompt-submit-context>',
               ].join('\n'),
             },
           ],
@@ -10892,7 +10892,7 @@ Other open files:
         );
 
         const taggedContext =
-          '<qwen:user-prompt-submit-context>\nextra hook context\n</qwen:user-prompt-submit-context>';
+          '<canopy:user-prompt-submit-context>\nextra hook context\n</canopy:user-prompt-submit-context>';
 
         // The model-bound request keeps the user prompt intact and carries
         // the injected context inside the reserved tag.
@@ -11007,7 +11007,7 @@ Other open files:
           );
           const promptArg = addSpy.mock.calls[0]?.[2] as string;
           expect(promptArg).not.toContain('extra hook context');
-          expect(promptArg).not.toContain('qwen:user-prompt-submit-context');
+          expect(promptArg).not.toContain('canopy:user-prompt-submit-context');
         } finally {
           startSpy.mockRestore();
           spanSpy.mockRestore();
@@ -12100,12 +12100,12 @@ Other open files:
         contents,
         generationConfig,
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       expect(mockContentGenerator.generateContent).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: DEFAULT_QWEN_FLASH_MODEL,
+          model: DEFAULT_CANOPY_FLASH_MODEL,
           config: expect.objectContaining({
             abortSignal,
             systemInstruction: getCoreSystemPrompt(''),
@@ -12147,7 +12147,7 @@ Other open files:
         contents,
         {},
         new AbortController().signal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       expect(mockContentGenerator.generateContent).not.toHaveBeenCalledWith({
@@ -12157,7 +12157,7 @@ Other open files:
       });
       expect(mockContentGenerator.generateContent).toHaveBeenCalledWith(
         {
-          model: DEFAULT_QWEN_FLASH_MODEL,
+          model: DEFAULT_CANOPY_FLASH_MODEL,
           config: expect.any(Object),
           contents,
         },
@@ -12174,13 +12174,13 @@ Other open files:
           contents,
           {},
           abortSignal,
-          DEFAULT_QWEN_FLASH_MODEL,
+          DEFAULT_CANOPY_FLASH_MODEL,
         );
       });
 
       expect(mockContentGenerator.generateContent).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: DEFAULT_QWEN_FLASH_MODEL,
+          model: DEFAULT_CANOPY_FLASH_MODEL,
           contents,
         }),
         'btw-prompt-id',
@@ -12200,14 +12200,14 @@ Other open files:
           contents,
           {},
           abortSignal,
-          DEFAULT_QWEN_FLASH_MODEL,
+          DEFAULT_CANOPY_FLASH_MODEL,
           'override-prompt-id',
         );
       });
 
       expect(mockContentGenerator.generateContent).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: DEFAULT_QWEN_FLASH_MODEL,
+          model: DEFAULT_CANOPY_FLASH_MODEL,
           contents,
         }),
         'override-prompt-id',
@@ -12234,7 +12234,7 @@ Other open files:
         contents,
         { systemInstruction: 'Custom side-query prompt' },
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       const request = vi
@@ -12271,7 +12271,7 @@ Other open files:
         contents,
         { systemInstruction: 'Side query base' },
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       const request = vi
@@ -12306,7 +12306,7 @@ Other open files:
         contents,
         {},
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       // The override is the stable base only; user memory flows through
@@ -12336,7 +12336,7 @@ Other open files:
         contents,
         {},
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       // The core prompt is requested as the stable base only; the append
@@ -12377,7 +12377,7 @@ Other open files:
           contents,
           {},
           abortSignal,
-          DEFAULT_QWEN_FLASH_MODEL,
+          DEFAULT_CANOPY_FLASH_MODEL,
         );
 
         expect(getCoreSystemPrompt).toHaveBeenCalledWith(
@@ -12410,7 +12410,7 @@ Other open files:
         contents,
         {},
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       // The override is the stable base; memory and append flow through
@@ -12440,13 +12440,13 @@ Other open files:
         contents,
         {},
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
       await client.generateContent(
         contents,
         {},
         abortSignal,
-        DEFAULT_QWEN_FLASH_MODEL,
+        DEFAULT_CANOPY_FLASH_MODEL,
       );
 
       expect(getRecentGitStatus).toHaveBeenCalledTimes(1);
@@ -12482,7 +12482,7 @@ Other open files:
           contents,
           {},
           abortSignal,
-          DEFAULT_QWEN_FLASH_MODEL,
+          DEFAULT_CANOPY_FLASH_MODEL,
         ),
       ).rejects.toThrow('raw upstream 500 with sensitive details');
     });
@@ -12500,7 +12500,7 @@ Other open files:
           contents,
           {},
           abortController.signal,
-          DEFAULT_QWEN_FLASH_MODEL,
+          DEFAULT_CANOPY_FLASH_MODEL,
         ),
       ).rejects.toThrow('raw abort reason with sensitive details');
     });
@@ -12708,7 +12708,7 @@ Other open files:
 
       // Main config uses a different authType
       vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         apiKey: 'test-key',
         apiModel: 'test-model',
       } as unknown as ContentGeneratorConfig);
@@ -12724,7 +12724,7 @@ Other open files:
       );
 
       // VERIFY: retryWithBackoff was called with the fast model's authType ('openai'),
-      // not the main model's authType ('QWEN_OAUTH').
+      // not the main model's authType ('CANOPY_OAUTH').
       expect(retryWithBackoff).toHaveBeenCalledWith(
         expect.any(Function),
         expect.objectContaining({
@@ -12809,9 +12809,9 @@ Other open files:
         getResolvedModel,
       } as unknown as ModelsConfig);
 
-      // Main config uses QWEN_OAUTH — fast model registered under USE_OPENAI
+      // Main config uses CANOPY_OAUTH — fast model registered under USE_OPENAI
       vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         apiKey: 'test-key',
         apiModel: 'test-model',
       } as unknown as ContentGeneratorConfig);

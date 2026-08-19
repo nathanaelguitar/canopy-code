@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config, SkillConfig } from '@qwen-code/qwen-code-core';
+import type { Config, SkillConfig } from '@canopy-code/canopy-code-core';
 
 function extensionSkillRef(extensionName: string, skillName: string): string {
   return `${extensionName}\0${skillName}`;

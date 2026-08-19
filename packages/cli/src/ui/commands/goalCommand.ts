@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,11 +9,11 @@ import type {
   GoalRuntime,
   GoalStateResponse,
   GoalStateCause,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   emptyGoalSnapshot,
   GoalPersistenceUnavailableError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   CommandKind,
   type CommandContext,
@@ -107,7 +107,7 @@ export const goalCommand: SlashCommand = {
     if (operation.kind === 'error') return errorMessage(operation.message);
 
     // Starting or re-driving an autonomous Goal ingests workspace context
-    // (QWEN.md, files) without per-tool confirmation, so it requires a trusted
+    // (CANOPY.md, files) without per-tool confirmation, so it requires a trusted
     // workspace — the same boundary the legacy hook path enforces. `status`,
     // `clear`, and `pause` only read or reduce work, so they stay available.
     const requiresTrustedFolder =

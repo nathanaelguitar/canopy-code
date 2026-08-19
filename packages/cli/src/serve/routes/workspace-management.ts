@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
 import { realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path';
 import type { Application, Request, Response } from 'express';
-import { isWithinRoot } from '@qwen-code/qwen-code-core';
+import { isWithinRoot } from '@canopy-code/canopy-code-core';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 import { MAX_REGISTERED_WORKSPACES } from '../workspace-inputs.js';
 import type {
@@ -320,7 +320,7 @@ export function registerWorkspaceManagementRoutes(
         } catch (error) {
           try {
             writeStderrLine(
-              `qwen serve: workspace runtime adapter notification failed after registry add: ${
+              `canopy serve: workspace runtime adapter notification failed after registry add: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             );
@@ -466,7 +466,7 @@ export function registerWorkspaceManagementRoutes(
       } catch (err) {
         try {
           writeStderrLine(
-            `qwen serve: workspace runtime adapter notification failed after registry add: ${
+            `canopy serve: workspace runtime adapter notification failed after registry add: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -483,7 +483,7 @@ export function registerWorkspaceManagementRoutes(
       });
     } catch (err) {
       writeStderrLine(
-        `qwen serve: scratch workspace registration failed: ${
+        `canopy serve: scratch workspace registration failed: ${
           err instanceof Error ? err.message : String(err)
         }${canonical ? `; retained directory: ${canonical}` : ''}`,
       );
@@ -616,7 +616,7 @@ export function registerWorkspaceManagementRoutes(
         const detail = error instanceof Error ? error.message : String(error);
         if (error instanceof NativeDirectoryPickerUnavailableError) {
           writeStderrLine(
-            `qwen serve: native directory picker unavailable: ${detail}`,
+            `canopy serve: native directory picker unavailable: ${detail}`,
           );
           res.status(501).json({
             error: 'Native directory picker is unavailable',
@@ -625,7 +625,7 @@ export function registerWorkspaceManagementRoutes(
           return;
         }
         writeStderrLine(
-          `qwen serve: native directory picker failed: ${detail}`,
+          `canopy serve: native directory picker failed: ${detail}`,
         );
         res.status(500).json({
           error: 'Failed to open native directory picker',
@@ -910,7 +910,7 @@ export function registerWorkspaceManagementRoutes(
               }
               added = true;
               try {
-                writeStderrLine(`qwen serve: ${err.message}`);
+                writeStderrLine(`canopy serve: ${err.message}`);
               } catch {
                 // The registration is committed; diagnostics are best-effort.
               }
@@ -950,7 +950,7 @@ export function registerWorkspaceManagementRoutes(
             return;
           }
           writeStderrLine(
-            `qwen serve: failed to persist existing workspace registration: ${
+            `canopy serve: failed to persist existing workspace registration: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1036,7 +1036,7 @@ export function registerWorkspaceManagementRoutes(
                 }
                 persistedRecordAdded = true;
                 try {
-                  writeStderrLine(`qwen serve: ${err.message}`);
+                  writeStderrLine(`canopy serve: ${err.message}`);
                 } catch {
                   // The registration is committed; diagnostics are best-effort.
                 }
@@ -1066,7 +1066,7 @@ export function registerWorkspaceManagementRoutes(
             } catch (err) {
               try {
                 writeStderrLine(
-                  `qwen serve: workspace runtime adapter notification failed after registry add: ${
+                  `canopy serve: workspace runtime adapter notification failed after registry add: ${
                     err instanceof Error ? err.message : String(err)
                   }`,
                 );
@@ -1098,7 +1098,7 @@ export function registerWorkspaceManagementRoutes(
               );
             } catch (rollbackErr) {
               writeStderrLine(
-                `qwen serve: failed to roll back workspace persistence after runtime registration failure: ${
+                `canopy serve: failed to roll back workspace persistence after runtime registration failure: ${
                   rollbackErr instanceof Error
                     ? rollbackErr.message
                     : String(rollbackErr)
@@ -1135,7 +1135,7 @@ export function registerWorkspaceManagementRoutes(
         // Log the full error server-side but return a generic message so the
         // response can't leak internal filesystem paths / implementation detail.
         writeStderrLine(
-          `qwen serve: POST /workspaces failed for ${canonical}: ${
+          `canopy serve: POST /workspaces failed for ${canonical}: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -1275,7 +1275,7 @@ export function registerWorkspaceManagementRoutes(
               throw err;
             }
             try {
-              writeStderrLine(`qwen serve: ${err.message}`);
+              writeStderrLine(`canopy serve: ${err.message}`);
             } catch {
               // The update is committed; diagnostics are best-effort.
             }
@@ -1299,7 +1299,7 @@ export function registerWorkspaceManagementRoutes(
         });
       } catch (err) {
         writeStderrLine(
-          `qwen serve: failed to persist workspace display name: ${
+          `canopy serve: failed to persist workspace display name: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -1435,7 +1435,7 @@ export function registerWorkspaceManagementRoutes(
           getAcpHandle?.()?.commitWorkspaceRemoval(runtime.workspaceId);
         } catch (err) {
           logCleanupFailure(
-            `qwen serve: failed to commit workspace ACP removal: ${
+            `canopy serve: failed to commit workspace ACP removal: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1444,7 +1444,7 @@ export function registerWorkspaceManagementRoutes(
           .disposeRuntime(runtime, 'workspace_removed')
           .catch((err) => {
             logCleanupFailure(
-              `qwen serve: workspace runtime cleanup failed: ${
+              `canopy serve: workspace runtime cleanup failed: ${
                 err instanceof Error ? err.message : String(err)
               }`,
             );
@@ -1458,7 +1458,7 @@ export function registerWorkspaceManagementRoutes(
           getAcpHandle?.()?.disposeWorkspace(runtime.workspaceId);
         } catch (err) {
           logCleanupFailure(
-            `qwen serve: failed to dispose workspace ACP mount: ${
+            `canopy serve: failed to dispose workspace ACP mount: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1467,7 +1467,7 @@ export function registerWorkspaceManagementRoutes(
           runtimeRemoval.completeDrain(runtime);
         } catch (err) {
           logCleanupFailure(
-            `qwen serve: failed to complete workspace admission drain: ${
+            `canopy serve: failed to complete workspace admission drain: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1476,7 +1476,7 @@ export function registerWorkspaceManagementRoutes(
           workspaceRegistry.completeDrain(runtime);
         } catch (err) {
           logCleanupFailure(
-            `qwen serve: failed to complete workspace registry drain: ${
+            `canopy serve: failed to complete workspace registry drain: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1529,7 +1529,7 @@ export function registerWorkspaceManagementRoutes(
               }
               persistedRegistrationRemoved = true;
               try {
-                writeStderrLine(`qwen serve: ${err.message}`);
+                writeStderrLine(`canopy serve: ${err.message}`);
               } catch {
                 // Persistence committed; diagnostics are best-effort.
               }
@@ -1537,7 +1537,7 @@ export function registerWorkspaceManagementRoutes(
           } catch (err) {
             rollbackDrain();
             writeStderrLine(
-              `qwen serve: failed to remove workspace persistence: ${
+              `canopy serve: failed to remove workspace persistence: ${
                 err instanceof Error ? err.message : String(err)
               }`,
             );
@@ -1556,7 +1556,7 @@ export function registerWorkspaceManagementRoutes(
           workspaceRegistry.commitDrain(runtime);
         } catch (err) {
           logCleanupFailure(
-            `qwen serve: failed to commit workspace registry drain: ${
+            `canopy serve: failed to commit workspace registry drain: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -1574,7 +1574,7 @@ export function registerWorkspaceManagementRoutes(
       } catch (err) {
         rollbackDrain();
         writeStderrLine(
-          `qwen serve: DELETE /workspaces/:workspace failed: ${
+          `canopy serve: DELETE /workspaces/:workspace failed: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -1633,7 +1633,7 @@ export function registerWorkspaceManagementRoutes(
       });
     } catch (err) {
       writeStderrLine(
-        `qwen serve: failed to read workspace registrations: ${
+        `canopy serve: failed to read workspace registrations: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -1687,7 +1687,7 @@ export function registerWorkspaceManagementRoutes(
             );
           } catch (err) {
             writeStderrLine(
-              `qwen serve: failed to read workspace registration before forget: ${
+              `canopy serve: failed to read workspace registration before forget: ${
                 err instanceof Error ? err.message : String(err)
               }`,
             );
@@ -1742,7 +1742,7 @@ export function registerWorkspaceManagementRoutes(
           }
           removed = true;
           try {
-            writeStderrLine(`qwen serve: ${err.message}`);
+            writeStderrLine(`canopy serve: ${err.message}`);
           } catch {
             // The forget committed; diagnostics are best-effort.
           }
@@ -1767,7 +1767,7 @@ export function registerWorkspaceManagementRoutes(
         });
       } catch (err) {
         writeStderrLine(
-          `qwen serve: failed to forget workspace registration: ${
+          `canopy serve: failed to forget workspace registration: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );

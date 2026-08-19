@@ -30,7 +30,7 @@ export const authCommand: SlashCommand = {
         type: 'message',
         messageType: 'info',
         content: t(
-          'Authentication configuration is only available in interactive mode. To configure authentication, run Qwen Code interactively and use /auth, or set environment variables: OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL.',
+          'Authentication configuration is only available in interactive mode. To configure authentication, run Canopy Code interactively and use /auth, or set environment variables: OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL.',
         ),
       };
     }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -82,9 +82,9 @@ vi.mock('../utils/resumeHistoryUtils.js', async (importOriginal) => {
   };
 });
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   class SessionService {
     constructor(_cwd: string) {}
     async loadSession(_sessionId: string) {
@@ -280,7 +280,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const { result } = renderHook(() =>
       useResumeCommand({
@@ -383,7 +383,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const { result } = renderHook(() =>
       useResumeCommand({
@@ -464,7 +464,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const settingsWithCollapse = {
       merged: {
@@ -565,7 +565,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const { result } = renderHook(() =>
       useResumeCommand({
@@ -634,7 +634,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const { result } = renderHook(() =>
       useResumeCommand({
@@ -709,7 +709,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const { result } = renderHook(() =>
       useResumeCommand({
@@ -780,7 +780,7 @@ describe('useResumeCommand', () => {
         debug: vi.fn(),
         error: vi.fn(),
       }),
-    } as unknown as import('@qwen-code/qwen-code-core').Config;
+    } as unknown as import('@canopy-code/canopy-code-core').Config;
 
     const historyManager = {
       addItem: vi.fn(),

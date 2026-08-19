@@ -9,6 +9,6 @@ export * from './base-token-storage.js';
 export * from './file-token-storage.js';
 export * from './hybrid-token-storage.js';
 
-export const DEFAULT_SERVICE_NAME = 'qwen-code-oauth';
+export const DEFAULT_SERVICE_NAME = 'canopy-code-oauth';
 export const FORCE_ENCRYPTED_FILE_ENV_VAR =
-  'QWEN_CODE_FORCE_ENCRYPTED_FILE_STORAGE';
+  'CANOPY_CODE_FORCE_ENCRYPTED_FILE_STORAGE';

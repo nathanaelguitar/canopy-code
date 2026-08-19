@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,13 +16,13 @@ import type {
   CoreWriteTextFileRequest,
   FileSystemService,
   ReadTextFileResponse,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   createDebugLogger,
   getErrorMessage,
   isSubpath,
-} from '@qwen-code/qwen-code-core';
-import { buildToolWriteOriginMeta } from '@qwen-code/qwen-code-core/toolWriteOrigin';
+} from '@canopy-code/canopy-code-core';
+import { buildToolWriteOriginMeta } from '@canopy-code/canopy-code-core/toolWriteOrigin';
 import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -147,7 +147,7 @@ export class AcpFileSystemService implements FileSystemService {
     }
 
     // Everything below — including the localReadRoots retry in the catch — is
-    // unreachable under `qwen serve`, which advertises this capability as
+    // unreachable under `canopy serve`, which advertises this capability as
     // false. It guards only generic ACP hosts that keep delegation on. Do not
     // read the retry as a live backstop for daemon reads.
     let response: ReadTextFileResponse;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,9 +34,9 @@ vi.mock('undici', async (importOriginal) => {
     fetch: mockFetch,
   };
 });
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     AuthType: {
@@ -62,7 +62,7 @@ describe('apiPreconnect', () => {
     delete process.env['https_proxy'];
     delete process.env['HTTP_PROXY'];
     delete process.env['http_proxy'];
-    delete process.env['QWEN_CODE_DISABLE_PRECONNECT'];
+    delete process.env['CANOPY_CODE_DISABLE_PRECONNECT'];
     delete process.env['NODE_EXTRA_CA_CERTS'];
     delete process.env['SANDBOX'];
   });
@@ -74,7 +74,7 @@ describe('apiPreconnect', () => {
   describe('shouldSkipPreconnect', () => {
     it('should skip when NODE_EXTRA_CA_CERTS is set', () => {
       process.env['NODE_EXTRA_CA_CERTS'] = '/path/to/ca.pem';
-      preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' });
+      preconnectApi('canopy-oauth', { proxy: 'http://proxy.example.com:8080' });
       expect(mockFetch).not.toHaveBeenCalled();
     });
   });
@@ -167,8 +167,8 @@ describe('apiPreconnect', () => {
     });
 
     it('should fall back to authType default when resolvedBaseUrl is a non-URL sentinel', async () => {
-      preconnectApi('qwen-oauth', {
-        resolvedBaseUrl: 'DYNAMIC_QWEN_OAUTH_BASE_URL',
+      preconnectApi('canopy-oauth', {
+        resolvedBaseUrl: 'DYNAMIC_CANOPY_OAUTH_BASE_URL',
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -179,7 +179,7 @@ describe('apiPreconnect', () => {
     });
 
     it('should fall back to default URL when resolvedBaseUrl is undefined', async () => {
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -191,8 +191,8 @@ describe('apiPreconnect', () => {
   });
 
   describe('preconnect behavior', () => {
-    it('should use default baseUrl for qwen-oauth', async () => {
-      preconnectApi('qwen-oauth', {
+    it('should use default baseUrl for canopy-oauth', async () => {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -225,7 +225,7 @@ describe('apiPreconnect', () => {
     });
 
     it('should pass shared dispatcher on Node.js runtime', async () => {
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -238,7 +238,7 @@ describe('apiPreconnect', () => {
     });
 
     it('should pass configured proxy to shared dispatcher', async () => {
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -248,7 +248,7 @@ describe('apiPreconnect', () => {
     });
 
     it('should not fire twice', async () => {
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       preconnectApi('openai', { proxy: 'http://proxy.example.com:8080' });
@@ -264,7 +264,7 @@ describe('apiPreconnect', () => {
       expect(mockFetch).not.toHaveBeenCalled();
 
       // Second call: valid authType → should fire
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://proxy.example.com:8080',
       });
       await waitForPreconnect();
@@ -276,7 +276,7 @@ describe('apiPreconnect', () => {
     });
 
     it('should skip dispatcher creation when no proxy configured', () => {
-      preconnectApi('qwen-oauth');
+      preconnectApi('canopy-oauth');
       expect(mockFetch).not.toHaveBeenCalled();
       expect(mockGetOrCreateSharedDispatcher).not.toHaveBeenCalled();
       expect(mockDebugLogger.debug).toHaveBeenCalledWith(
@@ -286,11 +286,11 @@ describe('apiPreconnect', () => {
 
     it('should allow a later proxy preconnect after a no-proxy skip', async () => {
       // First call: no proxy, no useful undici pool to warm.
-      preconnectApi('qwen-oauth');
+      preconnectApi('canopy-oauth');
       expect(mockFetch).not.toHaveBeenCalled();
 
       // Second call: proxy is now available, so preconnect should still fire.
-      preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' });
+      preconnectApi('canopy-oauth', { proxy: 'http://proxy.example.com:8080' });
       await waitForPreconnect();
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockGetOrCreateSharedDispatcher).toHaveBeenCalledWith(
@@ -302,7 +302,9 @@ describe('apiPreconnect', () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
       // Should not throw
       expect(() =>
-        preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' }),
+        preconnectApi('canopy-oauth', {
+          proxy: 'http://proxy.example.com:8080',
+        }),
       ).not.toThrow();
     });
 
@@ -310,7 +312,7 @@ describe('apiPreconnect', () => {
       mockFetch.mockRejectedValue(
         new Error('connect ECONNREFUSED token@proxy.local:8080'),
       );
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://token@proxy.local:8080',
       });
 
@@ -329,7 +331,9 @@ describe('apiPreconnect', () => {
         throw new Error('Failed to create dispatcher');
       });
       expect(() =>
-        preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' }),
+        preconnectApi('canopy-oauth', {
+          proxy: 'http://proxy.example.com:8080',
+        }),
       ).not.toThrow();
     });
 
@@ -338,7 +342,7 @@ describe('apiPreconnect', () => {
         throw new Error('connect ECONNREFUSED user:pass@proxy.local:8080');
       });
 
-      preconnectApi('qwen-oauth', {
+      preconnectApi('canopy-oauth', {
         proxy: 'http://user:pass@proxy.local:8080',
       });
 
@@ -352,15 +356,15 @@ describe('apiPreconnect', () => {
       );
     });
 
-    it('should skip when QWEN_CODE_DISABLE_PRECONNECT is set', () => {
-      process.env['QWEN_CODE_DISABLE_PRECONNECT'] = '1';
-      preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' });
+    it('should skip when CANOPY_CODE_DISABLE_PRECONNECT is set', () => {
+      process.env['CANOPY_CODE_DISABLE_PRECONNECT'] = '1';
+      preconnectApi('canopy-oauth', { proxy: 'http://proxy.example.com:8080' });
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('should skip in sandbox mode', () => {
       process.env['SANDBOX'] = '1';
-      preconnectApi('qwen-oauth', { proxy: 'http://proxy.example.com:8080' });
+      preconnectApi('canopy-oauth', { proxy: 'http://proxy.example.com:8080' });
       expect(mockFetch).not.toHaveBeenCalled();
     });
   });

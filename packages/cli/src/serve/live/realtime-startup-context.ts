@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   partToString,
   type ChatRecord,
   type SessionListItem,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   WorkspaceRegistry,
   WorkspaceRuntime,
@@ -21,7 +21,7 @@ import type {
 import { createWorkspaceRuntimeSessionService } from '../workspace-runtime-storage.js';
 
 const STARTUP_CONTEXT_HEADER =
-  'Startup context from Qwen Code.\nThis is background context about recent work and machine/workspace layout. It may be incomplete or stale. Use it to inform responses, and do not repeat it back unless relevant.';
+  'Startup context from Canopy Code.\nThis is background context about recent work and machine/workspace layout. It may be incomplete or stale. Use it to inform responses, and do not repeat it back unless relevant.';
 const CURRENT_THREAD_SECTION_TOKEN_BUDGET = 1_200;
 const RECENT_WORK_SECTION_TOKEN_BUDGET = 2_200;
 const WORKSPACE_SECTION_TOKEN_BUDGET = 1_600;

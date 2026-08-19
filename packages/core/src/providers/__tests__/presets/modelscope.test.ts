@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
 // Re-import via the relative source path so this test exercises the
 // in-tree implementation even before dist/ is rebuilt (the
-// @qwen-code/qwen-code-core package main points at dist/ on a fresh
+// @canopy-code/canopy-code-core package main points at dist/ on a fresh
 // branch). The provider was deleted from the CLI side in this PR and not
 // rebuilt in core's test folder until now.
 import { AuthType } from '../../../core/contentGenerator.js';
@@ -29,7 +29,7 @@ describe('modelscopeProvider', () => {
     const plan = buildInstallPlan(modelscopeProvider, {
       baseUrl: 'https://api-inference.modelscope.cn/v1',
       apiKey: 'sk-modelscope',
-      modelIds: ['deepseek-ai/DeepSeek-V4-Flash', 'Qwen/Qwen3.5-397B-A17B'],
+      modelIds: ['deepseek-ai/DeepSeek-V4-Flash', 'Canopy/Canopy3.5-397B-A17B'],
     });
 
     const models = plan.modelProviders?.[0]?.models;
@@ -40,8 +40,8 @@ describe('modelscopeProvider', () => {
       generationConfig: { contextWindowSize: 1000000 },
     });
     expect(models?.[1]).toMatchObject({
-      id: 'Qwen/Qwen3.5-397B-A17B',
-      name: '[ModelScope] Qwen/Qwen3.5-397B-A17B',
+      id: 'Canopy/Canopy3.5-397B-A17B',
+      name: '[ModelScope] Canopy/Canopy3.5-397B-A17B',
       generationConfig: { contextWindowSize: 1000000 },
     });
   });

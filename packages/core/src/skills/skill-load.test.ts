@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -365,7 +365,7 @@ Valid skill.
 
       // Symlink target — realpath returns wherever the link points.
       // Out-of-tree targets are allowed (the supported user workflow
-      // is symlinking into ~/.qwen/skills/ from a separate repo).
+      // is symlinking into ~/.canopy/skills/ from a separate repo).
       vi.mocked(fs.realpath).mockResolvedValue(
         '/elsewhere/skills-repo/symlinked-skill',
       );
@@ -758,8 +758,8 @@ Symlinked skill body.
 
     it('sets skillRoot to the SKILL.md directory (parity with managed parser)', () => {
       // Regression: extension parser previously omitted `skillRoot`, so
-      // `registerSkillHooks.ts` skipped setting `QWEN_SKILL_ROOT` for
-      // command-type hooks on extension skills — `$QWEN_SKILL_ROOT/...`
+      // `registerSkillHooks.ts` skipped setting `CANOPY_SKILL_ROOT` for
+      // command-type hooks on extension skills — `$CANOPY_SKILL_ROOT/...`
       // references in those hooks broke silently.
       mockParseYaml.mockReturnValueOnce({
         name: 'tsx-helper',

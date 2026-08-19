@@ -22,8 +22,11 @@ import { ToolConfirmationMessage } from './ToolConfirmationMessage.js';
 import type {
   ToolCallConfirmationDetails,
   Config,
-} from '@qwen-code/qwen-code-core';
-import { IdeClient, ToolConfirmationOutcome } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import {
+  IdeClient,
+  ToolConfirmationOutcome,
+} from '@canopy-code/canopy-code-core';
 import { renderWithProviders } from '../../../test-utils/render.js';
 import type { LoadedSettings } from '../../../config/settings.js';
 

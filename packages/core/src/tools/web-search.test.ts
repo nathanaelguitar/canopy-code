@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -273,17 +273,17 @@ describe('evaluateWebSearchGate', () => {
 
   it('rejects a selector that matches no configured model', () => {
     const gate = evaluateWebSearchGate(
-      makeConfig({ settings: { enabled: true, model: 'qwen3.9-mega' } }),
+      makeConfig({ settings: { enabled: true, model: 'canopy3.9-mega' } }),
     );
     expect(gate.ok).toBe(false);
     if (!gate.ok) expect(gate.notice).toContain('does not match any model');
   });
 
-  it('rejects a Qwen OAuth entry', () => {
+  it('rejects a Canopy OAuth entry', () => {
     const gate = evaluateWebSearchGate(
       makeConfig({
         settings: { enabled: true, model: 'qwen3.6-plus' },
-        models: [{ id: 'qwen3.6-plus', authType: 'qwen-oauth' }],
+        models: [{ id: 'qwen3.6-plus', authType: 'canopy-oauth' }],
       }),
     );
     expect(gate.ok).toBe(false);
@@ -366,7 +366,7 @@ describe('evaluateWebSearchGate', () => {
         models: [
           // Force-sorted-first OAuth entry and a non-DashScope twin must not
           // shadow the usable DashScope entry with the same id.
-          { id: 'qwen3.6-plus', authType: 'qwen-oauth' },
+          { id: 'qwen3.6-plus', authType: 'canopy-oauth' },
           {
             id: 'qwen3.6-plus',
             authType: 'openai',
@@ -660,7 +660,7 @@ describe('WebSearchTool execute', () => {
       defaultHeaders: Record<string, string>;
     };
     expect(opts.defaultHeaders['X-Gateway-Route']).toBe('ds');
-    expect(opts.defaultHeaders['User-Agent']).toContain('QwenCode/');
+    expect(opts.defaultHeaders['User-Agent']).toContain('CanopyCode/');
   });
 
   it('truncates an oversized answer while preserving source URLs and the safety footer', async () => {
@@ -792,7 +792,7 @@ describe('WebSearchTool execute', () => {
 
   it('maps HTTP 400 (unsupported model) to WEB_SEARCH_BACKEND_FAILED with the server message', async () => {
     mockCreate.mockRejectedValueOnce(
-      Object.assign(new Error("Unsupported model: 'qwen2.5-7b-instruct'."), {
+      Object.assign(new Error("Unsupported model: 'canopy2.5-7b-instruct'."), {
         status: 400,
       }),
     );
@@ -913,7 +913,7 @@ describe('WebSearchTool execute', () => {
       makeStream([
         {
           code: 'InvalidParameter',
-          message: "Unsupported model: 'qwen2.5-7b-instruct'.",
+          message: "Unsupported model: 'canopy2.5-7b-instruct'.",
           request_id: 'req-1',
         },
       ]),

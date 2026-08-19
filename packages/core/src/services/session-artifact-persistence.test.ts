@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -457,8 +457,8 @@ describe('session artifact persistence records', () => {
   it('preserves near-limit user metadata with workspace hash metadata', () => {
     const metadata = {
       payload: 'x'.repeat(4096),
-      'qwen.workspace.sha256': 'a'.repeat(64),
-      'qwen.workspace.mtimeMs': 123,
+      'canopy.workspace.sha256': 'a'.repeat(64),
+      'canopy.workspace.mtimeMs': 123,
     };
     while (
       Buffer.byteLength(JSON.stringify({ payload: metadata.payload }), 'utf8') >
@@ -1058,8 +1058,8 @@ describe('session artifact persistence records', () => {
           {
             ...artifact('session-A', 'https://example.com/metadata-2'),
             metadata: {
-              'qwen.workspace.sha256': 'not-a-sha',
-              'qwen.workspace.mtimeMs': '123',
+              'canopy.workspace.sha256': 'not-a-sha',
+              'canopy.workspace.mtimeMs': '123',
               keep: true,
             },
           },

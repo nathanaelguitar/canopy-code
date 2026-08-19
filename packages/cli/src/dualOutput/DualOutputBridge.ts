@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,9 +16,9 @@ import type {
   ServerGeminiStreamEvent,
   ToolCallRequestInfo,
   ToolCallResponseInfo,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { PermissionSuggestion } from '../nonInteractive/types.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 import { StreamJsonOutputAdapter } from '../nonInteractive/io/index.js';
 import { reportChatRecordingFailureToAdapter } from '../utils/chat-recording-failure.js';
@@ -79,8 +79,8 @@ export interface DualOutputBridgeOptions {
  * programmatic consumption by IDE extensions, web frontends, CI pipelines, etc.
  *
  * Usage:
- *   qwen --json-fd 3        # JSON events written to fd 3
- *   qwen --json-file /path  # JSON events written to file/FIFO
+ *   canopy --json-fd 3        # JSON events written to fd 3
+ *   canopy --json-file /path  # JSON events written to file/FIFO
  */
 export class DualOutputBridge {
   private readonly adapter: StreamJsonOutputAdapter;
@@ -145,7 +145,7 @@ export class DualOutputBridge {
               throw new Error(
                 `--json-file "${target.filePath}": permission denied opening FIFO for read-write. ` +
                   'Check read/write permissions on the file and its parent directories, ' +
-                  'or start a reader before launching Qwen Code.',
+                  'or start a reader before launching Canopy Code.',
               );
             }
             throw retryErr;

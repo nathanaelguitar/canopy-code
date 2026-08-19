@@ -6,9 +6,9 @@
 
 import type { Message } from '../types.js';
 import { MessageType } from '../types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('SHOW_MEMORY');
 
@@ -68,8 +68,8 @@ export function createShowMemoryAction(
         type: MessageType.INFO,
         content:
           fileCount > 0
-            ? 'Hierarchical memory (QWEN.md or other context files) is loaded but content is empty.'
-            : 'No hierarchical memory (QWEN.md or other context files) is currently loaded.',
+            ? 'Hierarchical memory (CANOPY.md or other context files) is loaded but content is empty.'
+            : 'No hierarchical memory (CANOPY.md or other context files) is currently loaded.',
         timestamp: new Date(),
       });
     }

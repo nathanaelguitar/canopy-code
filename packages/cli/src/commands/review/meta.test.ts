@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -60,7 +60,7 @@ describe('runMeta', () => {
 
   it('resolves the cwd repository (upstream in a fork clone) with host from the URL', () => {
     ghMock.mockReturnValue(
-      '{"owner":{"login":"QwenLM"},"name":"qwen-code","url":"https://github.com/QwenLM/qwen-code"}',
+      '{"owner":{"login":"CanopyLM"},"name":"canopy-code","url":"https://github.com/QwenLM/canopy-code"}',
     );
     const result = runMeta({});
     expect(ghMock).toHaveBeenCalledWith(
@@ -72,7 +72,7 @@ describe('runMeta', () => {
     expect(result).toEqual({
       platform: 'github',
       host: 'github.com',
-      ownerRepo: 'QwenLM/qwen-code',
+      ownerRepo: 'CanopyLM/canopy-code',
     });
   });
 
@@ -85,10 +85,10 @@ describe('runMeta', () => {
     // shape). resolveRepo reads the host from the repo's own url, never
     // parent.url.
     ghMock.mockReturnValue(
-      '{"owner":{"login":"contributor"},"name":"qwen-code","url":"https://github.com/contributor/qwen-code","parent":{"owner":{"login":"QwenLM"},"name":"qwen-code"}}',
+      '{"owner":{"login":"contributor"},"name":"canopy-code","url":"https://github.com/contributor/canopy-code","parent":{"owner":{"login":"CanopyLM"},"name":"canopy-code"}}',
     );
     const result = runMeta({});
-    expect(result.ownerRepo).toBe('QwenLM/qwen-code');
+    expect(result.ownerRepo).toBe('CanopyLM/canopy-code');
     expect(result.host).toBe('github.com');
   });
 
@@ -157,20 +157,22 @@ describe('runMeta', () => {
 
   it('adds headSha and webUrl when a PR number is given', () => {
     ghMock.mockReturnValue(
-      '{"headRefOid":"2d71a0f851c8c18462cc85b60d90973e132274d8","url":"https://github.com/QwenLM/qwen-code/pull/8981"}',
+      '{"headRefOid":"2d71a0f851c8c18462cc85b60d90973e132274d8","url":"https://github.com/QwenLM/canopy-code/pull/8981"}',
     );
-    const result = runMeta({ prNumber: 8981, repo: 'QwenLM/qwen-code' });
+    const result = runMeta({ prNumber: 8981, repo: 'CanopyLM/canopy-code' });
     expect(ghMock).toHaveBeenCalledWith(
       'pr',
       'view',
       '8981',
       '--repo',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       '--json',
       'headRefOid,url',
     );
     expect(result.headSha).toBe('2d71a0f851c8c18462cc85b60d90973e132274d8');
-    expect(result.webUrl).toBe('https://github.com/QwenLM/qwen-code/pull/8981');
+    expect(result.webUrl).toBe(
+      'https://github.com/QwenLM/canopy-code/pull/8981',
+    );
     expect(result.host).toBe('github.com');
   });
 
@@ -212,7 +214,7 @@ describe('metaCommand handler', () => {
   it('exits 2 on a non-positive or non-integer PR number without calling gh', () => {
     (metaCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 0,
     });
     expect(process.exitCode).toBe(2);
@@ -222,7 +224,7 @@ describe('metaCommand handler', () => {
     process.exitCode = undefined;
     (metaCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1.5,
     });
     expect(process.exitCode).toBe(2);
@@ -232,7 +234,7 @@ describe('metaCommand handler', () => {
   it('exits 2 on a malformed --repo (usage error, not a fetch failure)', () => {
     (metaCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
       repo: '../escape',
     });
@@ -249,7 +251,7 @@ describe('metaCommand handler', () => {
     });
     (metaCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
       repo: 'o/r',
       host: 'bad host; rm -rf /',
@@ -263,7 +265,7 @@ describe('metaCommand handler', () => {
     ghMock.mockReturnValue('{"headRefOid":"abc","url":"u"}');
     (metaCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
       repo: 'o/r',
       host: 'ghe.example.com',
@@ -281,13 +283,13 @@ describe('metaCommand handler', () => {
 
   it('prints the result as one JSON object', () => {
     ghMock.mockReturnValue(
-      '{"owner":{"login":"QwenLM"},"name":"qwen-code","url":"https://github.com/QwenLM/qwen-code"}',
+      '{"owner":{"login":"CanopyLM"},"name":"canopy-code","url":"https://github.com/QwenLM/canopy-code"}',
     );
-    (metaCommand.handler as (a: unknown) => void)({ _: [], $0: 'qwen' });
+    (metaCommand.handler as (a: unknown) => void)({ _: [], $0: 'canopy' });
     expect(process.exitCode).toBeUndefined();
     expect(setGhHostMock).toHaveBeenCalledWith(undefined);
     expect(writeStdoutLineMock).toHaveBeenCalledWith(
-      '{"platform":"github","host":"github.com","ownerRepo":"QwenLM/qwen-code"}',
+      '{"platform":"github","host":"github.com","ownerRepo":"CanopyLM/canopy-code"}',
     );
   });
 
@@ -295,7 +297,7 @@ describe('metaCommand handler', () => {
     ghMock.mockImplementation(() => {
       throw new Error('not a git repository');
     });
-    (metaCommand.handler as (a: unknown) => void)({ _: [], $0: 'qwen' });
+    (metaCommand.handler as (a: unknown) => void)({ _: [], $0: 'canopy' });
     expect(process.exitCode).toBe(1);
     expect(writeStdoutLineMock).not.toHaveBeenCalled();
   });

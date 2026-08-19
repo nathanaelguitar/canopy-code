@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -94,14 +94,14 @@ describe('parseEventEpochHeader', () => {
 
   it('rejects a 65-char token with a log', () => {
     expect(parseEventEpochHeader('a'.repeat(65))).toBeUndefined();
-    expect(loggedLine()).toContain('rejected X-Qwen-Event-Epoch');
+    expect(loggedLine()).toContain('rejected X-Canopy-Event-Epoch');
   });
 
   it.each(['has space', 'semi;colon', 'new\nline', 'päth', 'époch'])(
     'rejects %j (outside [A-Za-z0-9_-]) with a log',
     (raw) => {
       expect(parseEventEpochHeader(raw)).toBeUndefined();
-      expect(loggedLine()).toContain('rejected X-Qwen-Event-Epoch');
+      expect(loggedLine()).toContain('rejected X-Canopy-Event-Epoch');
     },
   );
 

@@ -33,7 +33,7 @@ describe('LSTool', () => {
       tempSecondaryDir,
     ]);
 
-    const userSkillsBase = path.join(os.homedir(), '.qwen', 'skills');
+    const userSkillsBase = path.join(os.homedir(), '.canopy', 'skills');
 
     mockConfig = {
       getTargetDir: () => tempRootDir,
@@ -41,7 +41,7 @@ describe('LSTool', () => {
       getFileService: () => new FileDiscoveryService(tempRootDir),
       getFileFilteringOptions: () => ({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       }),
       getTruncateToolOutputLines: () => 1000,
       storage: {
@@ -173,16 +173,16 @@ describe('LSTool', () => {
       expect(result.returnDisplay).toBe('Listed 2 item(s) (2 git-ignored)');
     });
 
-    it('should respect qwenignore patterns', async () => {
+    it('should respect canopyignore patterns', async () => {
       await fs.writeFile(path.join(tempRootDir, 'file1.txt'), 'content1');
       await fs.writeFile(path.join(tempRootDir, 'file2.log'), 'content1');
-      await fs.writeFile(path.join(tempRootDir, '.qwenignore'), '*.log');
+      await fs.writeFile(path.join(tempRootDir, '.canopyignore'), '*.log');
       const invocation = lsTool.build({ path: tempRootDir });
       const result = await invocation.execute(abortSignal);
 
       expect(result.llmContent).toContain('file1.txt');
       expect(result.llmContent).not.toContain('file2.log');
-      expect(result.returnDisplay).toBe('Listed 2 item(s) (1 qwen-ignored)');
+      expect(result.returnDisplay).toBe('Listed 2 item(s) (1 canopy-ignored)');
     });
 
     it('should respect agent and ai ignore patterns', async () => {
@@ -200,10 +200,10 @@ describe('LSTool', () => {
       expect(result.llmContent).toContain('file1.txt');
       expect(result.llmContent).not.toContain('agent-secret.log');
       expect(result.llmContent).not.toContain('ai-secret.log');
-      expect(result.returnDisplay).toBe('Listed 3 item(s) (2 qwen-ignored)');
+      expect(result.returnDisplay).toBe('Listed 3 item(s) (2 canopy-ignored)');
     });
 
-    it('should respect configured custom qwen ignore files', async () => {
+    it('should respect configured custom canopy ignore files', async () => {
       await fs.writeFile(path.join(tempRootDir, 'file1.txt'), 'content1');
       await fs.writeFile(
         path.join(tempRootDir, 'cursor-secret.log'),
@@ -225,7 +225,7 @@ describe('LSTool', () => {
           new FileDiscoveryService(tempRootDir, ['.cursorignore']),
         getFileFilteringOptions: () => ({
           respectGitIgnore: true,
-          respectQwenIgnore: true,
+          respectCanopyIgnore: true,
           customIgnoreFiles: ['.cursorignore'],
         }),
       } as unknown as Config;
@@ -237,7 +237,7 @@ describe('LSTool', () => {
       expect(result.llmContent).toContain('file1.txt');
       expect(result.llmContent).toContain('agent-secret.log');
       expect(result.llmContent).not.toContain('cursor-secret.log');
-      expect(result.returnDisplay).toBe('Listed 4 item(s) (1 qwen-ignored)');
+      expect(result.returnDisplay).toBe('Listed 4 item(s) (1 canopy-ignored)');
     });
 
     it('should handle non-directory paths', async () => {

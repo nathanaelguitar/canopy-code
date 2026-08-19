@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -203,7 +203,7 @@ const NOOP_SPAN = trace.wrapSpanContext({
 const interactionContext = new AsyncLocalStorage<SpanContext | undefined>();
 const toolContext = new AsyncLocalStorage<SpanContext | undefined>();
 /**
- * ALS for the active `qwen-code.subagent` span. Child LLM/tool/hook spans
+ * ALS for the active `canopy-code.subagent` span. Child LLM/tool/hook spans
  * created inside a subagent body read this BEFORE interactionContext so
  * they parent under the subagent (not the outer interaction). Without
  * this, foreground subagent spans are empty shells: `resolveParentContext`
@@ -306,7 +306,7 @@ const LONG_TTL_SUBAGENT_KINDS = new Set<SubagentInvocationKind>([
  */
 function ttlFor(ctx: SpanContext): number {
   if (ctx.type === 'subagent') {
-    const kind = ctx.attributes['qwen-code.subagent.invocation_kind'];
+    const kind = ctx.attributes['canopy-code.subagent.invocation_kind'];
     if (
       typeof kind === 'string' &&
       LONG_TTL_SUBAGENT_KINDS.has(kind as SubagentInvocationKind)
@@ -340,7 +340,7 @@ function sweepStaleSpans(now: number): void {
     if (!ctx.ended) {
       ctx.ended = true;
       if (ctx.type === 'interaction') {
-        const promptId = ctx.attributes['qwen-code.prompt_id'];
+        const promptId = ctx.attributes['canopy-code.prompt_id'];
         if (
           typeof promptId === 'string' &&
           activeInteractionsByPromptId.get(promptId) === ctx
@@ -365,8 +365,8 @@ function sweepStaleSpans(now: number): void {
       //    user-cancelled / failed (#3731 Phase 3).
       try {
         ctx.span.setAttributes({
-          'qwen-code.span.ttl_expired': true,
-          'qwen-code.span.duration_ms': ageMs,
+          'canopy-code.span.ttl_expired': true,
+          'canopy-code.span.duration_ms': ageMs,
           ...(ctx.type === 'tool.blocked_on_user'
             ? {
                 decision: 'aborted',
@@ -375,14 +375,14 @@ function sweepStaleSpans(now: number): void {
             : {}),
           ...(ctx.type === 'subagent'
             ? {
-                'qwen-code.subagent.status': 'aborted',
-                'qwen-code.subagent.terminate_reason': 'ttl_swept',
+                'canopy-code.subagent.status': 'aborted',
+                'canopy-code.subagent.terminate_reason': 'ttl_swept',
                 // Mirror the subagent-specific duration_ms key that
                 // endSubagentSpan stamps so dashboards querying that
                 // namespace see TTL-swept spans too (they currently
-                // only get the generic qwen-code.span.duration_ms
+                // only get the generic canopy-code.span.duration_ms
                 // above). wenshao @ #4410.
-                'qwen-code.subagent.duration_ms': ageMs,
+                'canopy-code.subagent.duration_ms': ageMs,
               }
             : {}),
         });
@@ -483,15 +483,15 @@ function buildInteractionAttributes(
     'session.id': sessionId,
     ...(userId ? { 'gen_ai.user.id': userId } : {}),
     'gen_ai.operation.name': 'invoke_agent',
-    'gen_ai.agent.name': 'qwen-code',
+    'gen_ai.agent.name': 'canopy-code',
     'gen_ai.conversation.id': sessionId,
     ...(ownsStructuredOutputContract && config.getJsonSchema?.()
       ? { 'gen_ai.output.type': 'json' }
       : {}),
-    'qwen-code.prompt_id': options.promptId,
-    'qwen-code.message_type': options.messageType,
-    'qwen-code.model': options.model,
-    'qwen-code.approval_mode': config.getApprovalMode(),
+    'canopy-code.prompt_id': options.promptId,
+    'canopy-code.message_type': options.messageType,
+    'canopy-code.model': options.model,
+    'canopy-code.approval_mode': config.getApprovalMode(),
     'interaction.sequence': interactionSequence,
   };
 }
@@ -504,7 +504,7 @@ function finalizeInteractionContext(
   if (spanCtx.ended) return;
   spanCtx.ended = true;
 
-  const promptId = spanCtx.attributes['qwen-code.prompt_id'];
+  const promptId = spanCtx.attributes['canopy-code.prompt_id'];
   if (
     typeof promptId === 'string' &&
     activeInteractionsByPromptId.get(promptId) === spanCtx
@@ -518,7 +518,7 @@ function finalizeInteractionContext(
     const duration = Date.now() - spanCtx.startTime;
     const attributes: Attributes = {
       'interaction.duration_ms': duration,
-      'qwen-code.turn_status': status,
+      'canopy-code.turn_status': status,
     };
     if (status === 'error') {
       attributes['error.type'] = metadata?.errorType || 'interaction_error';
@@ -589,7 +589,7 @@ function getInteractionContext(promptId?: string): SpanContext | undefined {
 
 function touchInteractionContext(spanCtx: SpanContext | undefined): boolean {
   if (!spanCtx || spanCtx.type !== 'interaction' || spanCtx.ended) return false;
-  const promptId = spanCtx.attributes['qwen-code.prompt_id'];
+  const promptId = spanCtx.attributes['canopy-code.prompt_id'];
   if (
     typeof promptId !== 'string' ||
     activeInteractionsByPromptId.get(promptId) !== spanCtx
@@ -773,7 +773,7 @@ export function startLLMRequestSpanWithContext(
     ...(sessionId ? { 'session.id': sessionId } : {}),
     ...(sessionId ? { 'gen_ai.conversation.id': sessionId } : {}),
     ...(userId ? { 'gen_ai.user.id': userId } : {}),
-    'qwen-code.prompt_id': promptId,
+    'canopy-code.prompt_id': promptId,
     'llm_request.context':
       parentCtx?.type === 'subagent'
         ? 'subagent'
@@ -1713,9 +1713,9 @@ export interface SubagentSpanMetadata {
  *   backends' caps (e.g. LangSmith's 25k-run cap per trace).
  *
  * Emits OTel GenAI agent name, description, and conversation attributes
- * alongside vendor `qwen-code.subagent.*` keys.
+ * alongside vendor `canopy-code.subagent.*` keys.
  * The GenAI spec is in Development status; vendor lifecycle and invocation
- * identity attributes remain available for existing Qwen Code queries.
+ * identity attributes remain available for existing Canopy Code queries.
  */
 export function startSubagentSpan(opts: StartSubagentSpanOptions): Span {
   if (!isTelemetrySdkInitialized()) return NOOP_SPAN;
@@ -1739,11 +1739,11 @@ export function startSubagentSpan(opts: StartSubagentSpanOptions): Span {
 
     // Vendor identity and lifecycle. The per-invocation ID stays private;
     // gen_ai.agent.id is reserved for a stable agent definition identity.
-    'qwen-code.subagent.id': opts.agentId,
-    'qwen-code.subagent.name': opts.subagentName,
-    'qwen-code.subagent.invocation_kind': opts.invocationKind,
-    'qwen-code.subagent.is_built_in': opts.isBuiltIn,
-    'qwen-code.subagent.depth': opts.depth,
+    'canopy-code.subagent.id': opts.agentId,
+    'canopy-code.subagent.name': opts.subagentName,
+    'canopy-code.subagent.invocation_kind': opts.invocationKind,
+    'canopy-code.subagent.is_built_in': opts.isBuiltIn,
+    'canopy-code.subagent.depth': opts.depth,
   };
 
   if (opts.agentDescription !== undefined) {
@@ -1756,10 +1756,10 @@ export function startSubagentSpan(opts: StartSubagentSpanOptions): Span {
     attributes['gen_ai.request.model'] = opts.modelOverride;
   }
   if (opts.parentAgentId !== undefined) {
-    attributes['qwen-code.subagent.parent_agent_id'] = opts.parentAgentId;
+    attributes['canopy-code.subagent.parent_agent_id'] = opts.parentAgentId;
   }
   if (opts.invokingRequestId !== undefined) {
-    attributes['qwen-code.subagent.invoking_request_id'] =
+    attributes['canopy-code.subagent.invoking_request_id'] =
       opts.invokingRequestId;
   }
 
@@ -1784,7 +1784,7 @@ export function startSubagentSpan(opts: StartSubagentSpanOptions): Span {
         ? [
             {
               context: opts.invokerSpanContext,
-              attributes: { 'qwen-code.link.kind': 'invoker' },
+              attributes: { 'canopy-code.link.kind': 'invoker' },
             },
           ]
         : undefined,
@@ -1907,15 +1907,15 @@ export function endSubagentSpan(
     const duration = Date.now() - spanCtx.startTime;
     const endAttributes: Attributes = {
       duration_ms: duration,
-      'qwen-code.subagent.duration_ms': duration,
-      'qwen-code.subagent.status': metadata.status,
+      'canopy-code.subagent.duration_ms': duration,
+      'canopy-code.subagent.status': metadata.status,
     };
     if (metadata.terminateReason !== undefined) {
-      endAttributes['qwen-code.subagent.terminate_reason'] =
+      endAttributes['canopy-code.subagent.terminate_reason'] =
         metadata.terminateReason;
     }
     if (metadata.resultSummaryPresent !== undefined) {
-      endAttributes['qwen-code.subagent.result_summary_present'] =
+      endAttributes['canopy-code.subagent.result_summary_present'] =
         metadata.resultSummaryPresent;
     }
     if (metadata.status === 'failed' && metadata.error !== undefined) {

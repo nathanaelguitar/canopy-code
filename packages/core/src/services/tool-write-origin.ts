@@ -7,7 +7,7 @@
 import type { WriteTextFileRequest } from '@agentclientprotocol/sdk';
 
 export const TOOL_WRITE_ORIGIN_META_KEY =
-  'qwen-code/tool-write-origin' as const;
+  'canopy-code/tool-write-origin' as const;
 
 export const TOOL_WRITE_ORIGINS = [
   'write_file',

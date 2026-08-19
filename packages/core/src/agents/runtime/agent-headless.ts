@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ import { AgentTerminateMode } from './agent-types.js';
 import { logSubagentExecution } from '../../telemetry/loggers.js';
 import { SubagentExecutionEvent } from '../../telemetry/types.js';
 import { AgentCore, EXTERNAL_MESSAGE_PREFIX } from './agent-core.js';
-import { DEFAULT_QWEN_MODEL } from '../../config/models.js';
+import { DEFAULT_CANOPY_MODEL } from '../../config/models.js';
 
 const debugLogger = createDebugLogger('SUBAGENT');
 
@@ -343,7 +343,7 @@ export class AgentHeadless {
           model:
             this.core.modelConfig.model ||
             this.core.runtimeContext.getModel() ||
-            DEFAULT_QWEN_MODEL,
+            DEFAULT_CANOPY_MODEL,
           tools: (this.core.toolConfig?.tools || ['*']).map((t) =>
             typeof t === 'string' ? t : t.name,
           ),

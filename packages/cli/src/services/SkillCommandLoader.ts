@@ -1,17 +1,17 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   createDebugLogger,
   appendToLastTextPart,
   buildSkillLlmContent,
   applySkillAllowedTools,
   recordAutoSkillUsage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { dirname } from 'node:path';
 import type { ICommandLoader } from './types.js';
 import {

@@ -190,10 +190,10 @@ describe('ChatCompressionService', () => {
 
   describe('screenshot-overflow trigger', () => {
     const SCREENSHOT_ENV = [
-      'QWEN_COMPACT_SCREENSHOT_TRIGGER',
-      'QWEN_COMPACT_SCREENSHOT_THRESHOLD',
-      'QWEN_COMPACT_MAX_RECENT_FILES',
-      'QWEN_COMPACT_MAX_RECENT_IMAGES',
+      'CANOPY_COMPACT_SCREENSHOT_TRIGGER',
+      'CANOPY_COMPACT_SCREENSHOT_THRESHOLD',
+      'CANOPY_COMPACT_MAX_RECENT_FILES',
+      'CANOPY_COMPACT_MAX_RECENT_IMAGES',
     ];
     beforeEach(() => {
       for (const k of SCREENSHOT_ENV) delete process.env[k];
@@ -337,7 +337,7 @@ describe('ChatCompressionService', () => {
       expect(generateText).not.toHaveBeenCalled();
     });
 
-    it('reads threshold + enable flag from QWEN_COMPACT_* env over settings', async () => {
+    it('reads threshold + enable flag from CANOPY_COMPACT_* env over settings', async () => {
       vi.mocked(mockChat.getHistory).mockReturnValue(historyWithToolImages(4));
       // Settings would NOT trigger (threshold 50); env lowers it to 4 and
       // force-enables, so the env values must win.
@@ -345,8 +345,8 @@ describe('ChatCompressionService', () => {
         enableScreenshotTrigger: false,
         screenshotTriggerThreshold: 50,
       } as ReturnType<typeof mockConfig.getChatCompression>);
-      process.env['QWEN_COMPACT_SCREENSHOT_TRIGGER'] = 'true';
-      process.env['QWEN_COMPACT_SCREENSHOT_THRESHOLD'] = '4';
+      process.env['CANOPY_COMPACT_SCREENSHOT_TRIGGER'] = 'true';
+      process.env['CANOPY_COMPACT_SCREENSHOT_THRESHOLD'] = '4';
       setWindow128k();
       const generateText = mockSummarySideQuery();
 
@@ -829,7 +829,7 @@ describe('ChatCompressionService', () => {
   it('passes getCompactionModel to runSideQuery for compression', async () => {
     // Compression passes config.getCompactionModel?.() to runSideQuery so it uses
     // the compaction model (falls back to the main model) instead of
-    // the expensive main model, reducing cost. See https://github.com/QwenLM/qwen-code/issues/5956
+    // the expensive main model, reducing cost. See https://github.com/QwenLM/canopy-code/issues/5956
     const history: Content[] = [
       { role: 'user', parts: [{ text: 'msg1' }] },
       { role: 'model', parts: [{ text: 'msg2' }] },
@@ -2358,7 +2358,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
     expect(slimSpy).not.toHaveBeenCalled();
   });
 
-  it.each([AuthType.QWEN_OAUTH, AuthType.USE_OPENAI])(
+  it.each([AuthType.CANOPY_OAUTH, AuthType.USE_OPENAI])(
     'uses cache sharing for DashScope through %s',
     async (authType) => {
       const { chat, config, generateText } = makeFixture({ authType });

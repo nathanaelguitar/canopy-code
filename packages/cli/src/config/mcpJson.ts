@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import {
   type MCPServerConfig,
   normalizeClaudeMcpServer,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import stripJsonComments from 'strip-json-comments';
 
 /** Project-scoped MCP config filename, read from the workspace root. */
@@ -85,7 +85,7 @@ export function loadProjectMcpServers(
       continue;
     }
     // `.mcp.json` is the Claude Code convention, so entries may use Claude's
-    // `type`-based transport shape; normalize them to Qwen's field-based shape.
+    // `type`-based transport shape; normalize them to Canopy's field-based shape.
     servers[name] = {
       ...normalizeClaudeMcpServer(value as MCPServerConfig),
       scope: 'project',

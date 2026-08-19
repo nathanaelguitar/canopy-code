@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,10 @@ import { promises as fsp, writeFileSync } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { createHash, randomBytes } from 'node:crypto';
-import { Ignore, StandardFileSystemService } from '@qwen-code/qwen-code-core';
+import {
+  Ignore,
+  StandardFileSystemService,
+} from '@canopy-code/canopy-code-core';
 import { encodeTextCursor } from './text-cursor.js';
 import {
   FS_ACCESS_EVENT_TYPE,
@@ -38,7 +41,7 @@ async function makeHarness(opts?: {
   generationGuard?: { assertOpen(): void };
 }): Promise<Harness> {
   const scratch = await fsp.mkdtemp(
-    path.join(os.tmpdir(), `qwen-wfs-${randomBytes(4).toString('hex')}-`),
+    path.join(os.tmpdir(), `canopy-wfs-${randomBytes(4).toString('hex')}-`),
   );
   const wsDir = path.join(scratch, 'ws');
   await fsp.mkdir(wsDir);
@@ -68,7 +71,7 @@ async function makeMultiRootHarness(
   }
 > {
   const scratch = await fsp.mkdtemp(
-    path.join(os.tmpdir(), `qwen-wfs-${randomBytes(4).toString('hex')}-`),
+    path.join(os.tmpdir(), `canopy-wfs-${randomBytes(4).toString('hex')}-`),
   );
   const primaryDir = path.join(scratch, 'primary');
   const secondDir = path.join(scratch, 'second');
@@ -995,7 +998,7 @@ describe('WorkspaceFileSystem - list', () => {
 
   it('uses configured custom ignore files in the default ignore loader', async () => {
     const scratch = await fsp.mkdtemp(
-      path.join(os.tmpdir(), `qwen-wfs-${randomBytes(4).toString('hex')}-`),
+      path.join(os.tmpdir(), `canopy-wfs-${randomBytes(4).toString('hex')}-`),
     );
     try {
       const wsDir = path.join(scratch, 'ws');
@@ -1936,12 +1939,12 @@ describe('WorkspaceFileSystem - audit always emits on body errors', () => {
     expect(denied).toBeDefined();
   });
 
-  it('fs.denied audit message field is gated behind QWEN_AUDIT_RAW_PATHS (privacy default omits)', async () => {
+  it('fs.denied audit message field is gated behind CANOPY_AUDIT_RAW_PATHS (privacy default omits)', async () => {
     // Default (privacy) mode: `message` MUST be absent because the
     // underlying `FsError.message` embeds `${p}` absolute paths
     // that would otherwise leak workspace structure to audit
     // consumers — even when operators explicitly disabled
-    // raw-path logging via not-setting `QWEN_AUDIT_RAW_PATHS`.
+    // raw-path logging via not-setting `CANOPY_AUDIT_RAW_PATHS`.
     // See `audit.ts:recordDenied` — message gates on
     // `includeRawPaths`.
     const err = (await h.fs
@@ -2259,7 +2262,7 @@ describe('WorkspaceFileSystem - multi-root workspaces', () => {
     const scratch = await fsp.mkdtemp(
       path.join(
         os.tmpdir(),
-        `qwen-wfs-nested-${randomBytes(4).toString('hex')}-`,
+        `canopy-wfs-nested-${randomBytes(4).toString('hex')}-`,
       ),
     );
     try {
@@ -2500,7 +2503,7 @@ describe('WorkspaceFileSystem - factory', () => {
     const scratch = await fsp.mkdtemp(
       path.join(
         os.tmpdir(),
-        `qwen-wfs-canon-${randomBytes(4).toString('hex')}-`,
+        `canopy-wfs-canon-${randomBytes(4).toString('hex')}-`,
       ),
     );
     try {

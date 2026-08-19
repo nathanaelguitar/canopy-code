@@ -135,7 +135,7 @@ describe('estimatePromptTokens', () => {
       // lastPromptTokenCount + this turn's new content alone, causing
       // maxOutputTokens to be clamped too loosely and
       // `prompt + max_tokens` to exceed the window by ~1 token in
-      // production (see Research/Discovery_QwenCode-MainTurnOutputClamp-
+      // production (see Research/Discovery_CanopyCode-MainTurnOutputClamp-
       // SeparateBug_20260728.md in the ArgoStack repo).
       const cjkToolResult: Content = {
         role: 'user',

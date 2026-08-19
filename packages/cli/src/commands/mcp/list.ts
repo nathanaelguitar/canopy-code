@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// File for 'qwen mcp list' command
+// File for 'canopy mcp list' command
 import type { CommandModule } from 'yargs';
 import { loadSettings } from '../../config/settings.js';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
-import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
+import type { MCPServerConfig } from '@canopy-code/canopy-code-core';
 import {
   MCPServerStatus,
   createTransport,
   ExtensionManager,
   isGatedMcpScope,
   runWithTimeout,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { isWorkspaceTrusted } from '../../config/trustedFolders.js';
 import { assembleMcpServers } from '../../config/mcpServers.js';
@@ -148,7 +148,7 @@ export async function listMcpServers(): Promise<void> {
       serverInfo += `${server.command} ${server.args?.join(' ') || ''} (stdio)`;
     }
 
-    // Gated (project `.mcp.json` / workspace `.qwen/settings.json`) servers that
+    // Gated (project `.mcp.json` / workspace `.canopy/settings.json`) servers that
     // are not approved are listed WITHOUT connecting — inspecting an untrusted
     // config must stay side-effect-free (#4615). Only approved / non-gated
     // servers get a live connection test.

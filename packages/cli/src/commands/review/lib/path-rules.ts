@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,13 +15,13 @@
 // the pull request's head, and the answer to that question is the difference between
 // a CI file and a remote code execution with the repository's write token.
 //
-// This repo runs `qwen-autofix.yml`, which posts to pull requests. The skill already
+// This repo runs `canopy-autofix.yml`, which posts to pull requests. The skill already
 // knows a PR branch's CI config is untrusted — Agent 7 is told to read it from the
 // base branch — but nothing ever *reviewed a workflow change* for that attack class.
 //
 // So: a small table of path → checklist, appended to the brief of every agent whose
 // territory actually contains a matching file. It is additive to the project's own
-// rules (`.qwen/review-rules.md` and friends), never a replacement: a project that
+// rules (`.canopy/review-rules.md` and friends), never a replacement: a project that
 // says nothing about workflows still gets these, and a project that says something
 // gets both.
 //

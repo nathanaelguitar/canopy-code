@@ -28,7 +28,7 @@ const openaiMockState = vi.hoisted(() => ({
   deferredErrors: [] as Array<Error | undefined>,
 }));
 
-const qwenMockState = vi.hoisted(() => ({
+const canopyMockState = vi.hoisted(() => ({
   oauthError: null as Error | null,
   oauthCount: 0,
   constructorCount: 0,
@@ -71,21 +71,21 @@ vi.mock('./openaiContentGenerator/index.js', () => ({
   },
 }));
 
-vi.mock('../qwen/qwenOAuth2.js', () => ({
-  getQwenOAuthClient: async () => {
-    qwenMockState.oauthCount += 1;
-    if (qwenMockState.oauthError) {
-      throw qwenMockState.oauthError;
+vi.mock('../canopy/canopy-oauth2.js', () => ({
+  getCanopyOAuthClient: async () => {
+    canopyMockState.oauthCount += 1;
+    if (canopyMockState.oauthError) {
+      throw canopyMockState.oauthError;
     }
     return {};
   },
 }));
 
-vi.mock('../qwen/qwenContentGenerator.js', () => ({
-  QwenContentGenerator: class {
+vi.mock('../canopy/canopy-content-generator.js', () => ({
+  CanopyContentGenerator: class {
     constructor(_client: unknown, generatorConfig: { model?: string }) {
-      qwenMockState.constructorCount += 1;
-      qwenMockState.constructorModels.push(generatorConfig.model);
+      canopyMockState.constructorCount += 1;
+      canopyMockState.constructorModels.push(generatorConfig.model);
     }
 
     async countTokens() {
@@ -113,10 +113,10 @@ describe('createContentGenerator', () => {
     openaiMockState.createCount = 0;
     openaiMockState.constructionGates = [];
     openaiMockState.deferredErrors = [];
-    qwenMockState.oauthError = null;
-    qwenMockState.oauthCount = 0;
-    qwenMockState.constructorCount = 0;
-    qwenMockState.constructorModels = [];
+    canopyMockState.oauthError = null;
+    canopyMockState.oauthCount = 0;
+    canopyMockState.constructorCount = 0;
+    canopyMockState.constructorModels = [];
     openaiLoggerMockState.constructorCalls = [];
   });
 
@@ -418,10 +418,10 @@ describe('createContentGenerator', () => {
     expect(openaiMockState.createCount).toBe(2);
   });
 
-  it('rebuilds a preloaded Qwen generator from a hot-switched config', async () => {
+  it('rebuilds a preloaded Canopy generator from a hot-switched config', async () => {
     const generatorConfig: ContentGeneratorConfig = {
       model: 'qwen3-coder-flash',
-      authType: AuthType.QWEN_OAUTH,
+      authType: AuthType.CANOPY_OAUTH,
     };
     const mockConfig = {
       getUsageStatisticsEnabled: () => false,
@@ -440,7 +440,7 @@ describe('createContentGenerator', () => {
       contents: 'hello',
     });
 
-    expect(qwenMockState.constructorModels).toEqual([
+    expect(canopyMockState.constructorModels).toEqual([
       'qwen3-coder-flash',
       'coder-model',
     ]);
@@ -515,7 +515,7 @@ describe('createContentGenerator', () => {
     expect((preloadError as Error).cause).toBe(moduleError);
   });
 
-  it('checks Qwen credentials before deferring provider creation', async () => {
+  it('checks Canopy credentials before deferring provider creation', async () => {
     const mockConfig = {
       getUsageStatisticsEnabled: () => false,
       getContentGeneratorConfig: () => ({}),
@@ -526,20 +526,20 @@ describe('createContentGenerator', () => {
     const generator = await createContentGenerator(
       {
         model: 'test-model',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
       },
       mockConfig,
       true,
     );
 
-    expect(qwenMockState.oauthCount).toBe(1);
-    expect(qwenMockState.constructorCount).toBe(0);
+    expect(canopyMockState.oauthCount).toBe(1);
+    expect(canopyMockState.constructorCount).toBe(0);
     expect(generator.useSummarizedThinking()).toBe(false);
     await generator.countTokens({ model: 'test-model', contents: 'hello' });
-    expect(qwenMockState.constructorCount).toBe(1);
+    expect(canopyMockState.constructorCount).toBe(1);
   });
 
-  it('rejects Qwen credential failures before returning a lazy generator', async () => {
+  it('rejects Canopy credential failures before returning a lazy generator', async () => {
     const mockConfig = {
       getUsageStatisticsEnabled: () => false,
       getContentGeneratorConfig: () => ({}),
@@ -547,20 +547,20 @@ describe('createContentGenerator', () => {
       getTelemetryEnabled: () => false,
       getSessionId: () => 'test-session',
     } as unknown as Config;
-    qwenMockState.oauthError = new Error('cached credentials are missing');
+    canopyMockState.oauthError = new Error('cached credentials are missing');
 
     await expect(
       createContentGenerator(
         {
           model: 'test-model',
-          authType: AuthType.QWEN_OAUTH,
+          authType: AuthType.CANOPY_OAUTH,
         },
         mockConfig,
         true,
       ),
     ).rejects.toThrow('cached credentials are missing');
-    expect(qwenMockState.oauthCount).toBe(1);
-    expect(qwenMockState.constructorCount).toBe(0);
+    expect(canopyMockState.oauthCount).toBe(1);
+    expect(canopyMockState.constructorCount).toBe(0);
   });
 
   it('should throw when the config has no authType', async () => {
@@ -618,10 +618,10 @@ describe('createContentGenerator - ERR_MODULE_NOT_FOUND handling', () => {
     openaiMockState.createCount = 0;
     openaiMockState.constructionGates = [];
     openaiMockState.deferredErrors = [];
-    qwenMockState.oauthError = null;
-    qwenMockState.oauthCount = 0;
-    qwenMockState.constructorCount = 0;
-    qwenMockState.constructorModels = [];
+    canopyMockState.oauthError = null;
+    canopyMockState.oauthCount = 0;
+    canopyMockState.constructorCount = 0;
+    canopyMockState.constructorModels = [];
     openaiLoggerMockState.constructorCalls = [];
     vi.resetModules();
   });
@@ -642,16 +642,16 @@ describe('createContentGenerator - ERR_MODULE_NOT_FOUND handling', () => {
     ).rejects.toThrow('network timeout');
   });
 
-  it('should preserve module-not-found errors from QWEN OAuth setup', async () => {
-    const moduleError = new Error("Cannot find module '../qwen/stale.js'");
+  it('should preserve module-not-found errors from CANOPY OAuth setup', async () => {
+    const moduleError = new Error("Cannot find module '../canopy/stale.js'");
     (moduleError as NodeJS.ErrnoException).code = 'ERR_MODULE_NOT_FOUND';
-    qwenMockState.oauthError = moduleError;
+    canopyMockState.oauthError = moduleError;
 
     try {
       await createContentGenerator(
         {
           model: 'test-model',
-          authType: AuthType.QWEN_OAUTH,
+          authType: AuthType.CANOPY_OAUTH,
         },
         mockConfig,
       );
@@ -662,7 +662,7 @@ describe('createContentGenerator - ERR_MODULE_NOT_FOUND handling', () => {
       expect(err.message).toMatch(
         /updated in the background and needs to be restarted/,
       );
-      expect(err.message).toMatch(/qwen-oauth/);
+      expect(err.message).toMatch(/canopy-oauth/);
       expect(err.cause).toBe(moduleError);
     }
   });
@@ -707,23 +707,31 @@ describe('createContentGeneratorConfig', () => {
     getProxy: () => undefined,
   } as unknown as Config;
 
-  it('should preserve provided fields and set authType for QWEN_OAUTH', () => {
-    const cfg = createContentGeneratorConfig(mockConfig, AuthType.QWEN_OAUTH, {
-      model: 'coder-model',
-      apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN',
-    });
-    expect(cfg.authType).toBe(AuthType.QWEN_OAUTH);
+  it('should preserve provided fields and set authType for CANOPY_OAUTH', () => {
+    const cfg = createContentGeneratorConfig(
+      mockConfig,
+      AuthType.CANOPY_OAUTH,
+      {
+        model: 'coder-model',
+        apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
+      },
+    );
+    expect(cfg.authType).toBe(AuthType.CANOPY_OAUTH);
     expect(cfg.model).toBe('coder-model');
-    expect(cfg.apiKey).toBe('QWEN_OAUTH_DYNAMIC_TOKEN');
+    expect(cfg.apiKey).toBe('CANOPY_OAUTH_DYNAMIC_TOKEN');
   });
 
-  it('should not warn or fallback for QWEN_OAUTH (resolution handled by ModelConfigResolver)', () => {
+  it('should not warn or fallback for CANOPY_OAUTH (resolution handled by ModelConfigResolver)', () => {
     const warnSpy = vi
       .spyOn(console, 'warn')
       .mockImplementation(() => undefined);
-    const cfg = createContentGeneratorConfig(mockConfig, AuthType.QWEN_OAUTH, {
-      model: 'some-random-model',
-    });
+    const cfg = createContentGeneratorConfig(
+      mockConfig,
+      AuthType.CANOPY_OAUTH,
+      {
+        model: 'some-random-model',
+      },
+    );
     expect(cfg.model).toBe('some-random-model');
     expect(cfg.apiKey).toBeUndefined();
     expect(warnSpy).not.toHaveBeenCalled();

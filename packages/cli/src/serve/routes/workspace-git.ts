@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Application, Request, Response } from 'express';
-import { getGitWorkingTreeStatus } from '@qwen-code/qwen-code-core';
+import { getGitWorkingTreeStatus } from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import type { SendBridgeError } from '../server/error-response.js';
 import type { WorkspaceGitState } from '../workspace-git-state.js';

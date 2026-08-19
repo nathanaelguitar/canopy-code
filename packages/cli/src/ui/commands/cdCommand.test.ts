@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import {
   type MessageActionReturn,
 } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   loadTrustedFolders,
   resetTrustedFoldersForTesting,
@@ -35,12 +35,12 @@ describe('cdCommand', () => {
   let addWorkingDirectoryChangedContext: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cd-command-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-cd-command-'));
     currentDir = path.join(tmpDir, 'current');
     nextDir = path.join(tmpDir, 'next');
     fs.mkdirSync(currentDir);
     fs.mkdirSync(nextDir);
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
       tmpDir,
       'trustedFolders.json',
     );
@@ -64,7 +64,7 @@ describe('cdCommand', () => {
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     resetTrustedFoldersForTesting();
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
@@ -206,7 +206,7 @@ describe('cdCommand', () => {
   });
 
   it('resolves a Windows-style home-relative path from the home directory', async () => {
-    const missingName = `qwen-cd-missing-${process.pid}-${Date.now()}`;
+    const missingName = `canopy-cd-missing-${process.pid}-${Date.now()}`;
     const expectedPath = path.normalize(path.join(os.homedir(), missingName));
 
     const result = (await cdCommand.action?.(
@@ -224,7 +224,7 @@ describe('cdCommand', () => {
 
   it('moves to a Windows-style home-relative directory', async () => {
     const homeSubdir = fs.mkdtempSync(
-      path.join(os.homedir(), `qwen-cd-ok-${process.pid}-`),
+      path.join(os.homedir(), `canopy-cd-ok-${process.pid}-`),
     );
 
     try {
@@ -550,7 +550,7 @@ describe('cdCommand', () => {
     await cdCommand.action?.(context, '../next');
     context.overwriteConfirmed = true;
     fs.writeFileSync(
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']!,
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']!,
       'invalid json',
     );
 

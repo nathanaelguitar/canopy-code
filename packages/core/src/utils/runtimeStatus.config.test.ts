@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Integration coverage for the runtime.json sidecar wiring through
@@ -29,17 +29,17 @@ let runtimeDir: string;
 let prevRuntimeEnv: string | undefined;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-rt-cfg-'));
+  tmpDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-rt-cfg-'));
   runtimeDir = path.join(tmpDir, 'runtime');
-  prevRuntimeEnv = process.env['QWEN_RUNTIME_DIR'];
-  process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+  prevRuntimeEnv = process.env['CANOPY_RUNTIME_DIR'];
+  process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
 });
 
 afterEach(async () => {
   if (prevRuntimeEnv === undefined) {
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   } else {
-    process.env['QWEN_RUNTIME_DIR'] = prevRuntimeEnv;
+    process.env['CANOPY_RUNTIME_DIR'] = prevRuntimeEnv;
   }
   await rm(tmpDir, { recursive: true, force: true });
 });
@@ -86,7 +86,7 @@ describe('Config.startNewSession runtime.json swap', () => {
     await writeRuntimeStatus(aPath, {
       sessionId: sessionA,
       workDir: tmpDir,
-      qwenVersion: '0.0.0-test',
+      canopyVersion: '0.0.0-test',
     });
 
     config.startNewSession(sessionB);
@@ -109,7 +109,7 @@ describe('Config.startNewSession runtime.json swap', () => {
     await writeRuntimeStatus(aPath, {
       sessionId: sessionA,
       workDir: tmpDir,
-      qwenVersion: '0.0.0-test',
+      canopyVersion: '0.0.0-test',
     });
     config.markRuntimeStatusEnabled();
 
@@ -132,7 +132,7 @@ describe('Config.startNewSession runtime.json swap', () => {
     await writeRuntimeStatus(aPath, {
       sessionId: sessionA,
       workDir: tmpDir,
-      qwenVersion: '0.0.0-test',
+      canopyVersion: '0.0.0-test',
     });
     config.markRuntimeStatusEnabled();
 
@@ -156,22 +156,22 @@ describe('Config.startNewSession runtime.json swap', () => {
 });
 
 describe('Config.startNewSession session-registry patch', () => {
-  let prevQwenHome: string | undefined;
+  let prevCanopyHome: string | undefined;
 
   beforeEach(() => {
     // Keep the registry inside this test's tmpdir — the patch seam must
     // be exercised against the real registerSession/listLiveSessions
     // round trip, and the default location is the runner's real home.
-    prevQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = path.join(tmpDir, 'qwen-home');
+    prevCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = path.join(tmpDir, 'canopy-home');
   });
 
   afterEach(async () => {
     await unregisterSession();
-    if (prevQwenHome === undefined) {
+    if (prevCanopyHome === undefined) {
       delete process.env['QWEN_HOME'];
     } else {
-      process.env['QWEN_HOME'] = prevQwenHome;
+      process.env['QWEN_HOME'] = prevCanopyHome;
     }
   });
 
@@ -187,7 +187,7 @@ describe('Config.startNewSession session-registry patch', () => {
       await registerSession({
         sessionId: sessionA,
         cwd: tmpDir,
-        qwenVersion: '0.0.0-test',
+        canopyVersion: '0.0.0-test',
       }),
     ).toBe(true);
     config.trackSessionRegistration(Promise.resolve(true));
@@ -196,7 +196,7 @@ describe('Config.startNewSession session-registry patch', () => {
 
     config.startNewSession(sessionB);
 
-    // Without the patch seam, `qwen sessions ps --json` would keep
+    // Without the patch seam, `canopy sessions ps --json` would keep
     // advertising sessionA's transcript for this live session — the exact
     // stale-pointer bug the seam exists to prevent.
     const after = await waitFor(async () => {
@@ -225,7 +225,7 @@ describe('Config.startNewSession session-registry patch', () => {
       await registerSession({
         sessionId: sessionA,
         cwd: tmpDir,
-        qwenVersion: '0.0.0-test',
+        canopyVersion: '0.0.0-test',
       }),
     ).toBe(true);
     config.trackSessionRegistration(Promise.resolve(true));

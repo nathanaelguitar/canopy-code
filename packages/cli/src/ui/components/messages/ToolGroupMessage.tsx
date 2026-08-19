@@ -19,7 +19,7 @@ import {
 import { InlineParallelAgentsDisplay } from './InlineParallelAgentsDisplay.js';
 import { useConfig } from '../../contexts/ConfigContext.js';
 import { ICON } from '../../constants.js';
-import type { AgentResultDisplay } from '@qwen-code/qwen-code-core';
+import type { AgentResultDisplay } from '@canopy-code/canopy-code-core';
 
 function isAgentWithPendingConfirmation(
   rd: IndividualToolCallDisplay['resultDisplay'],

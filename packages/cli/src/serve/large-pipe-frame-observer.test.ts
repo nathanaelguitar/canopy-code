@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -186,7 +186,7 @@ describe('large pipe frame observer', () => {
     });
   });
 
-  it('classifies qwen/session/loadUpdates responses', () => {
+  it('classifies canopy/session/loadUpdates responses', () => {
     const context = classifyLargePipeFrame({
       direction: 'outbound',
       bytes: LARGE_PIPE_FRAME_THRESHOLD_BYTES,

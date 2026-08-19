@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -303,7 +303,7 @@ export function registerWorkspaceMcpControlRoutes(
       if (!clientId) {
         res.status(400).json({
           error:
-            '`X-Qwen-Client-Id` header is required for runtime MCP mutation',
+            '`X-Canopy-Client-Id` header is required for runtime MCP mutation',
           code: 'missing_client_id',
         });
         return;
@@ -338,7 +338,7 @@ export function registerWorkspaceMcpControlRoutes(
       if (!clientId) {
         res.status(400).json({
           error:
-            '`X-Qwen-Client-Id` header is required for runtime MCP mutation',
+            '`X-Canopy-Client-Id` header is required for runtime MCP mutation',
           code: 'missing_client_id',
         });
         return;
@@ -584,7 +584,7 @@ export function registerWorkspaceQualifiedMcpControlRoutes(
       if (!clientId) {
         res.status(400).json({
           error:
-            '`X-Qwen-Client-Id` header is required for runtime MCP mutation',
+            '`X-Canopy-Client-Id` header is required for runtime MCP mutation',
           code: 'missing_client_id',
         });
         return;
@@ -626,7 +626,7 @@ export function registerWorkspaceQualifiedMcpControlRoutes(
       if (!clientId) {
         res.status(400).json({
           error:
-            '`X-Qwen-Client-Id` header is required for runtime MCP mutation',
+            '`X-Canopy-Client-Id` header is required for runtime MCP mutation',
           code: 'missing_client_id',
         });
         return;

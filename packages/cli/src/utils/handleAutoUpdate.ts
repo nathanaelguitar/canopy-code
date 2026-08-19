@@ -19,7 +19,7 @@ import { performStandaloneUpdate } from './standalone-update.js';
 import { t } from '../i18n/index.js';
 import type { spawn } from 'node:child_process';
 import os from 'node:os';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('AUTO_UPDATE');
 
@@ -113,7 +113,7 @@ export function handleAutoUpdate(
           detached: true,
           env: {
             ...process.env,
-            QWEN_CODE_MANAGED_NPM_UPDATE_VERSION: info.update.latest,
+            CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION: info.update.latest,
           },
           stdio: ['ignore', 'ignore', 'pipe'] as const,
           windowsHide: true,

@@ -10,7 +10,7 @@ describe('ObservedChannelContactStore', () => {
 
   beforeEach(() => {
     filePath = join(
-      mkdtempSync(join(tmpdir(), 'qwen-observed-contacts-')),
+      mkdtempSync(join(tmpdir(), 'canopy-observed-contacts-')),
       'observed-contacts.json',
     );
     now = new Date('2026-07-17T12:00:00.000Z');

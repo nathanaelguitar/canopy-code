@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // Is the bundle this review is about to drive built from the review source
 // beside it?
 //
-// Every `/review` subcommand runs as `"${QWEN_CODE_CLI}" review <name>`, which
-// resolves to the built bundle — not to the working tree. `QWEN_CODE_CLI`
-// already stops the review talking to a DIFFERENT program (a bare `qwen` on
+// Every `/review` subcommand runs as `"${CANOPY_CODE_CLI}" review <name>`, which
+// resolves to the built bundle — not to the working tree. `CANOPY_CODE_CLI`
+// already stops the review talking to a DIFFERENT program (a bare `canopy` on
 // PATH once resolved to a v0.19.10 whose `agent-prompt` predated `--role`, and
 // the review died on a missing argument). This is the other half: the right
 // program, built before the change you are trying to exercise. That failure is
@@ -402,7 +402,7 @@ export function bundleStalenessNotices(
   try {
     if (!entryPath) return undefined;
     // `realpath` before deriving anything: node hands a symlinked entry over
-    // unresolved, so an alias of the bundle (`ln -s dist/cli.js ~/bin/qwen`)
+    // unresolved, so an alias of the bundle (`ln -s dist/cli.js ~/bin/canopy`)
     // would hand `distDir` a directory with no stamp beside it and turn the
     // check off — even though the stamp and the sources are one `realpath`
     // away. A real file resolves to itself, so installed layouts behave
@@ -520,7 +520,7 @@ export function staleBundleWarning(
   }
   return (
     `review: the bundle these commands run from was NOT built from the review sources in this tree. ` +
-    `Every \`qwen review …\` step below runs the BUILT bundle, not the working tree, ` +
+    `Every \`canopy review …\` step below runs the BUILT bundle, not the working tree, ` +
     `so a review source changed since that build will not take effect and this run ` +
     `will measure the old behaviour without saying so. Rebuild with ` +
     `\`npm run bundle\` ` +

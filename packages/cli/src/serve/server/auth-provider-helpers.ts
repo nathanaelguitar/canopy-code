@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as net from 'node:net';
-import { ALL_PROVIDERS, shouldShowStep } from '@qwen-code/qwen-code-core';
+import { ALL_PROVIDERS, shouldShowStep } from '@canopy-code/canopy-code-core';
 import type {
   ServeAuthProviderCatalog,
   ServeAuthProviderDescriptor,

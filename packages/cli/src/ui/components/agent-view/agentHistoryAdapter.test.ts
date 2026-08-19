@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { agentMessagesToHistoryItems } from './agentHistoryAdapter.js';
 import type {
   AgentMessage,
   ToolCallConfirmationDetails,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { ToolCallStatus } from '../../types.js';
 
 // ─── Helpers ────────────────────────────────────────────────

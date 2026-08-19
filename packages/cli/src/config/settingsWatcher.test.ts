@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -53,9 +53,9 @@ const { mockDebugWarn } = vi.hoisted(() => ({
   mockDebugWarn: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     createDebugLogger: () => ({
@@ -89,7 +89,7 @@ function makeSettingsFile(overrides: Partial<SettingsFile> = {}): SettingsFile {
   return {
     settings: {},
     originalSettings: {},
-    path: '/home/user/.qwen/settings.json',
+    path: '/home/user/.canopy/settings.json',
     rawJson: '{}',
     ...overrides,
   };
@@ -103,11 +103,11 @@ function makeLoadedSettings(
   } = {},
 ): LoadedSettings {
   const user = makeSettingsFile({
-    path: '/home/user/.qwen/settings.json',
+    path: '/home/user/.canopy/settings.json',
     ...overrides.user,
   });
   const workspace = makeSettingsFile({
-    path: '/project/.qwen/settings.json',
+    path: '/project/.canopy/settings.json',
     ...overrides.workspace,
   });
   return {
@@ -158,11 +158,11 @@ describe('SettingsWatcher', () => {
 
       expect(mockWatch).toHaveBeenCalledTimes(2);
       expect(mockWatch).toHaveBeenCalledWith(
-        '/home/user/.qwen',
+        '/home/user/.canopy',
         expect.objectContaining({ ignoreInitial: true, depth: 0 }),
       );
       expect(mockWatch).toHaveBeenCalledWith(
-        '/project/.qwen',
+        '/project/.canopy',
         expect.objectContaining({ ignoreInitial: true, depth: 0 }),
       );
     });
@@ -177,7 +177,7 @@ describe('SettingsWatcher', () => {
 
       expect(mockWatch).toHaveBeenCalledTimes(1);
       expect(mockWatch).toHaveBeenCalledWith(
-        '/home/user/.qwen',
+        '/home/user/.canopy',
         expect.objectContaining({ ignoreInitial: true, depth: 0 }),
       );
 
@@ -197,7 +197,7 @@ describe('SettingsWatcher', () => {
 
       expect(mockWatch).toHaveBeenCalledTimes(2);
       expect(mockWatch).toHaveBeenCalledWith(
-        '/project/.qwen',
+        '/project/.canopy',
         expect.objectContaining({ ignoreInitial: true, depth: 0 }),
       );
 
@@ -284,7 +284,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).toHaveBeenCalledWith(
@@ -298,7 +298,7 @@ describe('SettingsWatcher', () => {
       const listener = vi.fn();
       watcher.addChangeListener(listener);
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json.tmp');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json.tmp');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).not.toHaveBeenCalled();
@@ -310,7 +310,7 @@ describe('SettingsWatcher', () => {
       const listener = vi.fn();
       watcher.addChangeListener(listener);
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json.orig');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json.orig');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).not.toHaveBeenCalled();
@@ -321,7 +321,7 @@ describe('SettingsWatcher', () => {
       const listener = vi.fn();
       watcher.addChangeListener(listener);
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/other-file.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/other-file.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).not.toHaveBeenCalled();
@@ -338,9 +338,9 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
 
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
@@ -360,8 +360,8 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
-      fireAllEvent(1, 'change', '/project/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
+      fireAllEvent(1, 'change', '/project/.canopy/settings.json');
 
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
@@ -378,7 +378,7 @@ describe('SettingsWatcher', () => {
       const listener = vi.fn();
       watcher.addChangeListener(listener);
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).toHaveBeenCalled();
@@ -396,7 +396,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -418,7 +418,7 @@ describe('SettingsWatcher', () => {
         // no-op: disk matches memory
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -433,7 +433,7 @@ describe('SettingsWatcher', () => {
         // no-op: settings stay the same after stripping comments
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -453,7 +453,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ theme: 'light' });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -475,7 +475,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ env: { FOO: 'b' } });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -493,7 +493,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ security: { auth: { apiKey: 'new' } } });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -511,7 +511,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ ui: { theme: 'light' } });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -529,7 +529,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ ui: { theme: 'light' }, env: { FOO: 'b' } });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -547,7 +547,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ someCustomKey: 2 });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -571,7 +571,7 @@ describe('SettingsWatcher', () => {
         });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -592,7 +592,7 @@ describe('SettingsWatcher', () => {
         userFile.settings = s({ mcp: { excluded: ['a', 'b'] } });
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -618,7 +618,7 @@ describe('SettingsWatcher', () => {
       );
 
       const userIdx = mockWatchers.length - 2;
-      fireAllEvent(userIdx, 'add', '/home/user/.qwen/settings.json');
+      fireAllEvent(userIdx, 'add', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       const events: SettingsChangeEvent[] = listener.mock.calls[0][0];
@@ -646,7 +646,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'unlink', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'unlink', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       const events: SettingsChangeEvent[] = listener.mock.calls[0][0];
@@ -668,7 +668,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -687,7 +687,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(failingListener).toHaveBeenCalled();
@@ -710,7 +710,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(
         SettingsWatcher.DEBOUNCE_MS + SettingsWatcher.LISTENER_TIMEOUT_MS + 100,
       );
@@ -744,7 +744,7 @@ describe('SettingsWatcher', () => {
       watcher.startWatching();
 
       expect(mockWatchers).toHaveLength(1);
-      expect(mockWatchers[0].dir).toBe('/project/.qwen');
+      expect(mockWatchers[0].dir).toBe('/project/.canopy');
     });
 
     it('should continue with bootstrap watcher when target dir is missing', () => {
@@ -806,10 +806,10 @@ describe('SettingsWatcher', () => {
       w.stopWatching();
     });
 
-    it('bootstrap ignored predicate allows only the .qwen entry', () => {
+    it('bootstrap ignored predicate allows only the .canopy entry', () => {
       const workspaceOnly = makeLoadedSettings({
         workspaceSettingsActive: false,
-        user: { path: '/home/user/.qwen/settings.json' },
+        user: { path: '/home/user/.canopy/settings.json' },
       });
       const w = new SettingsWatcher(workspaceOnly);
       mockExistsSync.mockReturnValue(false);
@@ -820,7 +820,7 @@ describe('SettingsWatcher', () => {
       expect(ignored).toBeTypeOf('function');
       // Watch root and the target dir are allowed (not ignored).
       expect(ignored!('/home/user')).toBe(false);
-      expect(ignored!('/home/user/.qwen')).toBe(false);
+      expect(ignored!('/home/user/.canopy')).toBe(false);
       // Unrelated top-level entries are ignored.
       expect(ignored!('/home/user/Documents')).toBe(true);
       expect(ignored!('/home/user/.bashrc')).toBe(true);
@@ -828,7 +828,7 @@ describe('SettingsWatcher', () => {
       w.stopWatching();
     });
 
-    it('should promote to a target watcher when .qwen appears', async () => {
+    it('should promote to a target watcher when .canopy appears', async () => {
       const workspaceOnly = makeLoadedSettings({
         workspaceSettingsActive: false,
       });
@@ -840,16 +840,16 @@ describe('SettingsWatcher', () => {
       expect(mockWatchers).toHaveLength(1);
       expect(mockWatchers[0].dir).toBe('/home/user');
 
-      // `.qwen` is created.
-      fireAllEvent(0, 'addDir', '/home/user/.qwen');
+      // `.canopy` is created.
+      fireAllEvent(0, 'addDir', '/home/user/.canopy');
       await flush();
 
-      // Bootstrap closed, target watcher opened on `.qwen`.
+      // Bootstrap closed, target watcher opened on `.canopy`.
       expect(mockWatchers[0].instance.close).toHaveBeenCalled();
       expect(mockWatchers).toHaveLength(2);
-      expect(mockWatchers[1].dir).toBe('/home/user/.qwen');
+      expect(mockWatchers[1].dir).toBe('/home/user/.canopy');
 
-      // A settings.json already inside `.qwen` is picked up via a refresh.
+      // A settings.json already inside `.canopy` is picked up via a refresh.
       vi.mocked(workspaceOnly.reloadScopeFromDisk).mockImplementation(
         (scope: SettingScope) => {
           workspaceOnly.forScope(scope).settings = s({ promoted: true });
@@ -863,7 +863,7 @@ describe('SettingsWatcher', () => {
       w.stopWatching();
     });
 
-    it('should promote immediately when .qwen appears during the TOCTOU window', async () => {
+    it('should promote immediately when .canopy appears during the TOCTOU window', async () => {
       const workspaceOnly = makeLoadedSettings({
         workspaceSettingsActive: false,
       });
@@ -874,15 +874,15 @@ describe('SettingsWatcher', () => {
       w.startWatching();
       await flush();
 
-      // Bootstrap on parent, then immediate promote to `.qwen` without an event.
+      // Bootstrap on parent, then immediate promote to `.canopy` without an event.
       expect(mockWatchers).toHaveLength(2);
       expect(mockWatchers[0].dir).toBe('/home/user');
-      expect(mockWatchers[1].dir).toBe('/home/user/.qwen');
+      expect(mockWatchers[1].dir).toBe('/home/user/.canopy');
 
       w.stopWatching();
     });
 
-    it('should demote back to bootstrap when .qwen is removed', async () => {
+    it('should demote back to bootstrap when .canopy is removed', async () => {
       const workspaceOnly = makeLoadedSettings({
         workspaceSettingsActive: false,
       });
@@ -893,10 +893,10 @@ describe('SettingsWatcher', () => {
       w.startWatching();
 
       expect(mockWatchers).toHaveLength(1);
-      expect(mockWatchers[0].dir).toBe('/home/user/.qwen');
+      expect(mockWatchers[0].dir).toBe('/home/user/.canopy');
 
-      // `.qwen` directory itself is removed.
-      fireAllEvent(0, 'unlinkDir', '/home/user/.qwen');
+      // `.canopy` directory itself is removed.
+      fireAllEvent(0, 'unlinkDir', '/home/user/.canopy');
       await flush();
 
       // Re-bootstrapped on the parent.
@@ -905,10 +905,10 @@ describe('SettingsWatcher', () => {
       expect(mockWatchers[1].dir).toBe('/home/user');
 
       // A subsequent re-create promotes again.
-      fireAllEvent(1, 'addDir', '/home/user/.qwen');
+      fireAllEvent(1, 'addDir', '/home/user/.canopy');
       await flush();
       expect(mockWatchers).toHaveLength(3);
-      expect(mockWatchers[2].dir).toBe('/home/user/.qwen');
+      expect(mockWatchers[2].dir).toBe('/home/user/.canopy');
 
       w.stopWatching();
     });
@@ -922,17 +922,17 @@ describe('SettingsWatcher', () => {
       w.startWatching();
 
       // First promotion.
-      fireAllEvent(0, 'addDir', '/home/user/.qwen');
+      fireAllEvent(0, 'addDir', '/home/user/.canopy');
       await flush();
       expect(mockWatchers).toHaveLength(2);
 
       // A stale event from the already-closed bootstrap watcher must be ignored
       // by the generation guard — no second target watcher is created.
-      fireAllEvent(0, 'addDir', '/home/user/.qwen');
+      fireAllEvent(0, 'addDir', '/home/user/.canopy');
       await flush();
       expect(mockWatchers).toHaveLength(2);
       const targetWatchers = mockWatchers.filter(
-        (m) => m.dir === '/home/user/.qwen',
+        (m) => m.dir === '/home/user/.canopy',
       );
       expect(targetWatchers).toHaveLength(1);
 
@@ -950,7 +950,7 @@ describe('SettingsWatcher', () => {
         // reloadScopeFromDisk catches internally, settings unchanged
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(listener).not.toHaveBeenCalled();
@@ -963,7 +963,7 @@ describe('SettingsWatcher', () => {
         throw error;
       });
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(mockDebugWarn).toHaveBeenCalledWith(
@@ -985,7 +985,7 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
 
       watcher.stopWatching();
 
@@ -999,13 +999,13 @@ describe('SettingsWatcher', () => {
   describe('path resolution', () => {
     it('should use resolved paths from LoadedSettings (supports QWEN_HOME redirect)', () => {
       const customSettings = makeLoadedSettings({
-        user: { path: '/custom/qwen-home/settings.json' },
+        user: { path: '/custom/canopy-home/settings.json' },
       });
       const w = new SettingsWatcher(customSettings);
       w.startWatching();
 
       expect(mockWatch).toHaveBeenCalledWith(
-        '/custom/qwen-home',
+        '/custom/canopy-home',
         expect.any(Object),
       );
 
@@ -1025,10 +1025,10 @@ describe('SettingsWatcher', () => {
         },
       );
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
-      fireAllEvent(0, 'change', '/home/user/.qwen/settings.json');
+      fireAllEvent(0, 'change', '/home/user/.canopy/settings.json');
       await vi.advanceTimersByTimeAsync(SettingsWatcher.DEBOUNCE_MS + 10);
 
       expect(settings.reloadScopeFromDisk).toHaveBeenCalledTimes(2);

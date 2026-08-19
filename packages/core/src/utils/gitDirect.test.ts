@@ -35,7 +35,7 @@ async function makeRepo(
   opts: { withReflog?: boolean } = {},
 ): Promise<string> {
   const { withReflog = true } = opts;
-  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-gitdirect-'));
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'canopy-gitdirect-'));
   tmpRoots.push(dir);
   // A real git dir carries an object store; isRealGitDir requires objects/ + refs/.
   await fsp.mkdir(path.join(dir, '.git', 'objects'), { recursive: true });
@@ -49,7 +49,7 @@ async function makeRepo(
 }
 
 async function makeBareDir(): Promise<string> {
-  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-nogit-'));
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'canopy-nogit-'));
   tmpRoots.push(dir);
   return dir;
 }

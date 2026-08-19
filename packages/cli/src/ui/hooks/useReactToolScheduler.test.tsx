@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import type { Part } from '@google/genai';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { CoreToolScheduler } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { CoreToolScheduler } from '@canopy-code/canopy-code-core';
 import {
   mapToDisplay,
   type TrackedToolCall,

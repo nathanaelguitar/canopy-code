@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -263,7 +263,7 @@ async function createFixture(sessionId = 'test-session'): Promise<{
   transcriptPath: string;
   options: AcquireSessionWriterLeaseOptions;
 }> {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-writer-lease-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-writer-lease-'));
   temporaryDirectories.add(root);
   const runtimeBaseDir = path.join(root, 'runtime');
   const projectRoot = path.join(root, 'project');
@@ -378,7 +378,7 @@ let nativeFileHandleRead: FileHandlePrototypeMethods['read'];
 let nativeFileHandleStat: FileHandlePrototypeMethods['stat'];
 
 beforeAll(async () => {
-  const probePath = path.join(os.tmpdir(), `qwen-fh-probe-${process.pid}`);
+  const probePath = path.join(os.tmpdir(), `canopy-fh-probe-${process.pid}`);
   writeFileSync(probePath, '');
   const probe = await fs.open(probePath, 'r');
   fileHandlePrototype = Object.getPrototypeOf(
@@ -995,8 +995,8 @@ describe('SessionWriterLease', () => {
     );
     await fs.mkdir(path.dirname(lockPath), { recursive: true });
     await fs.writeFile(lockPath, 'not-json');
-    const previousDebugLogFile = process.env['QWEN_DEBUG_LOG_FILE'];
-    process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+    const previousDebugLogFile = process.env['CANOPY_DEBUG_LOG_FILE'];
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
     Storage.setRuntimeBaseDir(fixture.runtimeBaseDir);
     resetDebugLoggingState();
     setDebugLogSession({
@@ -1033,9 +1033,9 @@ describe('SessionWriterLease', () => {
       resetDebugLoggingState();
       Storage.setRuntimeBaseDir(null);
       if (previousDebugLogFile === undefined) {
-        delete process.env['QWEN_DEBUG_LOG_FILE'];
+        delete process.env['CANOPY_DEBUG_LOG_FILE'];
       } else {
-        process.env['QWEN_DEBUG_LOG_FILE'] = previousDebugLogFile;
+        process.env['CANOPY_DEBUG_LOG_FILE'] = previousDebugLogFile;
       }
     }
   });

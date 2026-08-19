@@ -9,7 +9,7 @@ import { FileTokenStorage } from './file-token-storage.js';
 import type { TokenStorage, SecretStorage, OAuthCredentials } from './types.js';
 import { TokenStorageType } from './types.js';
 
-const FORCE_FILE_STORAGE_ENV_VAR = 'QWEN_CODE_FORCE_FILE_STORAGE';
+const FORCE_FILE_STORAGE_ENV_VAR = 'CANOPY_CODE_FORCE_FILE_STORAGE';
 
 type HybridBackend = TokenStorage & SecretStorage;
 

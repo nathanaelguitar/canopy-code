@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,7 +72,7 @@ class SoxRecorder implements VoiceRecorder {
   async start(options: VoiceRecorderStartOptions = {}): Promise<void> {
     this.stopRequested = false;
     this.onAutoStop = options.onAutoStop ?? null;
-    this.tmpDir = await mkdtemp(path.join(tmpdir(), 'qwen-voice-'));
+    this.tmpDir = await mkdtemp(path.join(tmpdir(), 'canopy-voice-'));
     this.filePath = path.join(this.tmpDir, 'recording.wav');
     this.child = spawn('sox', [
       '-d',

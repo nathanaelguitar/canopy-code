@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { Box, Text } from 'ink';
 import { theme } from '../../semantic-colors.js';
 import { useTerminalSize } from '../../hooks/useTerminalSize.js';
-import { HookType } from '@qwen-code/qwen-code-core';
+import { HookType } from '@canopy-code/canopy-code-core';
 import type { HookConfigDisplayInfo } from './types.js';
 import { getConfigSourceDisplay } from './sourceLabels.js';
 import { t } from '../../../i18n/index.js';

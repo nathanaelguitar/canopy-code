@@ -687,7 +687,7 @@ describe('matchesPathPattern', () => {
   const projectRoot = '/project';
   const cwd = '/project';
   const withTempRoot = (run: (root: string) => void): void => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-permission-'));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-permission-'));
     try {
       run(root);
     } finally {
@@ -2327,7 +2327,7 @@ describe('PermissionManager', () => {
     });
 
     it('canonicalizes restrictive rules without widening allow rules', async () => {
-      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-permission-'));
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-permission-'));
       try {
         const protectedDir = path.join(root, 'protected');
         const link = path.join(root, 'link');
@@ -2740,7 +2740,7 @@ describe('PermissionManager', () => {
     });
 
     it('matches an ask rule through a symlinked path', () => {
-      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-permission-'));
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-permission-'));
       try {
         const protectedDir = path.join(root, 'protected');
         const link = path.join(root, 'link');
@@ -3144,8 +3144,10 @@ describe('buildHumanReadableRuleLabel', () => {
   });
 
   it('converts Read with absolute path specifier', () => {
-    const label = buildHumanReadableRuleLabel(['Read(//Users/mochi/.qwen/**)']);
-    expect(label).toBe('read files in /Users/mochi/.qwen/');
+    const label = buildHumanReadableRuleLabel([
+      'Read(//Users/mochi/.canopy/**)',
+    ]);
+    expect(label).toBe('read files in /Users/mochi/.canopy/');
   });
 
   it('converts Read with relative path specifier', () => {
@@ -3300,7 +3302,7 @@ describe('PermissionManager.findMatchingDenyRule', () => {
   });
 
   it('matches a deny rule through a symlinked path', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-permission-'));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-permission-'));
     try {
       const protectedDir = path.join(root, 'protected');
       const link = path.join(root, 'link');
@@ -3471,7 +3473,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('deny rule matches a write after `cd` into a subdir', async () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3480,7 +3482,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       await pm.evaluate({
         toolName: 'run_shell_command',
-        command: "cd .qwen && echo '{}' > settings.json",
+        command: "cd .canopy && echo '{}' > settings.json",
         cwd: '/repo',
       }),
     ).toBe('deny');
@@ -3489,7 +3491,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('deny rule matches a write through a `bash -lc` wrapper after `cd`', async () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3498,7 +3500,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       await pm.evaluate({
         toolName: 'run_shell_command',
-        command: "cd .qwen && bash -lc 'echo {} > settings.json'",
+        command: "cd .canopy && bash -lc 'echo {} > settings.json'",
         cwd: '/repo',
       }),
     ).toBe('deny');
@@ -3525,12 +3527,12 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('allow rule on the same shell command does NOT downgrade a virtual-op deny', async () => {
     // The Bash allow rule covers the literal command, but the cross-command
     // virtual-op pass surfaces the write target and the deny rule on
-    // .qwen/settings.json escalates the verdict. Allow + virtual-op deny
+    // .canopy/settings.json escalates the verdict. Allow + virtual-op deny
     // → deny, matching the "deny > ask > allow" priority.
     const pm = new PermissionManager(
       makeConfig({
         permissionsAllow: ['Bash(*)'],
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3539,7 +3541,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       await pm.evaluate({
         toolName: 'run_shell_command',
-        command: "cd .qwen && bash -lc 'echo {} > settings.json'",
+        command: "cd .canopy && bash -lc 'echo {} > settings.json'",
         cwd: '/repo',
       }),
     ).toBe('deny');
@@ -3548,7 +3550,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('ordinary writes after `cd` into project subdirs stay unmatched by self-mod rules', () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3564,7 +3566,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   });
 
   it('does not treat canonical-only allow matches as relevant', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-permission-'));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-permission-'));
     try {
       const allowedDir = path.join(root, 'allowed');
       const link = path.join(root, 'link');
@@ -3602,7 +3604,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('hasRelevantRules sees protected writes after sibling shell-wrapper segments', () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3611,7 +3613,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       pm.hasRelevantRules({
         toolName: 'run_shell_command',
-        command: "bash -lc 'echo ok' && echo hi > .qwen/settings.json",
+        command: "bash -lc 'echo ok' && echo hi > .canopy/settings.json",
         cwd: '/repo',
       }),
     ).toBe(true);
@@ -3620,7 +3622,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('hasRelevantRules sees protected writes after `cd` before compound recursion', () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsDeny: ['Write(.qwen/settings.json)'],
+        permissionsDeny: ['Write(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3629,7 +3631,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       pm.hasRelevantRules({
         toolName: 'run_shell_command',
-        command: "cd .qwen && bash -lc 'echo {} > settings.json'",
+        command: "cd .canopy && bash -lc 'echo {} > settings.json'",
         cwd: '/repo',
       }),
     ).toBe(true);
@@ -3638,7 +3640,7 @@ describe('PermissionManager — compound shell write attribution', () => {
   it('hasMatchingAskRule sees writes after `cd` into a subdir', () => {
     const pm = new PermissionManager(
       makeConfig({
-        permissionsAsk: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsAsk: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),
@@ -3647,7 +3649,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     expect(
       pm.hasMatchingAskRule({
         toolName: 'run_shell_command',
-        command: "cd .qwen && bash -lc 'echo {} > settings.json'",
+        command: "cd .canopy && bash -lc 'echo {} > settings.json'",
         cwd: '/repo',
       }),
     ).toBe(true);
@@ -3657,7 +3659,7 @@ describe('PermissionManager — compound shell write attribution', () => {
     const pm = new PermissionManager(
       makeConfig({
         permissionsAllow: ['Bash(*)'],
-        permissionsDeny: ['WriteFileTool(.qwen/settings.json)'],
+        permissionsDeny: ['WriteFileTool(.canopy/settings.json)'],
         cwd: '/repo',
         projectRoot: '/repo',
       }),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { lstat, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import type { AcpSessionBridge } from '@qwen-code/acp-bridge/bridgeTypes';
-import { SessionService } from '@qwen-code/qwen-code-core';
+import { SessionService } from '@canopy-code/canopy-code-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSubSessionLauncher } from '../create-sub-session.js';
 import { ConversationWorkspace } from '../conversations/conversation-workspace.js';
@@ -30,7 +30,7 @@ async function createConversationWorkspace(): Promise<{
   root: string;
 }> {
   const home = await mkdtemp(
-    join(realpathSync.native(tmpdir()), 'qwen-live-worker-'),
+    join(realpathSync.native(tmpdir()), 'canopy-live-worker-'),
   );
   temporaryDirectories.push(home);
   const workspace = new ConversationWorkspace({ homeDir: home });

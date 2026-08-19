@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,14 +21,14 @@ describe('skill project paths', () => {
 
   it('resolves the project skills root', () => {
     expect(getProjectSkillsRoot(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'skills'),
+      path.join(projectRoot, '.canopy', 'skills'),
     );
   });
 
-  it('allows paths inside project .qwen/skills', () => {
+  it('allows paths inside project .canopy/skills', () => {
     const skillPath = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'skills',
       'my-skill',
       'SKILL.md',
@@ -38,7 +38,12 @@ describe('skill project paths', () => {
   });
 
   it('rejects sibling paths that merely share the prefix', () => {
-    const sibling = path.join(projectRoot, '.qwen', 'skills-evil', 'SKILL.md');
+    const sibling = path.join(
+      projectRoot,
+      '.canopy',
+      'skills-evil',
+      'SKILL.md',
+    );
     expect(isProjectSkillPath(sibling, projectRoot)).toBe(false);
     expect(() => assertProjectSkillPath(sibling, projectRoot)).toThrow(
       'Skills writes are restricted to',
@@ -59,7 +64,7 @@ describe('assertRealProjectSkillPath – symlink traversal', () => {
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'skill-symlink-'));
     projectRoot = path.join(tmpDir, 'project');
-    skillsDir = path.join(projectRoot, '.qwen', 'skills');
+    skillsDir = path.join(projectRoot, '.canopy', 'skills');
     outsideDir = path.join(tmpDir, 'outside');
     await fs.mkdir(skillsDir, { recursive: true });
     await fs.mkdir(outsideDir, { recursive: true });
@@ -77,7 +82,7 @@ describe('assertRealProjectSkillPath – symlink traversal', () => {
   });
 
   it('rejects a path whose parent is a symlink pointing outside skills dir', async () => {
-    // Create a symlink: .qwen/skills/escape -> ../../outside
+    // Create a symlink: .canopy/skills/escape -> ../../outside
     const symlinkPath = path.join(skillsDir, 'escape');
     await fs.symlink(outsideDir, symlinkPath);
 
@@ -89,7 +94,7 @@ describe('assertRealProjectSkillPath – symlink traversal', () => {
 
   it('accepts a path where skills root itself is a symlink to a safe dir', async () => {
     // skills dir → realSkills (still inside project)
-    const realSkills = path.join(projectRoot, '.qwen', 'real-skills');
+    const realSkills = path.join(projectRoot, '.canopy', 'real-skills');
     await fs.mkdir(realSkills, { recursive: true });
     await fs.rm(skillsDir, { recursive: true });
     await fs.symlink(realSkills, skillsDir);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 import type { Argv, CommandModule } from 'yargs';
 import { reviewCommand } from './review.js';
 
-// Guards the `qwen review` subcommand surface. The `deterministic` subcommand
+// Guards the `canopy review` subcommand surface. The `deterministic` subcommand
 // was the internal backend for the /review skill's old Step 3; when that step
 // was removed it became orphaned and was deleted. This test ensures it stays
 // gone and the remaining internal helpers stay registered, so a future edit
@@ -78,7 +78,7 @@ describe('reviewCommand', () => {
 
   it('the demandCommand message names every registered subcommand', () => {
     // The error message is the one place that enumerates the interface for
-    // a user who typed `qwen review` bare; it once omitted plan-diff.
+    // a user who typed `canopy review` bare; it once omitted plan-diff.
     const { names, demandMessage } = inspectBuilder();
     for (const name of names) {
       expect(demandMessage).toContain(name);

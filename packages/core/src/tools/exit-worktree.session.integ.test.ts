@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -36,7 +36,7 @@ describe('ExitWorktreeTool — WorktreeSession sidecar cleanup', () => {
   let sessionId: string;
 
   beforeEach(async () => {
-    const raw = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-exit-sess-'));
+    const raw = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-exit-sess-'));
     repoRoot = await fs.realpath(raw);
     execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repoRoot });
     execFileSync('git', ['config', 'user.email', 't@e.com'], { cwd: repoRoot });
@@ -105,7 +105,7 @@ describe('ExitWorktreeTool — WorktreeSession sidecar cleanup', () => {
     const sessionPath = sessionService.getWorktreeSessionPath(sessionId);
     expect(await readWorktreeSession(sessionPath)).not.toBeNull();
 
-    // EnterWorktree writes a .qwen-worktree-session marker file inside the
+    // EnterWorktree writes a .canopy-worktree-session marker file inside the
     // worktree, which shows up as untracked. Pass discard_changes to bypass
     // the dirty-state guard so we can exercise the remove → clear path.
     const exit = new ExitWorktreeTool(makeConfig());
@@ -250,7 +250,7 @@ describe('ExitWorktreeTool — WorktreeSession sidecar cleanup', () => {
     if (details.type === 'exec') {
       expect(details.command).toContain(`git worktree remove ${wtPath}`);
       expect(details.command).not.toContain(
-        path.join(nestedCwd, '.qwen', 'worktrees', 'cwd-stale'),
+        path.join(nestedCwd, '.canopy', 'worktrees', 'cwd-stale'),
       );
     }
 
@@ -322,7 +322,7 @@ describe('ExitWorktreeTool — WorktreeSession sidecar cleanup', () => {
 
     const packageDir = path.join(repoRoot, 'packages', 'app');
     await fs.mkdir(packageDir, { recursive: true });
-    Storage.setRuntimeBaseDir('.qwen', packageDir);
+    Storage.setRuntimeBaseDir('.canopy', packageDir);
     await writeRuntimeStatus(
       new Storage(packageDir).getRuntimeStatusPath('old-session'),
       {
@@ -332,7 +332,7 @@ describe('ExitWorktreeTool — WorktreeSession sidecar cleanup', () => {
       },
     );
 
-    Storage.setRuntimeBaseDir('.qwen', wtPath);
+    Storage.setRuntimeBaseDir('.canopy', wtPath);
     const currentSessionId = 'new-session';
     const currentSessionService = new SessionService(wtPath);
     const originalHeadCommit = execFileSync('git', ['rev-parse', 'HEAD'], {

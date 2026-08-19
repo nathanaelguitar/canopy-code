@@ -213,7 +213,7 @@ function isErrorResponse(part: Part): boolean {
  *
  * Image/document parts use a fixed budget rather than base64 length
  * divided by 4: a 1 MB inline PNG occupies ~1,280 visual tokens on
- * Qwen-VL, not ~350K. Using base64 length would inflate `tokensSaved`
+ * Canopy-VL, not ~350K. Using base64 length would inflate `tokensSaved`
  * by orders of magnitude and is inconsistent with how the slimming
  * module's `estimatePartChars` treats the same content.
  */
@@ -255,7 +255,7 @@ function stripNestedMedia(
   fnResp: NonNullable<Part['functionResponse']>,
 ): NonNullable<Part['functionResponse']> {
   // `parts` isn't declared on the standard FunctionResponse type but is
-  // a qwen-code extension — see `coreToolScheduler.createFunctionResponsePart`.
+  // a canopy-code extension — see `coreToolScheduler.createFunctionResponsePart`.
   const { parts: _droppedNested, ...rest } = fnResp as typeof fnResp & {
     parts?: unknown;
   };
@@ -550,7 +550,7 @@ export function microcompactHistory(
   opts?: MicrocompactOptions,
 ): { history: Content[]; meta?: MicrocompactMeta } {
   const keepRecent = resolveKeepRecent(
-    process.env['QWEN_MC_KEEP_RECENT'],
+    process.env['CANOPY_MC_KEEP_RECENT'],
     settings.toolResultsNumToKeep,
   );
 

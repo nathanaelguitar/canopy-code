@@ -14,11 +14,11 @@ import {
   applyProviderInstallPlan,
   type ProviderConfig,
   type ProviderSetupInputs,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LoadedSettings } from '../../config/settings.js';
 import { createLoadedSettingsAdapter } from '../../config/loadedSettingsAdapter.js';
-import { useQwenAuth } from '../hooks/useQwenAuth.js';
+import { useCanopyAuth } from '../hooks/use-canopy-auth.js';
 import { AuthState, MessageType } from '../types.js';
 import type { HistoryItemWithoutId } from '../types.js';
 import { t } from '../../i18n/index.js';
@@ -46,7 +46,7 @@ export function maskApiKey(apiKey: string): string {
   return `${trimmed.slice(0, 3)}...${trimmed.slice(-4)}`;
 }
 
-export type { QwenAuthState } from '../hooks/useQwenAuth.js';
+export type { CanopyAuthState } from '../hooks/use-canopy-auth.js';
 
 export type AuthUiState = {
   authError: string | null;
@@ -58,7 +58,7 @@ export type AuthUiState = {
     message: string;
     detail?: string;
   } | null;
-  qwenAuthState: ReturnType<typeof useQwenAuth>['qwenAuthState'];
+  canopyAuthState: ReturnType<typeof useCanopyAuth>['canopyAuthState'];
 };
 
 export type AuthController = {
@@ -101,7 +101,7 @@ export const useAuthCommand = (
     detail?: string;
   } | null>(null);
 
-  const { qwenAuthState, cancelQwenAuth } = useQwenAuth(
+  const { canopyAuthState, cancelCanopyAuth } = useCanopyAuth(
     pendingAuthType,
     isAuthenticating,
   );
@@ -226,8 +226,8 @@ export const useAuthCommand = (
   }, []);
 
   const cancelAuthentication = useCallback(() => {
-    if (isAuthenticating && pendingAuthType === AuthType.QWEN_OAUTH) {
-      cancelQwenAuth();
+    if (isAuthenticating && pendingAuthType === AuthType.CANOPY_OAUTH) {
+      cancelCanopyAuth();
     }
     if (isAuthenticating && pendingAuthType) {
       logAuth(config, new AuthEvent(pendingAuthType, 'manual', 'cancelled'));
@@ -236,14 +236,14 @@ export const useAuthCommand = (
     setExternalAuthState(null);
     setIsAuthDialogOpen(true);
     setAuthError(null);
-  }, [isAuthenticating, pendingAuthType, cancelQwenAuth, config]);
+  }, [isAuthenticating, pendingAuthType, cancelCanopyAuth, config]);
 
-  // -- Validate QWEN_DEFAULT_AUTH_TYPE env var on mount --------------------
+  // -- Validate CANOPY_DEFAULT_AUTH_TYPE env var on mount --------------------
 
   useEffect(() => {
-    const val = process.env['QWEN_DEFAULT_AUTH_TYPE'];
+    const val = process.env['CANOPY_DEFAULT_AUTH_TYPE'];
     const valid = [
-      AuthType.QWEN_OAUTH,
+      AuthType.CANOPY_OAUTH,
       AuthType.USE_OPENAI,
       AuthType.USE_ANTHROPIC,
       AuthType.USE_GEMINI,
@@ -252,7 +252,7 @@ export const useAuthCommand = (
     if (val && !valid.includes(val as AuthType)) {
       onAuthError(
         t(
-          'Invalid QWEN_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}',
+          'Invalid CANOPY_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}',
           { value: val, validValues: valid.join(', ') },
         ),
       );
@@ -268,7 +268,7 @@ export const useAuthCommand = (
       isAuthenticating,
       pendingAuthType,
       externalAuthState,
-      qwenAuthState,
+      canopyAuthState,
     }),
     [
       authError,
@@ -276,7 +276,7 @@ export const useAuthCommand = (
       isAuthenticating,
       pendingAuthType,
       externalAuthState,
-      qwenAuthState,
+      canopyAuthState,
     ],
   );
 
@@ -308,7 +308,7 @@ export const useAuthCommand = (
     isAuthenticating,
     pendingAuthType,
     externalAuthState,
-    qwenAuthState,
+    canopyAuthState,
     closeAuthDialog,
     handleProviderSubmit,
     openAuthDialog,

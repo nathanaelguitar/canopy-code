@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -171,7 +171,7 @@ function describeUndiffable(abs: string, st: Stats): string | null {
  * Two things are wrong with passing it through untouched.
  *
  * It is relative to where the *user* typed it, and every git call below runs
- * with `-C <repoRoot>`. `qwen review capture-local --file src/foo.ts` from
+ * with `-C <repoRoot>`. `canopy review capture-local --file src/foo.ts` from
  * `packages/cli` would therefore look for `<repo>/src/foo.ts` — a different
  * file, usually a nonexistent one — and report no changes.
  *
@@ -353,13 +353,13 @@ export function captureLocalDiff(opts: {
   }
 
   if (includeUntracked) {
-    // The review writes its own scratch files under `.qwen/tmp` — the args
+    // The review writes its own scratch files under `.canopy/tmp` — the args
     // record, the parsed-args verdict, the diff, the plan — *before* this
-    // capture runs. In a repo that does not ignore `.qwen`, `ls-files --others`
+    // capture runs. In a repo that does not ignore `.canopy`, `ls-files --others`
     // lists them as the user's untracked work, and the review would report on
     // its own plumbing. They are never the change under review; drop them.
     const candidates = listUntracked(repoRoot, pathspec).filter(
-      (p) => !p.startsWith('.qwen/tmp/') && p !== '.qwen/tmp',
+      (p) => !p.startsWith('.canopy/tmp/') && p !== '.canopy/tmp',
     );
 
     if (candidates.length > MAX_UNTRACKED_FILES) {

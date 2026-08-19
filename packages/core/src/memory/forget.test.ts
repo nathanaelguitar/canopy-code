@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -370,10 +370,10 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
   });
 
   it('deletes user-level memory and rebuilds only the user index', async () => {
-    const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'forget-user-'));
     try {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
       clearAutoMemoryRootCache();
       const projectRoot = path.join(tempDir, 'project');
       await fs.mkdir(projectRoot, { recursive: true });
@@ -422,9 +422,9 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
       ).rejects.toMatchObject({ code: 'ENOENT' });
     } finally {
       if (originalMemoryBase === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
       }
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });
@@ -432,12 +432,12 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
   });
 
   it('deletes duplicate project and user paths without scope collisions', async () => {
-    const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const tempDir = await fs.mkdtemp(
       path.join(os.tmpdir(), 'forget-mixed-scopes-'),
     );
     try {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
       clearAutoMemoryRootCache();
       const projectRoot = path.join(tempDir, 'project');
       await fs.mkdir(projectRoot, { recursive: true });
@@ -516,9 +516,9 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
       expect(metadata.updatedAt).toBe('2026-07-03T00:00:00.000Z');
     } finally {
       if (originalMemoryBase === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
       }
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });
@@ -526,12 +526,12 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
   });
 
   it('keeps successful user deletions when index rebuild fails', async () => {
-    const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const tempDir = await fs.mkdtemp(
       path.join(os.tmpdir(), 'forget-rebuild-failure-'),
     );
     try {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
       clearAutoMemoryRootCache();
       const projectRoot = path.join(tempDir, 'project');
       await fs.mkdir(projectRoot, { recursive: true });
@@ -575,9 +575,9 @@ describe('selectManagedAutoMemoryForgetCandidates', () => {
       });
     } finally {
       if (originalMemoryBase === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
       }
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });

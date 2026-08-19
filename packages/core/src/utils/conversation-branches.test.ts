@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -122,9 +122,9 @@ describe('inspectConversationBranches', () => {
             { text: 'expanded model prompt' },
             {
               text: [
-                '<qwen:user-prompt-submit-context>',
+                '<canopy:user-prompt-submit-context>',
                 'hook-only context',
-                '</qwen:user-prompt-submit-context>',
+                '</canopy:user-prompt-submit-context>',
               ].join('\n'),
             },
           ],

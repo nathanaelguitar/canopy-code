@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,15 +24,15 @@ await access(cli).catch(() => {
 const fixture = resolve(here, 'fixture-server.mjs');
 const fullSmoke = resolve(here, 'full-tools-smoke.mjs');
 const reconnectSmoke = resolve(here, 'cdp-mcp-smoke.mjs');
-const adapter = process.env.QWEN_CDP_MCP_COMMAND;
+const adapter = process.env.CANOPY_CDP_MCP_COMMAND;
 const extensionId =
-  process.env.QWEN_CHROME_EXTENSION_ID || 'idkijaaipeeinemigojbjkmfmabokbdk';
+  process.env.CANOPY_CHROME_EXTENSION_ID || 'idkijaaipeeinemigojbjkmfmabokbdk';
 const port = Number(process.env.PORT || 4170);
 const fixturePort = Number(process.env.FIXTURE_PORT || 4180);
 const baseUrl = `http://127.0.0.1:${port}`;
 
 if (!adapter) {
-  console.error('Set QWEN_CDP_MCP_COMMAND to an external adapter binary.');
+  console.error('Set CANOPY_CDP_MCP_COMMAND to an external adapter binary.');
   process.exit(2);
 }
 
@@ -101,8 +101,8 @@ const runScript = async (script, env) => {
   }
 };
 
-const qwenHome = await mkdtemp(resolve(tmpdir(), 'qwen-chrome-e2e-'));
-await writeFile(resolve(qwenHome, 'settings.json'), '{}\n');
+const canopyHome = await mkdtemp(resolve(tmpdir(), 'canopy-chrome-e2e-'));
+await writeFile(resolve(canopyHome, 'settings.json'), '{}\n');
 let daemon;
 let fixtureServer;
 let getDaemonOutput = () => '';
@@ -122,9 +122,9 @@ try {
   });
 
   const startDaemon = async ({ withAdapter, waitForBridge = false }) => {
-    const daemonEnv = { ...process.env, QWEN_HOME: qwenHome };
-    if (withAdapter) daemonEnv.QWEN_CDP_MCP_COMMAND = adapter;
-    else delete daemonEnv.QWEN_CDP_MCP_COMMAND;
+    const daemonEnv = { ...process.env, CANOPY_HOME: canopyHome };
+    if (withAdapter) daemonEnv.CANOPY_CDP_MCP_COMMAND = adapter;
+    else delete daemonEnv.CANOPY_CDP_MCP_COMMAND;
     const child = spawnChild(
       process.execPath,
       [
@@ -201,7 +201,7 @@ try {
     ...process.env,
     PORT: String(port),
     FIXTURE_URL: `http://127.0.0.1:${fixturePort}`,
-    QWEN_CDP_MCP_COMMAND: adapter,
+    CANOPY_CDP_MCP_COMMAND: adapter,
   };
   await runScript(fullSmoke, smokeEnv).catch((error) => {
     process.stderr.write(getDaemonOutput());
@@ -219,5 +219,5 @@ try {
   await stopChild(daemon);
   await stopChild(fixtureServer);
   for (const child of children) await stopChild(child);
-  await rm(qwenHome, { recursive: true, force: true });
+  await rm(canopyHome, { recursive: true, force: true });
 }

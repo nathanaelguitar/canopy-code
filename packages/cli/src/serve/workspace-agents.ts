@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import {
   type Config,
   type SubagentConfig,
   type SubagentLevel,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   redactMcpServersSetting,
   restoreRedactedMcpServersSetting,
@@ -181,7 +181,7 @@ export function mountWorkspaceAgentsRoutes(
     const assertGenerationOpen = captureTrustedGeneration(deps, res);
     if (!assertGenerationOpen) return;
     try {
-      // `force: true` re-walks `.qwen/agents/` on every call so out-of-
+      // `force: true` re-walks `.canopy/agents/` on every call so out-of-
       // band edits (a developer editing an agent file in their IDE
       // while the daemon is running) appear immediately. Without it
       // `SubagentManager.listSubagents()` serves a stale cache and
@@ -218,7 +218,7 @@ export function mountWorkspaceAgentsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspace/agents failed: ${
+        `canopy serve: GET /workspace/agents failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -308,7 +308,7 @@ export function mountWorkspaceAgentsRoutes(
           if (err.code === SubagentErrorCode.FILE_ERROR) {
             // `SubagentError(FILE_ERROR)` wraps Node fs error
             // messages like `"ENOENT: no such file or directory, open
-            // '/Users/<x>/.qwen/agents/foo.md'"` — leaking the
+            // '/Users/<x>/.canopy/agents/foo.md'"` — leaking the
             // operator's absolute filesystem layout through an
             // authenticated route response. Gate the message behind
             // `QWEN_SERVE_DEBUG` so default production responses
@@ -328,7 +328,7 @@ export function mountWorkspaceAgentsRoutes(
           }
         }
         writeStderrLine(
-          `qwen serve: POST /workspace/agents failed: ${
+          `canopy serve: POST /workspace/agents failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -359,7 +359,7 @@ export function mountWorkspaceAgentsRoutes(
         // a proper rollback policy on top once mutation auditing
         // arrives.
         writeStderrLine(
-          `qwen serve: agent_create_reload_failed (name=${safeLogValue(config.name)} ` +
+          `canopy serve: agent_create_reload_failed (name=${safeLogValue(config.name)} ` +
             `level=${level}) — file likely persisted on disk; check ` +
             `\`GET /workspace/agents\` for a phantom entry`,
         );
@@ -415,7 +415,7 @@ export function mountWorkspaceAgentsRoutes(
       } catch (err) {
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: POST /workspace/agents/generate failed: ${
+          `canopy serve: POST /workspace/agents/generate failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -449,7 +449,7 @@ export function mountWorkspaceAgentsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspace/agents/${safeLogValue(agentType)} failed: ${
+        `canopy serve: GET /workspace/agents/${safeLogValue(agentType)} failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -576,7 +576,7 @@ export function mountWorkspaceAgentsRoutes(
           }
         }
         writeStderrLine(
-          `qwen serve: POST /workspace/agents/${safeLogValue(agentType)} failed: ${
+          `canopy serve: POST /workspace/agents/${safeLogValue(agentType)} failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -601,7 +601,7 @@ export function mountWorkspaceAgentsRoutes(
         // change with the failed POST. The file is in its updated
         // state on disk; subsequent reads will pick it up.
         writeStderrLine(
-          `qwen serve: agent_update_reload_failed (name=${safeLogValue(agentType)} ` +
+          `canopy serve: agent_update_reload_failed (name=${safeLogValue(agentType)} ` +
             `level=${existing.level}) — disk write completed; check ` +
             `\`GET /workspace/agents/${safeLogValue(agentType)}\` for the new state`,
         );
@@ -686,7 +686,7 @@ export function mountWorkspaceAgentsRoutes(
           }
         }
         writeStderrLine(
-          `qwen serve: DELETE /workspace/agents/${safeLogValue(agentType)} failed: ${
+          `canopy serve: DELETE /workspace/agents/${safeLogValue(agentType)} failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -737,7 +737,7 @@ export function mountWorkspaceAgentsRoutes(
 
       if (remaining.length > 0) {
         writeStderrLine(
-          `qwen serve: DELETE /workspace/agents/${safeLogValue(agentType)} partial — ` +
+          `canopy serve: DELETE /workspace/agents/${safeLogValue(agentType)} partial — ` +
             `removed=${removed.map((r) => r.level).join(',') || 'none'} ` +
             `remaining=${remaining
               .map((r) => `${r.level}:${r.filePath}`)
@@ -837,7 +837,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspaces/:workspace/agents failed: ${
+        `canopy serve: GET /workspaces/:workspace/agents failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -892,7 +892,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
         if (sendGenerationClosedError(res, err)) return;
         if (sendCreateAgentError(res, err, config.name)) return;
         writeStderrLine(
-          `qwen serve: POST /workspaces/:workspace/agents failed: ${
+          `canopy serve: POST /workspaces/:workspace/agents failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -912,7 +912,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
       }
       if (!created) {
         writeStderrLine(
-          `qwen serve: agent_create_reload_failed (name=${safeLogValue(config.name)} ` +
+          `canopy serve: agent_create_reload_failed (name=${safeLogValue(config.name)} ` +
             `level=${level}) — file likely persisted on disk; check ` +
             '`GET /workspaces/:workspace/agents` for a phantom entry',
         );
@@ -956,7 +956,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
+        `canopy serve: GET /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
           err instanceof Error ? (err.stack ?? err.message) : String(err)
         }`,
       );
@@ -1030,7 +1030,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
         if (sendGenerationClosedError(res, err)) return;
         if (sendUpdateAgentError(res, err, agentType)) return;
         writeStderrLine(
-          `qwen serve: POST /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
+          `canopy serve: POST /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -1050,7 +1050,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
       }
       if (!updated) {
         writeStderrLine(
-          `qwen serve: agent_update_reload_failed (name=${safeLogValue(agentType)} ` +
+          `canopy serve: agent_update_reload_failed (name=${safeLogValue(agentType)} ` +
             `level=${existing.level}) — disk write completed; check ` +
             `\`GET /workspaces/:workspace/agents/${safeLogValue(agentType)}\` for the new state`,
         );
@@ -1119,7 +1119,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
           }
         }
         writeStderrLine(
-          `qwen serve: DELETE /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
+          `canopy serve: DELETE /workspaces/:workspace/agents/${safeLogValue(agentType)} failed: ${
             err instanceof Error ? (err.stack ?? err.message) : String(err)
           }`,
         );
@@ -1134,7 +1134,7 @@ export function mountWorkspaceQualifiedAgentsRoutes(
         try {
           await fs.access(existing.filePath);
           writeStderrLine(
-            `qwen serve: DELETE /workspaces/:workspace/agents/${safeLogValue(agentType)} partial — ` +
+            `canopy serve: DELETE /workspaces/:workspace/agents/${safeLogValue(agentType)} partial — ` +
               `remaining=${existing.level}:${existing.filePath}`,
           );
           res.status(500).json({
@@ -1519,7 +1519,7 @@ function parseAgentConfig(
   }
   // Reject names that shadow a built-in subagent. Without this check a
   // client could `POST /workspace/agents { name: "general-purpose" }`
-  // and write a project-level file at `<workspace>/.qwen/agents/
+  // and write a project-level file at `<workspace>/.canopy/agents/
   // general-purpose.md`. List/load resolve the project entry first
   // (project > builtin), but `SubagentManager.deleteSubagent` rejects
   // by name alone (`subagent-manager.ts:302`) — so DELETE returns 403
@@ -2240,7 +2240,7 @@ export function createDaemonSubagentManager(
       // implementing every Config method.
       if (prop === 'then') return undefined;
       throw new Error(
-        `qwen serve workspace agents: SubagentManager touched Config.` +
+        `canopy serve workspace agents: SubagentManager touched Config.` +
           `${String(prop)} which the daemon stub does not implement. ` +
           `Add it to createDaemonSubagentManager and audit safety.`,
       );
@@ -2258,7 +2258,7 @@ export function createDaemonSubagentManager(
       // continues to behave correctly.
       if (prop === 'then') return false;
       throw new Error(
-        `qwen serve workspace agents: SubagentManager probed Config.` +
+        `canopy serve workspace agents: SubagentManager probed Config.` +
           `${String(prop)} via 'in' check; the daemon stub does not ` +
           `implement it. Add it to createDaemonSubagentManager and ` +
           `audit safety.`,

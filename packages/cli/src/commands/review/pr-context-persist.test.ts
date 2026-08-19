@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ describe('persistRecoveredLedger', () => {
 
   it('persists the ledger with its age reference and provenance', () => {
     const dir = mkdtempSync(join(tmpdir(), 'prev-ledger-'));
-    const side = join(dir, 'nested', 'qwen-review-pr-1-prev-ledger.json');
+    const side = join(dir, 'nested', 'canopy-review-pr-1-prev-ledger.json');
     try {
       persistRecoveredLedger(
         side,

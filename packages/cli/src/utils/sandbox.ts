@@ -14,13 +14,13 @@ import {
   SETTINGS_DIRECTORY_NAME,
 } from '../config/settings.js';
 import { promisify } from 'node:util';
-import type { Config, SandboxConfig } from '@qwen-code/qwen-code-core';
+import type { Config, SandboxConfig } from '@canopy-code/canopy-code-core';
 import {
   FatalSandboxError,
   Storage,
   isSubpath,
   resolveBundleDir,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { randomBytes } from 'node:crypto';
 import { writeStderrLine } from './stdioHelpers.js';
 import { parseSandboxImageName } from './sandboxImageName.js';
@@ -32,8 +32,8 @@ import {
   SKIP_UPDATE_CHECK_ENV_VAR,
 } from './processUtils.js';
 import {
-  QWEN_CODE_DESKTOP_ENV,
-  QWEN_CODE_SERVE_ENV,
+  CANOPY_CODE_DESKTOP_ENV,
+  CANOPY_CODE_SERVE_ENV,
 } from '../config/acp-channel-fallback.js';
 
 const execAsync = promisify(exec);
@@ -58,9 +58,9 @@ function ensureDirectoryAndGetRealPath(dir: string): string {
   return fs.realpathSync(dir);
 }
 
-const LOCAL_DEV_SANDBOX_IMAGE_NAME = 'qwen-code-sandbox';
-const SANDBOX_NETWORK_NAME = 'qwen-code-sandbox';
-const SANDBOX_PROXY_NAME = 'qwen-code-sandbox-proxy';
+const LOCAL_DEV_SANDBOX_IMAGE_NAME = 'canopy-code-sandbox';
+const SANDBOX_NETWORK_NAME = 'canopy-code-sandbox';
+const SANDBOX_PROXY_NAME = 'canopy-code-sandbox-proxy';
 const BUILTIN_SEATBELT_PROFILES = [
   'permissive-open',
   'permissive-closed',
@@ -74,13 +74,13 @@ export function getSandboxPassthroughEnvArgs(
   env: NodeJS.ProcessEnv = process.env,
 ): string[] {
   return [
-    'QWEN_DEBUG_LOG_FILE',
-    'QWEN_CODE_LEGACY_MCP_BLOCKING',
+    'CANOPY_DEBUG_LOG_FILE',
+    'CANOPY_CODE_LEGACY_MCP_BLOCKING',
     SKIP_UPDATE_CHECK_ENV_VAR,
     CUSTOM_SANDBOX_IMAGE_ENV_VAR,
     HOST_UPDATE_RELAUNCH_ENV_VAR,
-    QWEN_CODE_SERVE_ENV,
-    QWEN_CODE_DESKTOP_ENV,
+    CANOPY_CODE_SERVE_ENV,
+    CANOPY_CODE_DESKTOP_ENV,
   ].flatMap((envVar) =>
     env[envVar] === undefined ? [] : ['--env', `${envVar}=${env[envVar]}`],
   );
@@ -206,8 +206,8 @@ function entrypoint(workdir: string, cliArgs: string[]): string[] {
         ? 'npm run debug --'
         : 'npm rebuild && npm run start --'
       : process.env['DEBUG']
-        ? `node --inspect-brk=0.0.0.0:${process.env['DEBUG_PORT'] || '9229'} $(which qwen)`
-        : 'qwen';
+        ? `node --inspect-brk=0.0.0.0:${process.env['DEBUG_PORT'] || '9229'} $(which canopy)`
+        : 'canopy';
 
   const args = [...shellCmds, cliCmd, ...quotedCliArgs];
   return ['bash', '-c', args.join(' ')];
@@ -245,11 +245,11 @@ export async function start_sandbox(
 
     // Canonicalize via realpathSync so seatbelt's `subpath` matcher sees the
     // same path the kernel will. mkdirSync first because realpathSync throws
-    // on missing dirs and a custom QWEN_HOME / QWEN_RUNTIME_DIR may not exist
+    // on missing dirs and a custom QWEN_HOME / CANOPY_RUNTIME_DIR may not exist
     // yet on first run.
-    const qwenDir = Storage.getGlobalQwenDir();
+    const canopyDir = Storage.getGlobalCanopyDir();
     const runtimeDir = Storage.getRuntimeBaseDir();
-    fs.mkdirSync(qwenDir, { recursive: true });
+    fs.mkdirSync(canopyDir, { recursive: true });
     fs.mkdirSync(runtimeDir, { recursive: true });
 
     const args = [
@@ -262,7 +262,7 @@ export async function start_sandbox(
       '-D',
       `CACHE_DIR=${fs.realpathSync(execSync(`getconf DARWIN_USER_CACHE_DIR`).toString().trim())}`,
       '-D',
-      `QWEN_DIR=${fs.realpathSync(qwenDir)}`,
+      `CANOPY_DIR=${fs.realpathSync(canopyDir)}`,
       '-D',
       `RUNTIME_DIR=${fs.realpathSync(runtimeDir)}`,
     ];
@@ -304,7 +304,7 @@ export async function start_sandbox(
       'sh',
       '-c',
       [
-        ...(process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1'
+        ...(process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1'
           ? ['ELECTRON_RUN_AS_NODE=1']
           : []),
         `SANDBOX=sandbox-exec`,
@@ -312,8 +312,8 @@ export async function start_sandbox(
         ...finalArgv.map((arg) => quote([arg])),
       ].join(' '),
     );
-    // start and set up proxy if QWEN_SANDBOX_PROXY_COMMAND is set
-    const proxyCommand = process.env['QWEN_SANDBOX_PROXY_COMMAND'];
+    // start and set up proxy if CANOPY_SANDBOX_PROXY_COMMAND is set
+    const proxyCommand = process.env['CANOPY_SANDBOX_PROXY_COMMAND'];
     let proxyProcess: ChildProcess | undefined = undefined;
     let sandboxProcess: ChildProcess | undefined = undefined;
     const sandboxEnv = { ...process.env };
@@ -384,7 +384,7 @@ export async function start_sandbox(
 
   writeStderrLine(`hopping into sandbox (command: ${config.command}) ...`);
 
-  // determine full path for qwen-code to distinguish linked vs installed setting
+  // determine full path for canopy-code to distinguish linked vs installed setting
   const gcPath = fs.realpathSync(process.argv[1]);
 
   const projectSandboxDockerfile = path.join(
@@ -397,14 +397,14 @@ export async function start_sandbox(
   const workdir = path.resolve(process.cwd());
   const containerWorkdir = getContainerPath(workdir);
 
-  // if BUILD_SANDBOX is set, then call scripts/build_sandbox.js under qwen-code repo
+  // if BUILD_SANDBOX is set, then call scripts/build_sandbox.js under canopy-code repo
   //
-  // note this can only be done with binary linked from qwen-code repo
+  // note this can only be done with binary linked from canopy-code repo
   if (process.env['BUILD_SANDBOX']) {
     if (!gcPath.includes('qwen-code/packages/')) {
       throw new FatalSandboxError(
-        'Cannot build sandbox using installed Qwen Code binary; ' +
-          'run `npm link ./packages/cli` under QwenCode-cli repo to switch to linked binary.',
+        'Cannot build sandbox using installed Canopy Code binary; ' +
+          'run `npm link ./packages/cli` under CanopyCode-cli repo to switch to linked binary.',
       );
     } else {
       writeStderrLine('building sandbox ...');
@@ -425,7 +425,7 @@ export async function start_sandbox(
           stdio: 'inherit',
           env: {
             ...process.env,
-            QWEN_SANDBOX: config.command, // in case sandbox is enabled via flags (see config.ts under cli package)
+            CANOPY_SANDBOX: config.command, // in case sandbox is enabled via flags (see config.ts under cli package)
           },
         },
       );
@@ -436,8 +436,8 @@ export async function start_sandbox(
   if (!(await ensureSandboxImageIsPresent(config.command, image))) {
     const remedy =
       image === LOCAL_DEV_SANDBOX_IMAGE_NAME
-        ? 'Try running `npm run build:all` or `npm run build:sandbox` under the qwen-code repo to build it locally, or check the image name and your network connection.'
-        : 'Please check the image name, your network connection, or notify qwen-code-dev@service.alibaba.com if the issue persists.';
+        ? 'Try running `npm run build:all` or `npm run build:sandbox` under the canopy-code repo to build it locally, or check the image name and your network connection.'
+        : 'Please check the image name, your network connection, or notify canopy-code-dev@service.alibaba.com if the issue persists.';
     throw new FatalSandboxError(
       `Sandbox image '${image}' is missing or could not be pulled. ${remedy}`,
     );
@@ -466,7 +466,7 @@ export async function start_sandbox(
   // mount current directory as working directory in sandbox (set via --workdir)
   args.push('--volume', `${workdir}:${containerWorkdir}`);
 
-  // Mount user settings at /home/node/.qwen and at the canonical host path
+  // Mount user settings at /home/node/.canopy and at the canonical host path
   // used by QWEN_HOME, unless that host path is already covered by a broader
   // runtime-dir mount below.
   const userSettingsDirOnHost = getUserSettingsDir();
@@ -508,13 +508,13 @@ export async function start_sandbox(
     );
   }
 
-  // Pass QWEN_HOME so the sandboxed CLI resolves the global qwen dir to the
-  // same path the host did, instead of relying on the /home/node/.qwen mount
+  // Pass QWEN_HOME so the sandboxed CLI resolves the global canopy dir to the
+  // same path the host did, instead of relying on the /home/node/.canopy mount
   // being the default fallback.
   args.push('--env', `QWEN_HOME=${userSettingsDirContainerPath}`);
 
-  // Mount the runtime base dir and pass QWEN_RUNTIME_DIR when it diverges
-  // from the global qwen dir; otherwise the existing user-settings mount
+  // Mount the runtime base dir and pass CANOPY_RUNTIME_DIR when it diverges
+  // from the global canopy dir; otherwise the existing user-settings mount
   // already covers it.
   if (!runtimeCoveredByUserSettings) {
     args.push(
@@ -523,7 +523,7 @@ export async function start_sandbox(
     );
   }
   if (!runtimeSameAsUserSettings) {
-    args.push('--env', `QWEN_RUNTIME_DIR=${runtimeBaseDirContainerPath}`);
+    args.push('--env', `CANOPY_RUNTIME_DIR=${runtimeBaseDirContainerPath}`);
   }
 
   // mount os.tmpdir() as os.tmpdir() inside container
@@ -586,8 +586,8 @@ export async function start_sandbox(
 
   // copy proxy environment variables, replacing localhost with SANDBOX_PROXY_NAME
   // copy as both upper-case and lower-case as is required by some utilities
-  // QWEN_SANDBOX_PROXY_COMMAND implies HTTPS_PROXY unless HTTP_PROXY is set
-  const proxyCommand = process.env['QWEN_SANDBOX_PROXY_COMMAND'];
+  // CANOPY_SANDBOX_PROXY_COMMAND implies HTTPS_PROXY unless HTTP_PROXY is set
+  const proxyCommand = process.env['CANOPY_SANDBOX_PROXY_COMMAND'];
 
   if (proxyCommand) {
     let proxy =
@@ -629,10 +629,10 @@ export async function start_sandbox(
   // name container after image, plus random suffix to avoid conflicts
   const imageName = parseSandboxImageName(image);
   const isIntegrationTest =
-    process.env['QWEN_CODE_INTEGRATION_TEST'] === 'true';
+    process.env['CANOPY_CODE_INTEGRATION_TEST'] === 'true';
   let containerName;
   if (isIntegrationTest) {
-    containerName = `qwen-code-integration-test-${randomBytes(4).toString(
+    containerName = `canopy-code-integration-test-${randomBytes(4).toString(
       'hex',
     )}`;
     writeStderrLine(`ContainerName: ${containerName}`);
@@ -651,19 +651,19 @@ export async function start_sandbox(
   }
   args.push('--name', containerName, '--hostname', containerName);
 
-  // copy QWEN_CODE_TEST_VAR for integration tests
-  if (process.env['QWEN_CODE_TEST_VAR']) {
+  // copy CANOPY_CODE_TEST_VAR for integration tests
+  if (process.env['CANOPY_CODE_TEST_VAR']) {
     args.push(
       '--env',
-      `QWEN_CODE_TEST_VAR=${process.env['QWEN_CODE_TEST_VAR']}`,
+      `CANOPY_CODE_TEST_VAR=${process.env['CANOPY_CODE_TEST_VAR']}`,
     );
   }
   args.push(...getSandboxPassthroughEnvArgs());
-  if (process.env['QWEN_CODE_MCP_APPROVALS_PATH']) {
+  if (process.env['CANOPY_CODE_MCP_APPROVALS_PATH']) {
     args.push(
       '--env',
-      `QWEN_CODE_MCP_APPROVALS_PATH=${getContainerPath(
-        process.env['QWEN_CODE_MCP_APPROVALS_PATH'],
+      `CANOPY_CODE_MCP_APPROVALS_PATH=${getContainerPath(
+        process.env['CANOPY_CODE_MCP_APPROVALS_PATH'],
       )}`,
     );
   }
@@ -676,7 +676,7 @@ export async function start_sandbox(
     args.push('--env', `GOOGLE_API_KEY=${process.env['GOOGLE_API_KEY']}`);
   }
 
-  // copy OPENAI_API_KEY and related env vars for Qwen
+  // copy OPENAI_API_KEY and related env vars for Canopy
   if (process.env['OPENAI_API_KEY']) {
     args.push('--env', `OPENAI_API_KEY=${process.env['OPENAI_API_KEY']}`);
   }
@@ -734,8 +734,8 @@ export async function start_sandbox(
 
   // Pass through IDE mode environment variables
   for (const envVar of [
-    'QWEN_CODE_IDE_SERVER_PORT',
-    'QWEN_CODE_IDE_WORKSPACE_PATH',
+    'CANOPY_CODE_IDE_SERVER_PORT',
+    'CANOPY_CODE_IDE_WORKSPACE_PATH',
     'TERM_PROGRAM',
   ]) {
     if (process.env[envVar]) {
@@ -814,13 +814,13 @@ export async function start_sandbox(
 
   // Check if we should use current user's UID/GID in sandbox
   // In integration test mode, we still respect SANDBOX_SET_UID_GID to allow
-  // tests that need to access host's ~/.qwen (e.g., --resume functionality)
+  // tests that need to access host's ~/.canopy (e.g., --resume functionality)
   const useCurrentUser = await shouldUseCurrentUserInSandbox();
 
   if (useCurrentUser) {
     // SANDBOX_SET_UID_GID is enabled: create user with host's UID/GID
     // This includes integration test mode with SANDBOX_SET_UID_GID=true,
-    // allowing tests that need to access host's ~/.qwen (e.g., --resume) to work.
+    // allowing tests that need to access host's ~/.canopy (e.g., --resume) to work.
     // For the user-creation logic to work, the container must start as root.
     // The entrypoint script then handles dropping privileges to the correct user.
     args.push('--user', 'root');
@@ -830,10 +830,10 @@ export async function start_sandbox(
 
     // Instead of passing --user to the main sandbox container, we let it
     // start as root, then create a user with the host's UID/GID, and
-    // finally switch to that user to run the qwen process. This is
+    // finally switch to that user to run the canopy process. This is
     // necessary on Linux to ensure the user exists within the
     // container's /etc/passwd file, which is required by os.userInfo().
-    const username = 'qwen';
+    const username = 'canopy';
     const homeDir = getContainerPath(os.homedir());
 
     const setupUserCommands = [
@@ -869,7 +869,7 @@ export async function start_sandbox(
   // push container entrypoint (including args)
   args.push(...finalEntrypoint);
 
-  // start and set up proxy if QWEN_SANDBOX_PROXY_COMMAND is set
+  // start and set up proxy if CANOPY_SANDBOX_PROXY_COMMAND is set
   let proxyProcess: ChildProcess | undefined = undefined;
   let sandboxProcess: ChildProcess | undefined = undefined;
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -108,7 +108,7 @@ export interface PostToolBatchHookResult {
  * @param toolInput - Input parameters for the tool
  * @param toolUseId - Unique identifier for this tool use (internal format, e.g., toolu_xxx)
  * @param permissionMode - Current permission mode
- * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+ * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
  * @returns PreToolUseHookResult indicating whether to proceed and any modifications
  */
 export async function firePreToolUseHook(
@@ -228,7 +228,7 @@ export async function firePreToolUseHook(
  * @param toolResponse - Response from the tool execution
  * @param toolUseId - Unique identifier for this tool use (internal format, e.g., toolu_xxx)
  * @param permissionMode - Current permission mode
- * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+ * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
  * @returns PostToolUseHookResult with any additional context
  */
 export async function firePostToolUseHook(
@@ -322,7 +322,7 @@ export async function firePostToolUseHook(
  * @param errorMessage - Error message describing the failure
  * @param errorType - Optional error type classification
  * @param isInterrupt - Whether the failure was caused by user interruption
- * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+ * @param tool_call_id - Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
  * @returns PostToolUseFailureHookResult with any additional context
  */
 export async function firePostToolUseFailureHook(
@@ -471,7 +471,7 @@ export interface NotificationHookResult {
 
 /**
  * Fire Notification hook via MessageBus
- * Called when Qwen Code sends a notification
+ * Called when Canopy Code sends a notification
  */
 export async function fireNotificationHook(
   messageBus: MessageBus | undefined,

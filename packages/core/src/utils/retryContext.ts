@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 /**
  * Per-attempt retry context propagated through AsyncLocalStorage from
  * `retryWithBackoff` down to `LoggingContentGenerator`. Lets each per-attempt
- * `qwen-code.llm_request` span carry meaningful `attempt` / `request_setup_ms`
+ * `canopy-code.llm_request` span carry meaningful `attempt` / `request_setup_ms`
  * / `retry_total_delay_ms` attributes without changing the LLM API surface.
  *
  * See docs/design/telemetry-llm-request-timing-design.md (Phase 4b, D4).

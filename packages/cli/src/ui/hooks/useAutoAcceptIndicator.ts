@@ -8,7 +8,7 @@ import {
   ApprovalMode,
   APPROVAL_MODES,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useEffect, useState } from 'react';
 import { useKeypress } from './useKeypress.js';
 import type { HistoryItemWithoutId } from '../types.js';

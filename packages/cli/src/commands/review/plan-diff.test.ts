@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -187,13 +187,13 @@ describe('plan-diff', () => {
       out,
       maxChunkLines: 400,
       pr: 6998,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       host: 'ghe.example.com',
     });
 
     const plan = JSON.parse(readFileSync(out, 'utf8'));
     expect(plan.prNumber).toBe('6998');
-    expect(plan.ownerRepo).toBe('QwenLM/qwen-code');
+    expect(plan.ownerRepo).toBe('CanopyLM/canopy-code');
     // The host rides along — Agent 0's welded issue-context command routes
     // at it (a lightweight run has no fetch-pr to carry it otherwise).
     expect(plan.host).toBe('ghe.example.com');
@@ -210,7 +210,7 @@ describe('plan-diff', () => {
       out,
       maxChunkLines: 400,
       pr: 6998,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
     });
     expect(JSON.parse(readFileSync(out, 'utf8')).host).toBeUndefined();
 
@@ -222,7 +222,7 @@ describe('plan-diff', () => {
       out,
       maxChunkLines: 400,
       pr: 6998,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       host: 'ghe.example.com; touch /tmp/pwned',
     });
     expect(process.exitCode).toBe(2);

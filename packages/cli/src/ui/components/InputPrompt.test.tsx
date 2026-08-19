@@ -13,8 +13,8 @@ import {
   expandPendingPastePlaceholders,
 } from './InputPrompt.js';
 import { useTextBuffer, type TextBuffer } from './shared/text-buffer.js';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import * as path from 'node:path';
 import type { CommandContext, SlashCommand } from '../commands/types.js';
@@ -592,7 +592,7 @@ describe('InputPrompt', () => {
   it('passes a voice refinement callback when a fast model is configured', () => {
     props.config = {
       ...props.config,
-      getFastModel: () => 'qwen-fast',
+      getFastModel: () => 'canopy-fast',
     } as unknown as Config;
 
     const { unmount } = renderWithProviders(<InputPrompt {...props} />);
@@ -606,7 +606,7 @@ describe('InputPrompt', () => {
   it('omits voice refinement when refineTranscript is disabled', () => {
     props.config = {
       ...props.config,
-      getFastModel: () => 'qwen-fast',
+      getFastModel: () => 'canopy-fast',
     } as unknown as Config;
     const settings = {
       merged: {
@@ -1439,7 +1439,7 @@ describe('InputPrompt', () => {
       async () => {
         vi.mocked(clipboardUtils.clipboardHasImage).mockResolvedValue(true);
         vi.mocked(clipboardUtils.saveClipboardImage).mockResolvedValue(
-          '/Users/mochi/.qwen/tmp/clipboard-123.png',
+          '/Users/mochi/.canopy/tmp/clipboard-123.png',
         );
 
         const { stdin, unmount } = renderWithProviders(
@@ -1462,7 +1462,7 @@ describe('InputPrompt', () => {
     it('should handle Cmd+V when clipboard has an image', async () => {
       vi.mocked(clipboardUtils.clipboardHasImage).mockResolvedValue(true);
       vi.mocked(clipboardUtils.saveClipboardImage).mockResolvedValue(
-        '/Users/mochi/.qwen/tmp/clipboard-456.png',
+        '/Users/mochi/.canopy/tmp/clipboard-456.png',
       );
 
       const { stdin, unmount } = renderWithProviders(
@@ -1487,7 +1487,7 @@ describe('InputPrompt', () => {
         'test',
         'project',
         'src',
-        '.qwen',
+        '.canopy',
         'tmp',
         'clipboard.png',
       );
@@ -1506,7 +1506,7 @@ describe('InputPrompt', () => {
 
       await waitFor(() => {
         expect(props.onSubmit).toHaveBeenCalledWith(
-          `@${path.join('.qwen', 'tmp', 'clipboard.png')}\n\ndescribe this image`,
+          `@${path.join('.canopy', 'tmp', 'clipboard.png')}\n\ndescribe this image`,
           {
             deferUntilIdle: false,
             submittedPrompt: 'describe this image',
@@ -1579,7 +1579,7 @@ describe('InputPrompt', () => {
       expect(addItem).toHaveBeenCalledWith(
         {
           type: 'error',
-          text: 'Clipboard image paste is unavailable because the native clipboard module could not be loaded. Reinstall Qwen Code or use the npm installation method.',
+          text: 'Clipboard image paste is unavailable because the native clipboard module could not be loaded. Reinstall Canopy Code or use the npm installation method.',
         },
         expect.any(Number),
       );
@@ -1605,7 +1605,7 @@ describe('InputPrompt', () => {
     });
 
     it('should insert image path at cursor position with proper spacing', async () => {
-      const imagePath = '/Users/mochi/.qwen/tmp/clipboard-456.png';
+      const imagePath = '/Users/mochi/.canopy/tmp/clipboard-456.png';
       vi.mocked(clipboardUtils.clipboardHasImage).mockResolvedValue(true);
       vi.mocked(clipboardUtils.saveClipboardImage).mockResolvedValue(imagePath);
 
@@ -2807,7 +2807,7 @@ describe('InputPrompt', () => {
     const isWindows = process.platform === 'win32';
     vi.mocked(clipboardUtils.clipboardHasImage).mockResolvedValue(true);
     vi.mocked(clipboardUtils.saveClipboardImage).mockResolvedValue(
-      path.join('test', 'project', '.qwen', 'tmp', 'clipboard.png'),
+      path.join('test', 'project', '.canopy', 'tmp', 'clipboard.png'),
     );
     vi.mocked(clipboardUtils.cleanupOldClipboardImages).mockResolvedValue(
       undefined,

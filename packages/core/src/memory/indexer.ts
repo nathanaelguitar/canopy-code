@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { existsSync } from 'node:fs';
 import { atomicWriteFile } from '../utils/atomicFileWrite.js';
-import { QWEN_DIR } from '../utils/paths.js';
+import { CANOPY_DIR } from '../utils/paths.js';
 import {
   getAutoMemoryIndexPath,
   getAutoMemoryMetadataPath,
@@ -295,7 +295,7 @@ export async function rebuildTeamAutoMemoryIndex(
     return null;
   }
   // Refuse to write through a symlinked team root. A committed
-  // `.qwen/team-memory -> /elsewhere` symlink would otherwise redirect the
+  // `.canopy/team-memory -> /elsewhere` symlink would otherwise redirect the
   // generated index — and the scanned topic files — OUTSIDE the repo with no
   // tool approval. `noFollow` below only guards the MEMORY.md leaf; the
   // directory symlink it cannot catch is rejected here.
@@ -306,15 +306,15 @@ export async function rebuildTeamAutoMemoryIndex(
         `could redirect the committed index outside the repository.`,
     );
   }
-  // lstat only inspects the LEAF: a symlinked PARENT (e.g. `.qwen -> /tmp/out`)
+  // lstat only inspects the LEAF: a symlinked PARENT (e.g. `.canopy -> /tmp/out`)
   // makes lstat(teamRoot) report a normal dir while every scan/write lands
   // outside the repo. realpath-resolve the whole chain and require it to equal
-  // the literal in-repo location (repoRoot/.qwen/team-memory), so a symlink in
+  // the literal in-repo location (repoRoot/.canopy/team-memory), so a symlink in
   // ANY component is rejected, not just the final one.
   const repoRoot = path.dirname(path.dirname(teamRoot));
   const expectedRoot = path.join(
     await fs.realpath(repoRoot),
-    QWEN_DIR,
+    CANOPY_DIR,
     TEAM_AUTO_MEMORY_DIRNAME,
   );
   const resolvedRoot = await fs.realpath(teamRoot);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -442,8 +442,8 @@ describe('ZoomImageTool', () => {
     ).toThrow(/>= 0/);
   });
 
-  it('rejects a path matched by a .qwenignore pattern', async () => {
-    await fs.writeFile(path.join(root, '.qwenignore'), 'secret-*.png\n');
+  it('rejects a path matched by a .canopyignore pattern', async () => {
+    await fs.writeFile(path.join(root, '.canopyignore'), 'secret-*.png\n');
     const ignoredPath = path.join(root, 'secret-image.png');
     await sharp({
       create: {
@@ -464,7 +464,7 @@ describe('ZoomImageTool', () => {
         x2: 1000,
         y2: 1000,
       }),
-    ).toThrow(/ignored by .qwenignore pattern/i);
+    ).toThrow(/ignored by .canopyignore pattern/i);
   });
 
   it('uses the read_file path permission boundary', async () => {

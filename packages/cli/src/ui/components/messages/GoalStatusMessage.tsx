@@ -1,12 +1,15 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { GoalSnapshotV2, GoalStateCause } from '@qwen-code/qwen-code-core';
+import type {
+  GoalSnapshotV2,
+  GoalStateCause,
+} from '@canopy-code/canopy-code-core';
 import { theme } from '../../semantic-colors.js';
 import { ICON } from '../../constants.js';
 import { formatDuration } from '../../utils/formatters.js';

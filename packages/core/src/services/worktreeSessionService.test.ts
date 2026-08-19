@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 const sample: WorktreeSession = {
   slug: 'my-feature',
-  worktreePath: '/repo/.qwen/worktrees/my-feature',
+  worktreePath: '/repo/.canopy/worktrees/my-feature',
   worktreeBranch: 'worktree-my-feature',
   originalCwd: '/repo',
   originalBranch: 'main',
@@ -156,7 +156,7 @@ describe('isSessionRuntimeActive', () => {
 
   it('lets active runtime status win over a dead status found in an earlier root', async () => {
     const repoRoot = path.join(tmpDir, 'repo');
-    const worktreePath = path.join(repoRoot, '.qwen', 'worktrees', 'feature');
+    const worktreePath = path.join(repoRoot, '.canopy', 'worktrees', 'feature');
     await fs.mkdir(worktreePath, { recursive: true });
 
     Storage.setRuntimeBaseDir(path.join(tmpDir, 'runtime'));
@@ -217,10 +217,15 @@ describe('restoreWorktreeContext', () => {
 
   it('returns context message + session when worktree dir is alive', async () => {
     // Build a sidecar where worktreePath sits under the structural
-    // invariant `<originalCwd>/.qwen/worktrees/<slug>` enforced by
+    // invariant `<originalCwd>/.canopy/worktrees/<slug>` enforced by
     // restoreWorktreeContext (Phase C review #3256839787).
     const liveCwd = path.join(tmpDir, 'repo');
-    const liveWorktree = path.join(liveCwd, '.qwen', 'worktrees', 'my-feature');
+    const liveWorktree = path.join(
+      liveCwd,
+      '.canopy',
+      'worktrees',
+      'my-feature',
+    );
     await fs.mkdir(liveWorktree, { recursive: true });
     const live: WorktreeSession = {
       ...sample,
@@ -240,12 +245,12 @@ describe('restoreWorktreeContext', () => {
 
   it('rejects and clears a sidecar whose worktreePath escapes the managed subtree', async () => {
     // A tampered sidecar pointing at /tmp itself (a real dir) but not
-    // under `<originalCwd>/.qwen/worktrees/` must be treated as
+    // under `<originalCwd>/.canopy/worktrees/` must be treated as
     // untrusted, regardless of fs.stat success.
     const escape: WorktreeSession = {
       ...sample,
       originalCwd: tmpDir,
-      worktreePath: tmpDir, // outside .qwen/worktrees/
+      worktreePath: tmpDir, // outside .canopy/worktrees/
     };
     await writeWorktreeSession(filePath, escape);
     const warnings: unknown[] = [];
@@ -261,7 +266,7 @@ describe('restoreWorktreeContext', () => {
   });
 
   it('cleans up stale sidecar when worktree dir is gone', async () => {
-    // sample.worktreePath points at /repo/.qwen/... which does not exist.
+    // sample.worktreePath points at /repo/.canopy/... which does not exist.
     await writeWorktreeSession(filePath, sample);
     expect(await readWorktreeSession(filePath)).toEqual(sample);
 

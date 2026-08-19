@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { EventEmitter } from 'node:events';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { waitFor } from '@testing-library/react';
 import type { Hunk } from 'diff';
-import type { GitDiffResult } from '@qwen-code/qwen-code-core';
+import type { GitDiffResult } from '@canopy-code/canopy-code-core';
 import { DiffDialog } from './DiffDialog.js';
 import { KeypressProvider } from '../contexts/KeypressContext.js';
 import { ShellFocusContext } from '../contexts/ShellFocusContext.js';

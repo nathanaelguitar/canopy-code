@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,11 +12,11 @@ import type {
 } from './types.js';
 import { CommandKind } from './types.js';
 import { t } from '../../i18n/index.js';
-import type { ApprovalMode } from '@qwen-code/qwen-code-core';
+import type { ApprovalMode } from '@canopy-code/canopy-code-core';
 import {
   APPROVAL_MODES,
   ApprovalMode as ApprovalModeEnum,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { formatApprovalModeName } from '../utils/approvalModeDisplay.js';
 
 /**

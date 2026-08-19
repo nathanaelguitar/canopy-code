@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review test-efficacy`: does the diff's new test actually gate the
+// `canopy review test-efficacy`: does the diff's new test actually gate the
 // diff's new behaviour?
 //
 // Agent 5 and the test-coverage matrix ask whether a test EXISTS and whether
@@ -1807,7 +1807,7 @@ export function runControlMutant(
   try {
     writeFileSync(
       abs,
-      `${original}\n;import { it as __qcIt, expect as __qcExpect } from 'vitest';\n__qcIt('QWEN-REVIEW-POSITIVE-CONTROL', () => {\n  __qcExpect(1).toBe(2);\n});\n`,
+      `${original}\n;import { it as __qcIt, expect as __qcExpect } from 'vitest';\n__qcIt('CANOPY-REVIEW-POSITIVE-CONTROL', () => {\n  __qcExpect(1).toBe(2);\n});\n`,
       'utf8',
     );
     const { perFile } = runProbeSuite(probeTree, [probeFile], deadlineAt, now);
@@ -2032,7 +2032,7 @@ async function runTestEfficacy(args: TestEfficacyArgs): Promise<void> {
     // uncommitted in the shared tree is ever touched or discarded.
     //
     // `node_modules` resolves without a per-tree install because the probe tree
-    // is nested under the repo (`.qwen/tmp/…-probe`), so Node walks up to the
+    // is nested under the repo (`.canopy/tmp/…-probe`), so Node walks up to the
     // repo-root `node_modules` — exactly how the shared review worktree already
     // runs vitest.
     const headSha = gitOut(worktree, 'rev-parse', 'HEAD');

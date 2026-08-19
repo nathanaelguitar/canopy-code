@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   expandHomeDir,
   parseLearnVideoInput,
   readPathFromWorkspace,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 import { t } from '../../i18n/index.js';
 import type {
@@ -71,7 +71,7 @@ export const learnCommand: SlashCommand = {
 
       const authType = config.getContentGeneratorConfig()?.authType;
       const supportsVideoTransport =
-        authType === AuthType.USE_OPENAI || authType === AuthType.QWEN_OAUTH;
+        authType === AuthType.USE_OPENAI || authType === AuthType.CANOPY_OAUTH;
       if (
         config.getEffectiveInputModalities().video !== true ||
         !supportsVideoTransport

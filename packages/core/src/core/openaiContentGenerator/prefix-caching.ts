@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,7 +19,7 @@ type OpenAIContentPartWithBreakpoint = OpenAI.Chat.ChatCompletionContentPart & {
   prompt_cache_breakpoint?: { mode: 'explicit' };
 };
 
-const CACHE_KEY_PREFIX = 'qwen-code:';
+const CACHE_KEY_PREFIX = 'canopy-code:';
 const EXPLICIT_BREAKPOINT_COUNT = 2;
 
 export function supportsOpenAIPrefixCaching(
@@ -27,7 +27,7 @@ export function supportsOpenAIPrefixCaching(
 ): boolean {
   return (
     contentGeneratorConfig.authType === AuthType.USE_OPENAI ||
-    contentGeneratorConfig.authType === AuthType.QWEN_OAUTH
+    contentGeneratorConfig.authType === AuthType.CANOPY_OAUTH
   );
 }
 

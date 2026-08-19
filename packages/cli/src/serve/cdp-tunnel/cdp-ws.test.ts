@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -116,7 +116,7 @@ describe('attachCdpClient (Plan C #5626)', () => {
         id: 1,
         method: 'Runtime.evaluate',
         params: { expression: '1+1' },
-        sessionId: 'qwen-cdp-page-session',
+        sessionId: 'canopy-cdp-page-session',
       }),
     );
 
@@ -149,7 +149,7 @@ describe('attachCdpClient (Plan C #5626)', () => {
     await vi.waitFor(() => expect(ws.sent).toHaveLength(1));
     expect(JSON.parse(ws.sent[0] ?? '{}')).toMatchObject({
       id: 1,
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
       result: { result: { value: 2 } },
     });
   });
@@ -164,7 +164,7 @@ describe('attachCdpClient (Plan C #5626)', () => {
       JSON.stringify({
         id: 1,
         method: 'Runtime.evaluate',
-        sessionId: 'qwen-cdp-page-session',
+        sessionId: 'canopy-cdp-page-session',
       }),
     );
 
@@ -194,7 +194,7 @@ describe('attachCdpClient (Plan C #5626)', () => {
       JSON.stringify({
         id: 1,
         method: 'Runtime.evaluate',
-        sessionId: 'qwen-cdp-page-session',
+        sessionId: 'canopy-cdp-page-session',
       }),
     );
 

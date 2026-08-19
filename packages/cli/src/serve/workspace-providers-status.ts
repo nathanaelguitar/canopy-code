@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,8 +10,8 @@ import {
   createDebugLogger,
   ModelsConfig,
   tokenLimit,
-} from '@qwen-code/qwen-code-core';
-import type { AuthType } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { AuthType } from '@canopy-code/canopy-code-core';
 import type {
   ServeWorkspaceProviderCurrent,
   ServeWorkspaceProviderModel,

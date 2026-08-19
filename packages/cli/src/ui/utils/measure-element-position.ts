@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Shim for ink PR #968 (vadimdemedes/ink#968): extends measureElement()

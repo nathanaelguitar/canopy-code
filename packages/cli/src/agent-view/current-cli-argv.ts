@@ -1,20 +1,20 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-export function getCurrentQwenCliEntrypoint(): string {
-  return process.argv[1] ?? 'qwen';
+export function getCurrentCanopyCliEntrypoint(): string {
+  return process.argv[1] ?? 'canopy';
 }
 
-export function buildCurrentQwenCliArgv(args: readonly string[]): string[] {
-  const entrypoint = getCurrentQwenCliEntrypoint();
-  if (entrypoint === 'qwen') {
-    return ['qwen', ...args];
+export function buildCurrentCanopyCliArgv(args: readonly string[]): string[] {
+  const entrypoint = getCurrentCanopyCliEntrypoint();
+  if (entrypoint === 'canopy') {
+    return ['canopy', ...args];
   }
 
   if (process.env['DEV'] === 'true' && entrypoint.endsWith('.ts')) {

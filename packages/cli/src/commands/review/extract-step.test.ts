@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -88,7 +88,7 @@ jobs:
 
 // `env:`, `shell:` and `working-directory:` are three-level settings. Not a
 // contrived shape: this repo carries workflow-level `env:` in 7 workflows,
-// job-level `env:` in 10, and job-level `defaults.run` in qwen-triage.yml.
+// job-level `env:` in 10, and job-level `defaults.run` in canopy-triage.yml.
 const WF_LEVELS = `
 name: levels
 on: [push]
@@ -120,7 +120,7 @@ jobs:
 `;
 
 // A step-level env whose value is a YAML block scalar — the shape
-// .github/workflows/qwen-autofix.yml uses for SETTINGS_JSON.
+// .github/workflows/canopy-autofix.yml uses for SETTINGS_JSON.
 const WF_BLOCK_ENV = `
 name: autofix
 on: [push]
@@ -146,7 +146,7 @@ describe('runExtractStep', () => {
   };
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'qwen-extract-step-'));
+    dir = mkdtempSync(join(tmpdir(), 'canopy-extract-step-'));
   });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -504,7 +504,7 @@ jobs:
       step: 'Run',
       out: join(dir, 'step.sh'),
     });
-    // Measured on qwen-autofix.yml:route:0, merge order put 20 inherited
+    // Measured on canopy-autofix.yml:route:0, merge order put 20 inherited
     // entries ahead of the step's own 26 in a 49-line header.
     expect(Object.keys(meta.env)).toEqual([
       'LOCAL', // step
@@ -585,7 +585,7 @@ describe('multi-line env values stay comments', () => {
       '            rm -rf /tmp/x',
       '        run: echo ok',
     ].join('\n');
-    const dir = mkdtempSync(join(tmpdir(), 'qwen-es-env-'));
+    const dir = mkdtempSync(join(tmpdir(), 'canopy-es-env-'));
     const p = join(dir, 'wf.yml');
     writeFileSync(p, wf);
     const meta = runExtractStep({
@@ -805,7 +805,7 @@ describe('expressionsOf / invokedCommandsOf', () => {
   });
 
   it('does not read the inside of a quoted assignment as the command', () => {
-    // Measured shape from qwen-triage.yml: the `name=` prefix is stepped over
+    // Measured shape from canopy-triage.yml: the `name=` prefix is stepped over
     // and the next WORD taken as the command — but that word is inside the
     // value, not after it.
     expect(

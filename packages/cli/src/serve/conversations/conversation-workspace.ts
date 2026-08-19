@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -88,7 +88,7 @@ async function validateConversationDirectory(
 }
 
 export function getConversationRootPath(homeDir: string = homedir()): string {
-  return resolve(homeDir, 'Documents', 'Qwen Code', 'Conversations');
+  return resolve(homeDir, 'Documents', 'Canopy Code', 'Conversations');
 }
 
 async function createRoot(

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { RadioButtonSelect } from '../../shared/RadioButtonSelect.js';
 import {
   type Extension,
   getExtensionDisplayName,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { theme } from '../../../semantic-colors.js';
 import { t, getCurrentLanguage } from '../../../../i18n/index.js';
 
@@ -56,10 +56,16 @@ export function ScopeSelectStep({
   const title =
     mode === 'disable'
       ? t('Disable "{{name}}" - Select Scope', {
-          name: getExtensionDisplayName(selectedExtension, getCurrentLanguage()),
+          name: getExtensionDisplayName(
+            selectedExtension,
+            getCurrentLanguage(),
+          ),
         })
       : t('Enable "{{name}}" - Select Scope', {
-          name: getExtensionDisplayName(selectedExtension, getCurrentLanguage()),
+          name: getExtensionDisplayName(
+            selectedExtension,
+            getCurrentLanguage(),
+          ),
         });
 
   return (

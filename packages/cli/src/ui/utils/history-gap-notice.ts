@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { HistoryGap } from '@qwen-code/qwen-code-core';
+import type { HistoryGap } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 /**

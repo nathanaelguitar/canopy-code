@@ -10,7 +10,7 @@ import {
   Storage,
   FILE_HISTORY_DIR,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('HOUSEKEEPING');
 
@@ -107,7 +107,7 @@ async function sweepOldSessionDirs(
     );
   }
 
-  // Sweep empty roots only for Qwen-owned global storage. Project-local roots
+  // Sweep empty roots only for Canopy-owned global storage. Project-local roots
   // such as <projectDir>/subagents/ should remain stable for file watchers.
   if (opts.removeEmptyRoot !== false) {
     await rmdir(root).catch(() => {});
@@ -119,7 +119,7 @@ export async function cleanupOldFileHistoryBackups(
   opts: CleanupOptions,
 ): Promise<CleanupResult> {
   return sweepOldSessionDirs(
-    join(Storage.getGlobalQwenDir(), FILE_HISTORY_DIR),
+    join(Storage.getGlobalCanopyDir(), FILE_HISTORY_DIR),
     opts,
   );
 }

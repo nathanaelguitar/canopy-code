@@ -1,21 +1,21 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
-  cacheQwenCredentials,
+  cacheCanopyCredentials,
   generatePKCEPair,
   isDeviceAuthorizationSuccess,
   isDeviceTokenPending,
   isDeviceTokenSuccess,
-  QwenOAuth2Client,
-  QwenOAuthPollError,
+  CanopyOAuth2Client,
+  CanopyOAuthPollError,
   type DeviceTokenPendingData,
-  type IQwenOAuth2Client,
-  type QwenCredentials,
-} from '@qwen-code/qwen-code-core';
+  type ICanopyOAuth2Client,
+  type CanopyCredentials,
+} from '@canopy-code/canopy-code-core';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 import {
   brandSecret,
@@ -30,11 +30,11 @@ import {
   type DeviceFlowStartResult,
 } from './device-flow.js';
 
-const QWEN_OAUTH_SCOPE = 'openid profile email model.completion';
+const CANOPY_OAUTH_SCOPE = 'openid profile email model.completion';
 
 /**
  * Maximum length of raw IdP detail written to stderr for operator
- * audit. The raw `err.message` from `QwenOAuth2Client` can embed the
+ * audit. The raw `err.message` from `CanopyOAuth2Client` can embed the
  * full upstream response body, which on a misbehaving reverse proxy /
  * WAF can be megabytes of HTML. Truncate so container log-aggregation
  * pipelines don't lose the useful prefix.
@@ -48,20 +48,20 @@ function truncateForStderr(detail: string): string {
 }
 
 /**
- * Qwen-OAuth implementation of `DeviceFlowProvider` for `qwen serve`.
+ * Canopy-OAuth implementation of `DeviceFlowProvider` for `canopy serve`.
  *
- * Uses the lower-level `QwenOAuth2Client` primitives (`requestDeviceAuthorization`
+ * Uses the lower-level `CanopyOAuth2Client` primitives (`requestDeviceAuthorization`
  * / `pollDeviceToken`) directly rather than the high-level
- * `authWithQwenDeviceFlow` because that helper invokes `open(url)` to launch
+ * `authWithCanopyDeviceFlow` because that helper invokes `open(url)` to launch
  * a browser on the daemon host — only the SDK/user side may decide to open
  * a URL.
  */
-export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
-  readonly providerId: DeviceFlowProviderId = 'qwen-oauth';
-  private readonly client: IQwenOAuth2Client;
+export class CanopyOAuthDeviceFlowProvider implements DeviceFlowProvider {
+  readonly providerId: DeviceFlowProviderId = 'canopy-oauth';
+  private readonly client: ICanopyOAuth2Client;
 
-  constructor(client?: IQwenOAuth2Client) {
-    this.client = client ?? new QwenOAuth2Client();
+  constructor(client?: ICanopyOAuth2Client) {
+    this.client = client ?? new CanopyOAuth2Client();
   }
 
   async start(opts: { signal: AbortSignal }): Promise<DeviceFlowStartResult> {
@@ -73,14 +73,14 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       // socket immediately.
       auth = await this.client.requestDeviceAuthorization(
         {
-          scope: QWEN_OAUTH_SCOPE,
+          scope: CANOPY_OAUTH_SCOPE,
           code_challenge,
           code_challenge_method: 'S256',
         },
         { signal: opts.signal },
       );
     } catch (err: unknown) {
-      // Network / parse / non-2xx errors from the Qwen IdP. Wrap so the
+      // Network / parse / non-2xx errors from the Canopy IdP. Wrap so the
       // route layer maps to `502 upstream_error` rather than the generic
       // `500` fall-through in `sendBridgeError`.
       //
@@ -88,10 +88,10 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       // original err detail goes through stderr audit only.
       const detail = err instanceof Error ? err.message : String(err);
       writeStderrLine(
-        `[serve] qwen device-flow start failed (raw): ${truncateForStderr(detail)}`,
+        `[serve] canopy device-flow start failed (raw): ${truncateForStderr(detail)}`,
       );
       throw new UpstreamDeviceFlowError(
-        'Qwen IdP device authorization request failed',
+        'Canopy IdP device authorization request failed',
       );
     }
     if (opts.signal.aborted) {
@@ -105,13 +105,13 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       const errorData = auth as { error?: string; error_description?: string };
       writeStderrLine(
         truncateForStderr(
-          `[serve] qwen device-flow start error envelope (raw): error=${
+          `[serve] canopy device-flow start error envelope (raw): error=${
             errorData?.error ?? 'unknown'
           } description=${errorData?.error_description ?? '(none)'}`,
         ),
       );
       throw new UpstreamDeviceFlowError(
-        'Qwen IdP rejected the device authorization request',
+        'Canopy IdP rejected the device authorization request',
       );
     }
     return {
@@ -121,7 +121,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       verificationUri: auth.verification_uri,
       verificationUriComplete: auth.verification_uri_complete,
       expiresIn: auth.expires_in,
-      // Qwen IdP doesn't return `interval`; registry falls back to the
+      // Canopy IdP doesn't return `interval`; registry falls back to the
       // RFC 8628 default (5s) when this is undefined.
     };
   }
@@ -134,11 +134,11 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
     opts: { signal: AbortSignal },
   ): Promise<DeviceFlowPollResult> {
     if (!state.pkceVerifier) {
-      // Qwen *requires* PKCE; missing verifier is a programmer error.
+      // Canopy *requires* PKCE; missing verifier is a programmer error.
       return {
         kind: 'error',
         errorKind: 'invalid_grant',
-        hint: 'Qwen device-flow requires a PKCE verifier',
+        hint: 'Canopy device-flow requires a PKCE verifier',
       };
     }
     if (opts.signal.aborted) {
@@ -147,7 +147,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       // !== 'pending' and skip emit/audit.
       return { kind: 'pending' };
     }
-    let response: Awaited<ReturnType<IQwenOAuth2Client['pollDeviceToken']>>;
+    let response: Awaited<ReturnType<ICanopyOAuth2Client['pollDeviceToken']>>;
     try {
       // Pass `signal` through to the IdP fetch so cancel / dispose
       // during a slow upstream response aborts the in-flight socket
@@ -171,10 +171,10 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       // the entire IdP responseText which would flow to every SSE
       // subscriber. Use a stable bounded summary; full detail goes
       // through stderr audit only. Branch on `instanceof
-      // QwenOAuthPollError` and read the structured `oauthError`
+      // CanopyOAuthPollError` and read the structured `oauthError`
       // field instead of substring-matching the message text.
       const errorKind: DeviceFlowErrorKind =
-        err instanceof QwenOAuthPollError
+        err instanceof CanopyOAuthPollError
           ? mapRfc8628OAuthCode(err.oauthError)
           : 'upstream_error';
       // Mirror the `start()` path's stderr audit so on-call can
@@ -189,7 +189,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
       const aborted = opts.signal.aborted;
       if (!aborted) {
         let safeDetail: string;
-        if (err instanceof QwenOAuthPollError) {
+        if (err instanceof CanopyOAuthPollError) {
           // Structured upstream OAuth error envelope — no raw body,
           // but the `oauthError` field IS attacker-controlled, so
           // sanitize C0/C1 controls before interpolating.
@@ -208,7 +208,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
           safeDetail = `<non-Error throw: ${typeof err}>`;
         }
         writeStderrLine(
-          `[serve] qwen device-flow poll failed (errorKind=${errorKind}): ${truncateForStderr(safeDetail)}`,
+          `[serve] canopy device-flow poll failed (errorKind=${errorKind}): ${truncateForStderr(safeDetail)}`,
         );
       }
       return {
@@ -217,12 +217,12 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
         hint:
           errorKind === 'upstream_error'
             ? 'unexpected response from identity provider'
-            : `Qwen IdP returned ${errorKind}`,
+            : `Canopy IdP returned ${errorKind}`,
       };
     }
     if (isDeviceTokenSuccess(response)) {
       const tokenData = response;
-      const credentials: QwenCredentials = {
+      const credentials: CanopyCredentials = {
         access_token: tokenData.access_token!,
         refresh_token: tokenData.refresh_token ?? undefined,
         token_type: tokenData.token_type,
@@ -238,18 +238,18 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
         // `persist({signal})`
         // is now threaded end-to-end. The registry passes its
         // per-entry `cancelController.signal`; we forward it to
-        // `cacheQwenCredentials({signal})` which forwards to
+        // `cacheCanopyCredentials({signal})` which forwards to
         // `fs.writeFile(..., {signal})`. A wedged disk write aborts
         // immediately when `cancel()` / `dispose()` / the
         // 30s `DEVICE_FLOW_PERSIST_TIMEOUT_MS` fires, instead of
         // hanging until the OS-level timeout.
         async persist(persistOpts: { signal: AbortSignal }) {
-          // Order matters: write to disk FIRST. If `cacheQwenCredentials`
+          // Order matters: write to disk FIRST. If `cacheCanopyCredentials`
           // throws (EACCES, EROFS, ENOSPC) we MUST NOT update the
           // in-process client — otherwise the daemon enters a zombie
           // state where this session "remembers" the token but a
           // restart loses it.
-          await cacheQwenCredentials(credentials, {
+          await cacheCanopyCredentials(credentials, {
             signal: persistOpts.signal,
           });
           try {
@@ -258,7 +258,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
             // ignore — disk file is the durable record; in-process
             // refresh happens on next SharedTokenManager mtime poll
           }
-          // The Qwen IdP token response doesn't carry an
+          // The Canopy IdP token response doesn't carry an
           // `accountAlias`, so return only `{expiresAt}`. A future
           // provider whose token response carries an alias can
           // populate it; the type stays optional.
@@ -287,7 +287,7 @@ export class QwenOAuthDeviceFlowProvider implements DeviceFlowProvider {
 
 /**
  * Map a structured RFC 8628 OAuth error code (from
- * `QwenOAuthPollError.oauthError`) to the registry's
+ * `CanopyOAuthPollError.oauthError`) to the registry's
  * `DeviceFlowErrorKind` taxonomy. Unknown / missing codes fall
  * through to `upstream_error`.
  */

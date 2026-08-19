@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { useState, useCallback } from 'react';
-import type { ApprovalMode, Config } from '@qwen-code/qwen-code-core';
+import type { ApprovalMode, Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings, SettingScope } from '../../config/settings.js';
 
 interface UseApprovalModeCommandReturn {

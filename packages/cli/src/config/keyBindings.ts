@@ -142,7 +142,7 @@ export const defaultKeyBindings: KeyBindingConfig = {
     // Separator, rendered as "^_" by `cat -v`) for Ctrl+Backspace under
     // its standard Ctrl-modifies-meta-keys convention. The same byte is
     // the historical Ctrl-mapping of the Unit Separator on traditional
-    // ANSI/VT terminals (Ctrl+_ and Ctrl+/ also emit it), but qwen-code
+    // ANSI/VT terminals (Ctrl+_ and Ctrl+/ also emit it), but canopy-code
     // doesn't bind those keystrokes elsewhere so this entry is additive
     // and non-conflicting on every platform.
     { sequence: '\x1f' },

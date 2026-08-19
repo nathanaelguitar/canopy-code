@@ -36,14 +36,14 @@ describe('startupProfiler', () => {
     resetStartupProfiler();
     vi.restoreAllMocks();
     saveEnv(
-      'QWEN_CODE_PROFILE_STARTUP',
-      'QWEN_CODE_PROFILE_STARTUP_OUTER',
-      'QWEN_CODE_PROFILE_STARTUP_NO_HEAP',
+      'CANOPY_CODE_PROFILE_STARTUP',
+      'CANOPY_CODE_PROFILE_STARTUP_OUTER',
+      'CANOPY_CODE_PROFILE_STARTUP_NO_HEAP',
       'SANDBOX',
     );
-    delete process.env['QWEN_CODE_PROFILE_STARTUP'];
-    delete process.env['QWEN_CODE_PROFILE_STARTUP_OUTER'];
-    delete process.env['QWEN_CODE_PROFILE_STARTUP_NO_HEAP'];
+    delete process.env['CANOPY_CODE_PROFILE_STARTUP'];
+    delete process.env['CANOPY_CODE_PROFILE_STARTUP_OUTER'];
+    delete process.env['CANOPY_CODE_PROFILE_STARTUP_NO_HEAP'];
     delete process.env['SANDBOX'];
   });
 
@@ -53,7 +53,7 @@ describe('startupProfiler', () => {
   });
 
   function enableProfiler() {
-    process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
+    process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
     process.env['SANDBOX'] = '1';
   }
 
@@ -74,8 +74,8 @@ describe('startupProfiler', () => {
   });
 
   describe('when outside sandbox (SANDBOX not set)', () => {
-    it('should not enable profiler even with QWEN_CODE_PROFILE_STARTUP=1', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
+    it('should not enable profiler even with CANOPY_CODE_PROFILE_STARTUP=1', () => {
+      process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
       delete process.env['SANDBOX'];
 
       initStartupProfiler();
@@ -84,7 +84,7 @@ describe('startupProfiler', () => {
     });
   });
 
-  describe('when enabled (QWEN_CODE_PROFILE_STARTUP=1 + SANDBOX)', () => {
+  describe('when enabled (CANOPY_CODE_PROFILE_STARTUP=1 + SANDBOX)', () => {
     beforeEach(() => {
       enableProfiler();
     });
@@ -334,8 +334,8 @@ describe('startupProfiler', () => {
       expect(report.phases[0]!.heapUsedMb).toBeGreaterThan(0);
     });
 
-    it('omits heap snapshots when QWEN_CODE_PROFILE_STARTUP_NO_HEAP=1', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP_NO_HEAP'] = '1';
+    it('omits heap snapshots when CANOPY_CODE_PROFILE_STARTUP_NO_HEAP=1', () => {
+      process.env['CANOPY_CODE_PROFILE_STARTUP_NO_HEAP'] = '1';
       initStartupProfiler();
       profileCheckpoint('phase_a');
       const report = getStartupReport()!;
@@ -343,9 +343,9 @@ describe('startupProfiler', () => {
     });
   });
 
-  describe('outer-process opt-in (QWEN_CODE_PROFILE_STARTUP_OUTER=1)', () => {
+  describe('outer-process opt-in (CANOPY_CODE_PROFILE_STARTUP_OUTER=1)', () => {
     it('does NOT collect outside sandbox without OUTER opt-in', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
+      process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
       delete process.env['SANDBOX'];
 
       initStartupProfiler();
@@ -354,8 +354,8 @@ describe('startupProfiler', () => {
     });
 
     it('collects outside sandbox when OUTER=1 and writes outer-prefixed file', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
-      process.env['QWEN_CODE_PROFILE_STARTUP_OUTER'] = '1';
+      process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
+      process.env['CANOPY_CODE_PROFILE_STARTUP_OUTER'] = '1';
       delete process.env['SANDBOX'];
 
       vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
@@ -377,10 +377,10 @@ describe('startupProfiler', () => {
       expect(writtenPath).toMatch(/[\\/]outer-/);
     });
 
-    it('collects outside sandbox for qwen serve with the primary startup flag', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
+    it('collects outside sandbox for canopy serve with the primary startup flag', () => {
+      process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
       delete process.env['SANDBOX'];
-      process.argv = ['node', 'qwen', 'serve'];
+      process.argv = ['node', 'canopy', 'serve'];
 
       initStartupProfiler();
       profileCheckpoint('serve_listener_ready');
@@ -391,10 +391,10 @@ describe('startupProfiler', () => {
       expect(report!.phases[0]!.name).toBe('serve_listener_ready');
     });
 
-    it('collects outside sandbox for bundled qwen serve argv shape', () => {
-      process.env['QWEN_CODE_PROFILE_STARTUP'] = '1';
+    it('collects outside sandbox for bundled canopy serve argv shape', () => {
+      process.env['CANOPY_CODE_PROFILE_STARTUP'] = '1';
       delete process.env['SANDBOX'];
-      process.argv = ['node', 'qwen', '/repo/dist/cli.js', 'serve'];
+      process.argv = ['node', 'canopy', '/repo/dist/cli.js', 'serve'];
 
       initStartupProfiler();
       profileCheckpoint('serve_listener_ready');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -77,13 +77,13 @@ function writeJson(path: string, value: unknown): void {
 }
 
 function fixture() {
-  const findings = join(root, '.qwen/tmp/findings.json');
-  const composed = join(root, '.qwen/tmp/composed.json');
-  const report = join(root, '.qwen/reviews/review.md');
-  const out = join(root, '.qwen/reviews/review.json');
+  const findings = join(root, '.canopy/tmp/findings.json');
+  const composed = join(root, '.canopy/tmp/composed.json');
+  const report = join(root, '.canopy/reviews/review.md');
+  const out = join(root, '.canopy/reviews/review.json');
   writeJson(findings, buildReport([finding]));
   writeJson(composed, verdict);
-  mkdirSync(join(root, '.qwen/reviews'), { recursive: true });
+  mkdirSync(join(root, '.canopy/reviews'), { recursive: true });
   writeFileSync(report, '# Review\n');
   // The workspace root is explicit here because the test process's cwd is the
   // package directory, not the temp root — the same explicit-root path the
@@ -118,11 +118,11 @@ describe('saveReviewArtifact', () => {
       effort: 'high',
       verdict,
       ...buildReport([finding]),
-      markdownReportPath: '.qwen/reviews/review.md',
+      markdownReportPath: '.canopy/reviews/review.md',
     });
     expect(readFileSync(paths.out, 'utf8')).toMatch(/\n$/);
     expect(
-      readdirSync(join(root, '.qwen/reviews')).filter((name) =>
+      readdirSync(join(root, '.canopy/reviews')).filter((name) =>
         name.endsWith('.tmp'),
       ),
     ).toEqual([]);
@@ -130,9 +130,9 @@ describe('saveReviewArtifact', () => {
 
   it('reads PR inputs from its worktree and writes durable output to the main project', () => {
     const paths = fixture();
-    const worktree = join(root, '.qwen/tmp/review-pr-123');
-    const findings = join(worktree, '.qwen/tmp/findings.json');
-    const composed = join(worktree, '.qwen/tmp/composed.json');
+    const worktree = join(root, '.canopy/tmp/review-pr-123');
+    const findings = join(worktree, '.canopy/tmp/findings.json');
+    const composed = join(worktree, '.canopy/tmp/composed.json');
     writeJson(findings, buildReport([finding]));
     writeJson(composed, verdict);
 
@@ -148,17 +148,17 @@ describe('saveReviewArtifact', () => {
       schemaVersion: 1,
       target: 'pr-123',
       verdict,
-      markdownReportPath: '.qwen/reviews/review.md',
+      markdownReportPath: '.canopy/reviews/review.md',
     });
   });
 
-  it('refuses outputs outside .qwen/reviews, including .qwen/tmp and outside the workspace', () => {
+  it('refuses outputs outside .canopy/reviews, including .canopy/tmp and outside the workspace', () => {
     const paths = fixture();
     const outside = mkdtempSync(join(tmpdir(), 'review-artifact-outside-'));
     try {
       for (const out of [
-        join(root, '.qwen/tmp/review.json'),
-        join(root, '.qwen/reviews-other/review.json'),
+        join(root, '.canopy/tmp/review.json'),
+        join(root, '.canopy/reviews-other/review.json'),
         join(outside, 'review.json'),
       ]) {
         expect(() =>
@@ -168,7 +168,7 @@ describe('saveReviewArtifact', () => {
             target: 'local',
             effort: 'medium',
           }),
-        ).toThrow(/workspace|under .*\.qwen.*reviews/);
+        ).toThrow(/workspace|under .*\.canopy.*reviews/);
         expect(existsSync(out)).toBe(false);
       }
     } finally {
@@ -179,8 +179,8 @@ describe('saveReviewArtifact', () => {
   it('refuses an output path that traverses a symlink', () => {
     const paths = fixture();
     const outside = mkdtempSync(join(tmpdir(), 'review-artifact-outside-'));
-    rmSync(join(root, '.qwen/reviews'), { recursive: true });
-    symlinkSync(outside, join(root, '.qwen/reviews'));
+    rmSync(join(root, '.canopy/reviews'), { recursive: true });
+    symlinkSync(outside, join(root, '.canopy/reviews'));
     try {
       expect(() =>
         saveReviewArtifact({
@@ -327,7 +327,7 @@ describe('saveReviewArtifact', () => {
       const paths = fixture();
       const inputPath = join(
         root,
-        '.qwen/reviews',
+        '.canopy/reviews',
         input === 'report' ? 'review.md' : `${input}.json`,
       );
       if (input !== 'report') {
@@ -355,9 +355,9 @@ describe('saveReviewArtifact', () => {
     // sameFile — false whenever a side is absent — passes green and lets
     // saveReviewArtifact overwrite an input it is about to read.
     const paths = fixture();
-    symlinkSync(join(root, '.qwen/tmp'), join(root, '.qwen/reviews/link'));
-    const absentInput = join(root, '.qwen/tmp/next.json');
-    const out = join(root, '.qwen/reviews/link/next.json');
+    symlinkSync(join(root, '.canopy/tmp'), join(root, '.canopy/reviews/link'));
+    const absentInput = join(root, '.canopy/tmp/next.json');
+    const out = join(root, '.canopy/reviews/link/next.json');
 
     expect(() =>
       saveReviewArtifact({
@@ -376,7 +376,7 @@ describe('saveReviewArtifact', () => {
     'refuses a case-insensitive output alias of the Markdown report',
     () => {
       const paths = fixture();
-      const alias = join(root, '.qwen/reviews/REVIEW.MD');
+      const alias = join(root, '.canopy/reviews/REVIEW.MD');
       expect(existsSync(alias)).toBe(true);
       const original = readFileSync(paths.report, 'utf8');
 
@@ -392,9 +392,9 @@ describe('saveReviewArtifact', () => {
     },
   );
 
-  it('requires the Markdown report to be durable under .qwen/reviews', () => {
+  it('requires the Markdown report to be durable under .canopy/reviews', () => {
     const paths = fixture();
-    const temporaryReport = join(root, '.qwen/tmp/review.md');
+    const temporaryReport = join(root, '.canopy/tmp/review.md');
     writeFileSync(temporaryReport, '# Temporary\n');
 
     expect(() =>
@@ -457,60 +457,62 @@ describe('saveReviewArtifact', () => {
     fixture();
 
     const saved = saveReviewArtifact({
-      findings: '.qwen/tmp/findings.json',
-      composed: '.qwen/tmp/composed.json',
-      report: '.qwen/reviews/review.md',
-      out: '.qwen/reviews/review.json',
+      findings: '.canopy/tmp/findings.json',
+      composed: '.canopy/tmp/composed.json',
+      report: '.canopy/reviews/review.md',
+      out: '.canopy/reviews/review.json',
       target: 'pr-123',
       effort: 'high',
       workspaceRoot: root,
     });
 
-    expect(saved.path).toBe(join(root, '.qwen/reviews/review.json'));
+    expect(saved.path).toBe(join(root, '.canopy/reviews/review.json'));
     // The registration value `record_artifact` wants, printed so the skill
     // copies it verbatim.
-    expect(saved.workspacePath).toBe('.qwen/reviews/review.json');
+    expect(saved.workspacePath).toBe('.canopy/reviews/review.json');
     expect(JSON.parse(readFileSync(saved.path, 'utf8'))).toMatchObject({
       schemaVersion: 1,
       target: 'pr-123',
-      markdownReportPath: '.qwen/reviews/review.md',
+      markdownReportPath: '.canopy/reviews/review.md',
     });
   });
 
-  it('resolves against cwd and never QWEN_CODE_PROJECT_DIR', () => {
+  it('resolves against cwd and never CANOPY_CODE_PROJECT_DIR', () => {
     // The default path, with the trap armed. No `workspaceRoot` is passed —
     // an embedder that omits it must land on cwd — while the env var points
     // at a decoy the removed preference would have taken: the variable names
     // the session-storage directory under the runtime base, never the main
     // checkout, and six of six measured CI reviews fumbled on it (DESIGN.md —
-    // The artifact root that pointed at qwen-home). Re-introducing
+    // The artifact root that pointed at canopy-home). Re-introducing
     // `explicit ?? env ?? cwd` fails this test: resolution lands on the
     // decoy, not on cwd.
     const decoy = mkdtempSync(join(tmpdir(), 'review-artifact-decoy-'));
     const savedCwd = process.cwd();
-    const previous = process.env['QWEN_CODE_PROJECT_DIR'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = decoy;
+    const previous = process.env['CANOPY_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = decoy;
     try {
       fixture();
       process.chdir(root);
       const saved = saveReviewArtifact({
-        findings: '.qwen/tmp/findings.json',
-        composed: '.qwen/tmp/composed.json',
-        report: '.qwen/reviews/review.md',
-        out: '.qwen/reviews/review.json',
+        findings: '.canopy/tmp/findings.json',
+        composed: '.canopy/tmp/composed.json',
+        report: '.canopy/reviews/review.md',
+        out: '.canopy/reviews/review.json',
         target: 'pr-123',
         effort: 'high',
       });
 
-      expect(saved.path).toBe(join(root, '.qwen/reviews/review.json'));
-      expect(saved.workspacePath).toBe('.qwen/reviews/review.json');
-      expect(existsSync(join(decoy, '.qwen/reviews/review.json'))).toBe(false);
+      expect(saved.path).toBe(join(root, '.canopy/reviews/review.json'));
+      expect(saved.workspacePath).toBe('.canopy/reviews/review.json');
+      expect(existsSync(join(decoy, '.canopy/reviews/review.json'))).toBe(
+        false,
+      );
     } finally {
       process.chdir(savedCwd);
       if (previous === undefined) {
-        delete process.env['QWEN_CODE_PROJECT_DIR'];
+        delete process.env['CANOPY_CODE_PROJECT_DIR'];
       } else {
-        process.env['QWEN_CODE_PROJECT_DIR'] = previous;
+        process.env['CANOPY_CODE_PROJECT_DIR'] = previous;
       }
       rmSync(decoy, { recursive: true, force: true });
     }
@@ -535,23 +537,23 @@ describe('the CLI option contract', () => {
       yargs([]),
     ).parseSync([
       '--findings',
-      '.qwen/tmp/findings.json',
+      '.canopy/tmp/findings.json',
       '--composed',
-      '.qwen/tmp/composed.json',
+      '.canopy/tmp/composed.json',
       '--report',
-      '.qwen/reviews/review.md',
+      '.canopy/reviews/review.md',
       '--target',
       'pr-123',
       '--effort',
       'high',
       '--out',
-      '.qwen/reviews/review.json',
+      '.canopy/reviews/review.json',
       '--workspace-root',
       root,
     ]) as unknown as Parameters<typeof saveReviewArtifact>[0];
 
     const saved = saveReviewArtifact(parsed);
-    expect(saved.path).toBe(join(root, '.qwen/reviews/review.json'));
-    expect(saved.workspacePath).toBe('.qwen/reviews/review.json');
+    expect(saved.path).toBe(join(root, '.canopy/reviews/review.json'));
+    expect(saved.workspacePath).toBe('.canopy/reviews/review.json');
   });
 });

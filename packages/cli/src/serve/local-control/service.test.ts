@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ const sleepInhibitorMock = vi.hoisted(() => ({
   isRunning: vi.fn(() => true),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   sleepInhibitor: sleepInhibitorMock,
 }));
 

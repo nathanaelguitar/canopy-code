@@ -15,19 +15,19 @@ import type {
 } from './publisher.js';
 
 /**
- * Option B: writes the artifact to the local Qwen home and returns a file://
+ * Option B: writes the artifact to the local Canopy home and returns a file://
  * URL. No network, no sharing — the page opens directly in the browser. Keyed
- * by id under `~/.qwen/artifacts/{id}/index.html`, so redeploys overwrite in
+ * by id under `~/.canopy/artifacts/{id}/index.html`, so redeploys overwrite in
  * place and keep the same URL.
  */
 export class LocalPublisher implements ArtifactPublisher {
   readonly kind = 'local';
 
-  /** @param baseDir Override the output root (defaults to ~/.qwen/artifacts). */
+  /** @param baseDir Override the output root (defaults to ~/.canopy/artifacts). */
   constructor(private readonly baseDir?: string) {}
 
   private getBaseDir(): string {
-    return this.baseDir ?? path.join(Storage.getGlobalQwenDir(), 'artifacts');
+    return this.baseDir ?? path.join(Storage.getGlobalCanopyDir(), 'artifacts');
   }
 
   async publish(input: PublishArtifactInput): Promise<PublishedArtifact> {

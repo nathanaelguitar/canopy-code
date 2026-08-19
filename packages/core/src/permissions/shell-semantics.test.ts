@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen team
+ * Copyright 2025 Canopy team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -174,24 +174,24 @@ describe('extractShellOperations', () => {
 
   it('find: extracts write ops from exec clauses', () => {
     const ops = extractShellOperations(
-      'find . -exec cp payload .qwen/settings.json ;',
+      'find . -exec cp payload .canopy/settings.json ;',
       CWD,
     );
     expect(ops).toEqual([
       { virtualTool: 'list_directory', filePath: CWD },
       { virtualTool: 'read_file', filePath: `${CWD}/payload` },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/settings.json` },
     ]);
   });
 
   it('find: preserves exec placeholder operands for write detection', () => {
     const ops = extractShellOperations(
-      'find . -exec cp {} .qwen/settings.json ;',
+      'find . -exec cp {} .canopy/settings.json ;',
       CWD,
     );
     expect(ops).toContainEqual({
       virtualTool: 'write_file',
-      filePath: `${CWD}/.qwen/settings.json`,
+      filePath: `${CWD}/.canopy/settings.json`,
     });
   });
 
@@ -229,34 +229,36 @@ describe('extractShellOperations', () => {
 
   it('cp/mv/install/ln -t forms emit target-directory writes', () => {
     expect(
-      sorted(extractShellOperations('cp -t .qwen /tmp/settings.json', CWD)),
+      sorted(extractShellOperations('cp -t .canopy /tmp/settings.json', CWD)),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/settings.json' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/settings.json` },
     ]);
     expect(
-      sorted(extractShellOperations('mv --target-directory=.qwen /tmp/a', CWD)),
+      sorted(
+        extractShellOperations('mv --target-directory=.canopy /tmp/a', CWD),
+      ),
     ).toEqual([
       { virtualTool: 'edit', filePath: '/tmp/a' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/a` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/a` },
     ]);
     expect(
-      sorted(extractShellOperations('install -t .qwen /tmp/tool', CWD)),
+      sorted(extractShellOperations('install -t .canopy /tmp/tool', CWD)),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/tool' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/tool` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/tool` },
     ]);
     expect(
-      sorted(extractShellOperations('ln -t .qwen /tmp/target', CWD)),
+      sorted(extractShellOperations('ln -t .canopy /tmp/target', CWD)),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/target' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/target` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/target` },
     ]);
     expect(
-      sorted(extractShellOperations('cp -rt .qwen /tmp/payload', CWD)),
+      sorted(extractShellOperations('cp -rt .canopy /tmp/payload', CWD)),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/payload' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/payload` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/payload` },
     ]);
   });
 
@@ -363,50 +365,50 @@ describe('extractShellOperations', () => {
 
   it('rsync destination is a write', () => {
     const ops = extractShellOperations(
-      'rsync /tmp/payload .qwen/settings.json',
+      'rsync /tmp/payload .canopy/settings.json',
       CWD,
     );
     expect(sorted(ops)).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/payload' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/settings.json` },
     ]);
   });
 
   it('perl -i edits file operands', () => {
     const ops = extractShellOperations(
-      "perl -i -pe 's/x/y/' .qwen/settings.json",
+      "perl -i -pe 's/x/y/' .canopy/settings.json",
       CWD,
     );
     expect(ops).toEqual([
-      { virtualTool: 'edit', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'edit', filePath: `${CWD}/.canopy/settings.json` },
     ]);
 
     expect(
-      extractShellOperations("perl -i -e 's/x/y/' .qwen/settings.json", CWD),
+      extractShellOperations("perl -i -e 's/x/y/' .canopy/settings.json", CWD),
     ).toEqual([
-      { virtualTool: 'edit', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'edit', filePath: `${CWD}/.canopy/settings.json` },
     ]);
   });
 
   it('patch edits positional target files', () => {
     const ops = extractShellOperations(
-      'patch .qwen/settings.json fix.patch',
+      'patch .canopy/settings.json fix.patch',
       CWD,
     );
     expect(ops).toContainEqual({
       virtualTool: 'edit',
-      filePath: `${CWD}/.qwen/settings.json`,
+      filePath: `${CWD}/.canopy/settings.json`,
     });
   });
 
   it('patch edits output flag targets', () => {
     for (const command of [
-      'patch --output=.qwen/settings.json -i fix.patch',
-      'patch -o .qwen/settings.json -i fix.patch',
+      'patch --output=.canopy/settings.json -i fix.patch',
+      'patch -o .canopy/settings.json -i fix.patch',
     ]) {
       expect(extractShellOperations(command, CWD)).toContainEqual({
         virtualTool: 'edit',
-        filePath: `${CWD}/.qwen/settings.json`,
+        filePath: `${CWD}/.canopy/settings.json`,
       });
     }
   });
@@ -438,23 +440,23 @@ describe('extractShellOperations', () => {
   it('sort -o emits the output path as a write', () => {
     expect(
       sorted(
-        extractShellOperations('sort -o .qwen/settings.json /tmp/in', CWD),
+        extractShellOperations('sort -o .canopy/settings.json /tmp/in', CWD),
       ),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/in' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/settings.json` },
     ]);
 
     expect(
       sorted(
         extractShellOperations(
-          'sort --output=.qwen/settings.json /tmp/in',
+          'sort --output=.canopy/settings.json /tmp/in',
           CWD,
         ),
       ),
     ).toEqual([
       { virtualTool: 'read_file', filePath: '/tmp/in' },
-      { virtualTool: 'write_file', filePath: `${CWD}/.qwen/settings.json` },
+      { virtualTool: 'write_file', filePath: `${CWD}/.canopy/settings.json` },
     ]);
   });
 
@@ -467,18 +469,18 @@ describe('extractShellOperations', () => {
   });
 
   it('combined stdout fd redirect 1>file without space', () => {
-    const ops = extractShellOperations('echo hi 1>.qwen/settings.json', CWD);
+    const ops = extractShellOperations('echo hi 1>.canopy/settings.json', CWD);
     expect(ops).toContainEqual({
       virtualTool: 'write_file',
-      filePath: `${CWD}/.qwen/settings.json`,
+      filePath: `${CWD}/.canopy/settings.json`,
     });
   });
 
   it('combined stdout fd append redirect 1>>file without space', () => {
-    const ops = extractShellOperations('echo hi 1>>.qwen/settings.json', CWD);
+    const ops = extractShellOperations('echo hi 1>>.canopy/settings.json', CWD);
     expect(ops).toContainEqual({
       virtualTool: 'write_file',
-      filePath: `${CWD}/.qwen/settings.json`,
+      filePath: `${CWD}/.canopy/settings.json`,
     });
   });
 
@@ -701,44 +703,44 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('tracks literal `cd` across compound segments before resolving writes', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "cd .qwen && bash -lc 'echo {} > settings.json'",
+        "cd .canopy && bash -lc 'echo {} > settings.json'",
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('handles leading env assignments before redirected commands', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        'FOO=bar echo x > .qwen/settings.json',
+        'FOO=bar echo x > .canopy/settings.json',
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('handles leading env assignments before write commands', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        'FOO=bar tee .qwen/settings.json',
+        'FOO=bar tee .canopy/settings.json',
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('tracks cwd before leading env assignments', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "cd .qwen && FOO=bar echo '{}' > settings.json",
+        "cd .canopy && FOO=bar echo '{}' > settings.json",
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
@@ -748,7 +750,7 @@ describe('extractShellOperationsAcrossCommand', () => {
   // write to the `cd` target instead would check the wrong path.
   it.each([
     ['cd /tmp & echo {} > settings.json'],
-    ['cd .qwen & echo {} > settings.json'],
+    ['cd .canopy & echo {} > settings.json'],
   ])('does not move the cwd for the backgrounded `cd` in %s', (command) => {
     expect(extractShellOperationsAcrossCommand(command, '/repo')).toEqual([
       { virtualTool: 'write_file', filePath: '/repo/settings.json' },
@@ -815,18 +817,18 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('preserves sibling segments after a shell wrapper', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "bash -lc 'echo ok' && echo hi > .qwen/settings.json",
+        "bash -lc 'echo ok' && echo hi > .canopy/settings.json",
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('splits literal newlines as command boundaries', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        'cd .qwen\ncp /tmp/malicious settings.json',
+        'cd .canopy\ncp /tmp/malicious settings.json',
         '/repo',
       ),
     ).toEqual([
@@ -836,7 +838,7 @@ describe('extractShellOperationsAcrossCommand', () => {
       },
       {
         virtualTool: 'write_file',
-        filePath: '/repo/.qwen/settings.json',
+        filePath: '/repo/.canopy/settings.json',
       },
     ]);
   });
@@ -844,13 +846,13 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('tracks cwd through brace-grouped commands', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "{ cd .qwen && echo '{}' > settings.json; }",
+        "{ cd .canopy && echo '{}' > settings.json; }",
         '/repo',
       ),
     ).toEqual([
       {
         virtualTool: 'write_file',
-        filePath: '/repo/.qwen/settings.json',
+        filePath: '/repo/.canopy/settings.json',
       },
     ]);
   });
@@ -858,12 +860,12 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('strips grouping and background syntax from command and path tokens', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        '(echo > .qwen/settings.json) && echo > .qwen/hooks/run.sh&',
+        '(echo > .canopy/settings.json) && echo > .canopy/hooks/run.sh&',
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/hooks/run.sh' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/hooks/run.sh' },
     ]);
   });
 
@@ -871,7 +873,7 @@ describe('extractShellOperationsAcrossCommand', () => {
     expect(
       extractShellOperationsAcrossCommand(
         [
-          'cd .qwen',
+          'cd .canopy',
           "cat <<'EOF'",
           'cd /tmp',
           'EOF',
@@ -880,31 +882,31 @@ describe('extractShellOperationsAcrossCommand', () => {
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('does not treat quoted heredoc-looking text as a heredoc marker', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        ["echo '<<EOF'", 'cd .qwen', "echo '{}' > settings.json"].join('\n'),
+        ["echo '<<EOF'", 'cd .canopy', "echo '{}' > settings.json"].join('\n'),
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('handles `cd --` and other POSIX flag forms before the target', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "cd -- .qwen && printf '{}' > settings.local.json",
+        "cd -- .canopy && printf '{}' > settings.local.json",
         '/repo',
       ),
     ).toEqual([
       {
         virtualTool: 'write_file',
-        filePath: '/repo/.qwen/settings.local.json',
+        filePath: '/repo/.canopy/settings.local.json',
       },
     ]);
   });
@@ -926,24 +928,24 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('ignores redirects attached to cd when resolving static cwd', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "cd .qwen >/dev/null && echo '{}' > settings.json",
+        "cd .canopy >/dev/null && echo '{}' > settings.json",
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
   it('tracks static pushd targets like cd targets', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        "pushd .qwen && printf '{}' > settings.local.json",
+        "pushd .canopy && printf '{}' > settings.local.json",
         '/repo',
       ),
     ).toEqual([
       {
         virtualTool: 'write_file',
-        filePath: '/repo/.qwen/settings.local.json',
+        filePath: '/repo/.canopy/settings.local.json',
       },
     ]);
   });
@@ -1065,11 +1067,11 @@ describe('extractShellOperationsAcrossCommand', () => {
   it('clears cwd-unknown after an absolute static `cd`', () => {
     expect(
       extractShellOperationsAcrossCommand(
-        'cd $TARGET && cd /repo/.qwen && echo hi > settings.json',
+        'cd $TARGET && cd /repo/.canopy && echo hi > settings.json',
         '/repo',
       ),
     ).toEqual([
-      { virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' },
+      { virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' },
     ]);
   });
 
@@ -1088,7 +1090,7 @@ describe('extractShellOperationsAcrossCommand', () => {
 
   it('returns no ops when only `cd` segments are present', () => {
     expect(
-      extractShellOperationsAcrossCommand('cd .qwen && cd ..', '/repo'),
+      extractShellOperationsAcrossCommand('cd .canopy && cd ..', '/repo'),
     ).toEqual([]);
   });
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import {
   isSubpath,
   resolvePath,
   runSideQuery,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { HistoryItemSummary } from '../types.js';
 import { t } from '../../i18n/index.js';
 
@@ -108,7 +108,7 @@ export const summaryCommand: SlashCommand = {
   name: 'summary',
   get description() {
     return t(
-      'Generate a project summary and save it to .qwen/PROJECT_SUMMARY.md',
+      'Generate a project summary and save it to .canopy/PROJECT_SUMMARY.md',
     );
   },
   argumentHint: '[path]',
@@ -230,18 +230,18 @@ export const summaryCommand: SlashCommand = {
       const projectRoot = config.getProjectRoot();
       const defaultSummaryPath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'PROJECT_SUMMARY.md',
       );
       const customPath = args?.trim();
 
       if (!customPath) {
         // The default target always overwrites: regenerating the summary is
-        // the command's purpose, and .qwen/PROJECT_SUMMARY.md is a generated
+        // the command's purpose, and .canopy/PROJECT_SUMMARY.md is a generated
         // artifact — not user prose the overwrite guard protects.
         return {
           summaryPath: defaultSummaryPath,
-          filePathForDisplay: '.qwen/PROJECT_SUMMARY.md',
+          filePathForDisplay: '.canopy/PROJECT_SUMMARY.md',
           isDefaultTarget: true,
           realProjectRoot: await fsPromises.realpath(projectRoot),
         };
@@ -297,7 +297,7 @@ export const summaryCommand: SlashCommand = {
       ).replaceAll(path.sep, '/');
 
       // Compute the default-target flag before the guards so an explicitly
-      // spelled default path (`.qwen/PROJECT_SUMMARY.md` or `.qwen/`) is
+      // spelled default path (`.canopy/PROJECT_SUMMARY.md` or `.canopy/`) is
       // treated as the default target for the overwrite guard and always
       // overwrites. Unlike the no-arg command, a spelled path still runs the
       // custom-path symlink containment checks.
@@ -358,8 +358,8 @@ export const summaryCommand: SlashCommand = {
 
       // Re-check the leaf right before writing to narrow the TOCTOU window
       // between resolveSummaryTarget (pre-LLM) and the write (post-LLM).
-      // The default target is the user's own .qwen/ directory — a symlinked
-      // .qwen/ is a deliberate setup, not an attack vector.
+      // The default target is the user's own .canopy/ directory — a symlinked
+      // .canopy/ is a deliberate setup, not an attack vector.
       if (!target.isDefaultTarget) {
         await assertLeafNotSymlinkEscape(
           target.summaryPath,

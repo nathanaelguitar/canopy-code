@@ -34,7 +34,7 @@ import {
   MCPServerStatus,
   updateMCPServerStatus,
   recordSkillInvocation,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const {
   logSlashCommand,
@@ -53,9 +53,9 @@ const {
   },
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...original,
     logSlashCommand,
@@ -2904,7 +2904,7 @@ describe('useSlashCommandProcessor', () => {
           skillDetail: {
             name: 'review-skill',
             level: 'project',
-            filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+            filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
           },
           action: vi.fn().mockResolvedValue({
             type: 'submit_prompt',
@@ -2929,7 +2929,7 @@ describe('useSlashCommandProcessor', () => {
       expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
         name: 'review-skill',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
       });
     });
 
@@ -3012,7 +3012,7 @@ describe('useSlashCommandProcessor', () => {
           skillDetail: {
             name: 'review-skill',
             level: 'project',
-            filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+            filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
           },
           action,
         },
@@ -3348,7 +3348,7 @@ describe('useSlashCommandProcessor', () => {
         skillDetail: {
           name: 'feat-dev',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-feat-dev/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-feat-dev/SKILL.md',
         },
       };
       const skillB = {
@@ -3356,7 +3356,7 @@ describe('useSlashCommandProcessor', () => {
         skillDetail: {
           name: 'review',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
         },
       };
       const result = setupProcessorHook([skillA, skillB]);
@@ -3371,12 +3371,12 @@ describe('useSlashCommandProcessor', () => {
       expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
         name: 'feat-dev',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-feat-dev/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-feat-dev/SKILL.md',
       });
       expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
         name: 'review',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
       });
     });
 

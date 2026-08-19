@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ export interface WorktreeSession {
    * by earlier Phase C builds; semantically this is the value to pass
    * back to `new GitWorktreeService(...)` for any subsequent cleanup
    * (e.g. `handleWorktreeExit`'s remove path), because the worktree
-   * always lives under `<repoTopLevel>/.qwen/worktrees/`. When the
+   * always lives under `<repoTopLevel>/.canopy/worktrees/`. When the
    * CLI is launched from a monorepo subdirectory, `process.cwd()` and
    * `getRepoTopLevel()` differ — this field stores the latter.
    *
@@ -320,7 +320,7 @@ function shouldSkipRuntimeStatusScanDir(name: string, parent: string): boolean {
   if (RUNTIME_STATUS_SCAN_SKIP_DIRS.has(name)) {
     return true;
   }
-  return name === 'worktrees' && path.basename(parent) === '.qwen';
+  return name === 'worktrees' && path.basename(parent) === '.canopy';
 }
 
 async function getRuntimeStatusPathState(
@@ -423,14 +423,14 @@ export async function restoreWorktreeContext(
   }
 
   // Structural sanity check: the worktreePath MUST live under
-  // `<originalCwd>/.qwen/worktrees/`. Schema validation (readWorktreeSession)
+  // `<originalCwd>/.canopy/worktrees/`. Schema validation (readWorktreeSession)
   // already ensures the fields are strings, but a manually-edited or
   // copy-pasted sidecar could still point worktreePath at an arbitrary
   // existing directory — the model would then be directed to operate
-  // there. Restrict to the Qwen-managed worktrees subtree so a
+  // there. Restrict to the Canopy-managed worktrees subtree so a
   // tampered sidecar can't redirect file operations to /etc, ~/, etc.
   // (PR #4174 review #3256839787.)
-  const expectedParent = path.join(session.originalCwd, '.qwen', 'worktrees');
+  const expectedParent = path.join(session.originalCwd, '.canopy', 'worktrees');
   const resolvedWorktree = path.resolve(session.worktreePath);
   if (
     !resolvedWorktree.startsWith(expectedParent + path.sep) &&

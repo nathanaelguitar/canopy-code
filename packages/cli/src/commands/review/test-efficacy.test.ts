@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -310,7 +310,7 @@ describe('runControlMutant', () => {
     // reporting `false` states a run that never happened, re-classes every
     // survivor with that sentence, and discards the whole mutant/hunk window
     // over an I/O error. `null` is the file's own third-outcome discipline.
-    const dir = mkdtempSync(join(tmpdir(), 'qwen-control-'));
+    const dir = mkdtempSync(join(tmpdir(), 'canopy-control-'));
     try {
       expect(runControlMutant(dir, 'nope/does-not-exist.test.ts')).toBeNull();
     } finally {
@@ -322,7 +322,7 @@ describe('runControlMutant', () => {
     // The restore is in a `finally`, but the early return happens BEFORE the
     // write — a probe file the control corrupted would poison every mutant
     // run after it.
-    const dir = mkdtempSync(join(tmpdir(), 'qwen-control-'));
+    const dir = mkdtempSync(join(tmpdir(), 'canopy-control-'));
     try {
       const original = 'import { it } from "vitest";\nit("t", () => {});\n';
       writeFileSync(join(dir, 'a.test.ts'), original);

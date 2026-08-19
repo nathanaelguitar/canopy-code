@@ -28,7 +28,7 @@ describe('ArtifactTool', () => {
       getFileSystemService: () => new StandardFileSystemService(),
       getTargetDir: () => workdir,
       shouldAutoOpenArtifact: () =>
-        process.env['QWEN_ARTIFACT_NO_AUTO_OPEN'] !== '1',
+        process.env['CANOPY_ARTIFACT_NO_AUTO_OPEN'] !== '1',
     }) as unknown as Config;
 
   const writeFragment = async (name: string, content: string) => {
@@ -38,8 +38,8 @@ describe('ArtifactTool', () => {
   };
 
   beforeEach(async () => {
-    workdir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-art-src-'));
-    outDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-art-out-'));
+    workdir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-art-src-'));
+    outDir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-art-out-'));
     openSpy = vi.fn(async () => {});
     tool = new ArtifactTool(
       makeConfig(),
@@ -51,7 +51,7 @@ describe('ArtifactTool', () => {
   afterEach(async () => {
     await fs.rm(workdir, { recursive: true, force: true });
     await fs.rm(outDir, { recursive: true, force: true });
-    delete process.env['QWEN_ARTIFACT_NO_AUTO_OPEN'];
+    delete process.env['CANOPY_ARTIFACT_NO_AUTO_OPEN'];
     vi.restoreAllMocks();
   });
 
@@ -198,8 +198,8 @@ describe('ArtifactTool', () => {
     expect(openSpy).not.toHaveBeenCalled();
   });
 
-  it('skips auto-open when QWEN_ARTIFACT_NO_AUTO_OPEN=1', async () => {
-    process.env['QWEN_ARTIFACT_NO_AUTO_OPEN'] = '1';
+  it('skips auto-open when CANOPY_ARTIFACT_NO_AUTO_OPEN=1', async () => {
+    process.env['CANOPY_ARTIFACT_NO_AUTO_OPEN'] = '1';
     const file = await writeFragment('p.html', '<p>x</p>');
     const res = await tool.build({ file_path: file }).execute(signal);
     expect(res.error).toBeUndefined();

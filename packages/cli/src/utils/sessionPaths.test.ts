@@ -8,7 +8,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import { createMockCommandContext } from '../test-utils/mockCommandContext.js';
 import {
   collectSessionPathInfo,
@@ -21,7 +21,7 @@ describe('sessionPaths', () => {
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'session-paths-'));
-    vi.stubEnv('QWEN_RUNTIME_DIR', path.join(tmpDir, 'runtime'));
+    vi.stubEnv('CANOPY_RUNTIME_DIR', path.join(tmpDir, 'runtime'));
   });
 
   afterEach(async () => {

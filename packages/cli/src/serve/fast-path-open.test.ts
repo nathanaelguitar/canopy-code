@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,84 +9,84 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-const originalQwenHome = process.env['QWEN_HOME'];
+const originalCanopyHome = process.env['QWEN_HOME'];
 const originalSystemSettingsPath =
-  process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+  process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
 const originalSystemDefaultsPath =
-  process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+  process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
 const originalTrustedFoldersPath =
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
 describe('serve fast path --open import boundary', () => {
-  let tempQwenHome: string | undefined;
+  let tempCanopyHome: string | undefined;
 
-  function useTempQwenHome(): void {
-    tempQwenHome = fs.realpathSync(
+  function useTempCanopyHome(): void {
+    tempCanopyHome = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-fast-path-open-')),
     );
-    process.env['QWEN_HOME'] = tempQwenHome;
-    process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
-      tempQwenHome,
+    process.env['QWEN_HOME'] = tempCanopyHome;
+    process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
+      tempCanopyHome,
       'system-settings.json',
     );
-    process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
-      tempQwenHome,
+    process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
+      tempCanopyHome,
       'system-defaults.json',
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
-      tempQwenHome,
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+      tempCanopyHome,
       'trustedFolders.json',
     );
   }
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.doUnmock('./run-qwen-serve.js');
+    vi.doUnmock('./run-canopy-serve.js');
     vi.doUnmock('../commands/serve.js');
     vi.resetModules();
-    if (originalQwenHome === undefined) {
+    if (originalCanopyHome === undefined) {
       delete process.env['QWEN_HOME'];
     } else {
-      process.env['QWEN_HOME'] = originalQwenHome;
+      process.env['QWEN_HOME'] = originalCanopyHome;
     }
     if (originalSystemSettingsPath === undefined) {
-      delete process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+      delete process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
     } else {
-      process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] =
+      process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] =
         originalSystemSettingsPath;
     }
     if (originalSystemDefaultsPath === undefined) {
-      delete process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+      delete process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
     } else {
-      process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] =
+      process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] =
         originalSystemDefaultsPath;
     }
     if (originalTrustedFoldersPath === undefined) {
-      delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+      delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     } else {
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] =
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
         originalTrustedFoldersPath;
     }
-    if (tempQwenHome) {
-      fs.rmSync(tempQwenHome, { recursive: true, force: true });
-      tempQwenHome = undefined;
+    if (tempCanopyHome) {
+      fs.rmSync(tempCanopyHome, { recursive: true, force: true });
+      tempCanopyHome = undefined;
     }
   });
 
   it('defers importing the full serve command opener until runtime is ready', async () => {
-    useTempQwenHome();
+    useTempCanopyHome();
 
     let resolveRuntime: (() => void) | undefined;
     const runtimeReady = new Promise<void>((resolve) => {
       resolveRuntime = resolve;
     });
-    const runQwenServe = vi.fn(async () => ({
+    const runCanopyServe = vi.fn(async () => ({
       runtimeReady,
       close: vi.fn().mockResolvedValue(undefined),
     }));
     let serveCommandImported = false;
     const openBrowser = vi.fn(async () => undefined);
-    vi.doMock('./run-qwen-serve.js', () => ({ runQwenServe }));
+    vi.doMock('./run-canopy-serve.js', () => ({ runCanopyServe }));
     vi.doMock('../commands/serve.js', () => {
       serveCommandImported = true;
       return { maybeOpenWebShellBrowser: openBrowser };
@@ -103,8 +103,8 @@ describe('serve fast path --open import boundary', () => {
       '--no-web',
     ]);
 
-    await vi.waitFor(() => expect(runQwenServe).toHaveBeenCalledTimes(1));
-    expect(runQwenServe).toHaveBeenCalledWith(
+    await vi.waitFor(() => expect(runCanopyServe).toHaveBeenCalledTimes(1));
+    expect(runCanopyServe).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({ deferRuntimeUntilFirstHealth: false }),
     );
@@ -117,20 +117,20 @@ describe('serve fast path --open import boundary', () => {
   });
 
   it('skips importing the full serve command opener when runtime startup fails', async () => {
-    useTempQwenHome();
+    useTempCanopyHome();
 
     let rejectRuntime: ((err: Error) => void) | undefined;
     const runtimeReady = new Promise<void>((_resolve, reject) => {
       rejectRuntime = reject;
     });
     const close = vi.fn().mockResolvedValue(undefined);
-    const runQwenServe = vi.fn(async () => ({
+    const runCanopyServe = vi.fn(async () => ({
       runtimeReady,
       close,
     }));
     let serveCommandImported = false;
     const openBrowser = vi.fn(async () => undefined);
-    vi.doMock('./run-qwen-serve.js', () => ({ runQwenServe }));
+    vi.doMock('./run-canopy-serve.js', () => ({ runCanopyServe }));
     vi.doMock('../commands/serve.js', () => {
       serveCommandImported = true;
       return { maybeOpenWebShellBrowser: openBrowser };
@@ -150,8 +150,8 @@ describe('serve fast path --open import boundary', () => {
       '--no-web',
     ]);
 
-    await vi.waitFor(() => expect(runQwenServe).toHaveBeenCalledTimes(1));
-    expect(runQwenServe).toHaveBeenCalledWith(
+    await vi.waitFor(() => expect(runCanopyServe).toHaveBeenCalledTimes(1));
+    expect(runCanopyServe).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({ deferRuntimeUntilFirstHealth: false }),
     );

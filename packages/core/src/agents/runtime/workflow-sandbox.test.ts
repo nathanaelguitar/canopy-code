@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -282,7 +282,7 @@ describe('extractAndStripMeta', () => {
       whenToUse: 'tests',
       phases: [
         { title: 'a' },
-        { title: 'b', detail: 'has detail', model: 'qwen3' },
+        { title: 'b', detail: 'has detail', model: 'canopy3' },
       ],
     }
     return 1`;
@@ -958,8 +958,8 @@ describe('createWorkflowSandbox security', () => {
   });
 
   // T23: env var override is honored when no explicit opt is passed.
-  it('QWEN_CODE_MAX_WORKFLOW_SECONDS env var sets the wall-clock cap', async () => {
-    process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'] = '0.1';
+  it('CANOPY_CODE_MAX_WORKFLOW_SECONDS env var sets the wall-clock cap', async () => {
+    process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'] = '0.1';
     try {
       const sandbox = createWorkflowSandbox({
         args: undefined,
@@ -969,7 +969,7 @@ describe('createWorkflowSandbox security', () => {
         sandbox.run(`return new Promise(() => {});`),
       ).rejects.toThrow(/exceeded 100 ms of active time/);
     } finally {
-      delete process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'];
+      delete process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'];
     }
   });
 
@@ -1670,11 +1670,11 @@ describe('createWorkflowSandbox security', () => {
       },
     });
     const result = await sandbox.run(
-      `return await agent("x", { workingDir: ".qwen/tmp/review-pr-7" });`,
+      `return await agent("x", { workingDir: ".canopy/tmp/review-pr-7" });`,
     );
     expect(result).toBe('done');
     expect((seen[0].opts as { workingDir?: unknown }).workingDir).toBe(
-      '.qwen/tmp/review-pr-7',
+      '.canopy/tmp/review-pr-7',
     );
   });
 

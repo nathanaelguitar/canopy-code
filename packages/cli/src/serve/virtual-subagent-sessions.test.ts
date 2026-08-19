@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   getSubagentSessionDir,
   Storage,
   type ChatRecord,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { WorkspaceRuntime } from './workspace-registry.js';
 import {
   createVirtualSubagentSessionId,
@@ -259,7 +259,7 @@ describe('VirtualSubagentSessions', () => {
   );
 
   it('resolves, fully loads, and independently streams an agent transcript', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-subagent-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-subagent-'));
     tempDirs.push(dir);
     const outputFile = path.join(dir, 'agent.jsonl');
     await fs.writeFile(
@@ -412,7 +412,7 @@ describe('VirtualSubagentSessions', () => {
   });
 
   it('releases the subscriber count when the initial refresh fails', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-subagent-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-subagent-'));
     tempDirs.push(dir);
     // The property under test: any non-ENOENT failure of the initial refresh
     // releases the subscriber count (readNewRecords swallows only ENOENT and
@@ -461,7 +461,7 @@ describe('VirtualSubagentSessions', () => {
   });
 
   it('isolates cached targets by workspace runtime', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-subagent-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-subagent-'));
     tempDirs.push(dir);
     const makeRuntime = async (workspaceId: string, text: string) => {
       const outputFile = path.join(dir, `${workspaceId}.jsonl`);
@@ -529,7 +529,7 @@ describe('VirtualSubagentSessions', () => {
   });
 
   it('keeps later canonical rounds when one streamed round is reconciled', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-subagent-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-subagent-'));
     tempDirs.push(dir);
     const outputFile = path.join(dir, 'agent.jsonl');
     await fs.writeFile(
@@ -609,7 +609,7 @@ describe('VirtualSubagentSessions', () => {
   });
 
   it('does not replay a second load snapshot again on subscribe', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-subagent-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-subagent-'));
     tempDirs.push(dir);
     const outputFile = path.join(dir, 'agent.jsonl');
     await fs.writeFile(
@@ -693,7 +693,7 @@ describe('VirtualSubagentSessions', () => {
 
   it('keeps task status while supplementing terminal metrics', async () => {
     const runtimeDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-subagent-runtime-'),
+      path.join(os.tmpdir(), 'canopy-subagent-runtime-'),
     );
     tempDirs.push(runtimeDir);
     const workspaceCwd = path.join(runtimeDir, 'workspace');
@@ -734,8 +734,8 @@ describe('VirtualSubagentSessions', () => {
       sessionRuntimeBaseDir: runtimeDir,
       env: {
         mode: 'runtime-overlay',
-        overlayKeys: ['QWEN_RUNTIME_DIR'],
-        effectiveEnv: { QWEN_RUNTIME_DIR: runtimeDir },
+        overlayKeys: ['CANOPY_RUNTIME_DIR'],
+        effectiveEnv: { CANOPY_RUNTIME_DIR: runtimeDir },
       },
       bridge: {
         getSessionTasksStatus: async () => ({
@@ -824,7 +824,7 @@ describe('VirtualSubagentSessions', () => {
 
   it('keeps terminal legacy sidecar status over the background launch result', async () => {
     const runtimeDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-subagent-runtime-'),
+      path.join(os.tmpdir(), 'canopy-subagent-runtime-'),
     );
     tempDirs.push(runtimeDir);
     const workspaceCwd = path.join(runtimeDir, 'workspace');
@@ -911,8 +911,8 @@ describe('VirtualSubagentSessions', () => {
       sessionRuntimeBaseDir: runtimeDir,
       env: {
         mode: 'runtime-overlay',
-        overlayKeys: ['QWEN_RUNTIME_DIR'],
-        effectiveEnv: { QWEN_RUNTIME_DIR: runtimeDir },
+        overlayKeys: ['CANOPY_RUNTIME_DIR'],
+        effectiveEnv: { CANOPY_RUNTIME_DIR: runtimeDir },
       },
       bridge: {
         getSessionTasksStatus: async () => ({

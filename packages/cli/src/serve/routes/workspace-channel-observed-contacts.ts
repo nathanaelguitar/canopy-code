@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,7 +72,7 @@ function sendContacts(
   } catch (error) {
     if (sendGenerationClosedError(res, error)) return;
     process.stderr.write(
-      'qwen serve: observed channel contacts unavailable.\n',
+      'canopy serve: observed channel contacts unavailable.\n',
     );
     res.status(500).json({
       error: 'Observed channel contacts are unavailable.',

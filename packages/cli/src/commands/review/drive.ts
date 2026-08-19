@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review drive`: start something, wait until it is actually up, drive it,
+// `canopy review drive`: start something, wait until it is actually up, drive it,
 // and capture what it did — as facts, not as a guess about how long to sleep.
 //
 // The maintainer verification this borrows from is the highest-yield review
@@ -130,7 +130,7 @@ export interface ExecResult {
  * It is used twice — as a path segment under the temp dir, and inside the shell
  * line tmux runs — and it was safe in neither. Measured: `--server
  * '../../PWNED'` put `drive.sh` and its log at the FILESYSTEM ROOT, because
- * `join(tmpdir(), 'qwen-review-drive-' + server)` normalises the `..` away; and
+ * `join(tmpdir(), 'canopy-review-drive-' + server)` normalises the `..` away; and
  * a name holding `;` splits the `bash <script> > <log>` line into further
  * commands. The value is operator-supplied today, but this command exists to be
  * called from a review that builds its arguments programmatically — a name
@@ -215,7 +215,7 @@ function run(cmd: string, args: string[], input?: string): ExecResult {
   };
 }
 
-export const DRIVE_SENTINEL = '__QWEN_REVIEW_DRIVE_DONE__';
+export const DRIVE_SENTINEL = '__CANOPY_REVIEW_DRIVE_DONE__';
 
 /**
  * The wrapper the driven script runs inside.
@@ -246,7 +246,7 @@ export function wrapScript(
   sentinelPath: string,
   sentinel = DRIVE_SENTINEL,
 ): string {
-  return `trap '__qwen_rc=$?; echo "${sentinel} rc=\${__qwen_rc}" > ${shellQuote(sentinelPath)}' EXIT\nset +e\n${script}\n`;
+  return `trap '__canopy_rc=$?; echo "${sentinel} rc=\${__canopy_rc}" > ${shellQuote(sentinelPath)}' EXIT\nset +e\n${script}\n`;
 }
 
 /** Parse the sentinel line back out of a capture. Null when it is not there. */
@@ -338,7 +338,7 @@ export function runDrive(args: DriveArgs): DriveReport {
     }
   }
 
-  const dir = join(tmpdir(), `qwen-review-drive-${server}`);
+  const dir = join(tmpdir(), `canopy-review-drive-${server}`);
   mkdirSync(dir, { recursive: true });
   const scriptPath = join(dir, 'drive.sh');
   const logPath = args.logPath ?? join(dir, 'drive.log');

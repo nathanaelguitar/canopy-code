@@ -5,7 +5,7 @@
  */
 
 import { useReducer, useRef, useEffect } from 'react';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { useKeypress } from './useKeypress.js';
 import { keyMatchers, Command } from '../keyMatchers.js';
 

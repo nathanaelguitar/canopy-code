@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -394,18 +394,18 @@ describe('aggregateUsage', () => {
 // twice into usage_record.jsonl, permanently inflating every aggregate 2x.
 describe('loadUsageHistory + persistSessionUsage (issue #4994 regression)', () => {
   let tmpHome: string;
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
 
   beforeEach(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-usage-history-'));
-    originalQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = path.join(tmpHome, '.qwen');
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-usage-history-'));
+    originalCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = path.join(tmpHome, '.canopy');
     fs.mkdirSync(process.env['QWEN_HOME'], { recursive: true });
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 
@@ -440,7 +440,7 @@ describe('loadUsageHistory + persistSessionUsage (issue #4994 regression)', () =
         subtype: 'ui_telemetry',
         systemPayload: {
           uiEvent: {
-            'event.name': 'qwen-code.api_response',
+            'event.name': 'canopy-code.api_response',
             'event.timestamp': mid,
             response_id: 'r1',
             model: 'qwen-max',
@@ -590,7 +590,7 @@ describe('loadUsageHistory + persistSessionUsage (issue #4994 regression)', () =
     );
 
     // The daemon dashboard loads read-only: it rebuilds + returns data but must
-    // not write to ~/.qwen on a GET.
+    // not write to ~/.canopy on a GET.
     const records = await loadUsageHistory(undefined, {
       persistRebuild: false,
     });
@@ -783,18 +783,18 @@ describe('loadUsageHistory + persistSessionUsage (issue #4994 regression)', () =
 // transcript deletion.
 describe('persistUsageBeforeTranscriptDeletion (issue #7384)', () => {
   let tmpHome: string;
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
 
   beforeEach(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-usage-salvage-'));
-    originalQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = path.join(tmpHome, '.qwen');
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-usage-salvage-'));
+    originalCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = path.join(tmpHome, '.canopy');
     fs.mkdirSync(process.env['QWEN_HOME'], { recursive: true });
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 
@@ -831,7 +831,7 @@ describe('persistUsageBeforeTranscriptDeletion (issue #7384)', () => {
         subtype: 'ui_telemetry',
         systemPayload: {
           uiEvent: {
-            'event.name': 'qwen-code.api_response',
+            'event.name': 'canopy-code.api_response',
             'event.timestamp': mid,
             response_id: 'r1',
             model: 'qwen-max',

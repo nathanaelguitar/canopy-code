@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -36,7 +36,7 @@ vi.mock('../utils/forkedAgent.js', () => ({
   getCacheSafeParams: vi.fn(() => ({
     generationConfig: {},
     history: [],
-    model: 'qwen-fast',
+    model: 'canopy-fast',
     version: 1,
   })),
   createForkedChat: vi.fn(() => ({

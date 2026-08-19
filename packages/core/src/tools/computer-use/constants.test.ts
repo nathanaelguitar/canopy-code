@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -81,9 +81,9 @@ describe('resolveAssetUrls', () => {
     expect(urls[1]).toContain('github.com/trycua/cua/releases/download');
   });
 
-  it('prepends QWEN_COMPUTER_USE_DOWNLOAD_HOST as the first source', () => {
+  it('prepends CANOPY_COMPUTER_USE_DOWNLOAD_HOST as the first source', () => {
     const urls = resolveAssetUrls('a.tar.gz', {
-      QWEN_COMPUTER_USE_DOWNLOAD_HOST: 'https://mirror.internal/',
+      CANOPY_COMPUTER_USE_DOWNLOAD_HOST: 'https://mirror.internal/',
     });
     expect(urls).toHaveLength(3);
     expect(urls[0]).toBe(
@@ -99,12 +99,12 @@ describe('resolveAssetUrls', () => {
 });
 
 describe('binaryPath', () => {
-  it('resolves to the in-bundle binary under ~/.qwen/computer-use/...', () => {
+  it('resolves to the in-bundle binary under ~/.canopy/computer-use/...', () => {
     const p = binaryPath('/home/u', 'darwin', 'arm64');
     expect(p).toBe(
       join(
         '/home/u',
-        '.qwen',
+        '.canopy',
         'computer-use',
         `cua-driver-rs-${CUA_DRIVER_VERSION}`,
         `cua-driver-rs-${CUA_DRIVER_VERSION}-darwin-arm64`,
@@ -121,7 +121,7 @@ describe('binaryPath', () => {
     expect(p).toBe(
       join(
         '/home/u',
-        '.qwen',
+        '.canopy',
         'computer-use',
         `cua-driver-rs-${CUA_DRIVER_VERSION}`,
         'cua-driver',
@@ -150,7 +150,7 @@ describe('resolveMaxImageDimension', () => {
     expect(resolveMaxImageDimension(0, {})).toBe(0);
     expect(
       resolveMaxImageDimension(undefined, {
-        QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION: '0',
+        CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION: '0',
       }),
     ).toBe(0);
   });
@@ -163,7 +163,7 @@ describe('resolveMaxImageDimension', () => {
   it('lets the env var override the setting', () => {
     expect(
       resolveMaxImageDimension(1024, {
-        QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION: '768',
+        CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION: '768',
       }),
     ).toBe(768);
   });
@@ -172,7 +172,7 @@ describe('resolveMaxImageDimension', () => {
     for (const bad of ['abc', '12.5', '', '   ', '-1']) {
       expect(
         resolveMaxImageDimension(1024, {
-          QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION: bad,
+          CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION: bad,
         }),
       ).toBe(1024);
     }
@@ -187,15 +187,15 @@ describe('resolveMaxImageDimension', () => {
   });
 
   it('reads process.env by default', () => {
-    const prev = process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
+    const prev = process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
     try {
-      process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = '640';
+      process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = '640';
       expect(resolveMaxImageDimension(undefined)).toBe(640);
     } finally {
       if (prev === undefined) {
-        delete process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
+        delete process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
       } else {
-        process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = prev;
+        process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = prev;
       }
     }
   });

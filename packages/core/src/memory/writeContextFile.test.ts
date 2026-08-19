@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,24 +21,24 @@ describe('writeWorkspaceContextFile', () => {
   let tmpRoot: string;
   let workspace: string;
   let globalDir: string;
-  let getGlobalQwenDirSpy: ReturnType<typeof vi.spyOn>;
+  let getGlobalCanopyDirSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-write-context-'));
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-write-context-'));
     workspace = path.join(tmpRoot, 'workspace');
     globalDir = path.join(tmpRoot, 'global');
     await fs.mkdir(workspace, { recursive: true });
-    getGlobalQwenDirSpy = vi
-      .spyOn(Storage, 'getGlobalQwenDir')
+    getGlobalCanopyDirSpy = vi
+      .spyOn(Storage, 'getGlobalCanopyDir')
       .mockReturnValue(globalDir);
   });
 
   afterEach(async () => {
-    getGlobalQwenDirSpy.mockRestore();
+    getGlobalCanopyDirSpy.mockRestore();
     await fs.rm(tmpRoot, { recursive: true, force: true });
   });
 
-  it('creates QWEN.md with a fresh section header on first append', async () => {
+  it('creates CANOPY.md with a fresh section header on first append', async () => {
     const result = await writeWorkspaceContextFile({
       scope: 'workspace',
       mode: 'append',
@@ -131,7 +131,7 @@ describe('writeWorkspaceContextFile', () => {
     await expect(fs.access(filePath)).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
-  it('writes to the global ~/.qwen directory when scope=global', async () => {
+  it('writes to the global ~/.canopy directory when scope=global', async () => {
     const result = await writeWorkspaceContextFile({
       scope: 'global',
       mode: 'append',
@@ -142,7 +142,7 @@ describe('writeWorkspaceContextFile', () => {
     expect(result.filePath).toBe(
       path.join(globalDir, DEFAULT_CONTEXT_FILENAME),
     );
-    expect(getGlobalQwenDirSpy).toHaveBeenCalled();
+    expect(getGlobalCanopyDirSpy).toHaveBeenCalled();
     const written = await fs.readFile(result.filePath, 'utf8');
     expect(written).toBe(`${MEMORY_SECTION_HEADER}\n- global entry\n`);
   });
@@ -283,7 +283,7 @@ describe('writeWorkspaceContextFile', () => {
   it('does not split a memory entry that contains `## ` inside a fenced code block', async () => {
     // Round-7 [Critical] glm-5.1: the `\n## ` boundary heuristic was
     // matching `## ` lines INSIDE user-authored fenced code blocks
-    // (common in QWEN.md memory entries that quote API docs with
+    // (common in CANOPY.md memory entries that quote API docs with
     // markdown headings). The old impl would insert the new entry
     // mid-fence, splitting the existing entry. Code-fence-aware
     // detection skips matches inside ``` ``` `` ` blocks.
@@ -389,7 +389,7 @@ describe('writeWorkspaceContextFile', () => {
     // Round-trip the `setGeminiMdFilename` override: with the prior
     // `DEFAULT_CONTEXT_FILENAME` hard-code, a deployment that switched
     // the context filename to `AGENTS.md` saw GET list the new file
-    // but POST keep writing to `QWEN.md`. The fix routes
+    // but POST keep writing to `CANOPY.md`. The fix routes
     // `resolveContextFilePath` through `getCurrentGeminiMdFilename()`
     // so both surfaces agree.
     try {
@@ -405,7 +405,7 @@ describe('writeWorkspaceContextFile', () => {
       );
       const written = await fs.readFile(result.filePath, 'utf8');
       expect(written).toContain('- entry');
-      // The legacy QWEN.md must NOT have been written — the prior
+      // The legacy CANOPY.md must NOT have been written — the prior
       // hard-coded behavior would have created it here.
       await expect(
         fs.access(path.join(workspace, DEFAULT_CONTEXT_FILENAME)),

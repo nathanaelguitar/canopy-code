@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -77,7 +77,7 @@ describe('AgentChatView error containment (#9290)', () => {
     const output = lastFrame() ?? '';
     expect(output).toContain('teammate transcript boom');
     expect(output.toLowerCase()).toContain('agent');
-    expect(output).toContain('QWEN_DEBUG_LOG_FILE=1');
+    expect(output).toContain('CANOPY_DEBUG_LOG_FILE=1');
     // The panel must read as recoverable state, not a session death.
     expect(output).not.toContain('content:crashed@team');
   });

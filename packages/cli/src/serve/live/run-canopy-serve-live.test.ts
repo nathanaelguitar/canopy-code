@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetHomeEnvBootstrapForTesting } from '../../config/settings.js';
-import { runQwenServe } from '../run-qwen-serve.js';
+import { runCanopyServe } from '../run-canopy-serve.js';
 import { getLiveDiscoveryPath } from './discovery.js';
 import { LIVE_HOST_PROTOCOL_VERSION } from './types.js';
 
@@ -37,33 +37,33 @@ afterEach(async () => {
   );
 });
 
-describe('qwen serve Live Host discovery', () => {
+describe('canopy serve Live Host discovery', () => {
   it('publishes the authenticated listener and removes only its own record', async () => {
     const runtime = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-serve-live-'),
+      path.join(os.tmpdir(), 'canopy-serve-live-'),
     );
     temporaryDirectories.push(runtime);
     const workspace = path.join(runtime, 'workspace');
-    const qwenHome = path.join(runtime, 'settings-home');
+    const canopyHome = path.join(runtime, 'settings-home');
     await fs.mkdir(workspace);
-    await fs.mkdir(qwenHome, { recursive: true });
+    await fs.mkdir(canopyHome, { recursive: true });
     await fs.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
     const token = 'integration-test-token';
     const discoveryPath = getLiveDiscoveryPath(runtime);
-    let handle: Awaited<ReturnType<typeof runQwenServe>> | undefined;
+    let handle: Awaited<ReturnType<typeof runCanopyServe>> | undefined;
 
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -128,8 +128,8 @@ describe('qwen serve Live Host discovery', () => {
       ).not.toContain('realtime_voice');
     } finally {
       await handle?.close();
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
       resetHomeEnvBootstrapForTesting();
     }
 
@@ -140,27 +140,27 @@ describe('qwen serve Live Host discovery', () => {
 
   it('publishes a stable Host locator alongside a custom runtime record', async () => {
     const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-serve-live-stable-'),
+      path.join(os.tmpdir(), 'canopy-serve-live-stable-'),
     );
     temporaryDirectories.push(root);
     const runtime = path.join(root, 'custom-runtime');
-    const stable = path.join(root, 'stable-qwen-home');
-    const qwenHome = path.join(root, 'settings-home');
+    const stable = path.join(root, 'stable-canopy-home');
+    const canopyHome = path.join(root, 'settings-home');
     const workspace = path.join(root, 'workspace');
-    await fs.mkdir(qwenHome, { recursive: true });
+    await fs.mkdir(canopyHome, { recursive: true });
     await fs.mkdir(workspace, { recursive: true });
     await fs.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_HOME'] = qwenHome;
-    process.env['QWEN_RUNTIME_DIR'] = runtime;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['QWEN_HOME'] = canopyHome;
+    process.env['CANOPY_RUNTIME_DIR'] = runtime;
     resetHomeEnvBootstrapForTesting();
     const runtimeDiscoveryPath = getLiveDiscoveryPath(runtime);
     await fs.mkdir(path.dirname(runtimeDiscoveryPath), {
@@ -177,9 +177,9 @@ describe('qwen serve Live Host discovery', () => {
       })}\n`,
       { mode: 0o600 },
     );
-    let handle: Awaited<ReturnType<typeof runQwenServe>> | undefined;
+    let handle: Awaited<ReturnType<typeof runCanopyServe>> | undefined;
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -221,11 +221,11 @@ describe('qwen serve Live Host discovery', () => {
       ).toBe(true);
     } finally {
       await handle?.close();
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
       if (previousRuntimeDir === undefined)
-        delete process.env['QWEN_RUNTIME_DIR'];
-      else process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        delete process.env['CANOPY_RUNTIME_DIR'];
+      else process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       resetHomeEnvBootstrapForTesting();
     }
 
@@ -239,33 +239,33 @@ describe('qwen serve Live Host discovery', () => {
 
   it('hands stable discovery ownership to a waiting enabled daemon', async () => {
     const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-serve-live-handoff-'),
+      path.join(os.tmpdir(), 'canopy-serve-live-handoff-'),
     );
     temporaryDirectories.push(root);
-    const stable = path.join(root, 'stable-qwen-home');
-    const qwenHome = path.join(root, 'settings-home');
+    const stable = path.join(root, 'stable-canopy-home');
+    const canopyHome = path.join(root, 'settings-home');
     const workspaceOne = path.join(root, 'workspace-one');
     const workspaceTwo = path.join(root, 'workspace-two');
     const runtimeOne = path.join(root, 'runtime-one');
     const runtimeTwo = path.join(root, 'runtime-two');
-    await fs.mkdir(qwenHome, { recursive: true });
+    await fs.mkdir(canopyHome, { recursive: true });
     await fs.mkdir(workspaceOne, { recursive: true });
     await fs.mkdir(workspaceTwo, { recursive: true });
     await fs.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
-    let first: Awaited<ReturnType<typeof runQwenServe>> | undefined;
-    let second: Awaited<ReturnType<typeof runQwenServe>> | undefined;
+    let first: Awaited<ReturnType<typeof runCanopyServe>> | undefined;
+    let second: Awaited<ReturnType<typeof runCanopyServe>> | undefined;
     try {
-      first = await runQwenServe(
+      first = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -281,7 +281,7 @@ describe('qwen serve Live Host discovery', () => {
           runtimePlatform: 'darwin',
         },
       );
-      second = await runQwenServe(
+      second = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -325,8 +325,8 @@ describe('qwen serve Live Host discovery', () => {
     } finally {
       await second?.close();
       await first?.close();
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
       resetHomeEnvBootstrapForTesting();
     }
 

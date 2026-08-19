@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -275,7 +275,7 @@ export function buildUsageDashboard(
 
 /**
  * Read-only snapshot of local token usage for the daemon usage-dashboard API.
- * Loads the global cross-project history (`~/.qwen`) via
+ * Loads the global cross-project history (`~/.canopy`) via
  * {@link loadUsageHistoryWithLive} — the persisted `usage_record.jsonl` unioned
  * with a replay of recent transcripts — so the totals include daemon / Web Shell
  * and in-progress sessions that the persisted file never captures. The load can

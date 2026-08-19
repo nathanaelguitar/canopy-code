@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@ vi.mock('../config/storage.js', () => {
   let mockDir = '/tmp/test';
   return {
     Storage: {
-      getGlobalQwenDir: () => mockDir,
+      getGlobalCanopyDir: () => mockDir,
     },
     __setMockGlobalDir: (d: string) => {
       mockDir = d;

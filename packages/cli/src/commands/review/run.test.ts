@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -89,7 +89,7 @@ describe('buildReviewPrompt', () => {
 
   it('rejects a separators-only or empty target', () => {
     // `/` names no file: it survives basename extraction as the empty
-    // string, pinning the unmatchable `qwen-review--composed.json` — a whole
+    // string, pinning the unmatchable `canopy-review--composed.json` — a whole
     // child review burned before the parent reports "no composed verdict".
     for (const target of ['/', '//', '\\']) {
       expect(() => buildReviewPrompt({ target })).toThrow(
@@ -150,22 +150,22 @@ describe('newestArtifactSince', () => {
     // A stale composed JSON is the LAST review's verdict — republishing it
     // would report an outcome this run never produced.
     const start = Date.now();
-    file('qwen-review-local-composed.json', start - 60_000);
+    file('canopy-review-local-composed.json', start - 60_000);
 
     expect(
-      newestArtifactSince(dir, /^qwen-review-.*composed\.json$/, start),
+      newestArtifactSince(dir, /^canopy-review-.*composed\.json$/, start),
     ).toBeNull();
   });
 
   it('returns the newest matching artifact from this run, mtime attached', () => {
     const start = Date.now() - 10_000;
-    file('qwen-review-local-composed.json', start + 1_000);
-    const newer = file('qwen-review-pr-9-composed.json', start + 5_000);
+    file('canopy-review-local-composed.json', start + 1_000);
+    const newer = file('canopy-review-pr-9-composed.json', start + 5_000);
     file('unrelated.json', start + 9_000);
 
     const best = newestArtifactSince(
       dir,
-      /^qwen-review-.*composed\.json$/,
+      /^canopy-review-.*composed\.json$/,
       start,
     );
     expect(best?.path).toBe(newer);
@@ -214,32 +214,32 @@ describe('target-pinned artifact patterns', () => {
       base: 'foo.ts',
     });
     // A tab-completed trailing separator must not produce an empty basename
-    // (an empty base pins `qwen-review--composed.json`, which no child
+    // (an empty base pins `canopy-review--composed.json`, which no child
     // artifact can carry — every such run would report "no verdict").
     expect(classifyRunTarget('src/')).toEqual({ kind: 'file', base: 'src' });
     expect(classifyRunTarget(undefined)).toEqual({ kind: 'local' });
   });
 
   it('pins each target class to its exact composed filename', () => {
-    // Two concurrent `review run`s share `.qwen/tmp`; the generic
+    // Two concurrent `review run`s share `.canopy/tmp`; the generic
     // newest-composed scan republished the OTHER run's verdict on two of
     // three live parallel reviews. Exact names, not shape heuristics.
     const pr = composedPatternFor({ kind: 'pr', number: '9014' });
-    expect(pr.test('qwen-review-pr-9014-composed.json')).toBe(true);
-    expect(pr.test('qwen-review-pr-9013-composed.json')).toBe(false);
-    expect(pr.test('qwen-review-local-composed.json')).toBe(false);
+    expect(pr.test('canopy-review-pr-9014-composed.json')).toBe(true);
+    expect(pr.test('canopy-review-pr-9013-composed.json')).toBe(false);
+    expect(pr.test('canopy-review-local-composed.json')).toBe(false);
 
     const local = composedPatternFor({ kind: 'local' });
-    expect(local.test('qwen-review-local-composed.json')).toBe(true);
-    expect(local.test('qwen-review-pr-9013-composed.json')).toBe(false);
+    expect(local.test('canopy-review-local-composed.json')).toBe(true);
+    expect(local.test('canopy-review-pr-9013-composed.json')).toBe(false);
     // A concurrent FILE run's artifact is not the local run's either:
-    expect(local.test('qwen-review-b.ts-composed.json')).toBe(false);
+    expect(local.test('canopy-review-b.ts-composed.json')).toBe(false);
 
     const file = composedPatternFor({ kind: 'file', base: 'b.ts' });
-    expect(file.test('qwen-review-b.ts-composed.json')).toBe(true);
-    expect(file.test('qwen-review-local-composed.json')).toBe(false);
+    expect(file.test('canopy-review-b.ts-composed.json')).toBe(true);
+    expect(file.test('canopy-review-local-composed.json')).toBe(false);
     // The dot is a literal, not a wildcard:
-    expect(file.test('qwen-review-bxts-composed.json')).toBe(false);
+    expect(file.test('canopy-review-bxts-composed.json')).toBe(false);
   });
 
   it('a pr-<digits>-named FILE target is not confused with a PR run', () => {
@@ -247,11 +247,11 @@ describe('target-pinned artifact patterns', () => {
     // lookahead rejected this file run's OWN artifact, and the PR branch's
     // `.*` wildcard claimed it for `review run 42`.
     const file = composedPatternFor({ kind: 'file', base: 'pr-42-notes.ts' });
-    expect(file.test('qwen-review-pr-42-notes.ts-composed.json')).toBe(true);
+    expect(file.test('canopy-review-pr-42-notes.ts-composed.json')).toBe(true);
 
     const pr = composedPatternFor({ kind: 'pr', number: '42' });
-    expect(pr.test('qwen-review-pr-42-notes.ts-composed.json')).toBe(false);
-    expect(pr.test('qwen-review-pr-42-composed.json')).toBe(true);
+    expect(pr.test('canopy-review-pr-42-notes.ts-composed.json')).toBe(false);
+    expect(pr.test('canopy-review-pr-42-composed.json')).toBe(true);
   });
 
   it('pins the saved report as far as its naming allows', () => {
@@ -386,7 +386,7 @@ describe('review run (handler)', () => {
           mkdirSync(REVIEW_TMP_DIR, { recursive: true });
           mkdirSync(REVIEWS_DIR, { recursive: true });
           writeFileSync(
-            join(REVIEW_TMP_DIR, 'qwen-review-local-composed.json'),
+            join(REVIEW_TMP_DIR, 'canopy-review-local-composed.json'),
             JSON.stringify(composed),
             'utf8',
           );
@@ -459,7 +459,7 @@ describe('review run (handler)', () => {
       // Step 6: compose-review writes the composed verdict.
       mkdirSync(REVIEW_TMP_DIR, { recursive: true });
       writeFileSync(
-        join(REVIEW_TMP_DIR, 'qwen-review-local-composed.json'),
+        join(REVIEW_TMP_DIR, 'canopy-review-local-composed.json'),
         JSON.stringify({ event: 'APPROVE', verdictLine: 'Verdict: Approve' }),
         'utf8',
       );
@@ -480,7 +480,7 @@ describe('review run (handler)', () => {
     const result = JSON.parse(outs.join(''));
     expect(result.completed).toBe(true);
     expect(result.event).toBe('APPROVE');
-    expect(result.composedPath).toContain('qwen-review-local-composed.json');
+    expect(result.composedPath).toContain('canopy-review-local-composed.json');
     expect(process.exitCode).toBe(0);
   });
 
@@ -492,7 +492,7 @@ describe('review run (handler)', () => {
       // live parallel runs republish the wrong PR's verdict.
       mkdirSync(REVIEW_TMP_DIR, { recursive: true });
       writeFileSync(
-        join(REVIEW_TMP_DIR, 'qwen-review-pr-9013-composed.json'),
+        join(REVIEW_TMP_DIR, 'canopy-review-pr-9013-composed.json'),
         JSON.stringify({ event: 'APPROVE', verdictLine: 'Verdict: Approve' }),
         'utf8',
       );
@@ -500,7 +500,7 @@ describe('review run (handler)', () => {
       // neighbour older, an unpinned newest-composed scan would land on the
       // right file anyway and the regression would pass this test.
       utimesSync(
-        join(REVIEW_TMP_DIR, 'qwen-review-pr-9013-composed.json'),
+        join(REVIEW_TMP_DIR, 'canopy-review-pr-9013-composed.json'),
         Date.now() / 1000 + 60,
         Date.now() / 1000 + 60,
       );
@@ -532,7 +532,7 @@ describe('review run (handler)', () => {
     await vi.advanceTimersByTimeAsync(1_000);
     // This run's own verdict lands later.
     writeFileSync(
-      join(REVIEW_TMP_DIR, 'qwen-review-pr-9014-composed.json'),
+      join(REVIEW_TMP_DIR, 'canopy-review-pr-9014-composed.json'),
       JSON.stringify({
         event: 'COMMENT',
         verdictLine: 'Verdict: Comment',
@@ -546,7 +546,9 @@ describe('review run (handler)', () => {
     const result = JSON.parse(outs.join(''));
     expect(result.completed).toBe(true);
     expect(result.event).toBe('COMMENT');
-    expect(result.composedPath).toContain('qwen-review-pr-9014-composed.json');
+    expect(result.composedPath).toContain(
+      'canopy-review-pr-9014-composed.json',
+    );
     // The report scan is pinned the same way — the neighbour's newer report
     // must not become this run's reportPath.
     expect(result.reportPath).toContain('pr-9014.md');
@@ -560,7 +562,7 @@ describe('review run (handler)', () => {
     let child!: FakeChild;
     spawnMock.mockImplementation(() => {
       mkdirSync(REVIEW_TMP_DIR, { recursive: true });
-      const path = join(REVIEW_TMP_DIR, 'qwen-review-pr-7-composed.json');
+      const path = join(REVIEW_TMP_DIR, 'canopy-review-pr-7-composed.json');
       writeFileSync(
         path,
         JSON.stringify({ event: 'APPROVE', verdictLine: 'Verdict: Approve' }),
@@ -573,7 +575,7 @@ describe('review run (handler)', () => {
 
     const done = runHandler({ target: '7' });
     await vi.advanceTimersByTimeAsync(1_000);
-    const path = join(REVIEW_TMP_DIR, 'qwen-review-pr-7-composed.json');
+    const path = join(REVIEW_TMP_DIR, 'canopy-review-pr-7-composed.json');
     writeFileSync(
       path,
       JSON.stringify({
@@ -594,7 +596,7 @@ describe('review run (handler)', () => {
 
   it('names the artifact it waited for when no verdict appears', async () => {
     // The pin is an exact-filename contract with the skill's naming
-    // template. When the two drift, Step 9 has already swept `.qwen/tmp` by
+    // template. When the two drift, Step 9 has already swept `.canopy/tmp` by
     // the time anyone investigates — so the expectation has to be in the
     // failure report itself, in both output modes.
     armChild(0);
@@ -603,7 +605,7 @@ describe('review run (handler)', () => {
     expect(outs.join('')).toContain(
       'no composed verdict was produced (expected',
     );
-    expect(outs.join('')).toContain('qwen-review-pr-9014-composed.json');
+    expect(outs.join('')).toContain('canopy-review-pr-9014-composed.json');
     expect(process.exitCode).toBe(1);
 
     outs.length = 0;
@@ -613,7 +615,7 @@ describe('review run (handler)', () => {
     const result = JSON.parse(outs.join(''));
     expect(result.completed).toBe(false);
     expect(result.expectedComposedName).toBe(
-      'qwen-review-pr-9014-composed.json',
+      'canopy-review-pr-9014-composed.json',
     );
   });
 
@@ -646,18 +648,18 @@ describe('review run (handler)', () => {
     expect(argvUsed[i + 1]).toBe('default');
   });
 
-  describe('child env: QWEN_CODE_CLI version skew', () => {
+  describe('child env: CANOPY_CODE_CLI version skew', () => {
     let saved: string | undefined;
 
     beforeEach(() => {
-      saved = process.env['QWEN_CODE_CLI'];
+      saved = process.env['CANOPY_CODE_CLI'];
     });
 
     afterEach(() => {
       if (saved === undefined) {
-        delete process.env['QWEN_CODE_CLI'];
+        delete process.env['CANOPY_CODE_CLI'];
       } else {
-        process.env['QWEN_CODE_CLI'] = saved;
+        process.env['CANOPY_CODE_CLI'] = saved;
       }
     });
 
@@ -667,7 +669,7 @@ describe('review run (handler)', () => {
         string[],
         { env: NodeJS.ProcessEnv },
       ];
-      return opts.env['QWEN_CODE_CLI'];
+      return opts.env['CANOPY_CODE_CLI'];
     }
 
     /** Pin argv[1] to a controlled entry — the value the child gets stamped. */
@@ -678,13 +680,13 @@ describe('review run (handler)', () => {
     }
 
     it('replaces an inherited entry that points at a DIFFERENT build', async () => {
-      // The dogfooded failure: a review launched from inside a parent Qwen
+      // The dogfooded failure: a review launched from inside a parent Canopy
       // session ran the parent's install for every skill subcommand.
       const bundle = asEntry('cli.js', '#!/usr/bin/env node\n', 0o755);
       const origArgv1 = process.argv[1];
       process.argv[1] = bundle;
       try {
-        process.env['QWEN_CODE_CLI'] = process.execPath; // real file, ≠ argv[1]
+        process.env['CANOPY_CODE_CLI'] = process.execPath; // real file, ≠ argv[1]
         armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
         await runHandler();
 
@@ -700,14 +702,14 @@ describe('review run (handler)', () => {
       // `node dist/cli.js review run <pr>`: cli.ts stamps a derived
       // `../index.js`, which does not exist beside the bundle, so the slot
       // arrives unset and the child — itself a bundle launch — does not stamp
-      // it either. Measured on PR #9113: `"${QWEN_CODE_CLI:-qwen}" review
+      // it either. Measured on PR #9113: `"${CANOPY_CODE_CLI:-canopy}" review
       // match-remote` reached an older global install off PATH and came back
       // `Unknown arguments: owner, repo, host, match-remote`.
       const bundle = asEntry('cli.js', '#!/usr/bin/env node\n', 0o755);
       const origArgv1 = process.argv[1];
       process.argv[1] = bundle;
       try {
-        delete process.env['QWEN_CODE_CLI'];
+        delete process.env['CANOPY_CODE_CLI'];
         armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
         await runHandler();
 
@@ -718,16 +720,16 @@ describe('review run (handler)', () => {
     });
 
     it.skipIf(process.platform === 'win32')(
-      'keeps the bare-`qwen` fallback when a shell could not exec this build',
+      'keeps the bare-`canopy` fallback when a shell could not exec this build',
       async () => {
         // A stamp the consumer's spawn filter would blank is worse than none:
-        // `${QWEN_CODE_CLI:-qwen}` falls back on empty, but a set-and-unusable
+        // `${CANOPY_CODE_CLI:-canopy}` falls back on empty, but a set-and-unusable
         // path dies on exit 126 for every subcommand in the review.
         const bundle = asEntry('cli.js', 'const x = 1;\n', 0o644);
         const origArgv1 = process.argv[1];
         process.argv[1] = bundle;
         try {
-          delete process.env['QWEN_CODE_CLI'];
+          delete process.env['CANOPY_CODE_CLI'];
           armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
           await runHandler();
 
@@ -745,12 +747,12 @@ describe('review run (handler)', () => {
         // source `index.ts` (mode 0644, shebang and all). An extension
         // allowlist answered "usable" for it — every skill subcommand then
         // died on exit 126 — where the positive-evidence gate sees a file a
-        // shell cannot exec and preserves the bare-`qwen` fallback.
+        // shell cannot exec and preserves the bare-`canopy` fallback.
         const entry = asEntry('index.ts', '#!/usr/bin/env node\n', 0o644);
         const origArgv1 = process.argv[1];
         process.argv[1] = entry;
         try {
-          delete process.env['QWEN_CODE_CLI'];
+          delete process.env['CANOPY_CODE_CLI'];
           armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
           await runHandler();
 
@@ -771,7 +773,7 @@ describe('review run (handler)', () => {
       const origArgv1 = process.argv[1];
       process.argv[1] = pkgDir;
       try {
-        delete process.env['QWEN_CODE_CLI'];
+        delete process.env['CANOPY_CODE_CLI'];
         armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
         await runHandler();
 
@@ -784,7 +786,7 @@ describe('review run (handler)', () => {
     it('preserves an inherited entry that IS this build', async () => {
       // The outer-launcher case first-writer-wins exists for: an npm bin shim,
       // cli-entry.js, or the desktop bundle stamping this same install.
-      process.env['QWEN_CODE_CLI'] = process.argv[1] as string;
+      process.env['CANOPY_CODE_CLI'] = process.argv[1] as string;
       armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
       await runHandler();
 
@@ -796,7 +798,7 @@ describe('review run (handler)', () => {
       const origArgv1 = process.argv[1];
       process.argv[1] = bundle;
       try {
-        process.env['QWEN_CODE_CLI'] = join(dir, 'no-such-qwen');
+        process.env['CANOPY_CODE_CLI'] = join(dir, 'no-such-canopy');
         armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
         await runHandler();
 
@@ -816,7 +818,7 @@ describe('review run (handler)', () => {
       const origArgv1 = process.argv[1];
       process.argv[1] = bundle;
       try {
-        process.env['QWEN_CODE_CLI'] = wrapper;
+        process.env['CANOPY_CODE_CLI'] = wrapper;
         armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
         await runHandler();
 
@@ -827,9 +829,9 @@ describe('review run (handler)', () => {
     });
 
     it('preserves an inherited entry that is a symlink to this build', async () => {
-      const shim = join(dir, 'qwen-shim');
+      const shim = join(dir, 'canopy-shim');
       symlinkSync(process.argv[1] as string, shim);
-      process.env['QWEN_CODE_CLI'] = shim;
+      process.env['CANOPY_CODE_CLI'] = shim;
       armChild(0, { event: 'COMMENT', verdictLine: 'Verdict: Comment' });
       await runHandler();
 
@@ -917,7 +919,7 @@ describe('review run (handler)', () => {
     spawnMock.mockImplementation(() => {
       mkdirSync(REVIEW_TMP_DIR, { recursive: true });
       writeFileSync(
-        join(REVIEW_TMP_DIR, 'qwen-review-local-composed.json'),
+        join(REVIEW_TMP_DIR, 'canopy-review-local-composed.json'),
         JSON.stringify({ event: 'APPROVE', verdictLine: 'Verdict: Approve' }),
         'utf8',
       );
@@ -1003,7 +1005,7 @@ describe('review run (handler)', () => {
       setImmediate(() => {
         mkdirSync(REVIEW_TMP_DIR, { recursive: true });
         writeFileSync(
-          join(REVIEW_TMP_DIR, 'qwen-review-local-composed.json'),
+          join(REVIEW_TMP_DIR, 'canopy-review-local-composed.json'),
           '{truncated',
           'utf8',
         );

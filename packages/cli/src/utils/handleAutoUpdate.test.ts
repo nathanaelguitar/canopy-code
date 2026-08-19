@@ -62,7 +62,7 @@ describe('handleAutoUpdate', () => {
         latest: '2.0.0',
         current: '1.0.0',
         type: 'major',
-        name: '@qwen-code/qwen-code',
+        name: '@canopy-code/canopy-code',
       },
       message: 'An update is available!',
     };
@@ -104,9 +104,9 @@ describe('handleAutoUpdate', () => {
     // but if handleAutoUpdate is still called, it should show a manual update message.
     mockSettings.merged.general!.enableAutoUpdate = false;
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage:
-        'Please run npm i -g @qwen-code/qwen-code@latest to update',
+        'Please run npm i -g @canopy-code/canopy-code@latest to update',
       isGlobal: true,
       packageManager: PackageManager.NPM,
     });
@@ -116,7 +116,7 @@ describe('handleAutoUpdate', () => {
     // Should still emit update-received with manual update message
     expect(emitSpy).toHaveBeenCalledWith('update-received', {
       message:
-        'An update is available!\nPlease run npm i -g @qwen-code/qwen-code@latest to update',
+        'An update is available!\nPlease run npm i -g @canopy-code/canopy-code@latest to update',
     });
     // Should NOT spawn update when enableAutoUpdate is false
     expect(mockSpawn).not.toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe('handleAutoUpdate', () => {
 
   it('should attempt to perform an update when conditions are met', async () => {
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: 'This is an additional message.',
       isGlobal: false,
       packageManager: PackageManager.NPM,
@@ -170,7 +170,7 @@ describe('handleAutoUpdate', () => {
 
   it('should emit "update-failed" when the update process fails', async () => {
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: 'This is an additional message.',
       isGlobal: false,
       packageManager: PackageManager.NPM,
@@ -192,7 +192,7 @@ describe('handleAutoUpdate', () => {
 
   it('should emit "update-failed" when the spawn function throws an error', async () => {
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: 'This is an additional message.',
       isGlobal: false,
       packageManager: PackageManager.NPM,
@@ -214,7 +214,7 @@ describe('handleAutoUpdate', () => {
   it('should use the "@nightly" tag for nightly updates', async () => {
     mockUpdateInfo.update.latest = '2.0.0-nightly';
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: 'This is an additional message.',
       isGlobal: false,
       packageManager: PackageManager.NPM,
@@ -228,7 +228,7 @@ describe('handleAutoUpdate', () => {
       {
         detached: true,
         env: expect.objectContaining({
-          QWEN_CODE_MANAGED_NPM_UPDATE_VERSION: '2.0.0-nightly',
+          CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION: '2.0.0-nightly',
         }),
         stdio: ['ignore', 'ignore', 'pipe'],
         windowsHide: true,
@@ -239,7 +239,7 @@ describe('handleAutoUpdate', () => {
   it('runs npm through the active Node.js runtime on Windows', () => {
     vi.spyOn(os, 'platform').mockReturnValue('win32');
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
       isGlobal: true,
       packageManager: PackageManager.NPM,
     });
@@ -252,7 +252,7 @@ describe('handleAutoUpdate', () => {
       {
         detached: true,
         env: expect.objectContaining({
-          QWEN_CODE_MANAGED_NPM_UPDATE_VERSION: '2.0.0',
+          CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION: '2.0.0',
         }),
         stdio: ['ignore', 'ignore', 'pipe'],
         windowsHide: true,
@@ -263,7 +263,7 @@ describe('handleAutoUpdate', () => {
   it('runs non-npm package-manager updates through the shell', () => {
     vi.spyOn(os, 'platform').mockReturnValue('linux');
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'pnpm add -g @qwen-code/qwen-code@latest',
+      updateCommand: 'pnpm add -g @canopy-code/canopy-code@latest',
       isGlobal: true,
       packageManager: PackageManager.PNPM,
     });
@@ -272,7 +272,7 @@ describe('handleAutoUpdate', () => {
 
     expect(mockSpawn).toHaveBeenCalledWith(
       'bash',
-      ['-c', 'pnpm add -g @qwen-code/qwen-code@2.0.0'],
+      ['-c', 'pnpm add -g @canopy-code/canopy-code@2.0.0'],
       {
         stdio: ['pipe', 'ignore', 'pipe'],
       },
@@ -281,7 +281,7 @@ describe('handleAutoUpdate', () => {
 
   it('should emit "update-success" when the update process succeeds', async () => {
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: 'This is an additional message.',
       isGlobal: false,
       packageManager: PackageManager.NPM,
@@ -318,7 +318,7 @@ describe('handleAutoUpdate — standalone path', () => {
         latest: '2.0.0',
         current: '1.0.0',
         type: 'major',
-        name: '@qwen-code/qwen-code',
+        name: '@canopy-code/canopy-code',
       },
       message: 'An update is available!',
     };
@@ -333,11 +333,11 @@ describe('handleAutoUpdate — standalone path', () => {
 
   it('calls performStandaloneUpdate and does NOT spawn npm', async () => {
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm i -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm i -g @canopy-code/canopy-code@latest',
       updateMessage: '',
       isGlobal: false,
       isStandalone: true,
-      standaloneDir: '/home/user/.local/lib/qwen-code',
+      standaloneDir: '/home/user/.local/lib/canopy-code',
       packageManager: PackageManager.NPM,
     });
     mockPerformStandaloneUpdate.mockResolvedValue('done');
@@ -348,7 +348,7 @@ describe('handleAutoUpdate — standalone path', () => {
     );
 
     expect(mockPerformStandaloneUpdate).toHaveBeenCalledWith(
-      '/home/user/.local/lib/qwen-code',
+      '/home/user/.local/lib/canopy-code',
       '2.0.0',
     );
     expect(mockSpawn).not.toHaveBeenCalled();
@@ -360,7 +360,7 @@ describe('handleAutoUpdate — standalone path', () => {
       updateMessage: '',
       isGlobal: false,
       isStandalone: true,
-      standaloneDir: '/home/user/.local/lib/qwen-code',
+      standaloneDir: '/home/user/.local/lib/canopy-code',
       packageManager: PackageManager.NPM,
     });
     mockPerformStandaloneUpdate.mockResolvedValue('deferred');
@@ -382,7 +382,7 @@ describe('handleAutoUpdate — standalone path', () => {
       updateMessage: '',
       isGlobal: false,
       isStandalone: true,
-      standaloneDir: '/home/user/.local/lib/qwen-code',
+      standaloneDir: '/home/user/.local/lib/canopy-code',
       packageManager: PackageManager.NPM,
     });
     mockPerformStandaloneUpdate.mockResolvedValue('done');
@@ -404,7 +404,7 @@ describe('handleAutoUpdate — standalone path', () => {
       updateMessage: '',
       isGlobal: false,
       isStandalone: true,
-      standaloneDir: '/home/user/.local/lib/qwen-code',
+      standaloneDir: '/home/user/.local/lib/canopy-code',
       packageManager: PackageManager.NPM,
     });
     mockPerformStandaloneUpdate.mockRejectedValue(new Error('Download failed'));

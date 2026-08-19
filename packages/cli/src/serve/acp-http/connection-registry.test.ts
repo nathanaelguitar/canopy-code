@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1961,11 +1961,11 @@ describe('ConnectionRegistry.getSnapshot', () => {
       const idA = connA.nextId();
       const idB = connB.nextId();
       expect(idA).not.toBe(idB);
-      // Pin the connection-qualified format `_qwen_perm_<connectionId>_<N>` —
+      // Pin the connection-qualified format `_canopy_perm_<connectionId>_<N>` —
       // it's the collision-prevention guarantee of this change, so a
-      // regression to the old `_qwen_perm_<N>` format must fail here, not just
+      // regression to the old `_canopy_perm_<N>` format must fail here, not just
       // an "ids differ" check that the old format would also pass.
-      expect(idA).toMatch(/^_qwen_perm_.+_1$/);
+      expect(idA).toMatch(/^_canopy_perm_.+_1$/);
       expect(idA).toContain(connA.connectionId);
       expect(idB).toContain(connB.connectionId);
 

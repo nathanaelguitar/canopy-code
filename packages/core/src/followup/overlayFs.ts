@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Copy-on-Write Overlay Filesystem
@@ -27,7 +27,7 @@ export class OverlayFs {
     const id = randomUUID().slice(0, 8);
     this.overlayDir = join(
       tmpdir(),
-      'qwen-speculation',
+      'canopy-speculation',
       String(process.pid),
       id,
     );

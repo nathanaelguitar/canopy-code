@@ -16,17 +16,17 @@ import {
   getDefaultModelIds,
   resolveBaseUrl,
   type ProviderSetupInputs,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   useAuthCommand,
   normalizeCustomModelIds,
   maskApiKey,
 } from './useAuth.js';
 
-vi.mock('../hooks/useQwenAuth.js', () => ({
-  useQwenAuth: vi.fn(() => ({
-    qwenAuthState: {},
-    cancelQwenAuth: vi.fn(),
+vi.mock('../hooks/use-canopy-auth.js', () => ({
+  useCanopyAuth: vi.fn(() => ({
+    canopyAuthState: {},
+    cancelCanopyAuth: vi.fn(),
   })),
 }));
 
@@ -383,7 +383,7 @@ describe('generateCustomApiKeyEnvKey', () => {
       AuthType.USE_OPENAI,
       'https://api.openai.com/v1',
     );
-    expect(key).toMatch(/^QWEN_CUSTOM_API_KEY_[A-Z0-9_]+$/);
+    expect(key).toMatch(/^CANOPY_CUSTOM_API_KEY_[A-Z0-9_]+$/);
     const key2 = generateCustomApiKeyEnvKey(
       AuthType.USE_OPENAI,
       'https://api.openai.com/v1',
@@ -430,27 +430,29 @@ describe('generateCustomApiKeyEnvKey', () => {
 
 describe('normalizeCustomModelIds', () => {
   it('splits comma-separated model IDs', () => {
-    const result = normalizeCustomModelIds('qwen/qwen3-coder,openai/gpt-4.1');
-    expect(result).toEqual(['qwen/qwen3-coder', 'openai/gpt-4.1']);
+    const result = normalizeCustomModelIds('canopy/qwen3-coder,openai/gpt-4.1');
+    expect(result).toEqual(['canopy/qwen3-coder', 'openai/gpt-4.1']);
   });
 
   it('trims whitespace from each model ID', () => {
     const result = normalizeCustomModelIds(
-      ' qwen/qwen3-coder , openai/gpt-4.1 ',
+      ' canopy/qwen3-coder , openai/gpt-4.1 ',
     );
-    expect(result).toEqual(['qwen/qwen3-coder', 'openai/gpt-4.1']);
+    expect(result).toEqual(['canopy/qwen3-coder', 'openai/gpt-4.1']);
   });
 
   it('deduplicates while preserving order', () => {
     const result = normalizeCustomModelIds(
-      'qwen/qwen3-coder,openai/gpt-4.1,qwen/qwen3-coder',
+      'canopy/qwen3-coder,openai/gpt-4.1,canopy/qwen3-coder',
     );
-    expect(result).toEqual(['qwen/qwen3-coder', 'openai/gpt-4.1']);
+    expect(result).toEqual(['canopy/qwen3-coder', 'openai/gpt-4.1']);
   });
 
   it('removes empty entries', () => {
-    const result = normalizeCustomModelIds('qwen/qwen3-coder,,openai/gpt-4.1');
-    expect(result).toEqual(['qwen/qwen3-coder', 'openai/gpt-4.1']);
+    const result = normalizeCustomModelIds(
+      'canopy/qwen3-coder,,openai/gpt-4.1',
+    );
+    expect(result).toEqual(['canopy/qwen3-coder', 'openai/gpt-4.1']);
   });
 
   it('returns empty array for empty input', () => {
@@ -464,8 +466,8 @@ describe('normalizeCustomModelIds', () => {
   });
 
   it('handles single model ID', () => {
-    const result = normalizeCustomModelIds('qwen/qwen3-coder');
-    expect(result).toEqual(['qwen/qwen3-coder']);
+    const result = normalizeCustomModelIds('canopy/qwen3-coder');
+    expect(result).toEqual(['canopy/qwen3-coder']);
   });
 });
 

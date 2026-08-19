@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,18 +8,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type {
   UsageSummaryRecord,
   AggregatedReport,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     loadUsageHistory: vi.fn(),
   };
 });
 
-import { loadUsageHistory } from '@qwen-code/qwen-code-core';
+import { loadUsageHistory } from '@canopy-code/canopy-code-core';
 import {
   loadStatsData,
   getPreviousRangeBounds,

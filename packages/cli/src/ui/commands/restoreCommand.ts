@@ -12,7 +12,7 @@ import {
   type SlashCommandActionReturn,
   CommandKind,
 } from './types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 async function restoreAction(
@@ -29,7 +29,7 @@ async function restoreAction(
     return {
       type: 'message',
       messageType: 'error',
-      content: 'Could not determine the .qwen directory path.',
+      content: 'Could not determine the .canopy directory path.',
     };
   }
 

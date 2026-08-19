@@ -193,7 +193,7 @@ describe('WebFetchTool', () => {
   });
 
   describe('request headers', () => {
-    it('should send a QwenCode User-Agent alongside Accept', async () => {
+    it('should send a CanopyCode User-Agent alongside Accept', async () => {
       const fetchSpy = vi
         .spyOn(fetchUtils, 'fetchWithPolicy')
         .mockResolvedValue(okResponse());
@@ -212,7 +212,7 @@ describe('WebFetchTool', () => {
           headers: {
             Accept:
               'text/markdown, text/html;q=0.9, text/plain;q=0.8, */*;q=0.1',
-            'User-Agent': `QwenCode/1.2.3 (${process.platform}; ${process.arch})`,
+            'User-Agent': `CanopyCode/1.2.3 (${process.platform}; ${process.arch})`,
           },
         }),
       );
@@ -689,7 +689,7 @@ describe('WebFetchTool', () => {
     });
 
     it('should fall back with raw content when the processing backstop fires, without aborting the tool signal', async () => {
-      vi.stubEnv('QWEN_WEB_FETCH_PROCESSING_TIMEOUT_MS', '50');
+      vi.stubEnv('CANOPY_WEB_FETCH_PROCESSING_TIMEOUT_MS', '50');
       vi.spyOn(fetchUtils, 'fetchWithPolicy').mockResolvedValue(okResponse());
       // Hangs until the composed signal (carrying the backstop timeout)
       // aborts it — simulating a stalled provider stream.
@@ -748,10 +748,10 @@ describe('WebFetchTool', () => {
       'should resolve the backstop timeout for %s env values',
       (_label, envValue, expected) => {
         if (envValue === undefined) {
-          vi.stubEnv('QWEN_WEB_FETCH_PROCESSING_TIMEOUT_MS', '');
-          delete process.env['QWEN_WEB_FETCH_PROCESSING_TIMEOUT_MS'];
+          vi.stubEnv('CANOPY_WEB_FETCH_PROCESSING_TIMEOUT_MS', '');
+          delete process.env['CANOPY_WEB_FETCH_PROCESSING_TIMEOUT_MS'];
         } else {
-          vi.stubEnv('QWEN_WEB_FETCH_PROCESSING_TIMEOUT_MS', envValue);
+          vi.stubEnv('CANOPY_WEB_FETCH_PROCESSING_TIMEOUT_MS', envValue);
         }
         expect(sideQueryTimeoutMs()).toBe(expected);
       },
@@ -763,7 +763,7 @@ describe('WebFetchTool', () => {
       // Session.ts aborts with a plain string reason; throwIfAborted rethrows
       // it as-is, so the error path must not assume an Error instance.
       mockGenerateContent.mockImplementation(() => {
-        controller.abort('qwen:user-cancel');
+        controller.abort('canopy:user-cancel');
         return Promise.resolve({ text: 'Late success' });
       });
 
@@ -772,7 +772,7 @@ describe('WebFetchTool', () => {
         .execute(controller.signal);
 
       expect(result.error?.type).toBe(ToolErrorType.WEB_FETCH_FALLBACK_FAILED);
-      expect(result.llmContent).toContain('qwen:user-cancel');
+      expect(result.llmContent).toContain('canopy:user-cancel');
       expect(result.llmContent).not.toContain('undefined');
       expect(result.llmContent).not.toContain('Late success');
     });
@@ -1165,7 +1165,7 @@ describe('WebFetchTool', () => {
       expect(
         await tool
           .build({
-            url: 'https://raw.githubusercontent.com/QwenLM/qwen-code/main/README.md',
+            url: 'https://raw.githubusercontent.com/CanopyLM/canopy-code/main/README.md',
             prompt: 'summarize',
           })
           .getDefaultPermission(),

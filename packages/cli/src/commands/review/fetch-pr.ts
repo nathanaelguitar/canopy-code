@@ -1,22 +1,22 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review fetch-pr`: prepare a PR review's working state in a single
+// `canopy review fetch-pr`: prepare a PR review's working state in a single
 // deterministic pass.
 //
 //   1. Clean any stale worktree / branch from a previously interrupted run
 //      so the new run starts fresh.
-//   2. `git fetch <remote> pull/<n>/head:qwen-review/pr-<n>` — pull the PR
+//   2. `git fetch <remote> pull/<n>/head:canopy-review/pr-<n>` — pull the PR
 //      HEAD into a unique local ref (does not modify the user's working
 //      tree, unlike `gh pr checkout`).
 //   3. `gh pr view ...` to fetch metadata (head/base ref names, head SHA,
 //      diff stats, cross-repo flag).
 //   4. `git worktree add` to create an ephemeral worktree at
-//      `.qwen/tmp/review-pr-<n>` so subsequent steps can run in isolation.
-//   5. Capture the review diff to `.qwen/tmp/qwen-review-pr-<n>-diff.txt` and
+//      `.canopy/tmp/review-pr-<n>` so subsequent steps can run in isolation.
+//   5. Capture the review diff to `.canopy/tmp/canopy-review-pr-<n>-diff.txt` and
 //      partition it into chunks. Review agents `read_file` a chunk's line
 //      range instead of running `git diff` themselves: Shell keeps a 30 000
 //      character persistence trigger but returns an approximately 4 000
@@ -114,7 +114,7 @@ type FetchPrResult = PlanReport & {
   /**
    * When this review window opened (ISO-8601). `cleanup` audits the PR for
    * writes by the current user inside [fetchedAt, cleanup) that did not go
-   * through `qwen review submit` — the submit-only contract's tripwire.
+   * through `canopy review submit` — the submit-only contract's tripwire.
    */
   fetchedAt: string;
   /**
@@ -623,8 +623,8 @@ async function runFetchPr(args: FetchPrArgs): Promise<void> {
   // (drift restarts, later rounds of a multi-prompt review) pass: ownership
   // is per session, not per prompt.
   const leaseTarget = `pr-${prNumber}`;
-  const sessionId = process.env['QWEN_CODE_SESSION_ID'];
-  const promptId = process.env['QWEN_CODE_PROMPT_ID'];
+  const sessionId = process.env['CANOPY_CODE_SESSION_ID'];
+  const promptId = process.env['CANOPY_CODE_PROMPT_ID'];
   // The lease write no-ops without both ids, and a lease-less run builds
   // the whole review state unprotected — a later session passes the empty
   // gate and destroys it mid-run (#9205 again). Refuse before touching
@@ -632,9 +632,9 @@ async function runFetchPr(args: FetchPrArgs): Promise<void> {
   // lease applies to acquiring one too.
   if (!sessionId || !promptId) {
     throw new Error(
-      `fetch-pr: QWEN_CODE_SESSION_ID and QWEN_CODE_PROMPT_ID must both ` +
+      `fetch-pr: CANOPY_CODE_SESSION_ID and CANOPY_CODE_PROMPT_ID must both ` +
         `be set to register the review worktree lease. Run fetch-pr from ` +
-        `a Qwen Code session (the /review skill sets both); without the ` +
+        `a Canopy Code session (the /review skill sets both); without the ` +
         `lease nothing locks the shared worktree path against a ` +
         `concurrent session.`,
     );

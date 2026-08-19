@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { VoiceStreamSession } from './voice-stream-session.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const RETRY_DELAY_MS = 200;
 const debugLogger = createDebugLogger('VOICE_STREAM');

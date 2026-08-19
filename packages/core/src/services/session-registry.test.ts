@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,7 +32,7 @@ import * as processLiveness from '../utils/process-liveness.js';
  * work. The `<pid>.json` filename filter is invisible from the outside —
  * the filename/contents agreement check downstream rejects everything a
  * looser regex would let through — so the only way to hold the filter to
- * its stated job, not reading whatever else lives in `~/.qwen/sessions`,
+ * its stated job, not reading whatever else lives in `~/.canopy/sessions`,
  * is to watch what it opens.
  */
 const statCalls: string[] = [];
@@ -57,7 +57,7 @@ vi.mock('../config/storage.js', () => {
   let mockDir: string | null = '/tmp/session-registry-test';
   return {
     Storage: {
-      getGlobalQwenDir: () => {
+      getGlobalCanopyDir: () => {
         if (mockDir === null) {
           // Simulates os.homedir() failing (HOME unset, passwd lookup
           // gone) — the registry's "never throws" promise is tested
@@ -127,15 +127,15 @@ function liveBody(over: Record<string, unknown> = {}): Record<string, unknown> {
     cwd: '/w',
     name: 'n',
     startedAt: 5,
-    qwenVersion: null,
+    canopyVersion: null,
     ...over,
   };
 }
 
 describe('deriveSessionName', () => {
   it('combines the cwd basename with a session-derived suffix', () => {
-    const name = deriveSessionName('/home/u/projects/qwen-code', 'abc-123');
-    expect(name).toMatch(/^qwen-code-[0-9a-f]{2}$/);
+    const name = deriveSessionName('/home/u/projects/canopy-code', 'abc-123');
+    expect(name).toMatch(/^canopy-code-[0-9a-f]{2}$/);
   });
 
   it('separates two sessions in the same directory', () => {
@@ -223,7 +223,7 @@ describe('registerSession', () => {
       await registerSession({
         sessionId: 's1',
         cwd: '/w/app',
-        qwenVersion: '1.2.3',
+        canopyVersion: '1.2.3',
       }),
     ).toBe(true);
     const after = Date.now();
@@ -235,7 +235,7 @@ describe('registerSession', () => {
       pid: process.pid,
       sessionId: 's1',
       cwd: '/w/app',
-      qwenVersion: '1.2.3',
+      canopyVersion: '1.2.3',
     });
     expect(live[0].name).toMatch(/^app-[0-9a-f]{2}$/);
     // Bounds pin the epoch: a seconds-vs-milliseconds refactor (or a
@@ -253,7 +253,7 @@ describe('registerSession', () => {
     expect(raw['pidNs']).toBe(readPidNamespaceId());
   });
 
-  it('records an explicit null qwenVersion when it is omitted', async () => {
+  it('records an explicit null canopyVersion when it is omitted', async () => {
     // The key must exist as null, not be silently dropped by
     // JSON.stringify(undefined): the record format has a declared
     // schemaVersion, and schema drift on an optional field is still drift.
@@ -261,7 +261,7 @@ describe('registerSession', () => {
     const raw = JSON.parse(
       await fs.readFile(getSessionRecordPath(), 'utf8'),
     ) as Record<string, unknown>;
-    expect(raw).toHaveProperty('qwenVersion', null);
+    expect(raw).toHaveProperty('canopyVersion', null);
   });
 
   // Only Linux has a start token to record; elsewhere this is a visible
@@ -619,7 +619,7 @@ describe('patchSessionRecord', () => {
     await registerSession({
       sessionId: 'old',
       cwd: '/w/app',
-      qwenVersion: '1.2.3',
+      canopyVersion: '1.2.3',
     });
     const [before] = await listLiveSessions();
 
@@ -630,7 +630,7 @@ describe('patchSessionRecord', () => {
       sessionId: 'new',
       name: 'renamed',
       cwd: '/w/app',
-      qwenVersion: '1.2.3',
+      canopyVersion: '1.2.3',
     });
     // Both production patch sites omit `startedAt`; a re-stamp would
     // reset the AGE column and the newest-first ordering on every
@@ -1282,10 +1282,10 @@ describe('listLiveSessions', () => {
   it('nulls optional fields of the wrong type rather than passing them on', async () => {
     // A numeric `procStart` handed to `isSameProcess` would never equal the
     // string token it reads back, so a live session would be swept; a
-    // numeric `qwenVersion` would reach every consumer typed as a string.
+    // numeric `canopyVersion` would reach every consumer typed as a string.
     await writeRaw(
       `${process.pid}.json`,
-      liveBody({ procStart: 12345, qwenVersion: 7 }),
+      liveBody({ procStart: 12345, canopyVersion: 7 }),
     );
     expect(await listLiveSessions()).toEqual([liveBody()]);
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -139,7 +139,7 @@ const createUIState = (overrides: Partial<UIState> = {}): UIState =>
       isAuthenticating: false,
       pendingAuthType: undefined,
       externalAuthState: null,
-      qwenAuthState: {
+      canopyAuthState: {
         deviceAuth: null,
         authStatus: 'idle',
         authMessage: null,

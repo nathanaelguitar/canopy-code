@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -150,7 +150,7 @@ export function registerWorkspaceModelsRoutes(
           );
         } catch (err) {
           writeStderrLine(
-            `qwen serve: DELETE /workspace/models broadcast error (key=${write.key}): ${
+            `canopy serve: DELETE /workspace/models broadcast error (key=${write.key}): ${
               err instanceof Error ? err.message : String(err)
             }`,
           );
@@ -268,7 +268,7 @@ export function registerWorkspaceModelsRoutes(
       } catch (err) {
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: DELETE /workspace/models error (authType=${parsed.authType}, modelId=${parsed.modelId}): ${
+          `canopy serve: DELETE /workspace/models error (authType=${parsed.authType}, modelId=${parsed.modelId}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );

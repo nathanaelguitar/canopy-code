@@ -17,7 +17,7 @@ import {
   type GoalStateResponse,
   createDebugLogger,
   recordSkillInvocation,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { CommandService } from './services/CommandService.js';
 import { BuiltinCommandLoader } from './services/BuiltinCommandLoader.js';
 import { BundledSkillLoader } from './services/BundledSkillLoader.js';

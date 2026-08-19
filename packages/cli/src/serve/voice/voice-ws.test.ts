@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // @vitest-environment node
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import { createVoiceWsConnectionHandler } from './voice-ws.js';
 import { WorkspaceVoiceCoordinator } from './workspace-voice-coordinator.js';
 import type { DaemonVoiceContext } from './resolve-voice-config.js';

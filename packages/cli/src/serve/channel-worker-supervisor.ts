@@ -6,10 +6,10 @@ import type { ServeChannelSelection } from './types.js';
 import {
   CHANNEL_DAEMON_WORKER_SENTINEL,
   CHANNEL_WORKER_HEARTBEAT_INTERVAL_MS,
-  QWEN_DAEMON_TOKEN_ENV,
-  QWEN_DAEMON_URL_ENV,
-  QWEN_DAEMON_WORKSPACE_ENV,
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_DAEMON_TOKEN_ENV,
+  CANOPY_DAEMON_URL_ENV,
+  CANOPY_DAEMON_WORKSPACE_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 } from './channel-worker-env.js';
 import { sanitizeLogText } from '@qwen-code/channel-base';
 import type { ChannelWebhookTask } from '@qwen-code/channel-base';
@@ -385,13 +385,13 @@ function createWorkerEnv(opts: {
   // (see cli/src/config/acp-channel-fallback.ts).
   env['QWEN_CODE_SERVE'] = '1';
   env[CHANNEL_DAEMON_WORKER_SENTINEL] = randomUUID();
-  env[QWEN_DAEMON_URL_ENV] = opts.daemonUrl;
-  env[QWEN_DAEMON_WORKSPACE_ENV] = opts.workspace;
-  delete env[QWEN_SERVER_TOKEN_ENV];
-  delete env[QWEN_DAEMON_TOKEN_ENV];
+  env[CANOPY_DAEMON_URL_ENV] = opts.daemonUrl;
+  env[CANOPY_DAEMON_WORKSPACE_ENV] = opts.workspace;
+  delete env[CANOPY_SERVER_TOKEN_ENV];
+  delete env[CANOPY_DAEMON_TOKEN_ENV];
   delete env[EXTERNAL_TOOL_GUARD_TOKEN_ENV];
   if (opts.daemonToken) {
-    env[QWEN_DAEMON_TOKEN_ENV] = opts.daemonToken;
+    env[CANOPY_DAEMON_TOKEN_ENV] = opts.daemonToken;
   }
   return env;
 }

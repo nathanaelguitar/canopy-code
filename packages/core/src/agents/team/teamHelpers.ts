@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * @fileoverview Team file CRUD, name sanitization, color management,
  * and cleanup utilities.
  *
- * All file operations target `~/.qwen/teams/{team-name}/config.json`.
+ * All file operations target `~/.canopy/teams/{team-name}/config.json`.
  * Functions are pure where possible; side-effectful I/O functions are
  * clearly separated.
  */
@@ -33,15 +33,15 @@ import {
 
 /**
  * Absolute path to the teams root directory.
- * `~/.qwen/teams/`
+ * `~/.canopy/teams/`
  */
 export function getTeamsRootDir(): string {
-  return path.join(Storage.getGlobalQwenDir(), TEAMS_DIR);
+  return path.join(Storage.getGlobalCanopyDir(), TEAMS_DIR);
 }
 
 /**
  * Absolute path to a specific team's directory.
- * `~/.qwen/teams/{teamName}/`
+ * `~/.canopy/teams/{teamName}/`
  */
 export function getTeamDir(teamName: string): string {
   return path.join(getTeamsRootDir(), teamName);
@@ -49,7 +49,7 @@ export function getTeamDir(teamName: string): string {
 
 /**
  * Absolute path to a team's config file.
- * `~/.qwen/teams/{teamName}/config.json`
+ * `~/.canopy/teams/{teamName}/config.json`
  */
 export function getTeamFilePath(teamName: string): string {
   return path.join(getTeamDir(teamName), TEAM_CONFIG_FILENAME);
@@ -57,7 +57,7 @@ export function getTeamFilePath(teamName: string): string {
 
 /**
  * Absolute path to a team's inboxes directory.
- * `~/.qwen/teams/{teamName}/inboxes/`
+ * `~/.canopy/teams/{teamName}/inboxes/`
  */
 export function getInboxesDir(teamName: string): string {
   return path.join(getTeamDir(teamName), INBOXES_DIR);
@@ -65,10 +65,10 @@ export function getInboxesDir(teamName: string): string {
 
 /**
  * Absolute path to the tasks directory for a team.
- * `~/.qwen/tasks/{teamName}/`
+ * `~/.canopy/tasks/{teamName}/`
  */
 export function getTasksDir(teamName: string): string {
-  return path.join(Storage.getGlobalQwenDir(), TASKS_DIR, teamName);
+  return path.join(Storage.getGlobalCanopyDir(), TASKS_DIR, teamName);
 }
 
 // ─── Name helpers ───────────────────────────────────────────
@@ -278,7 +278,7 @@ export async function writeTeamFile(
 
 /**
  * Atomically create a team file. Throws ENOENT-equivalent
- * `EEXIST` if a different qwen-code session already owns the
+ * `EEXIST` if a different canopy-code session already owns the
  * team name — `team_create`'s in-process guard only checks the
  * current Config, so without this two sessions opening the same
  * team name would silently clobber each other's state.
@@ -349,7 +349,7 @@ export async function deleteTeamDirs(teamName: string): Promise<void> {
 }
 
 /**
- * List all team names (directory names under ~/.qwen/teams/).
+ * List all team names (directory names under ~/.canopy/teams/).
  * Returns an empty array if the teams directory doesn't exist.
  */
 export async function listTeamNames(): Promise<string[]> {

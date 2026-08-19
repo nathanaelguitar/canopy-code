@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   PermissionRulesValidationError,
   readPermissionRuleSet,
   type PermissionSettingsScope,
-  type QwenPermissionSettings,
+  type CanopyPermissionSettings,
 } from '../../config/permission-settings.js';
 import { loadSettings } from '../../config/settings.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
@@ -69,7 +69,7 @@ export function registerWorkspacePermissionsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspace/permissions error: ${
+        `canopy serve: GET /workspace/permissions error: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -152,7 +152,7 @@ export function registerWorkspacePermissionsRoutes(
       if (clientId === null) return;
 
       const key = `permissions.${ruleType}`;
-      let liveResponse: QwenPermissionSettings;
+      let liveResponse: CanopyPermissionSettings;
       try {
         liveResponse = await workspace.setWorkspacePermissionRules(
           {
@@ -174,7 +174,7 @@ export function registerWorkspacePermissionsRoutes(
         }
 
         writeStderrLine(
-          `qwen serve: POST /workspace/permissions ACP error (key=${key}, scope=${permissionScope}, workspace=${boundWorkspace}): ${
+          `canopy serve: POST /workspace/permissions ACP error (key=${key}, scope=${permissionScope}, workspace=${boundWorkspace}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -213,7 +213,7 @@ export function registerWorkspaceQualifiedPermissionsRoutes(
         );
     } catch (err) {
       writeStderrLine(
-        `qwen serve: GET /workspaces/:workspace/permissions error: ${
+        `canopy serve: GET /workspaces/:workspace/permissions error: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -305,7 +305,7 @@ export function registerWorkspaceQualifiedPermissionsRoutes(
           return;
         }
         writeStderrLine(
-          `qwen serve: POST /workspaces/:workspace/permissions ACP error (ruleType=${ruleType}, workspace=${runtime.workspaceCwd}): ${
+          `canopy serve: POST /workspaces/:workspace/permissions ACP error (ruleType=${ruleType}, workspace=${runtime.workspaceCwd}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );

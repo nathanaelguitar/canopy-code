@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@
  * runtime state (e.g. permission mode, active MCP clients).
  */
 
-import type { Config, MCPServerConfig } from '@qwen-code/qwen-code-core';
+import type { Config, MCPServerConfig } from '@canopy-code/canopy-code-core';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { StreamJsonOutputAdapter } from '../io/StreamJsonOutputAdapter.js';
 import type { PermissionMode } from '../types.js';

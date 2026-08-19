@@ -300,7 +300,7 @@ const SETTINGS_DIALOG_ORDER: readonly string[] = [
 
   // File Filtering
   'context.fileFiltering.respectGitIgnore',
-  'context.fileFiltering.respectQwenIgnore',
+  'context.fileFiltering.respectCanopyIgnore',
 
   // System Settings - rarely changed
   'general.disableAutoUpdate',

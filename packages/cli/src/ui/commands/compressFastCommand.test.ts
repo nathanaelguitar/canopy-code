@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import {
   CompressionStatus,
   type ChatCompressionInfo,
   type GeminiClient,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { compressFastCommand } from './compressFastCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';

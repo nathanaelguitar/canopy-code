@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { createDebugLogger, isGitRepository } from '@qwen-code/qwen-code-core';
+import {
+  createDebugLogger,
+  isGitRepository,
+} from '@canopy-code/canopy-code-core';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as childProcess from 'node:child_process';
@@ -111,7 +114,7 @@ export function formatUpdateInstructions(
     );
     lines.push('Run the following to update:', `  ${updateCmd}`);
   } else if (!installationInfo.updateMessage) {
-    lines.push('Manual update required. Please reinstall Qwen Code.');
+    lines.push('Manual update required. Please reinstall Canopy Code.');
   }
 
   return lines;
@@ -201,7 +204,7 @@ export function getInstallationInfo(
     if (process.platform === 'darwin') {
       try {
         // We do not support homebrew for now, keep forward compatibility for future use
-        childProcess.execSync('brew list -1 | grep -q "^qwen-code$"', {
+        childProcess.execSync('brew list -1 | grep -q "^canopy-code$"', {
           stdio: 'ignore',
         });
         return {
@@ -217,7 +220,7 @@ export function getInstallationInfo(
 
     // Check for pnpm
     if (realPath.includes('/.pnpm/global')) {
-      const updateCommand = 'pnpm add -g @qwen-code/qwen-code@latest';
+      const updateCommand = 'pnpm add -g @canopy-code/canopy-code@latest';
       return {
         packageManager: PackageManager.PNPM,
         isGlobal: true,
@@ -230,7 +233,7 @@ export function getInstallationInfo(
 
     // Check for yarn
     if (realPath.includes('/.yarn/global')) {
-      const updateCommand = 'yarn global add @qwen-code/qwen-code@latest';
+      const updateCommand = 'yarn global add @canopy-code/canopy-code@latest';
       return {
         packageManager: PackageManager.YARN,
         isGlobal: true,
@@ -250,7 +253,7 @@ export function getInstallationInfo(
       };
     }
     if (realPath.includes('/.bun/bin')) {
-      const updateCommand = 'bun add -g @qwen-code/qwen-code@latest';
+      const updateCommand = 'bun add -g @canopy-code/canopy-code@latest';
       return {
         packageManager: PackageManager.BUN,
         isGlobal: true,
@@ -304,11 +307,11 @@ export function getInstallationInfo(
         packageManager: PackageManager.NPM,
         isGlobal: true,
         updateMessage:
-          'Update requires sudo. Please run: sudo npm install -g @qwen-code/qwen-code@latest',
+          'Update requires sudo. Please run: sudo npm install -g @canopy-code/canopy-code@latest',
       };
     }
 
-    const updateCommand = 'npm install -g @qwen-code/qwen-code@latest';
+    const updateCommand = 'npm install -g @canopy-code/canopy-code@latest';
     return {
       packageManager: PackageManager.NPM,
       isGlobal: true,
@@ -387,26 +390,26 @@ function isStandaloneInstallDir(installDir: string): boolean {
     };
     // Manifest format is produced by writeManifest in create-standalone-package.js.
     if (
-      manifest.name !== '@qwen-code/qwen-code' ||
+      manifest.name !== '@canopy-code/canopy-code' ||
       typeof manifest.target !== 'string' ||
       !isStandaloneTargetForCurrentPlatform(manifest.target)
     ) {
       return false;
     }
 
-    const qwenBin =
+    const canopyBin =
       process.platform === 'win32'
-        ? path.join(installDir, 'bin', 'qwen.cmd')
-        : path.join(installDir, 'bin', 'qwen');
+        ? path.join(installDir, 'bin', 'canopy.cmd')
+        : path.join(installDir, 'bin', 'canopy');
     const nodeBin =
       process.platform === 'win32'
         ? path.join(installDir, 'node', 'node.exe')
         : path.join(installDir, 'node', 'bin', 'node');
 
     return (
-      fs.existsSync(qwenBin) &&
+      fs.existsSync(canopyBin) &&
       fs.existsSync(nodeBin) &&
-      isStandaloneRuntimeFile(qwenBin) &&
+      isStandaloneRuntimeFile(canopyBin) &&
       isStandaloneRuntimeFile(nodeBin)
     );
   } catch (err) {

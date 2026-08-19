@@ -6,7 +6,7 @@
 
 import type { SpawnOptions } from 'node:child_process';
 import { spawn } from 'node:child_process';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import {
   isStackedSkillCompletableCommand,
   isValidStackedSkillPrefix,

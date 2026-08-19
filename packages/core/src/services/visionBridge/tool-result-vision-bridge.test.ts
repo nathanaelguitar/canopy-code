@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -366,7 +366,7 @@ describe('bridgeToolResultImages', () => {
   });
 
   it('fails closed when the only tool image is oversized for the full-turn route', async () => {
-    vi.stubEnv('QWEN_CODE_MAX_INLINE_MEDIA_BYTES', '1');
+    vi.stubEnv('CANOPY_CODE_MAX_INLINE_MEDIA_BYTES', '1');
     getDefaultVisionBridgeModel.mockReturnValue({
       id: 'qwen3-vl-plus',
       agentCapable: true,

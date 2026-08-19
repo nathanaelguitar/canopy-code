@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // Which CLI sessions this review ran under, written by the thing that ran them.
 //
 // A review interrupted mid-run and resumed (`--resume`) continues in a NEW CLI
-// session: the harness keys its subagent transcripts on `QWEN_CODE_SESSION_ID`,
+// session: the harness keys its subagent transcripts on `CANOPY_CODE_SESSION_ID`,
 // so the first attempt's evidence sits in a directory the second attempt's
 // environment no longer names. The readers that certify agent work (coverage,
 // retirement, the recovery command) need the earlier directory's name — and the
@@ -35,7 +35,7 @@ import { join } from 'node:path';
 import {
   atomicWriteFileSync,
   sanitizeFilenameComponent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { promptRecordDir, runEpochMs } from './prompt-record.js';
 
 const SESSIONS_FILE = 'run-sessions.json';
@@ -343,7 +343,7 @@ export function appendRunSession(
   nowMs: number = Date.now(),
 ): void {
   try {
-    const id = env['QWEN_CODE_SESSION_ID']?.trim();
+    const id = env['CANOPY_CODE_SESSION_ID']?.trim();
     if (!id || !SESSION_ID_RE.test(id)) return;
     const mtime = planMtimeMs(planPath);
     // No plan mtime, no entry. `readSessions` hard-requires the field — an
@@ -446,7 +446,7 @@ export function currentSessionEntry(
   planPath: string,
   env: NodeJS.ProcessEnv = process.env,
 ): { sessionId: string; atMs: number } | null {
-  const raw = env['QWEN_CODE_SESSION_ID']?.trim();
+  const raw = env['CANOPY_CODE_SESSION_ID']?.trim();
   if (!raw) return null;
   const current = sessionPathKey(raw);
   return (
@@ -471,7 +471,7 @@ function resumeAuthorized(
   planPath: string,
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  const raw = env['QWEN_CODE_SESSION_ID']?.trim();
+  const raw = env['CANOPY_CODE_SESSION_ID']?.trim();
   if (!raw) return false;
   const current = sessionPathKey(raw);
   return readResumeMarker(planPath).resumes.some(
@@ -502,7 +502,7 @@ export function priorSessionEntries(
   // minting `recoveredAgents` and a resumed disclosure on a run that never
   // resumed, and folding the current chat into the prior totals.
   if (!resumeAuthorized(planPath, env)) return [];
-  const current0 = env['QWEN_CODE_SESSION_ID']?.trim();
+  const current0 = env['CANOPY_CODE_SESSION_ID']?.trim();
   const current = current0 ? sessionPathKey(current0) : undefined;
   // Sort by time, not file order: `endsAtMs` is a COST CLAMP, and an
   // out-of-order (hand-written) ledger or a backwards wall-clock step
@@ -677,7 +677,7 @@ export function recordResume(
   env: NodeJS.ProcessEnv = process.env,
   nowMs: number = Date.now(),
 ): void {
-  const id = env['QWEN_CODE_SESSION_ID']?.trim();
+  const id = env['CANOPY_CODE_SESSION_ID']?.trim();
   if (!id || !SESSION_ID_RE.test(id)) return;
   const mtime = planMtimeMs(planPath);
   // Same refusal as the session ledger: an entry that cannot say which plan

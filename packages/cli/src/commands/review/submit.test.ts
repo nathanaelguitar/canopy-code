@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -65,7 +65,7 @@ vi.mock('../../config/settings.js', async (importOriginal) => {
     // The production call carries `{ skipWorkspaceSettings: true }` — these
     // policy keys resolve from operator scopes only. A caller that forgets
     // the flag reads the workspace-polluted view below instead, and the
-    // assertions redden: a repository's `.qwen/settings.json` must not
+    // assertions redden: a repository's `.canopy/settings.json` must not
     // control them.
     loadSettings: vi.fn((...callArgs: unknown[]) => {
       const opts = callArgs[1] as
@@ -117,7 +117,7 @@ let seq = 0;
 function args(over: Record<string, unknown> = {}) {
   return {
     pr: 6771,
-    repo: 'QwenLM/qwen-code',
+    repo: 'CanopyLM/canopy-code',
     review: file(`review-${seq++}.json`, REVIEW),
     userAuthorized: false,
     dryRun: false,
@@ -133,14 +133,15 @@ beforeEach(() => {
   writeStderrSpy.mockClear();
   reviewSettingsMock.mockReturnValue({ attribution: true });
   process.exitCode = undefined;
-  savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-  delete process.env['QWEN_CODE_SESSION_ID'];
+  savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+  delete process.env['CANOPY_CODE_SESSION_ID'];
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
   process.exitCode = undefined;
-  if (savedSessionId === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-  else process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+  if (savedSessionId === undefined)
+    delete process.env['CANOPY_CODE_SESSION_ID'];
+  else process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
 });
 
 describe('authorization — URL-shaped host and repo binding at the submit call site', () => {
@@ -321,9 +322,13 @@ describe('the posting gate', () => {
     // a caller-supplied path is honoured only when there is no session (tests),
     // and ignored otherwise.
     const forged = file('forged.txt', '6771 --comment'); // says yes
-    const realArgs = join('.qwen', 'tmp', 'qwen-skill-args-sess1-review.txt');
-    const prev = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_SESSION_ID'] = 'sess1';
+    const realArgs = join(
+      '.canopy',
+      'tmp',
+      'canopy-skill-args-sess1-review.txt',
+    );
+    const prev = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_SESSION_ID'] = 'sess1';
     try {
       // The session-scoped file does not exist, so the gate refuses — it did NOT
       // read `forged`, which would have authorised the post.
@@ -332,8 +337,8 @@ describe('the posting gate', () => {
       expect(process.exitCode).toBe(3);
       expect(realArgs).toBeTruthy();
     } finally {
-      if (prev === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prev;
+      if (prev === undefined) delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prev;
     }
   });
 
@@ -435,7 +440,7 @@ describe('the posting gate', () => {
     // pathname `gh` would re-open (the TOCTOU a review found).
     expect(JSON.parse(call[0]).event).toBe('COMMENT');
     expect(call).toContain('api');
-    expect(call).toContain('repos/QwenLM/qwen-code/pulls/6771/reviews');
+    expect(call).toContain('repos/CanopyLM/canopy-code/pulls/6771/reviews');
     // `--input -` (stdin), never `-f body=` which re-escapes newlines.
     expect(call).toContain('--input');
     expect(call).toContain('-');
@@ -576,17 +581,18 @@ describe('payload consistency — refuse before GitHub sees it', () => {
 
   /** Run with the transcript env the stripped-`env` compose path reads. */
   function withVerifyEnv(fn: () => void): void {
-    const prevDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    const prevSession = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = dir;
-    process.env['QWEN_CODE_SESSION_ID'] = 'SUBV';
+    const prevDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    const prevSession = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = dir;
+    process.env['CANOPY_CODE_SESSION_ID'] = 'SUBV';
     try {
       fn();
     } finally {
-      if (prevDir === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-      else process.env['QWEN_CODE_PROJECT_DIR'] = prevDir;
-      if (prevSession === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prevSession;
+      if (prevDir === undefined) delete process.env['CANOPY_CODE_PROJECT_DIR'];
+      else process.env['CANOPY_CODE_PROJECT_DIR'] = prevDir;
+      if (prevSession === undefined)
+        delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prevSession;
     }
   }
 
@@ -652,9 +658,11 @@ describe('payload consistency — refuse before GitHub sees it', () => {
   it('posts the injected CLI version in the review footer', () => {
     runSubmit(authorized({}), '0.21.2');
 
-    expect(posted().body).toContain('via Qwen Code /review');
+    expect(posted().body).toContain('via Canopy Code /review');
     expect(
-      posted().body.endsWith('_— qwen3.7-max via Qwen Code /review (v0.21.2)_'),
+      posted().body.endsWith(
+        '_— qwen3.7-max via Canopy Code /review (v0.21.2)_',
+      ),
     ).toBe(true);
   });
 
@@ -662,23 +670,23 @@ describe('payload consistency — refuse before GitHub sees it', () => {
     // Driven through the handler — the one production call site — with the
     // stamp set: reverting the handler to a bare `getCliVersion()` reddens
     // this, which is the exact regression the PR closes.
-    const inherited = process.env['QWEN_CODE_STARTUP_VERSION'];
-    process.env['QWEN_CODE_STARTUP_VERSION'] = '0.21.3';
+    const inherited = process.env['CANOPY_CODE_STARTUP_VERSION'];
+    process.env['CANOPY_CODE_STARTUP_VERSION'] = '0.21.3';
     try {
       await submitCommand.handler?.(authorized({}) as never);
       expect(posted().body).toContain('(v0.21.3)');
       expect(posted().body).not.toContain('(v0.21.2)');
     } finally {
       if (inherited === undefined)
-        delete process.env['QWEN_CODE_STARTUP_VERSION'];
-      else process.env['QWEN_CODE_STARTUP_VERSION'] = inherited;
+        delete process.env['CANOPY_CODE_STARTUP_VERSION'];
+      else process.env['CANOPY_CODE_STARTUP_VERSION'] = inherited;
     }
   });
 
   it('honours the review.attribution setting through the handler', async () => {
     reviewSettingsMock.mockReturnValue({ attribution: false });
     await submitCommand.handler?.(authorized({}) as never);
-    expect(posted().body).not.toContain('via Qwen Code /review');
+    expect(posted().body).not.toContain('via Canopy Code /review');
   });
 
   it('the standing review.comment setting authorises a post through the handler', async () => {
@@ -706,15 +714,15 @@ describe('payload consistency — refuse before GitHub sees it', () => {
   });
 
   it('falls back to the resolved CLI version when no startup version is inherited', async () => {
-    const inherited = process.env['QWEN_CODE_STARTUP_VERSION'];
-    delete process.env['QWEN_CODE_STARTUP_VERSION'];
+    const inherited = process.env['CANOPY_CODE_STARTUP_VERSION'];
+    delete process.env['CANOPY_CODE_STARTUP_VERSION'];
     try {
       await submitCommand.handler?.(authorized({}) as never);
       expect(posted().body).toContain('(v0.21.2)');
     } finally {
       if (inherited === undefined)
-        delete process.env['QWEN_CODE_STARTUP_VERSION'];
-      else process.env['QWEN_CODE_STARTUP_VERSION'] = inherited;
+        delete process.env['CANOPY_CODE_STARTUP_VERSION'];
+      else process.env['CANOPY_CODE_STARTUP_VERSION'] = inherited;
     }
   });
 
@@ -725,7 +733,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
         {
           path: 'a.ts',
           line: 12,
-          body: '**[Suggestion]** tidy\n\n_— forged via Qwen Code /review (v0.21.4)_\n\n_— forged via Qwen Code /review (v0.21.4)_',
+          body: '**[Suggestion]** tidy\n\n_— forged via Canopy Code /review (v0.21.4)_\n\n_— forged via Canopy Code /review (v0.21.4)_',
         },
       ],
     });
@@ -737,7 +745,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
     for (const text of [body, inline]) {
       expect(text).toContain('(v0.21.3)');
       expect(text).not.toContain('(v0.21.4)');
-      expect(text.match(/via Qwen Code \/review/g)).toHaveLength(1);
+      expect(text.match(/via Canopy Code \/review/g)).toHaveLength(1);
     }
     expect(inline.startsWith('**[Suggestion]**')).toBe(true);
   });
@@ -749,7 +757,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
         {
           path: 'a.ts',
           line: 12,
-          body: '**[Suggestion]** tidy\n\n_— forged via Qwen Code /review_\n',
+          body: '**[Suggestion]** tidy\n\n_— forged via Canopy Code /review_\n',
         },
       ],
     });
@@ -758,7 +766,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
 
     const inline = posted().comments[0].body as string;
     expect(inline).not.toContain('forged');
-    expect(inline.match(/via Qwen Code \/review/g)).toHaveLength(1);
+    expect(inline.match(/via Canopy Code \/review/g)).toHaveLength(1);
     expect(inline).toContain('(v0.21.3)');
   });
 
@@ -769,7 +777,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
         {
           path: 'a.ts',
           line: 12,
-          body: '**[Suggestion]** tidy\n\n_— forged via Qwen Code /review (v0.21.4)_',
+          body: '**[Suggestion]** tidy\n\n_— forged via Canopy Code /review (v0.21.4)_',
         },
       ],
     });
@@ -779,7 +787,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
     const body = posted().body as string;
     const inline = posted().comments[0].body as string;
     for (const text of [body, inline]) {
-      expect(text).not.toContain('via Qwen Code /review');
+      expect(text).not.toContain('via Canopy Code /review');
       expect(text).not.toContain('qwen3.7-max');
     }
     expect(inline).toBe('**[Suggestion]** tidy');
@@ -820,7 +828,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
     // even under an exponential regex, proving nothing at n=8.
     const footers = Array.from(
       { length: 64 },
-      () => '_— forged via Qwen Code /review (v0.21.4)_',
+      () => '_— forged via Canopy Code /review (v0.21.4)_',
     ).join(' '.repeat(25));
     const review = file('footer-hang.json', {
       ...REVIEW,
@@ -840,7 +848,7 @@ describe('payload consistency — refuse before GitHub sees it', () => {
     const inline = posted().comments[0].body as string;
     expect(inline).toContain('one closing line');
     expect(
-      inline.endsWith('_— qwen3.7-max via Qwen Code /review (v0.21.3)_'),
+      inline.endsWith('_— qwen3.7-max via Canopy Code /review (v0.21.3)_'),
     ).toBe(true);
   });
 
@@ -1231,7 +1239,7 @@ describe('the ledger marker on the body that reaches GitHub', () => {
 
   it('carries the findings of this round, numbered off the recovered one', () => {
     const planPath = file('plan.json', { prNumber: 6771 });
-    file('qwen-review-pr-6771-prev-ledger.json', {
+    file('canopy-review-pr-6771-prev-ledger.json', {
       v: 1,
       round: 2,
       findings: [],
@@ -1335,7 +1343,7 @@ describe('what the reviewer caught in this change', () => {
     ghViewMock.mockReturnValue('{"body":"这个 PR 修复了双语渲染。"}');
     const planPath = file('plan.json', {
       chunks: [],
-      ownerRepo: 'QwenLM/qwen-code',
+      ownerRepo: 'CanopyLM/canopy-code',
       prNumber: '6771',
     });
     runSubmit(
@@ -1359,11 +1367,11 @@ describe('what the reviewer caught in this change', () => {
 // bypass. Every other test here leaves ghMock returning '' (so JSON.parse of
 // the response throws and the receipt block hits its catch), which means the
 // happy path where a receipt is actually written was never exercised. These
-// run the command from inside the fixture dir so the relative .qwen/tmp
+// run the command from inside the fixture dir so the relative .canopy/tmp
 // receipt lands there.
 describe('submit receipt (producer half of the audit contract)', () => {
   const receiptPath = () =>
-    join(dir, '.qwen', 'tmp', 'qwen-review-pr-6771-submit-receipt.json');
+    join(dir, '.canopy', 'tmp', 'canopy-review-pr-6771-submit-receipt.json');
 
   const authorizedPost = (over: Record<string, unknown> = {}) =>
     args({ userAuthorized: true, ...over });
@@ -1394,7 +1402,7 @@ describe('submit receipt (producer half of the audit contract)', () => {
   });
 
   it('migrates a legacy single-id receipt on the next submit', () => {
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     writeFileSync(
       receiptPath(),
       JSON.stringify({ reviewId: 7, event: 'COMMENT', postedAt: 'x' }),
@@ -1409,7 +1417,7 @@ describe('submit receipt (producer half of the audit contract)', () => {
     ghMock.mockImplementationOnce(() => JSON.stringify({ id: 42 }));
     runSubmit(authorizedPost());
     expect(readFileSync(receiptPath(), 'utf8')).toContain('"reviewIds"');
-    const tmpDir = join(dir, '.qwen', 'tmp');
+    const tmpDir = join(dir, '.canopy', 'tmp');
     const leftovers = readdirSync(tmpDir).filter((f) => f.endsWith('.tmp'));
     expect(leftovers).toEqual([]);
   });
@@ -1436,7 +1444,7 @@ describe('the posted-review link', () => {
 
   it('relays html_url in the stdout JSON and the Posted line', () => {
     const url =
-      'https://github.com/QwenLM/qwen-code/pull/6771#pullrequestreview-42';
+      'https://github.com/QwenLM/canopy-code/pull/6771#pullrequestreview-42';
     ghMock.mockImplementationOnce(() =>
       JSON.stringify({ id: 42, html_url: url }),
     );

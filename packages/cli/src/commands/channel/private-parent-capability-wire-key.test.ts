@@ -6,7 +6,7 @@ import {
 import {
   PRIVATE_ACP_CAPABILITY_ENV,
   PRIVATE_PARENT_CAPABILITY_META_KEY,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 // The standalone channel bridge performs the private-parent capability
 // handshake under the channel-base constants and the ACP child validates it

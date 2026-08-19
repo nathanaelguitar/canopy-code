@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * Regex constants shared with banner customization (`packages/cli/src/ui/
  * utils/customBanner.ts`) so the OSC / CSI / SS2 / SS3 patterns are
  * authored once and stay aligned across call sites. Exported via
- * `@qwen-code/qwen-code-core` so the CLI sanitizer can re-use them when
+ * `@canopy-code/canopy-code-core` so the CLI sanitizer can re-use them when
  * it has to preserve `\n` (which `stripTerminalControlSequences` strips).
  */
 /* eslint-disable no-control-regex */

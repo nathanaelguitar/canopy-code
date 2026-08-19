@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -224,7 +224,7 @@ describe('MonitorTool', () => {
         getUserSkillsDirs: vi
           .fn()
           .mockReturnValue(['/home/user/.claude/skills']),
-        getProjectDir: vi.fn().mockReturnValue('/test/project/.qwen'),
+        getProjectDir: vi.fn().mockReturnValue('/test/project/.canopy'),
       },
     } as unknown as Config;
 
@@ -745,7 +745,7 @@ describe('MonitorTool', () => {
       expect(spawnOptions.env['GIT_PAGER']).toBeUndefined();
     });
 
-    it('strips Qwen-internal daemon secrets from the monitor child env (#6601)', async () => {
+    it('strips Canopy-internal daemon secrets from the monitor child env (#6601)', async () => {
       const originalServerToken = process.env['QWEN_SERVER_TOKEN'];
       const originalDaemonToken = process.env['QWEN_DAEMON_TOKEN'];
       process.env['QWEN_SERVER_TOKEN'] = 'serve-secret';
@@ -763,7 +763,7 @@ describe('MonitorTool', () => {
         expect(spawnOptions.env['QWEN_DAEMON_TOKEN']).toBeUndefined();
         // Benign inherited env is preserved and the monitor marker still applied.
         expect(spawnOptions.env['PATH']).toBeDefined();
-        expect(spawnOptions.env['QWEN_CODE']).toBe('1');
+        expect(spawnOptions.env['CANOPY_CODE']).toBe('1');
       } finally {
         if (originalServerToken === undefined) {
           delete process.env['QWEN_SERVER_TOKEN'];

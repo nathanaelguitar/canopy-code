@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   apiActivityTracker,
   type Config,
   type GoalSnapshotV2,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 describe('MessageEmitter', () => {
   let mockContext: SessionContext;
@@ -315,7 +315,7 @@ describe('MessageEmitter', () => {
         { sessionUpdate: 'usage_update', used: 120, size: 128_000 },
       ]);
 
-      // Keep emitting the existing Qwen extension for current consumers.
+      // Keep emitting the existing Canopy extension for current consumers.
       expect(sendUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionUpdate: 'agent_message_chunk',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -36,7 +36,7 @@ describe('alibabaStandardProvider', () => {
     );
   });
 
-  it('includes qwen3.7 models in default model IDs', () => {
+  it('includes canopy3.7 models in default model IDs', () => {
     expect(getDefaultModelIds(alibabaStandardProvider)).toEqual([
       'qwen3.6-plus',
       'qwen3.7-plus',

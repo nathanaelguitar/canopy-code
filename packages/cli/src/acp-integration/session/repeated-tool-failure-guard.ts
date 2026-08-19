@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
   ToolErrorType,
   type ToolExecutionStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 export const REPEATED_TOOL_FAILURE_THRESHOLD = 8;
 export const REPEATED_TOOL_FAILURE_BATCH_THRESHOLD = 2;

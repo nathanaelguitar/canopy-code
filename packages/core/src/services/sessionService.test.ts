@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -255,7 +255,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       const controller = new AbortController();
 
@@ -768,7 +768,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd: string) =>
         cwd === '/test/project/root'
@@ -1545,7 +1545,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd: string) =>
         cwd === '/test/project/root'
@@ -1781,7 +1781,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd: string) =>
         cwd === '/test/project/root'
@@ -2436,7 +2436,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd) =>
         cwd === '/test/project/root' ? 'test-project-hash' : 'other-hash',
@@ -2677,7 +2677,7 @@ describe('SessionService', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd: string) =>
         cwd === '/test/project/root'
@@ -3382,7 +3382,7 @@ describe('SessionService', () => {
     let realPath: typeof import('node:path');
     let service: SessionService;
     let cwd: string;
-    let originalQwenHome: string | undefined;
+    let originalCanopyHome: string | undefined;
 
     beforeEach(async () => {
       realOs = await import('node:os');
@@ -3406,7 +3406,7 @@ describe('SessionService', () => {
       );
       // Storage.resolveRuntimeBaseDir uses isAbsolute and resolve; both are
       // auto-mocked to return undefined, which silently falls back to
-      // `~/.qwen` and makes the fork write outside the tmp sandbox.
+      // `~/.canopy` and makes the fork write outside the tmp sandbox.
       vi.mocked(path.isAbsolute).mockImplementation(
         realPath.isAbsolute as unknown as typeof path.isAbsolute,
       );
@@ -3434,19 +3434,19 @@ describe('SessionService', () => {
       realTmpDir = fs.mkdtempSync(
         realPath.join(realOs.tmpdir(), 'fork-session-'),
       );
-      originalQwenHome = process.env['QWEN_HOME'];
+      originalCanopyHome = process.env['QWEN_HOME'];
       process.env['QWEN_HOME'] = realTmpDir;
-      process.env['QWEN_RUNTIME_DIR'] = realTmpDir;
+      process.env['CANOPY_RUNTIME_DIR'] = realTmpDir;
       cwd = process.cwd();
       service = new SessionService(cwd);
     });
 
     afterEach(() => {
-      delete process.env['QWEN_RUNTIME_DIR'];
-      if (originalQwenHome === undefined) {
+      delete process.env['CANOPY_RUNTIME_DIR'];
+      if (originalCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = originalQwenHome;
+        process.env['QWEN_HOME'] = originalCanopyHome;
       }
       try {
         fs.rmSync(realTmpDir, { recursive: true, force: true });
@@ -4961,7 +4961,7 @@ describe('SessionService', () => {
         workDir: cwd,
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
 
       const result = await service.forkSession(oldId, newId);
@@ -5176,13 +5176,13 @@ describe('SessionService', () => {
       realTmpDir = fs.mkdtempSync(
         realPath.join(realOs.tmpdir(), 'find-titles-prefix-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = realTmpDir;
+      process.env['CANOPY_RUNTIME_DIR'] = realTmpDir;
       cwd = process.cwd();
       service = new SessionService(cwd);
     });
 
     afterEach(() => {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       try {
         fs.rmSync(realTmpDir, { recursive: true, force: true });
       } catch {
@@ -5315,7 +5315,7 @@ describe('SessionService', () => {
         {
           ...recordA1,
           sessionId: worktreeSessionId,
-          cwd: '/test/project/root/.qwen/worktrees/my-task',
+          cwd: '/test/project/root/.canopy/worktrees/my-task',
         },
       ]);
       // The full worktree cwd hashes differently from the repo root,
@@ -5340,7 +5340,7 @@ describe('SessionService', () => {
         {
           ...recordA1,
           sessionId: worktreeSessionId,
-          cwd: '/other/repo/.qwen/worktrees/my-task',
+          cwd: '/other/repo/.canopy/worktrees/my-task',
         },
       ]);
       vi.mocked(getProjectHash).mockImplementation((p: string) =>
@@ -5403,13 +5403,13 @@ describe('SessionService', () => {
       realTmpDir = fs.mkdtempSync(
         realPath.join(realOs.tmpdir(), 'parent-session-id-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = realTmpDir;
+      process.env['CANOPY_RUNTIME_DIR'] = realTmpDir;
       cwd = process.cwd();
       service = new SessionService(cwd);
     });
 
     afterEach(() => {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       try {
         fs.rmSync(realTmpDir, { recursive: true, force: true });
       } catch {

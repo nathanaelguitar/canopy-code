@@ -1,11 +1,15 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
-import type { AgentTask, Config, MonitorTask } from '@qwen-code/qwen-code-core';
+import type {
+  AgentTask,
+  Config,
+  MonitorTask,
+} from '@canopy-code/canopy-code-core';
 import { buildSessionTasksStatus } from './tasksSnapshot.js';
 import type { ServeSessionAgentTaskStatus } from '@qwen-code/acp-bridge/status';
 

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionListItem } from '@qwen-code/qwen-code-core';
+import type { SessionListItem } from '@canopy-code/canopy-code-core';
 import type { Key, KeypressHandler } from '../contexts/KeypressContext.js';
 import { useKeypress } from './useKeypress.js';
 import { useSessionPicker } from './useSessionPicker.js';

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -59,9 +59,10 @@ describe('failingFilesOf', () => {
     // Dropping it collapsed same-named files across workspaces, so a PR-caused
     // failure in one package could read as pre-existing because another package
     // has a file by the same name.
-    const out = ' FAIL  |@qwen-code/qwen-code| src/commands/x.test.ts > case';
+    const out =
+      ' FAIL  |@canopy-code/canopy-code| src/commands/x.test.ts > case';
     expect(failingFilesOf(out)).toEqual([
-      '@qwen-code/qwen-code::src/commands/x.test.ts',
+      '@canopy-code/canopy-code::src/commands/x.test.ts',
     ]);
   });
 
@@ -120,7 +121,7 @@ describe('runTestDelta', () => {
     });
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'qwen-test-delta-'));
+    dir = mkdtempSync(join(tmpdir(), 'canopy-test-delta-'));
     baseline = join(dir, 'base');
     mkdirSync(baseline);
   });
@@ -528,7 +529,7 @@ describe('the CLI option contract', () => {
   let dir: string;
   let baseDir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'qwen-test-delta-cli-'));
+    dir = mkdtempSync(join(tmpdir(), 'canopy-test-delta-cli-'));
     baseDir = join(dir, 'base');
     mkdirSync(baseDir);
     writeFileSync(

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,7 +33,7 @@ export function createHealthRoutes(deps: CreateHealthRoutesDeps): HealthRoutes {
   // carry the daemon's bearer; round-tripping a 401 just to know
   // the listener is up is waste). On non-loopback binds the
   // exemption becomes a low-severity info leak (attacker can probe
-  // arbitrary IP:port to confirm a `qwen serve` is listening), so
+  // arbitrary IP:port to confirm a `canopy serve` is listening), so
   // we register `/health` AFTER `bearerAuth` and let it 401 like
   // every other route. Operators using the loopback default get the
   // probe-friendly behavior; operators exposing the daemon publicly
@@ -146,7 +146,7 @@ export function createHealthRoutes(deps: CreateHealthRoutesDeps): HealthRoutes {
           ? ` for workspace ${JSON.stringify(failedWorkspaceId)}`
           : '';
       writeStderrLine(
-        `qwen serve: /health deep probe failed${workspaceContext}: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: /health deep probe failed${workspaceContext}: ${err instanceof Error ? err.message : String(err)}`,
       );
       res
         .status(503)

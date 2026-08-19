@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,8 +30,8 @@
  * outside the child) — those still surface once a session exists.
  */
 
-import { SkillManager, isSafeModeEnv } from '@qwen-code/qwen-code-core';
-import type { Config, SkillLevel } from '@qwen-code/qwen-code-core';
+import { SkillManager, isSafeModeEnv } from '@canopy-code/canopy-code-core';
+import type { Config, SkillLevel } from '@canopy-code/canopy-code-core';
 import type { ServeWorkspaceSkillsStatus } from '@qwen-code/acp-bridge/status';
 import { STATUS_SCHEMA_VERSION } from '@qwen-code/acp-bridge/status';
 import { loadSettings } from '../config/settings.js';
@@ -151,7 +151,7 @@ async function buildWorkspaceSkillsStatus(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     writeStderrLine(
-      `qwen serve: daemon-local skills enumeration failed for ${workspaceCwd}: ${message}`,
+      `canopy serve: daemon-local skills enumeration failed for ${workspaceCwd}: ${message}`,
     );
     return {
       v: STATUS_SCHEMA_VERSION,

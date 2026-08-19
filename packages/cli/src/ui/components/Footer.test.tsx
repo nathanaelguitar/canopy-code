@@ -16,7 +16,7 @@ import { Footer } from './Footer.js';
 import {
   ApprovalMode,
   type BackgroundApproval,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import * as useTerminalSize from '../hooks/useTerminalSize.js';
 import * as useStatusLineModule from '../hooks/useStatusLine.js';
 import * as useMCPHealthModule from '../hooks/useMCPHealth.js';
@@ -42,9 +42,9 @@ const useStatusLineMock = vi.mocked(useStatusLineModule.useStatusLine);
 vi.mock('../hooks/useMCPHealth.js');
 const useMCPHealthMock = vi.mocked(useMCPHealthModule.useMCPHealth);
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   const registry = {
     list: vi.fn(() => []),
     subscribe: vi.fn(() => () => {}),
@@ -298,7 +298,7 @@ describe('<Footer />', () => {
 
   it('passes the left-column width after a right pill reserves space', async () => {
     const originalSandbox = process.env['SANDBOX'];
-    process.env['SANDBOX'] = 'qwen-code-docker';
+    process.env['SANDBOX'] = 'canopy-code-docker';
     useStatusLineMock.mockReturnValue({
       lines: [],
       useThemeColors: false,
@@ -679,14 +679,14 @@ describe('<Footer />', () => {
 
     it('renders status line with respectUserColors enabled', () => {
       useStatusLineMock.mockReturnValue({
-        lines: ['\x1b[38;2;99;102;241m🤖 qwen\x1b[0m'],
+        lines: ['\x1b[38;2;99;102;241m🤖 canopy\x1b[0m'],
         useThemeColors: false,
         respectUserColors: true,
         hideContextIndicator: false,
       });
       const { lastFrame } = renderWithWidth(120, createMockUIState());
       const frame = lastFrame()!;
-      expect(frame).toContain('🤖 qwen');
+      expect(frame).toContain('🤖 canopy');
     });
 
     it('hides context indicator when hideContextIndicator is true', () => {

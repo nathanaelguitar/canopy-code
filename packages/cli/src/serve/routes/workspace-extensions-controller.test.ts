@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ExtensionManager } from '@qwen-code/qwen-code-core';
+import { ExtensionManager } from '@canopy-code/canopy-code-core';
 import type { Response } from 'express';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import type { DaemonWorkspaceService } from '../workspace-service/types.js';
@@ -240,17 +240,17 @@ describe('createExtensionsController', () => {
       language === 'zh_TW' ? 'zh_TW' : 'en',
     );
     const extensionDir = await mkdtemp(
-      join(tmpdir(), 'qwen-localized-extension-'),
+      join(tmpdir(), 'canopy-localized-extension-'),
     );
 
     try {
-      await mkdir(join(extensionDir, '.qwen'));
+      await mkdir(join(extensionDir, '.canopy'));
       await writeFile(
-        join(extensionDir, '.qwen', 'settings.json'),
+        join(extensionDir, '.canopy', 'settings.json'),
         JSON.stringify({ general: { language: 'zh_TW' } }),
       );
       await writeFile(
-        join(extensionDir, 'qwen-extension.json'),
+        join(extensionDir, 'canopy-extension.json'),
         JSON.stringify({
           name: 'localized-extension',
           displayName: { en: 'English name', 'zh-TW': '繁體名稱' },

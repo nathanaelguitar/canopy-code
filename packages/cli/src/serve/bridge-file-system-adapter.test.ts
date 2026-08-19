@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -475,7 +475,7 @@ describe('createBridgeFileSystemAdapter', () => {
 
   describe('same-host built-in tool writes', () => {
     const marker = {
-      'qwen-code/tool-write-origin': {
+      'canopy-code/tool-write-origin': {
         version: 1,
         source: 'write_file',
       },
@@ -558,7 +558,7 @@ describe('createBridgeFileSystemAdapter', () => {
         'malformed provenance',
         true,
         {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
             extra: true,

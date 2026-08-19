@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Phase C ACP worktree context restore — agent-level integration tests.
@@ -105,7 +105,7 @@ const { mockRestoreWorktreeContext, mockWithDaemonSpan } = vi.hoisted(() => {
   };
 });
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({
     debug: vi.fn(),
     error: vi.fn(),
@@ -164,17 +164,17 @@ vi.mock('@qwen-code/qwen-code-core', () => ({
     Other: 'other',
   },
   AuthType: {},
-  DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES: ['.agentignore', '.aiignore'],
+  DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES: ['.agentignore', '.aiignore'],
   clearCachedCredentialFile: vi.fn(),
-  QwenOAuth2Event: {},
-  qwenOAuth2Events: { on: vi.fn(), off: vi.fn() },
+  CanopyOAuth2Event: {},
+  canopyOAuth2Events: { on: vi.fn(), off: vi.fn() },
   MCP_BUDGET_WARN_FRACTION: 0.75,
   MCPServerConfig: vi.fn().mockImplementation((...args: unknown[]) => ({
     _args: args,
   })),
   SessionService: vi.fn(),
   Storage: {
-    getRuntimeBaseDir: vi.fn(() => '/tmp/qwen-runtime-test'),
+    getRuntimeBaseDir: vi.fn(() => '/tmp/canopy-runtime-test'),
   },
   SESSION_TITLE_MAX_LENGTH: 200,
   DEFAULT_TOOL_OUTPUT_BATCH_BUDGET: 200_000,
@@ -279,10 +279,10 @@ vi.mock('./session/Session.js', () => ({ Session: vi.fn() }));
 // ---------------------------------------------------------------------------
 
 import { runAcpAgent } from './acpAgent.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import type { CliArgs } from '../config/config.js';
-import { SessionService } from '@qwen-code/qwen-code-core';
+import { SessionService } from '@canopy-code/canopy-code-core';
 import { AgentSideConnection } from '@agentclientprotocol/sdk';
 import { loadSettings } from '../config/settings.js';
 import { loadCliConfig } from '../config/config.js';
@@ -292,7 +292,7 @@ import { Session } from './session/Session.js';
 // Test suite — VP1, VP2, VP2b
 // ---------------------------------------------------------------------------
 
-describe('QwenAgent loadSession — Phase C worktree context restore', () => {
+describe('CanopyAgent loadSession — Phase C worktree context restore', () => {
   type AgentSideConnectionLike = { closed: Promise<void> };
   type AgentLike = {
     initialize: (args: Record<string, unknown>) => Promise<unknown>;
@@ -494,13 +494,13 @@ describe('QwenAgent loadSession — Phase C worktree context restore', () => {
 
   it('VP2: live sidecar — pendingWorktreeNotice is set to contextMessage', async () => {
     const contextMessage =
-      '[Resumed] Active worktree: "my-feature" at /repo/.qwen/worktrees/my-feature ' +
+      '[Resumed] Active worktree: "my-feature" at /repo/.canopy/worktrees/my-feature ' +
       '(branch: worktree-my-feature). Continue using this path for all file operations.';
     mockRestoreWorktreeContext.mockResolvedValueOnce({
       contextMessage,
       session: {
         slug: 'my-feature',
-        worktreePath: '/repo/.qwen/worktrees/my-feature',
+        worktreePath: '/repo/.canopy/worktrees/my-feature',
         worktreeBranch: 'worktree-my-feature',
         originalCwd: '/repo',
         originalBranch: 'main',

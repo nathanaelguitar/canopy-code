@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -593,11 +593,11 @@ describe('the CI wiring contract', () => {
         '..',
         '.github',
         'workflows',
-        'qwen-code-pr-review.yml',
+        'canopy-code-pr-review.yml',
       ),
       'utf8',
     );
-    // Whole line, not substring: `toContain('export QWEN_REVIEW_DEADLINE_EPOCH')`
+    // Whole line, not substring: `toContain('export CANOPY_REVIEW_DEADLINE_EPOCH')`
     // stayed green when the variable was renamed to any superstring
     // (`..._EPOCH_SECONDS` is the natural drift beside `..._RESERVE_SECONDS`)
     // and when the export was commented out — both leave the CLI deadline-less

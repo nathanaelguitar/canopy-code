@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -71,7 +71,7 @@ async function createApp(
   transcribe: ReturnType<typeof vi.fn>;
   invalidateServeFeaturesCache: ReturnType<typeof vi.fn>;
 }> {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-voice-home-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'canopy-voice-home-'));
   homes.push(home);
   const primaryCwd = path.join(home, 'primary');
   const secondaryCwd = path.join(home, 'secondary');
@@ -132,11 +132,11 @@ async function createApp(
 }
 
 async function enableSecondaryVoice(runtime: WorkspaceRuntime): Promise<void> {
-  await fsp.mkdir(path.join(runtime.workspaceCwd, '.qwen'), {
+  await fsp.mkdir(path.join(runtime.workspaceCwd, '.canopy'), {
     recursive: true,
   });
   await fsp.writeFile(
-    path.join(runtime.workspaceCwd, '.qwen', 'settings.json'),
+    path.join(runtime.workspaceCwd, '.canopy', 'settings.json'),
     JSON.stringify({
       voiceModel: 'secondary-asr',
       general: { voice: { enabled: true } },
@@ -146,7 +146,7 @@ async function enableSecondaryVoice(runtime: WorkspaceRuntime): Promise<void> {
 }
 
 describe('workspace-qualified Voice routes', () => {
-  const originalQwenHome = process.env['QWEN_HOME'];
+  const originalCanopyHome = process.env['QWEN_HOME'];
 
   afterEach(async () => {
     await Promise.all(
@@ -154,8 +154,8 @@ describe('workspace-qualified Voice routes', () => {
         .splice(0)
         .map((home) => fsp.rm(home, { recursive: true, force: true })),
     );
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     resetHomeEnvBootstrapForTesting();
   });
 

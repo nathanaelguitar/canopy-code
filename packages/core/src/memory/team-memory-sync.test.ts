@@ -17,7 +17,9 @@ function git(cwd: string, ...args: string[]): string {
 }
 
 function makeWorkingClone(bareRemote: string, label: string): string {
-  const parent = fs.mkdtempSync(path.join(os.tmpdir(), `qwen-sync-${label}-`));
+  const parent = fs.mkdtempSync(
+    path.join(os.tmpdir(), `canopy-sync-${label}-`),
+  );
   git(parent, 'clone', bareRemote, 'repo');
   const repo = path.join(parent, 'repo');
   git(repo, 'config', 'user.email', `${label}@example.com`);
@@ -50,7 +52,7 @@ describe('syncTeamMemory', () => {
 
   function freshRemoteAndClone(label: string): { bare: string; repo: string } {
     const bareParent = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-sync-bare-'),
+      path.join(os.tmpdir(), 'canopy-sync-bare-'),
     );
     cleanup.push(bareParent);
     const bare = path.join(bareParent, 'remote.git');
@@ -66,7 +68,7 @@ describe('syncTeamMemory', () => {
   }
 
   it('skips when the path is not a git repository', async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-sync-nogit-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-sync-nogit-'));
     cleanup.push(dir);
     const result = await syncTeamMemory(dir, { message: 'sync' });
     expect(result.skippedReason).toBe('not-a-git-repo');
@@ -112,7 +114,7 @@ describe('syncTeamMemory', () => {
     const bob = makeWorkingClone(bare, 'bob');
     cleanup.push(path.dirname(bob));
     writeTeamMemory(bob, 'reference/grafana.md', 'oncall dashboard');
-    git(bob, 'add', '--', '.qwen/team-memory');
+    git(bob, 'add', '--', '.canopy/team-memory');
     git(bob, 'commit', '-m', 'bob adds reference');
     git(bob, 'push');
 
@@ -132,7 +134,7 @@ describe('syncTeamMemory', () => {
     const bob = makeWorkingClone(bare, 'bob');
     cleanup.push(path.dirname(bob));
     writeTeamMemory(bob, 'reference/grafana.md', 'oncall dashboard');
-    git(bob, 'add', '--', '.qwen/team-memory');
+    git(bob, 'add', '--', '.canopy/team-memory');
     git(bob, 'commit', '-m', 'bob adds reference');
     git(bob, 'push');
 
@@ -164,7 +166,7 @@ describe('syncTeamMemory', () => {
     const bob = makeWorkingClone(bare, 'bob');
     cleanup.push(path.dirname(bob));
     writeTeamMemory(bob, 'reference/grafana.md', 'oncall dashboard');
-    git(bob, 'add', '--', '.qwen/team-memory');
+    git(bob, 'add', '--', '.canopy/team-memory');
     git(bob, 'commit', '-m', 'bob adds reference');
     git(bob, 'push');
 
@@ -188,7 +190,7 @@ describe('syncTeamMemory', () => {
 
   it('commits locally but skips push when there is no upstream', async () => {
     // A git repo with a commit but no remote / no upstream configured.
-    const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-sync-noup-'));
+    const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-sync-noup-'));
     cleanup.push(parent);
     const repo = path.join(parent, 'repo');
     fs.mkdirSync(repo);

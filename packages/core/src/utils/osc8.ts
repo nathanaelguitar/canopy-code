@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * OSC 8 hyperlink primitives (package-agnostic).
  *
  * These live in `core` so both the CLI renderers and core-side emitters — for
- * example the Qwen OAuth device-flow fallback message — can wrap a URL in a
+ * example the Canopy OAuth device-flow fallback message — can wrap a URL in a
  * single clickable link. `packages/cli/src/ui/utils/osc8.ts` re-exports them
  * so existing CLI imports keep resolving unchanged.
  *
@@ -120,7 +120,7 @@ function parseVersion(versionString: string | undefined): ParsedVersion {
  *      host supports OSC 8 and have `allow-passthrough on` (tmux 3.3+) can
  *      opt in with `FORCE_HYPERLINK=1`.
  *
- *   2. `QWEN_DISABLE_HYPERLINKS=1` is a hard opt-out (e.g. for users whose
+ *   2. `CANOPY_DISABLE_HYPERLINKS=1` is a hard opt-out (e.g. for users whose
  *      terminal advertises support but breaks on long URLs).
  *
  * The detector deliberately allocates nothing and reads env vars on every
@@ -133,7 +133,7 @@ export function supportsHyperlinks(
   const env = process.env;
 
   // Hard opt-outs win unconditionally.
-  if (env['QWEN_DISABLE_HYPERLINKS'] === '1') return false;
+  if (env['CANOPY_DISABLE_HYPERLINKS'] === '1') return false;
   if (env['NO_COLOR'] !== undefined && env['NO_COLOR'] !== '') return false;
   if (env['FORCE_COLOR'] === '0' || env['FORCE_COLOR'] === 'false') {
     return false;
@@ -143,7 +143,7 @@ export function supportsHyperlinks(
   // guard sits above `FORCE_HYPERLINK` on purpose: a user who has
   // `FORCE_HYPERLINK=1` in their shell profile (to enable OSC 8 inside
   // tmux/Hyper interactively) still shouldn't see escape bytes when they
-  // run `qwen | cat` or `qwen > out.txt`.
+  // run `canopy | cat` or `canopy > out.txt`.
   if (!stream || !stream.isTTY) return false;
 
   // Explicit force overrides every heuristic below — but not the opt-outs
@@ -282,5 +282,5 @@ export const HYPERLINK_ENV_KEYS = [
   'TERM',
   'TEAMCITY_VERSION',
   'FORCE_HYPERLINK',
-  'QWEN_DISABLE_HYPERLINKS',
+  'CANOPY_DISABLE_HYPERLINKS',
 ] as const;

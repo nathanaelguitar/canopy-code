@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -95,8 +95,8 @@ describe('osc8 (core primitives)', () => {
       expect(supportsHyperlinks(ttyStream(true))).toBe(true);
     });
 
-    it('is a hard opt-out under QWEN_DISABLE_HYPERLINKS=1', () => {
-      process.env['QWEN_DISABLE_HYPERLINKS'] = '1';
+    it('is a hard opt-out under CANOPY_DISABLE_HYPERLINKS=1', () => {
+      process.env['CANOPY_DISABLE_HYPERLINKS'] = '1';
       process.env['FORCE_HYPERLINK'] = '1';
       expect(supportsHyperlinks(ttyStream(true))).toBe(false);
     });

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// File for 'qwen mcp remove' command
+// File for 'canopy mcp remove' command
 import type { CommandModule } from 'yargs';
 import { loadSettings, SettingScope } from '../../config/settings.js';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
-import { MCPOAuthTokenStorage } from '@qwen-code/qwen-code-core';
+import { MCPOAuthTokenStorage } from '@canopy-code/canopy-code-core';
 
 async function removeMcpServer(
   name: string,
@@ -49,7 +49,7 @@ export const removeCommand: CommandModule = {
   describe: 'Remove a server',
   builder: (yargs) =>
     yargs
-      .usage('Usage: qwen mcp remove [options] <name>')
+      .usage('Usage: canopy mcp remove [options] <name>')
       .positional('name', {
         describe: 'Name of the server',
         type: 'string',

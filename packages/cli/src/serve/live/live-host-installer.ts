@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,18 +17,18 @@ import { LIVE_HOST_PROTOCOL_VERSION } from './types.js';
 
 const execFileAsync = promisify(execFile);
 
-export const LIVE_HOST_BUNDLE_ID = 'com.alibaba.qwen-code.live-host';
+export const LIVE_HOST_BUNDLE_ID = 'com.alibaba.canopy-code.live-host';
 export const LIVE_HOST_TEAM_IDENTIFIER = 'NF4574S59H';
-export const LIVE_HOST_APP_PATH = '/Applications/Qwen Live Host.app';
+export const LIVE_HOST_APP_PATH = '/Applications/Canopy Live Host.app';
 export const LIVE_HOST_OSS_BASE_URL =
   'https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/live-host';
 export const LIVE_HOST_RELEASE_BASE_URL =
-  'https://github.com/QwenLM/qwen-code/releases/download/live-host-latest';
-export const LIVE_HOST_MANIFEST_NAME = 'Qwen-Live-Host-manifest.json';
+  'https://github.com/QwenLM/canopy-code/releases/download/live-host-latest';
+export const LIVE_HOST_MANIFEST_NAME = 'Canopy-Live-Host-manifest.json';
 export const LIVE_HOST_MANIFEST_FETCH_TIMEOUT_MS = 5 * 60 * 1000;
 export const LIVE_HOST_DOWNLOAD_TIMEOUT_MS = 60 * 60 * 1000;
 
-const LIVE_HOST_APP_NAME = 'Qwen Live Host.app';
+const LIVE_HOST_APP_NAME = 'Canopy Live Host.app';
 const MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024;
 const COMMAND_TIMEOUT_MS = 2 * 60 * 1000;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
@@ -94,7 +94,7 @@ export function isExpectedLiveHostSignature(output: string): boolean {
 
 function architecture(value: string): LiveHostArchitecture {
   if (value === 'arm64' || value === 'x64') return value;
-  throw new Error(`Qwen Live Host is unavailable for architecture ${value}.`);
+  throw new Error(`Canopy Live Host is unavailable for architecture ${value}.`);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -144,8 +144,8 @@ export function parseLiveHostReleaseManifest(
     protocolVersion: LIVE_HOST_PROTOCOL_VERSION,
     bundleId: LIVE_HOST_BUNDLE_ID,
     assets: {
-      arm64: parseAsset(value['assets']['arm64'], 'Qwen-Live-Host-arm64.zip'),
-      x64: parseAsset(value['assets']['x64'], 'Qwen-Live-Host-x64.zip'),
+      arm64: parseAsset(value['assets']['arm64'], 'Canopy-Live-Host-arm64.zip'),
+      x64: parseAsset(value['assets']['x64'], 'Canopy-Live-Host-x64.zip'),
     },
   };
 }
@@ -173,15 +173,17 @@ async function readBundleValue(appPath: string, key: string): Promise<string> {
 async function inspectApp(appPath: string): Promise<InstalledLiveHost> {
   const stat = await fsp.lstat(appPath);
   if (!stat.isDirectory() || stat.isSymbolicLink()) {
-    throw new Error('Qwen Live Host installation is not a regular app bundle.');
+    throw new Error(
+      'Canopy Live Host installation is not a regular app bundle.',
+    );
   }
   const bundleId = await readBundleValue(appPath, 'CFBundleIdentifier');
   if (bundleId !== LIVE_HOST_BUNDLE_ID) {
-    throw new Error('Qwen Live Host bundle identity is invalid.');
+    throw new Error('Canopy Live Host bundle identity is invalid.');
   }
   const version = await readBundleValue(appPath, 'CFBundleShortVersionString');
   if (!VERSION_PATTERN.test(version)) {
-    throw new Error('Qwen Live Host version is invalid.');
+    throw new Error('Canopy Live Host version is invalid.');
   }
   await run('/usr/bin/codesign', [
     '--verify',
@@ -201,7 +203,7 @@ async function inspectApp(appPath: string): Promise<InstalledLiveHost> {
   );
   const signatureOutput = `${signature.stdout}${signature.stderr}`;
   if (!isExpectedLiveHostSignature(signatureOutput)) {
-    throw new Error('Qwen Live Host signing identity is invalid.');
+    throw new Error('Canopy Live Host signing identity is invalid.');
   }
   await run('/usr/sbin/spctl', ['-a', '-t', 'exec', appPath]);
   return { version };
@@ -327,7 +329,7 @@ export async function downloadLiveHostRelease(
   await fsp.rm(destination, { force: true });
   throw new AggregateError(
     errors,
-    `Qwen Live Host download failed. ${errors
+    `Canopy Live Host download failed. ${errors
       .map((error) => error.message)
       .join(' ')}`,
   );
@@ -338,13 +340,13 @@ async function installLatestHost(
   onStatus: (status: LiveHostInstallStatus) => void,
 ): Promise<InstalledLiveHost> {
   const temporaryDirectory = await fsp.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-live-host-'),
+    path.join(os.tmpdir(), 'canopy-live-host-'),
   );
-  const archivePath = path.join(temporaryDirectory, 'Qwen-Live-Host.zip');
+  const archivePath = path.join(temporaryDirectory, 'Canopy-Live-Host.zip');
   const extractedPath = path.join(temporaryDirectory, 'extracted');
   const candidatePath = path.join(extractedPath, LIVE_HOST_APP_NAME);
-  const stagingPath = `/Applications/.Qwen Live Host.install-${randomUUID()}.app`;
-  const backupPath = `/Applications/.Qwen Live Host.backup-${randomUUID()}.app`;
+  const stagingPath = `/Applications/.Canopy Live Host.install-${randomUUID()}.app`;
+  const backupPath = `/Applications/.Canopy Live Host.backup-${randomUUID()}.app`;
   let movedExisting = false;
   let installedCandidate = false;
   try {
@@ -402,7 +404,7 @@ async function launchInstalledHost(): Promise<void> {
 
 function errorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
-  return 'Qwen Live Host setup failed.';
+  return 'Canopy Live Host setup failed.';
 }
 
 export class LiveHostInstaller {
@@ -433,7 +435,10 @@ export class LiveHostInstaller {
   async refresh(): Promise<LiveHostInstallStatus> {
     if (this.operation) return await this.operation;
     if (this.platform !== 'darwin') {
-      return this.setError('Qwen Live Host is available only on macOS.', false);
+      return this.setError(
+        'Canopy Live Host is available only on macOS.',
+        false,
+      );
     }
     this.status = { state: 'checking' };
     try {
@@ -461,7 +466,7 @@ export class LiveHostInstaller {
     try {
       const installed = await this.inspectInstalled();
       if (!installed)
-        return this.setError('Qwen Live Host is not installed.', true);
+        return this.setError('Canopy Live Host is not installed.', true);
       this.status = { state: 'launching', version: installed.version };
       await this.launchHost();
       this.status = { state: 'installed', version: installed.version };
@@ -473,7 +478,10 @@ export class LiveHostInstaller {
 
   private async runInstall(force: boolean): Promise<LiveHostInstallStatus> {
     if (this.platform !== 'darwin') {
-      return this.setError('Qwen Live Host is available only on macOS.', false);
+      return this.setError(
+        'Canopy Live Host is available only on macOS.',
+        false,
+      );
     }
     let currentArchitecture: LiveHostArchitecture;
     try {

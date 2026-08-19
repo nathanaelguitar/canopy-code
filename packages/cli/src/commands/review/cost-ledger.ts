@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review cost-ledger`: what this review actually cost, from the
+// `canopy review cost-ledger`: what this review actually cost, from the
 // harness's own usage records.
 //
 // The number exists because it kept having to be excavated. A maintainer's
@@ -31,7 +31,7 @@
 import type { CommandModule } from 'yargs';
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { parseLineTolerant } from '@qwen-code/qwen-code-core';
+import { parseLineTolerant } from '@canopy-code/canopy-code-core';
 import {
   writeStdoutLineSafe,
   writeStderrLineSafe,
@@ -640,7 +640,7 @@ export function renderLedger(ledger: Ledger): string {
 }
 
 function runCostLedger(args: CostLedgerArgs): void {
-  // EPIPE arrives two ways when the reader goes away (`qwen … | head`, a
+  // EPIPE arrives two ways when the reader goes away (`canopy … | head`, a
   // daemon's closed redirect): a sync throw out of the write, and an async
   // 'error' event on the pipe. The safe writers catch the first; destroy the
   // stream on the second — the convention nonInteractiveCli uses — and

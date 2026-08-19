@@ -7,7 +7,7 @@
 import {
   buildBareRememberPrompt,
   buildManagedRememberPrompt,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 import type {
   CommandContext,
@@ -52,7 +52,7 @@ export const rememberCommand: SlashCommand = {
       };
     }
 
-    // --bare mode: ask the agent to save to QWEN.md using its native
+    // --bare mode: ask the agent to save to CANOPY.md using its native
     // file tools.
     return {
       type: 'submit_prompt',

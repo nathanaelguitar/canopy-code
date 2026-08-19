@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,7 @@ vi.mock('../../i18n/index.js', () => ({
   },
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({ debug: () => undefined }),
   ToolNames: { AGENT: 'agent' },
   FORK_SUBAGENT_TYPE: 'fork',

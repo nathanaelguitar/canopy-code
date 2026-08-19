@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -93,7 +93,7 @@ describe('SubagentManager', () => {
 
   beforeEach(() => {
     // Mock os.homedir before makeFakeConfig, since Config constructor
-    // calls Storage.getGlobalQwenDir() which needs os.homedir()
+    // calls Storage.getGlobalCanopyDir() which needs os.homedir()
     vi.mocked(os.homedir).mockReturnValue('/home/user');
     vi.mocked(os.tmpdir).mockReturnValue('/tmp');
 
@@ -368,7 +368,7 @@ describe('SubagentManager', () => {
     description: 'A test subagent',
     systemPrompt: 'You are a helpful assistant.',
     level: 'project',
-    filePath: '/test/project/.qwen/agents/test-agent.md',
+    filePath: '/test/project/.canopy/agents/test-agent.md',
   };
 
   const validMarkdown = `---
@@ -648,8 +648,8 @@ You are a helpful assistant.
     });
 
     it('should determine level from file path', () => {
-      const projectPath = '/test/project/.qwen/agents/test-agent.md';
-      const userPath = '/home/user/.qwen/agents/test-agent.md';
+      const projectPath = '/test/project/.canopy/agents/test-agent.md';
+      const userPath = '/home/user/.canopy/agents/test-agent.md';
 
       const projectConfig = manager.parseSubagentContent(
         validMarkdown,
@@ -715,7 +715,7 @@ You are a helpful assistant.
 
     it('should not warn when filename matches subagent name', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const matchingPath = '/test/project/.qwen/agents/test-agent.md';
+      const matchingPath = '/test/project/.canopy/agents/test-agent.md';
 
       const config = manager.parseSubagentContent(
         validMarkdown,
@@ -1398,10 +1398,10 @@ You are weird.
       expect(config).toBeDefined();
       expect(config!.name).toBe('test-agent');
       expect(fs.readdir).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents'),
+        path.normalize('/test/project/.canopy/agents'),
       );
       expect(fs.readFile).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents/test-agent.md'),
+        path.normalize('/test/project/.canopy/agents/test-agent.md'),
         'utf8',
       );
     });
@@ -1418,10 +1418,10 @@ You are weird.
       expect(config).toBeDefined();
       expect(config!.name).toBe('test-agent');
       expect(fs.readdir).toHaveBeenCalledWith(
-        path.normalize('/home/user/.qwen/agents'),
+        path.normalize('/home/user/.canopy/agents'),
       );
       expect(fs.readFile).toHaveBeenCalledWith(
-        path.normalize('/home/user/.qwen/agents/test-agent.md'),
+        path.normalize('/home/user/.canopy/agents/test-agent.md'),
         'utf8',
       );
     });
@@ -1477,12 +1477,12 @@ You are another assistant.`;
       expect(config).toBeDefined();
       expect(config!.name).toBe('correct-agent-name');
       expect(config!.filePath).toBe(
-        path.normalize('/test/project/.qwen/agents/wrong-filename.md'),
+        path.normalize('/test/project/.canopy/agents/wrong-filename.md'),
       );
 
       // Verify it scanned the directory instead of using direct path
       expect(fs.readdir).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents'),
+        path.normalize('/test/project/.canopy/agents'),
       );
     });
 
@@ -1528,7 +1528,7 @@ You are a helpful assistant.`;
       expect(config).toBeDefined();
       expect(config!.name).toBe('target-agent');
       expect(config!.filePath).toBe(
-        path.normalize('/home/user/.qwen/agents/user-agent.md'),
+        path.normalize('/home/user/.canopy/agents/user-agent.md'),
       );
       expect(config!.level).toBe('user');
     });
@@ -1556,7 +1556,7 @@ You are a helpful assistant.`;
       expect(config).toBeDefined();
       expect(config!.name).toBe('specific-agent');
       expect(config!.filePath).toBe(
-        path.normalize('/test/project/.qwen/agents/misnamed-file.md'),
+        path.normalize('/test/project/.canopy/agents/misnamed-file.md'),
       );
     });
   });
@@ -1671,7 +1671,7 @@ You are a helpful assistant.`;
       await manager.deleteSubagent('test-agent', 'project');
 
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents/test-agent.md'),
+        path.normalize('/test/project/.canopy/agents/test-agent.md'),
       );
     });
 
@@ -1705,10 +1705,10 @@ You are a helpful assistant.`;
 
       expect(fs.unlink).toHaveBeenCalledTimes(2);
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents/test-agent.md'),
+        path.normalize('/test/project/.canopy/agents/test-agent.md'),
       );
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.normalize('/home/user/.qwen/agents/test-agent.md'),
+        path.normalize('/home/user/.canopy/agents/test-agent.md'),
       );
     });
 
@@ -1759,7 +1759,7 @@ You are a helpful assistant.`;
 
       // Should delete the actual file, not the expected filename
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents/wrong-name.md'),
+        path.normalize('/test/project/.canopy/agents/wrong-name.md'),
       );
     });
 
@@ -1816,7 +1816,7 @@ Target content`,
       // Should only delete the matching file
       expect(fs.unlink).toHaveBeenCalledTimes(1);
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.normalize('/test/project/.qwen/agents/target-file.md'),
+        path.normalize('/test/project/.canopy/agents/target-file.md'),
       );
     });
   });

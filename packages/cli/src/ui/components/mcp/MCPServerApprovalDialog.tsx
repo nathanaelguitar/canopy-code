@@ -23,7 +23,7 @@ interface MCPServerApprovalDialogProps {
   serverName: string;
   /** One-line summary of its transport/config (e.g. `node slack.js (stdio)`). */
   summary: string;
-  /** Where the config came from (e.g. `.mcp.json`, `.qwen/settings.json`). */
+  /** Where the config came from (e.g. `.mcp.json`, `.canopy/settings.json`). */
   source: string;
   /** All pending servers that would be approved by "Approve all". */
   pendingServers: PendingMcpServer[];
@@ -79,7 +79,7 @@ export const MCPServerApprovalDialog: React.FC<
             {`Untrusted MCP server in ${source}`}
           </Text>
           <Text color={theme.text.primary}>
-            {`This workspace declares an MCP server. Approving lets Qwen Code start it and run its tools. Approval is bound to this exact configuration — if ${source} changes, you will be asked again.`}
+            {`This workspace declares an MCP server. Approving lets Canopy Code start it and run its tools. Approval is bound to this exact configuration — if ${source} changes, you will be asked again.`}
           </Text>
         </Box>
 

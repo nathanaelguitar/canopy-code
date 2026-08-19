@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,8 +32,8 @@ type BootstrapRoute = 'serve' | 'mcp' | 'help' | 'version' | 'default';
 export const TOP_LEVEL_COMMANDS = [
   ['auth', 'Configure authentication (removed)'],
   ['channel <command>', 'Manage messaging channels (Telegram, Discord, etc.)'],
-  ['extensions <command>', 'Manage Qwen Code extensions.'],
-  ['hooks', 'Manage Qwen Code hooks (use /hooks in interactive mode).'],
+  ['extensions <command>', 'Manage Canopy Code extensions.'],
+  ['hooks', 'Manage Canopy Code hooks (use /hooks in interactive mode).'],
   ['mcp', 'Manage MCP servers'],
   [
     'review <command>',
@@ -41,10 +41,10 @@ export const TOP_LEVEL_COMMANDS = [
   ],
   [
     'serve',
-    'Run Qwen Code as a local HTTP daemon (Stage 1 experimental: --http-bridge)',
+    'Run Canopy Code as a local HTTP daemon (Stage 1 experimental: --http-bridge)',
   ],
-  ['sessions <command>', 'Manage Qwen Code sessions'],
-  ['update', 'Check for Qwen Code updates and install if available'],
+  ['sessions <command>', 'Manage Canopy Code sessions'],
+  ['update', 'Check for Canopy Code updates and install if available'],
 ] as const;
 
 export const MCP_COMMANDS = [
@@ -169,9 +169,9 @@ function hasFlag(
 async function buildTopLevelHelpParser() {
   const { default: yargs } = await import('yargs');
   const parser = yargs([])
-    .scriptName('qwen')
+    .scriptName('canopy')
     .usage(
-      'Usage: qwen [options] [command]\n\nQwen Code - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
+      'Usage: canopy [options] [command]\n\nCanopy Code - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
     )
     .version(process.env['CLI_VERSION'] || 'unknown')
     .alias('v', 'version')
@@ -247,13 +247,13 @@ async function printTopLevelHelp(): Promise<void> {
 
 function printMcpHelp(): void {
   const lines = [
-    'Usage: qwen mcp <command>',
+    'Usage: canopy mcp <command>',
     '',
     'Manage MCP servers',
     '',
     'Commands:',
     ...MCP_COMMANDS.map(
-      ([command, description]) => `  qwen mcp ${command}  ${description}`,
+      ([command, description]) => `  canopy mcp ${command}  ${description}`,
     ),
   ];
   writeStdoutLine(lines.join('\n'));
@@ -283,7 +283,7 @@ async function runMcpFastPath(rawArgv: readonly string[]): Promise<void> {
   ]);
 
   const parser = yargsInstance([])
-    .scriptName('qwen')
+    .scriptName('canopy')
     .command(mcpCommand)
     .version(false)
     .help()
@@ -352,9 +352,9 @@ export async function runCliEntry(
   rawArgv: readonly string[] = process.argv.slice(2),
 ): Promise<void> {
   const managedUpdateVersion =
-    process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'];
+    process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'];
   if (managedUpdateVersion) {
-    delete process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'];
+    delete process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'];
     delete process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'];
     const { installManagedNpmUpdate } = await import(
       './utils/managed-npm-update.js'
@@ -366,7 +366,7 @@ export async function runCliEntry(
   const argv = normalizeServeFastPathArgv(rawArgv);
   const route = resolveBootstrapRoute(argv);
   if (route !== 'serve') {
-    // This credential belongs only to `qwen serve`. Scrub it before any other
+    // This credential belongs only to `canopy serve`. Scrub it before any other
     // subcommand handler can start a child process during yargs parsing. The
     // serve route keeps it until either the fast path or full serve handler
     // has captured it into daemon-local options.
@@ -435,17 +435,17 @@ function writeStderrLine(line: string): void {
 
 /**
  * The entry a subprocess should call to reach THIS build, consumed by shell
- * children as `"${QWEN_CODE_CLI:-qwen}"` (see getShellContextEnvVars in core).
+ * children as `"${CANOPY_CODE_CLI:-canopy}"` (see getShellContextEnvVars in core).
  * The npm bin wrapper (scripts/cli-entry.js) stamps installed launches, but a
  * workspace launch — a direct `node dist/index.js` — never passes through
- * it (the npm `start` and `dev` scripts stamp QWEN_CODE_CLI in their own
- * launchers), so every skill shell-out resolved `qwen` off PATH: a different
+ * it (the npm `start` and `dev` scripts stamp CANOPY_CODE_CLI in their own
+ * launchers), so every skill shell-out resolved `canopy` off PATH: a different
  * install, silently.
  *
  * Stamps the bin entry (dist/index.js), not this module: cli.ts compiles to
  * dist/src/cli.js, which carries no shebang, and the spawn-time filter blanks
  * an entry a shell cannot exec. Skipped when the derived path does not exist
- * (dev runs execute .ts sources with no built entry; the bare-`qwen` fallback
+ * (dev runs execute .ts sources with no built entry; the bare-`canopy` fallback
  * is the pre-existing behavior there) and when the module was not loaded from
  * the filesystem at all — under test runners, Vite statically rewrites the
  * new URL(…, import.meta.url) expression to a non-file URL, and the stamp
@@ -456,20 +456,20 @@ function writeStderrLine(line: string): void {
  * bin-link ever chmods it — on a plain `npm run build` checkout the spawn
  * filter would blank the stamp and the version skew this exists to fix would
  * survive. A failed chmod keeps the old fallback: the filter writes '' and
- * subprocesses run `qwen`.
+ * subprocesses run `canopy`.
  *
  * First writer wins, unlike the wrapper's unconditional assignment: an
  * already-set value may come from an outer launcher in THIS process —
  * cli-entry.js selecting a standalone shim, or the desktop app's vendored
  * bundle — which knows launch details this module cannot see and must not be
- * overwritten. The cost is that a value inherited from a PARENT qwen session
+ * overwritten. The cost is that a value inherited from a PARENT canopy session
  * also survives, since the two cases are indistinguishable here; the primary
  * skew scenario — a workspace launch from a plain terminal — has the slot
  * unset either way. Empty counts as unset: a parent session's spawn filter
  * writes '' for an entry its shell could not exec, and that verdict is about
  * the parent's entry, not this build's.
  *
- * scripts/dev.js and scripts/start.js assign QWEN_CODE_CLI unconditionally —
+ * scripts/dev.js and scripts/start.js assign CANOPY_CODE_CLI unconditionally —
  * the opposite policy on purpose, not an oversight: those files ARE the outer
  * launcher (they spawn the CLI as a child and must re-point an inherited value
  * at this build), whereas this module runs in-process AFTER an outer launcher
@@ -479,7 +479,7 @@ function writeStderrLine(line: string): void {
  * existence check skips it, consistent with this PR's workspace-entry scope.
  */
 export function stampCliEntryEnv(entryPath?: string): void {
-  if (process.env['QWEN_CODE_CLI']) {
+  if (process.env['CANOPY_CODE_CLI']) {
     return;
   }
   let entry = entryPath;
@@ -503,10 +503,10 @@ export function stampCliEntryEnv(entryPath?: string): void {
         chmodSync(entry, statSync(entry).mode | 0o111);
       } catch {
         // Not chmoddable (read-only checkout): the spawn filter blanks the
-        // stamp and subprocesses fall back to `qwen`, as before this stamp.
+        // stamp and subprocesses fall back to `canopy`, as before this stamp.
       }
     }
-    process.env['QWEN_CODE_CLI'] = entry;
+    process.env['CANOPY_CODE_CLI'] = entry;
   }
 }
 

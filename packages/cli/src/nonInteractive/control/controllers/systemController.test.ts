@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { InputFormat } from '@qwen-code/qwen-code-core';
+import { InputFormat } from '@canopy-code/canopy-code-core';
 import { createMinimalSettings } from '../../../config/settings.js';
 import type { StreamJsonOutputAdapter } from '../../io/StreamJsonOutputAdapter.js';
 import type { IControlContext } from '../ControlContext.js';
@@ -21,8 +21,8 @@ const { mockDebugLogger } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   createDebugLogger: () => mockDebugLogger,
 }));
 
@@ -389,7 +389,7 @@ describe('SystemController', () => {
       ).mockReturnValue([
         {
           id: 'qwen-max',
-          label: 'Qwen Max',
+          label: 'Canopy Max',
           capabilities: { vision: true },
           contextWindowSize: 128000,
           baseUrl: 'https://internal-proxy.corp/v1',
@@ -397,7 +397,7 @@ describe('SystemController', () => {
         },
         {
           id: 'qwen-image-2.0',
-          label: 'Qwen Image 2.0',
+          label: 'Canopy Image 2.0',
           imageOnly: true,
         },
       ]);
@@ -417,7 +417,7 @@ describe('SystemController', () => {
         models: [
           {
             id: 'qwen-max',
-            label: 'Qwen Max',
+            label: 'Canopy Max',
             capabilities: { vision: true },
             contextWindowSize: 128000,
           },

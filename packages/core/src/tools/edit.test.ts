@@ -228,7 +228,7 @@ describe('EditTool', () => {
 
   describe('team memory', () => {
     const teamFile = () =>
-      path.join(rootDir, '.qwen', 'team-memory', 'feedback', 'x.md');
+      path.join(rootDir, '.canopy', 'team-memory', 'feedback', 'x.md');
 
     it('blocks a secret written to a team-memory path via new_string', () => {
       const params: EditToolParams = {

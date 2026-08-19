@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -141,9 +141,9 @@ describe('EnterWorktreeTool.execute', () => {
     const fs = await import('node:fs/promises');
     const pathMod = await import('node:path');
     const os = await import('node:os');
-    const cwd = await fs.mkdtemp(pathMod.join(os.tmpdir(), 'qwen-nested-'));
+    const cwd = await fs.mkdtemp(pathMod.join(os.tmpdir(), 'canopy-nested-'));
     // Build a path that contains the nested-marker substring.
-    const nested = pathMod.join(cwd, '.qwen', 'worktrees', 'inner');
+    const nested = pathMod.join(cwd, '.canopy', 'worktrees', 'inner');
     await fs.mkdir(nested, { recursive: true });
     const cfg = {
       getTargetDir: () => nested,
@@ -161,7 +161,7 @@ describe('EnterWorktreeTool.execute', () => {
     const fs = await import('node:fs/promises');
     const pathMod = await import('node:path');
     const os = await import('node:os');
-    const cwd = await fs.mkdtemp(pathMod.join(os.tmpdir(), 'qwen-no-git-'));
+    const cwd = await fs.mkdtemp(pathMod.join(os.tmpdir(), 'canopy-no-git-'));
     const cfg = {
       getTargetDir: () => cwd,
       getSessionId: () => 'mock',
@@ -185,7 +185,7 @@ describe('session marker round-trip', () => {
       readWorktreeSessionMarker,
       WORKTREE_SESSION_FILE,
     } = await import('../services/gitWorktreeService.js');
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-session-'));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-session-'));
     try {
       await writeWorktreeSessionMarker(tmp, 'session-abc-123');
       const got = await readWorktreeSessionMarker(tmp);
@@ -207,7 +207,7 @@ describe('session marker round-trip', () => {
     const { readWorktreeSessionMarker } = await import(
       '../services/gitWorktreeService.js'
     );
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-session-'));
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-session-'));
     try {
       expect(await readWorktreeSessionMarker(tmp)).toBeNull();
     } finally {
@@ -222,7 +222,9 @@ describe('session marker round-trip', () => {
     const { readWorktreeSessionMarker, WORKTREE_SESSION_FILE } = await import(
       '../services/gitWorktreeService.js'
     );
-    const tmp = await fs.mkdtemp(pathMod.join(os.tmpdir(), 'qwen-wt-session-'));
+    const tmp = await fs.mkdtemp(
+      pathMod.join(os.tmpdir(), 'canopy-wt-session-'),
+    );
     try {
       await fs.writeFile(
         pathMod.join(tmp, WORKTREE_SESSION_FILE),
@@ -259,7 +261,7 @@ describe('GitWorktreeService.generateAutoSlug', () => {
 });
 
 describe('GitWorktreeService.getUserWorktreesDir / getUserWorktreePath', () => {
-  it('uses .qwen/worktrees under the project root', () => {
+  it('uses .canopy/worktrees under the project root', () => {
     // Use the cwd (which exists) so simple-git's existence check passes.
     const root = process.cwd();
     const service = new GitWorktreeService(root);
@@ -267,10 +269,10 @@ describe('GitWorktreeService.getUserWorktreesDir / getUserWorktreePath', () => {
     // platform — the implementation uses path.join, so on Windows the
     // separator is `\`, not `/`.
     expect(service.getUserWorktreesDir()).toBe(
-      path.join(root, '.qwen', 'worktrees'),
+      path.join(root, '.canopy', 'worktrees'),
     );
     expect(service.getUserWorktreePath('feat-x')).toBe(
-      path.join(root, '.qwen', 'worktrees', 'feat-x'),
+      path.join(root, '.canopy', 'worktrees', 'feat-x'),
     );
   });
 });

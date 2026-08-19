@@ -1,18 +1,18 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * An index of the Qwen Code sessions that are running right now.
+ * An index of the Canopy Code sessions that are running right now.
  *
  * Each top-level session writes `<global dir>/sessions/<pid>.json` at
  * startup and unlinks it on exit. The directory is flat and keyed by PID
  * so that "who else is running" is one `readdir` plus a handful of small
  * reads.
  *
- * The index is scoped to one Qwen home: the global dir resolves
+ * The index is scoped to one Canopy home: the global dir resolves
  * `QWEN_HOME` on every call, so a session started under a redirected
  * `QWEN_HOME` registers elsewhere and stays invisible to readers under
  * the default home (and vice versa). It also assumes a single machine on
@@ -131,17 +131,17 @@ export interface SessionRegistryRecord {
   name: string;
   /** Epoch milliseconds. */
   startedAt: number;
-  qwenVersion: string | null;
+  canopyVersion: string | null;
 }
 
 export interface RegisterSessionFields {
   sessionId: string;
   cwd: string;
-  qwenVersion?: string | null;
+  canopyVersion?: string | null;
 }
 
 export function getSessionRegistryDir(): string {
-  return path.join(Storage.getGlobalQwenDir(), 'sessions');
+  return path.join(Storage.getGlobalCanopyDir(), 'sessions');
 }
 
 /**
@@ -155,7 +155,7 @@ export function getSessionRecordPath(): string {
 }
 
 /**
- * The record path captured when registration succeeds. `getGlobalQwenDir()`
+ * The record path captured when registration succeeds. `getGlobalCanopyDir()`
  * resolves a relative `QWEN_HOME` against the CURRENT `process.cwd()` on
  * every call, and `/cd` changes the cwd mid-session — so patch and
  * unregister must keep operating on the directory registration wrote to
@@ -183,7 +183,7 @@ function thisProcessRecordPath(): string {
  * plus two hex characters derived from the session id.
  *
  * The suffix exists because two sessions in the same directory is the
- * common case, not the exception — bare `qwen-code` would collide
+ * common case, not the exception — bare `canopy-code` would collide
  * immediately. Two hex characters keep it typeable while making a
  * same-directory collision unlikely rather than certain; callers that
  * need a guaranteed-unique handle should use the session id.
@@ -275,7 +275,7 @@ export async function registerSession(
     cwd: fields.cwd,
     name: deriveSessionName(fields.cwd, fields.sessionId),
     startedAt: Date.now(),
-    qwenVersion: fields.qwenVersion ?? null,
+    canopyVersion: fields.canopyVersion ?? null,
   };
 
   try {
@@ -358,7 +358,7 @@ export async function patchSessionRecord(
   >,
 ): Promise<void> {
   try {
-    // Inside the try: the fallback `getGlobalQwenDir()` resolution reads
+    // Inside the try: the fallback `getGlobalCanopyDir()` resolution reads
     // the home directory and can throw, and this function promises never
     // to reject.
     const filePath = thisProcessRecordPath();
@@ -441,7 +441,7 @@ export async function listLiveSessions(): Promise<SessionRegistryRecord[]> {
   let dir: string;
   let entries: string[];
   try {
-    // Inside the try as well: `getGlobalQwenDir()` resolves the home
+    // Inside the try as well: `getGlobalCanopyDir()` resolves the home
     // directory and can throw. Callers are told this never throws, and
     // `ps` dropped its error path on the strength of that promise.
     dir = getSessionRegistryDir();
@@ -668,7 +668,7 @@ async function readRecord(filePath: string): Promise<ReadRecordResult> {
 
   const procStart = value['procStart'];
   const pidNs = value['pidNs'];
-  const qwenVersion = value['qwenVersion'];
+  const canopyVersion = value['canopyVersion'];
 
   return {
     status: 'ok',
@@ -681,7 +681,7 @@ async function readRecord(filePath: string): Promise<ReadRecordResult> {
       cwd,
       name,
       startedAt,
-      qwenVersion: typeof qwenVersion === 'string' ? qwenVersion : null,
+      canopyVersion: typeof canopyVersion === 'string' ? canopyVersion : null,
     },
   };
 }

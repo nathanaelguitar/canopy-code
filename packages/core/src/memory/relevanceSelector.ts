@@ -40,8 +40,8 @@ interface RecallSelectorResponse {
  * [type] filePath (ISO-timestamp): description.
  *
  * Uses the absolute filePath (never relativePath) so docs from the two
- * memory scopes — per-project under `~/.qwen/projects/<hash>/memory/`
- * and user-level under `~/.qwen/memories/` — that happen to share the
+ * memory scopes — per-project under `~/.canopy/projects/<hash>/memory/`
+ * and user-level under `~/.canopy/memories/` — that happen to share the
  * same relativePath (e.g. `user/role.md` in both) remain individually
  * addressable. Keying by relativePath caused the selector's Map dedupe
  * to silently drop one scope.

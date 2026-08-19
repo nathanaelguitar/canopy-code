@@ -5,8 +5,8 @@
  */
 
 import { useEffect, useReducer, useRef } from 'react';
-import type { Config, FileSearch } from '@qwen-code/qwen-code-core';
-import { FileSearchFactory, escapePath } from '@qwen-code/qwen-code-core';
+import type { Config, FileSearch } from '@canopy-code/canopy-code-core';
+import { FileSearchFactory, escapePath } from '@canopy-code/canopy-code-core';
 import type { Suggestion } from '../components/SuggestionsDisplay.js';
 import { MAX_SUGGESTIONS_TO_SHOW } from '../components/SuggestionsDisplay.js';
 import { matchMcpServerPrefix, buildMcpResourceRef } from './mcpResourceRef.js';
@@ -361,8 +361,8 @@ export function useAtCompletion(props: UseAtCompletionProps): void {
           ignoreDirs: [],
           useGitignore:
             config?.getFileFilteringOptions()?.respectGitIgnore ?? true,
-          useQwenignore:
-            config?.getFileFilteringOptions()?.respectQwenIgnore ?? true,
+          useCanopyignore:
+            config?.getFileFilteringOptions()?.respectCanopyIgnore ?? true,
           customIgnoreFiles:
             config?.getFileFilteringOptions()?.customIgnoreFiles,
           cache: true,
@@ -498,7 +498,7 @@ export function useAtCompletion(props: UseAtCompletionProps): void {
           return;
         }
 
-        // isDirectory relies on crawler.ts in @qwen-code/qwen-code-core
+        // isDirectory relies on crawler.ts in @canopy-code/canopy-code-core
         // always normalizing paths with posix '/' via fdir.withPathSeparator('/').
         // If the crawler ever switches to path.sep, this check must be updated.
         const fileSuggestions = results.map((p) => ({

@@ -47,7 +47,7 @@ describe('artifact html helpers', () => {
     });
 
     it('accepts external hyperlinks', () => {
-      const ok = `<a href="https://github.com/QwenLM/qwen-code/pull/1">PR</a>`;
+      const ok = `<a href="https://github.com/QwenLM/canopy-code/pull/1">PR</a>`;
       expect(validateSelfContained(ok)).toBeNull();
     });
 

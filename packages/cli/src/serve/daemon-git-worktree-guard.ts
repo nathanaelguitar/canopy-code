@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   isWithinRoot,
   realpathNearestExistingAsync,
   splitCommands,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   EXTERNAL_TOOL_GUARD_MAX_DENIAL_REASON_CHARS,
   SHELL_EXECUTING_TOOL_NAMES as SHELL_EXECUTING_TOOLS,
@@ -227,7 +227,7 @@ const PROGRAMS_WITH_OWN_C_FLAG = new Set([
 ]);
 
 // Pinned to ToolNames.AGENT/WORKFLOW/CREATE_SUB_SESSION/SEND_MESSAGE in
-// @qwen-code/qwen-code-core. The literals keep this module free of a core
+// @canopy-code/canopy-code-core. The literals keep this module free of a core
 // barrel import for this one set; daemon-git-worktree-guard.test.ts asserts
 // the values match so a rename cannot silently desync this set.
 const EXTERNAL_GUARD_UNSUPPORTED_TOOLS = new Set([
@@ -2819,7 +2819,7 @@ async function evaluateBuiltInGuard(
     const canonicalReported = await realpathNearestExistingAsync(reportedCwd);
     if (isWithinRoot(canonicalReported, sessionCwd)) {
       // `AgentTool` with `isolation: 'worktree'` provisions under
-      // `<projectRoot>/.qwen/worktrees/`, which is inside the session — so
+      // `<projectRoot>/.canopy/worktrees/`, which is inside the session — so
       // "inside" is not enough to leave the boundary alone. A reported
       // directory that is a checkout root in its own right is the sub-agent's
       // worktree, and containing it there is what stops one sub-agent from

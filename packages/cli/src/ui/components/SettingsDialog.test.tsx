@@ -937,7 +937,7 @@ describe('SettingsDialog', () => {
 
       // Should not show restart prompt initially
       expect(lastFrame()).not.toContain(
-        'To see changes, Qwen Code must be restarted',
+        'To see changes, Canopy Code must be restarted',
       );
 
       unmount();
@@ -1646,7 +1646,7 @@ describe('SettingsDialog', () => {
           loadFromIncludeDirectories: true,
           fileFiltering: {
             respectGitIgnore: true,
-            respectQwenIgnore: true,
+            respectCanopyIgnore: true,
             enableRecursiveFileSearch: true,
             disableFuzzySearch: false,
           },
@@ -1811,7 +1811,7 @@ describe('SettingsDialog', () => {
         context: {
           fileFiltering: {
             respectGitIgnore: false,
-            respectQwenIgnore: true,
+            respectCanopyIgnore: true,
             enableRecursiveFileSearch: false,
             disableFuzzySearch: true,
           },
@@ -1883,7 +1883,7 @@ describe('SettingsDialog', () => {
           loadFromIncludeDirectories: false,
           fileFiltering: {
             respectGitIgnore: false,
-            respectQwenIgnore: false,
+            respectCanopyIgnore: false,
             enableRecursiveFileSearch: false,
             disableFuzzySearch: false,
           },

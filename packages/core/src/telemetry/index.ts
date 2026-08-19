@@ -154,7 +154,7 @@ export {
   ApiRequestPhase,
   FileOperation,
 } from './metrics.js';
-export { QwenLogger } from './qwen-logger/qwen-logger.js';
+export { CanopyLogger } from './canopy-logger/canopy-logger.js';
 export { sanitizeHookName } from './sanitize.js';
 export {
   startInteractionSpan,

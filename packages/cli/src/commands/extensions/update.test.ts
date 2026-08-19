@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateCommand, handleUpdate } from './update.js';
 import yargs from 'yargs';
-import { ExtensionUpdateState } from '@qwen-code/qwen-code-core';
+import { ExtensionUpdateState } from '@canopy-code/canopy-code-core';
 
 const mockGetLoadedExtensions = vi.hoisted(() => vi.fn());
 const mockUpdateExtension = vi.hoisted(() => vi.fn());
@@ -26,7 +26,7 @@ vi.mock('./utils.js', () => ({
   }),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   checkForExtensionUpdate: mockCheckForExtensionUpdate,
   ExtensionUpdateState: {
     UPDATE_AVAILABLE: 'update available',

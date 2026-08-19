@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,8 +9,8 @@ import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { createServer as createSecureServer } from 'node:https';
 import type { Application } from 'express';
-import type { SleepInhibitorHandle } from '@qwen-code/qwen-code-core';
-import { sleepInhibitor } from '@qwen-code/qwen-code-core';
+import type { SleepInhibitorHandle } from '@canopy-code/canopy-code-core';
+import { sleepInhibitor } from '@canopy-code/canopy-code-core';
 import type { MutableOriginAllowlist } from '../auth.js';
 import type { CredentialStore } from './credentials.js';
 import { tagListener } from './listener-identity.js';
@@ -109,7 +109,7 @@ export interface LocalControlServiceDeps {
  * This is the whole of what `local_control.rs` did, minus the proxying. The
  * Rust file bound a LAN socket and forwarded bytes to the loopback daemon,
  * rewriting `Host`, `Origin`, `Authorization`, and `Sec-WebSocket-Protocol` on
- * the way through — all of it compensation for one fact: `qwen serve` fixed
+ * the way through — all of it compensation for one fact: `canopy serve` fixed
  * its bind address at startup and could not add a listener later.
  *
  * Here the second listener serves the same Express app directly. There are no
@@ -218,7 +218,7 @@ export class LocalControlService {
 
     server.on('error', (error) => {
       writeStderrLine(
-        `qwen serve: Local Control listener error: ${error.message}`,
+        `canopy serve: Local Control listener error: ${error.message}`,
       );
     });
     this.#server = server;
@@ -229,7 +229,7 @@ export class LocalControlService {
     // SSH sessions and on hosts without a usable backend. A phone losing its
     // session to a sleeping laptop should be explainable from the status, so
     // `sleepInhibited` reflects what actually happened rather than intent.
-    this.#sleep = sleepInhibitor.acquire('Qwen Code Local Control is active');
+    this.#sleep = sleepInhibitor.acquire('Canopy Code Local Control is active');
     return this.status();
   }
 

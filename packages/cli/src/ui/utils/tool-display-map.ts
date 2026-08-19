@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ToolDisplayNames, ToolNames } from '@qwen-code/qwen-code-core';
+import { ToolDisplayNames, ToolNames } from '@canopy-code/canopy-code-core';
 
 /**
  * Internal-tool-name → user-facing display-name lookup

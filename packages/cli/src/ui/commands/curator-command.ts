@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   type AutoSkillCuratorRunResult,
   type AutoSkillCuratorStatus,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 import type {
   CommandContext,
@@ -125,7 +125,7 @@ function formatRun(result: AutoSkillCuratorRunResult): string {
     lines.push(
       ...result.skippedCollisions.map(
         (name) =>
-          `  ${name} — remove or rename .qwen/archived-skills/${name} to re-archive`,
+          `  ${name} — remove or rename .canopy/archived-skills/${name} to re-archive`,
       ),
     );
   }

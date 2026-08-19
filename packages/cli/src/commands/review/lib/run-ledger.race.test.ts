@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -43,8 +43,8 @@ let root: string;
 let plan: string;
 
 const envOf = (sessionId: string): NodeJS.ProcessEnv => ({
-  QWEN_CODE_PROJECT_DIR: root,
-  QWEN_CODE_SESSION_ID: sessionId,
+  CANOPY_CODE_PROJECT_DIR: root,
+  CANOPY_CODE_SESSION_ID: sessionId,
 });
 
 const transient = (code: string): Error =>
@@ -52,7 +52,7 @@ const transient = (code: string): Error =>
 
 beforeEach(() => {
   root = realpathSync(mkdtempSync(join(tmpdir(), 'run-ledger-race-')));
-  plan = join(root, 'qwen-review-pr-7-fetch.json');
+  plan = join(root, 'canopy-review-pr-7-fetch.json');
   writeFileSync(plan, JSON.stringify({ diffLines: 1, chunks: [] }));
 });
 afterEach(() => {

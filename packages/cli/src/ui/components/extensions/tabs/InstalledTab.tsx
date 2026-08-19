@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ import {
   MCPOAuthTokenStorage,
   createDebugLogger,
   matchesAnyServerPattern,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   loadSettings,
   SettingScope as CliSettingScope,

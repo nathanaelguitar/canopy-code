@@ -1,4 +1,4 @@
-import { normalizeProxyUrl } from '@qwen-code/qwen-code-core';
+import { normalizeProxyUrl } from '@canopy-code/canopy-code-core';
 import { loadUndici } from '../../utils/load-undici.js';
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import {
   createDebugLogger,
   ModelsConfig,
   type ModelProvidersConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getPersistScopeForModelSelection } from '../config/modelProvidersScope.js';
 import { SettingScope, type LoadedSettings } from '../config/settings.js';
 import {

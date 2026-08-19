@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { type CommandContext } from './types.js';
 import { effortCommand } from './effort-command.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';

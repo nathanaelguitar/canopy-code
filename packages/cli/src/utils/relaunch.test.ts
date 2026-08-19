@@ -414,9 +414,9 @@ describe('relaunchAppInChildProcess', () => {
       async (_name, marker, expectedElectron) => {
         process.argv = ['/usr/bin/node', '/app/cli.js'];
         if (marker) {
-          process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] = marker;
+          process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] = marker;
         } else {
-          delete process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'];
+          delete process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'];
         }
         delete process.env['ELECTRON_RUN_AS_NODE'];
 
@@ -434,7 +434,7 @@ describe('relaunchAppInChildProcess', () => {
         for (const call of mockedSpawn.mock.calls) {
           const env = call[2]?.env;
           expect(env?.['ELECTRON_RUN_AS_NODE']).toBe(expectedElectron);
-          expect(env?.['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE']).toBe(marker);
+          expect(env?.['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE']).toBe(marker);
           expect(env?.['QWEN_CODE_NO_RELAUNCH']).toBe('true');
         }
         expect(process.env['ELECTRON_RUN_AS_NODE']).toBeUndefined();

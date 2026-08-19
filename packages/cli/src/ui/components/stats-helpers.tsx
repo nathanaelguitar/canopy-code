@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { Box, Text } from 'ink';
 import { theme } from '../semantic-colors.js';
 import { t } from '../../i18n/index.js';
 import type { HeatmapIntensity } from '../utils/asciiCharts.js';
-import type { TimeRange } from '@qwen-code/qwen-code-core';
+import type { TimeRange } from '@canopy-code/canopy-code-core';
 
 export type StatsTab = 'session' | 'activity' | 'efficiency';
 

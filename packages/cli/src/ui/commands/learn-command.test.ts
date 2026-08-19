@@ -1,18 +1,18 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { beforeEach, describe, it, expect, vi } from 'vitest';
-import { AuthType, expandHomeDir } from '@qwen-code/qwen-code-core';
+import { AuthType, expandHomeDir } from '@canopy-code/canopy-code-core';
 import { learnCommand } from './learn-command.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import type { SubmitPromptActionReturn } from './types.js';
 import { CommandKind } from './types.js';
 
 const mockReadPathFromWorkspace = vi.hoisted(() => vi.fn());
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original = await importOriginal<object>();
   return {
     ...original,
@@ -94,7 +94,7 @@ describe('learnCommand', () => {
     );
   });
 
-  it.each([AuthType.USE_OPENAI, AuthType.QWEN_OAUTH])(
+  it.each([AuthType.USE_OPENAI, AuthType.CANOPY_OAUTH])(
     'submits a native video part through %s',
     async (authType) => {
       const ctx = createMockCommandContext({

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { SkillLevel } from '@qwen-code/qwen-code-core';
+import type { SkillLevel } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 // Call at render/command time, not module-load, so `/language` switches take effect.

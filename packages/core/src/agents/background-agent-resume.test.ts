@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1456,7 +1456,7 @@ describe('BackgroundAgentResumeService', () => {
       persistedCliFlags: {
         approvalMode: 'auto-edit',
         bare: true,
-        sandbox: { command: 'docker', image: 'qwen-code-sandbox' },
+        sandbox: { command: 'docker', image: 'canopy-code-sandbox' },
         screenReader: true,
         model: 'agent-model',
         authType: 'anthropic',
@@ -1530,7 +1530,7 @@ describe('BackgroundAgentResumeService', () => {
     expect(overriddenConfig.getBareMode()).toBe(true);
     expect(overriddenConfig.getSandbox()).toEqual({
       command: 'docker',
-      image: 'qwen-code-sandbox',
+      image: 'canopy-code-sandbox',
     });
     expect(overriddenConfig.getScreenReader()).toBe(true);
     expect(overriddenConfig.getModel()).toBe('agent-model');

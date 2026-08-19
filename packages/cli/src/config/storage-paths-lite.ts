@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-// Keep this literal in sync with core's QWEN_DIR. This lite module must not
-// import @qwen-code/qwen-code-core because it runs before serve listener ready.
-export const SETTINGS_DIRECTORY_NAME = '.qwen';
+// Keep this literal in sync with core's CANOPY_DIR. This lite module must not
+// import @canopy-code/canopy-code-core because it runs before serve listener ready.
+export const SETTINGS_DIRECTORY_NAME = '.canopy';
 
 export function resolveConfigPathLite(dir: string, cwd?: string): string {
   let resolved = dir;
@@ -33,7 +33,7 @@ export function resolveConfigPathLite(dir: string, cwd?: string): string {
   return resolved;
 }
 
-export function getGlobalQwenDirLite(): string {
+export function getGlobalCanopyDirLite(): string {
   const envDir = process.env['QWEN_HOME'];
   if (envDir) {
     return resolveConfigPathLite(envDir);
@@ -46,21 +46,21 @@ export function getGlobalQwenDirLite(): string {
 }
 
 export function getSystemSettingsPath(): string {
-  if (process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH']) {
-    return process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+  if (process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH']) {
+    return process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
   }
   if (os.platform() === 'darwin') {
-    return '/Library/Application Support/QwenCode/settings.json';
+    return '/Library/Application Support/CanopyCode/settings.json';
   }
   if (os.platform() === 'win32') {
-    return 'C:\\ProgramData\\qwen-code\\settings.json';
+    return 'C:\\ProgramData\\canopy-code\\settings.json';
   }
-  return '/etc/qwen-code/settings.json';
+  return '/etc/canopy-code/settings.json';
 }
 
 export function getSystemDefaultsPath(): string {
-  if (process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH']) {
-    return process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+  if (process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH']) {
+    return process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
   }
   return path.join(
     path.dirname(getSystemSettingsPath()),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,7 +27,7 @@ describe('collectMemoryDiagnostics', () => {
     const diagnostics = await collectMemoryDiagnostics({
       now: () => new Date('2026-05-01T10:00:00.000Z'),
       sessionId: 'session-123',
-      qwenVersion: '0.15.6',
+      canopyVersion: '0.15.6',
       memoryUsage: () => ({
         heapUsed: 32 * 1024 * 1024,
         heapTotal: 40 * 1024 * 1024,
@@ -93,7 +93,7 @@ describe('collectMemoryDiagnostics', () => {
     expect(diagnostics).toMatchObject({
       timestamp: '2026-05-01T10:00:00.000Z',
       sessionId: 'session-123',
-      qwenVersion: '0.15.6',
+      canopyVersion: '0.15.6',
       uptimeSeconds: 60,
       memoryUsage: {
         heapUsed: 32 * 1024 * 1024,

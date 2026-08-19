@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { Box, Text } from 'ink';
-import { type SubagentConfig } from '@qwen-code/qwen-code-core';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { type SubagentConfig } from '@canopy-code/canopy-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { StepNavigationProps } from '../types.js';
 import { theme } from '../../../semantic-colors.js';
 import { useKeypress } from '../../../hooks/useKeypress.js';

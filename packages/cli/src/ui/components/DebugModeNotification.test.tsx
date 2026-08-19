@@ -6,11 +6,11 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'ink-testing-library';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { ConfigContext } from '../contexts/ConfigContext.js';
 import { DebugModeNotification } from './DebugModeNotification.js';
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({
     isEnabled: () => false,
     debug: () => undefined,
@@ -19,11 +19,12 @@ vi.mock('@qwen-code/qwen-code-core', () => ({
     error: () => undefined,
   }),
   Storage: {
-    getDebugLogPath: (sessionId: string) => `/tmp/qwen-debug/${sessionId}.txt`,
+    getDebugLogPath: (sessionId: string) =>
+      `/tmp/canopy-debug/${sessionId}.txt`,
   },
   isDebugLoggingDegraded: () => false,
   isDebugLogFileEnabled: () => {
-    const value = process.env['QWEN_DEBUG_LOG_FILE'];
+    const value = process.env['CANOPY_DEBUG_LOG_FILE'];
     if (!value) return false;
     const normalized = value.trim().toLowerCase();
     return !['', '0', 'false', 'off', 'no'].includes(normalized);
@@ -31,13 +32,13 @@ vi.mock('@qwen-code/qwen-code-core', () => ({
 }));
 
 describe('DebugModeNotification', () => {
-  const previousDebugLogFileEnv = process.env['QWEN_DEBUG_LOG_FILE'];
+  const previousDebugLogFileEnv = process.env['CANOPY_DEBUG_LOG_FILE'];
 
   afterEach(() => {
     if (previousDebugLogFileEnv === undefined) {
-      delete process.env['QWEN_DEBUG_LOG_FILE'];
+      delete process.env['CANOPY_DEBUG_LOG_FILE'];
     } else {
-      process.env['QWEN_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
+      process.env['CANOPY_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
     }
   });
 
@@ -55,7 +56,7 @@ describe('DebugModeNotification', () => {
   }
 
   it('shows the debug log path when file logging is enabled', () => {
-    process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
 
     const { lastFrame } = renderNotification();
 
@@ -65,13 +66,13 @@ describe('DebugModeNotification', () => {
   });
 
   it('does not show a log path when debug file logging is disabled', () => {
-    process.env['QWEN_DEBUG_LOG_FILE'] = '0';
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '0';
 
     const { lastFrame } = renderNotification();
 
     expect(lastFrame()).toContain('Debug mode enabled');
     expect(lastFrame()).toContain(
-      'Debug log file disabled by QWEN_DEBUG_LOG_FILE',
+      'Debug log file disabled by CANOPY_DEBUG_LOG_FILE',
     );
     expect(lastFrame()).not.toContain('Logging to:');
   });

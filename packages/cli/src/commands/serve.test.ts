@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import { maybeOpenWebShellBrowser, serveCommand } from './serve.js';
 
 const mockOpenBrowserSecurely = vi.hoisted(() => vi.fn());
 const mockShouldLaunchBrowser = vi.hoisted(() => vi.fn(() => true));
-const mockRunQwenServe = vi.hoisted(() => vi.fn());
+const mockRunCanopyServe = vi.hoisted(() => vi.fn());
 const mockQr = vi.hoisted(() => ({
   generate: vi.fn(
     (
@@ -25,9 +25,9 @@ const mockQr = vi.hoisted(() => ({
   ),
   setErrorLevel: vi.fn(),
 }));
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     openBrowserSecurely: mockOpenBrowserSecurely,
@@ -35,8 +35,8 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
   };
 });
 vi.mock('qrcode-terminal', () => ({ default: mockQr }));
-vi.mock('../serve/run-qwen-serve.js', () => ({
-  runQwenServe: mockRunQwenServe,
+vi.mock('../serve/run-canopy-serve.js', () => ({
+  runCanopyServe: mockRunCanopyServe,
 }));
 
 function buildParser(): Argv {
@@ -174,7 +174,7 @@ describe('serve command args', () => {
 
   it('rejects valueless journal cap flags instead of silently unpinning', () => {
     // Presence pins the caps and disables adaptive growth; without nargs a
-    // bare flag parses as undefined and the pin never reaches runQwenServe.
+    // bare flag parses as undefined and the pin never reaches runCanopyServe.
     for (const input of [
       '--max-journal-events',
       '--max-journal-bytes',
@@ -303,7 +303,7 @@ describe('serve rate limit env parsing', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...originalEnv, QWEN_CODE_SUPPRESS_YOLO_WARNING: '1' };
+    process.env = { ...originalEnv, CANOPY_CODE_SUPPRESS_YOLO_WARNING: '1' };
   });
 
   afterEach(() => {
@@ -324,7 +324,7 @@ describe('serve rate limit env parsing', () => {
     const argv = buildParser().parseSync('--rate-limit --no-web');
     void handler(argv as Parameters<typeof handler>[0]);
     await vi.waitFor(() => {
-      expect(mockRunQwenServe).toHaveBeenCalled();
+      expect(mockRunCanopyServe).toHaveBeenCalled();
     });
   }
 
@@ -337,15 +337,15 @@ describe('serve rate limit env parsing', () => {
     const argv = buildParser().parseSync(args);
     void handler(argv as Parameters<typeof handler>[0]);
     await vi.waitFor(() => {
-      expect(mockRunQwenServe).toHaveBeenCalled();
+      expect(mockRunCanopyServe).toHaveBeenCalled();
     });
   }
 
   it.each([
-    ['QWEN_SERVE_RATE_LIMIT_PROMPT', '0x10'],
-    ['QWEN_SERVE_RATE_LIMIT_MUTATION', '1e3'],
-    ['QWEN_SERVE_RATE_LIMIT_READ', '2.5'],
-    ['QWEN_SERVE_RATE_LIMIT_WINDOW_MS', '0x3e8'],
+    ['CANOPY_SERVE_RATE_LIMIT_PROMPT', '0x10'],
+    ['CANOPY_SERVE_RATE_LIMIT_MUTATION', '1e3'],
+    ['CANOPY_SERVE_RATE_LIMIT_READ', '2.5'],
+    ['CANOPY_SERVE_RATE_LIMIT_WINDOW_MS', '0x3e8'],
   ])('rejects non-decimal %s=%s', async (key, value) => {
     process.env[key] = value;
     vi.spyOn(process, 'exit').mockImplementation((code) => {
@@ -355,22 +355,22 @@ describe('serve rate limit env parsing', () => {
     await expect(invokeServeHandler()).rejects.toThrow(
       'process.exit(1) called',
     );
-    expect(mockRunQwenServe).not.toHaveBeenCalled();
+    expect(mockRunCanopyServe).not.toHaveBeenCalled();
   });
 
-  it('passes decimal env values to runQwenServe', async () => {
-    process.env['QWEN_SERVE_RATE_LIMIT_PROMPT'] = '11';
-    process.env['QWEN_SERVE_RATE_LIMIT_MUTATION'] = ' 31 ';
-    process.env['QWEN_SERVE_RATE_LIMIT_READ'] = '121';
-    process.env['QWEN_SERVE_RATE_LIMIT_WINDOW_MS'] = '60000';
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes decimal env values to runCanopyServe', async () => {
+    process.env['CANOPY_SERVE_RATE_LIMIT_PROMPT'] = '11';
+    process.env['CANOPY_SERVE_RATE_LIMIT_MUTATION'] = ' 31 ';
+    process.env['CANOPY_SERVE_RATE_LIMIT_READ'] = '121';
+    process.env['CANOPY_SERVE_RATE_LIMIT_WINDOW_MS'] = '60000';
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandler();
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         rateLimit: true,
         rateLimitPrompt: 11,
@@ -382,20 +382,20 @@ describe('serve rate limit env parsing', () => {
   });
 
   it('omits the journal caps for an unpinned boot so adaptive growth stays enabled', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web');
 
-    const options = mockRunQwenServe.mock.calls[0]?.[0];
+    const options = mockRunCanopyServe.mock.calls[0]?.[0];
     expect(options).not.toHaveProperty('maxJournalEvents');
     expect(options).not.toHaveProperty('maxJournalBytes');
   });
 
-  it('forwards pinned journal caps to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('forwards pinned journal caps to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
@@ -404,7 +404,7 @@ describe('serve rate limit env parsing', () => {
       '--no-web --max-journal-events 5000 --max-journal-bytes 1048576',
     );
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         maxJournalEvents: 5000,
         maxJournalBytes: 1048576,
@@ -415,33 +415,33 @@ describe('serve rate limit env parsing', () => {
   it('forwards a single pinned entry cap without the byte cap', async () => {
     // The two conditional spreads are independent; pinning ONE flag must
     // forward it alone. Coupling them would silently drop the pinned cap.
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --max-journal-events 5000');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ maxJournalEvents: 5000 }),
     );
-    expect(mockRunQwenServe.mock.calls[0]?.[0]).not.toHaveProperty(
+    expect(mockRunCanopyServe.mock.calls[0]?.[0]).not.toHaveProperty(
       'maxJournalBytes',
     );
   });
 
   it('forwards a single pinned byte cap without the entry cap', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --max-journal-bytes 1048576');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ maxJournalBytes: 1048576 }),
     );
-    expect(mockRunQwenServe.mock.calls[0]?.[0]).not.toHaveProperty(
+    expect(mockRunCanopyServe.mock.calls[0]?.[0]).not.toHaveProperty(
       'maxJournalEvents',
     );
   });
@@ -459,7 +459,7 @@ describe('serve rate limit env parsing', () => {
       sleepInhibited: true,
       encrypted: true,
     });
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'https://127.0.0.1/',
       webShellMounted: true,
       runtimeReady: Promise.resolve(),
@@ -471,7 +471,7 @@ describe('serve rate limit env parsing', () => {
     );
     await vi.waitFor(() => expect(mockQr.generate).toHaveBeenCalled());
 
-    const options = mockRunQwenServe.mock.calls[0]?.[0];
+    const options = mockRunCanopyServe.mock.calls[0]?.[0];
     expect(options).toEqual(
       expect.objectContaining({
         hostname: '127.0.0.1',
@@ -496,8 +496,8 @@ describe('serve rate limit env parsing', () => {
     );
   });
 
-  it('forwards --token and --allow-origin through to runQwenServe with --local-control', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('forwards --token and --allow-origin through to runCanopyServe with --local-control', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'https://127.0.0.1/',
       webShellMounted: true,
       runtimeReady: Promise.resolve(),
@@ -517,7 +517,7 @@ describe('serve rate limit env parsing', () => {
       '--local-control --token fixed --allow-origin http://localhost:3000 --port 0',
     );
 
-    const options = mockRunQwenServe.mock.calls[0]?.[0];
+    const options = mockRunCanopyServe.mock.calls[0]?.[0];
     expect(options).toEqual(
       expect.objectContaining({
         token: 'fixed',
@@ -544,7 +544,7 @@ describe('serve rate limit env parsing', () => {
       sleepInhibited: false,
       encrypted: false,
     });
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: true,
       runtimeReady: Promise.resolve(),
@@ -568,7 +568,7 @@ describe('serve rate limit env parsing', () => {
 
   it('closes Local Control when the authenticated Web Shell is unavailable', async () => {
     const close = vi.fn().mockResolvedValue(undefined);
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://0.0.0.0:4170/',
       webShellMounted: false,
       runtimeReady: Promise.resolve(),
@@ -588,8 +588,8 @@ describe('serve rate limit env parsing', () => {
     expect(mockQr.generate).not.toHaveBeenCalled();
   });
 
-  it('passes normalized named channels to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes normalized named channels to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
@@ -598,15 +598,15 @@ describe('serve rate limit env parsing', () => {
       '--no-web --channel telegram --channel telegram --channel feishu',
     );
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         channelSelection: { mode: 'names', names: ['telegram', 'feishu'] },
       }),
     );
   });
 
-  it('passes compacted replay byte cap to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes compacted replay byte cap to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
@@ -615,42 +615,42 @@ describe('serve rate limit env parsing', () => {
       '--no-web --compacted-replay-max-bytes 1048576',
     );
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         compactedReplayMaxBytes: 1024 * 1024,
       }),
     );
   });
 
-  it('passes --max-total-sessions to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes --max-total-sessions to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --max-total-sessions 42');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ maxTotalSessions: 42 }),
     );
   });
 
-  it('passes --memory-project-scope to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes --memory-project-scope to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --memory-project-scope git-root');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ memoryProjectScope: 'git-root' }),
     );
   });
 
   it('passes required guard config and keeps its token daemon-local', async () => {
     process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'] = 'guard-secret';
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
@@ -661,7 +661,7 @@ describe('serve rate limit env parsing', () => {
         '--external-tool-guard-timeout-ms 2500',
     );
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         externalToolGuard: {
           mode: 'required',
@@ -676,7 +676,7 @@ describe('serve rate limit env parsing', () => {
 
   it('does not pass a provider when mode is off even if config exists', async () => {
     process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'] = 'guard-secret';
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
@@ -685,50 +685,50 @@ describe('serve rate limit env parsing', () => {
       '--no-web --external-tool-guard-endpoint http://127.0.0.1:8787',
     );
 
-    expect(mockRunQwenServe.mock.calls[0]?.[0]).not.toHaveProperty(
+    expect(mockRunCanopyServe.mock.calls[0]?.[0]).not.toHaveProperty(
       'externalToolGuard',
     );
     expect(process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN']).toBeUndefined();
   });
 
-  it('passes --memory-pressure-mode to runQwenServe', async () => {
+  it('passes --memory-pressure-mode to runCanopyServe', async () => {
     // Without this, deleting the `memoryPressureMode` line in the handler
     // leaves every other suite green: the fast path parses the flag in its
     // own module, and the status builder supplies the same default itself.
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --memory-pressure-mode off');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ memoryPressureMode: 'off' }),
     );
   });
 
-  it('passes --child-heap-mode to runQwenServe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+  it('passes --child-heap-mode to runCanopyServe', async () => {
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --child-heap-mode off');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ childHeapMode: 'off' }),
     );
   });
 
   it('defaults the child heap mode to observe, and rejects enforce outright', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ childHeapMode: 'observe' }),
     );
     // `enforce` is not a value yet, and boot must say so rather than accept
@@ -739,14 +739,14 @@ describe('serve rate limit env parsing', () => {
   });
 
   it('defaults the memory pressure mode to observe', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({ memoryPressureMode: 'observe' }),
     );
   });
@@ -758,14 +758,14 @@ describe('serve rate limit env parsing', () => {
   });
 
   it('passes --channel all as an all-channel selection', async () => {
-    mockRunQwenServe.mockResolvedValueOnce({
+    mockRunCanopyServe.mockResolvedValueOnce({
       url: 'http://127.0.0.1:4170/',
       webShellMounted: false,
     });
 
     await startServeHandlerWithArgs('--no-web --channel all');
 
-    expect(mockRunQwenServe).toHaveBeenCalledWith(
+    expect(mockRunCanopyServe).toHaveBeenCalledWith(
       expect.objectContaining({
         channelSelection: { mode: 'all' },
       }),
@@ -786,7 +786,7 @@ describe('serve rate limit env parsing', () => {
     await expect(
       handler(argv as Parameters<typeof handler>[0]),
     ).rejects.toThrow('process.exit(1) called');
-    expect(mockRunQwenServe).not.toHaveBeenCalled();
+    expect(mockRunCanopyServe).not.toHaveBeenCalled();
   });
 });
 
@@ -867,7 +867,7 @@ describe('maybeOpenWebShellBrowser', () => {
 
     expect(mockOpenBrowserSecurely).not.toHaveBeenCalled();
     expect(stderrWrites.join('')).toContain(
-      'qwen serve: Web Shell runtime not ready; skipping --open: runtime boom',
+      'canopy serve: Web Shell runtime not ready; skipping --open: runtime boom',
     );
   });
 
@@ -887,17 +887,17 @@ describe('serve startup import boundary', () => {
     const workspace = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-import-boundary-')),
     );
-    const qwenHome = fs.realpathSync(
+    const canopyHome = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-import-boundary-home-')),
     );
     const root = path.resolve(process.cwd(), '../..');
     const childEnv: NodeJS.ProcessEnv = {
       ...process.env,
       QWEN_CODE_NO_RELAUNCH: '1',
-      QWEN_CODE_SUPPRESS_YOLO_WARNING: '1',
-      QWEN_HOME: qwenHome,
-      QWEN_RUNTIME_DIR: workspace,
-      QWEN_SERVE_RATE_LIMIT: '0',
+      CANOPY_CODE_SUPPRESS_YOLO_WARNING: '1',
+      QWEN_HOME: canopyHome,
+      CANOPY_RUNTIME_DIR: workspace,
+      CANOPY_SERVE_RATE_LIMIT: '0',
     };
     delete childEnv['VITEST_WORKER_ID'];
     const child = spawn(
@@ -1012,7 +1012,7 @@ describe('serve startup import boundary', () => {
 
         child.stdout.on('data', (chunk: Buffer) => {
           stdout += chunk.toString('utf8');
-          if (stdout.includes('qwen serve listening on')) {
+          if (stdout.includes('canopy serve listening on')) {
             clearTimeout(timeout);
             void cleanup();
             resolve(true);
@@ -1035,7 +1035,7 @@ describe('serve startup import boundary', () => {
           reject(err);
         });
         child.on('exit', (code, signal) => {
-          if (stdout.includes('qwen serve listening on')) return;
+          if (stdout.includes('canopy serve listening on')) return;
           clearTimeout(timeout);
           reject(
             new Error(
@@ -1052,7 +1052,7 @@ describe('serve startup import boundary', () => {
         await waitForProcessGroupExit(child.pid);
       }
       await removeTempDir(workspace);
-      await removeTempDir(qwenHome);
+      await removeTempDir(canopyHome);
     }
   }, 40_000);
 });

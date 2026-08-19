@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -55,7 +55,7 @@ class ArecordRecorder implements VoiceRecorder {
   }
 
   async start(_options: VoiceRecorderStartOptions = {}): Promise<void> {
-    this.tmpDir = await mkdtemp(path.join(tmpdir(), 'qwen-voice-'));
+    this.tmpDir = await mkdtemp(path.join(tmpdir(), 'canopy-voice-'));
     this.filePath = path.join(this.tmpDir, 'recording.wav');
     const child = spawn('arecord', [
       '-q',

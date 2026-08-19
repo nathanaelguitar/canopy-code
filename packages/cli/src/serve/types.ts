@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,13 +23,13 @@ import type {
   AuthType,
   InputModalities,
   MemoryProjectScope,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 /**
  * Stage 1 daemon mode shape.
  *
  * `http-bridge` (Stage 1): production attempts to preheat the primary
- *   `qwen --acp` child and retries on first use after failure; trusted
+ *   `canopy --acp` child and retries on first use after failure; trusted
  *   secondaries start one on demand, while untrusted secondaries do not.
  *   Multiple sessions in one runtime multiplex onto its child via the
  *   agent's native `connection.newSession()` (see
@@ -60,7 +60,7 @@ export interface ServeOptions {
   /**
    * Bearer token required on every request. Optional when bound to loopback
    * (developer convenience); required when bound beyond loopback (boot fails
-   * without one — see runQwenServe).
+   * without one — see runCanopyServe).
    */
   token?: string;
   mode: ServeMode;
@@ -83,7 +83,7 @@ export interface ServeOptions {
   maxSessions?: number;
   /**
    * Non-negative integer cap on concurrent live sessions across all workspace
-   * runtimes. `runQwenServe` derives a default once from the per-workspace cap
+   * runtimes. `runCanopyServe` derives a default once from the per-workspace cap
    * and startup workspace count when several startup/restored workspaces are
    * present; direct embeds may leave it unlimited. Dynamic registration does
    * not recompute it. `0` or `Infinity` disables the cap.
@@ -164,11 +164,11 @@ export interface ServeOptions {
    */
   workspace?: string;
   /**
-   * Project-memory partitioning for every runtime owned by `runQwenServe`.
+   * Project-memory partitioning for every runtime owned by `runCanopyServe`.
    * `workspace` keys memory by the exact registered workspace; `git-root`
    * preserves the legacy behavior that shares memory among workspaces
    * resolved to the same Git root. When omitted,
-   * `QWEN_CODE_MEMORY_PROJECT_SCOPE` is read from the environment before
+   * `CANOPY_CODE_MEMORY_PROJECT_SCOPE` is read from the environment before
    * defaulting to `workspace`. Direct `createServeApp` callers must instead
    * provide the scope through `deps.daemonEnv`.
    */
@@ -218,7 +218,7 @@ export interface ServeOptions {
   /**
    * Cap on live MCP clients spawned inside the
    * ACP child for the bound workspace. When set, the daemon
-   * forwards `QWEN_SERVE_MCP_CLIENT_BUDGET` to the child's env so
+   * forwards `CANOPY_SERVE_MCP_CLIENT_BUDGET` to the child's env so
    * core's `McpClientManager` picks it up. Combined with
    * `mcpBudgetMode`:
    *   - `warn` (default when budget set): no refusal, snapshot
@@ -246,7 +246,7 @@ export interface ServeOptions {
   mcpPoolActive?: boolean;
   /**
    * Total memory budget in MB for the whole daemon process tree — the root
-   * plus every `qwen --acp` child it spawns. When unset, derived as half of
+   * plus every `canopy --acp` child it spawns. When unset, derived as half of
    * the cgroup-constrained or host memory.
    *
    * Observed and reported only. No child is sized from it and no spawn is
@@ -282,7 +282,7 @@ export interface ServeOptions {
    */
   childHeapMode?: ChildHeapMode;
   /**
-   * Resolved at boot by `runQwenServe`. Not an operator input, and not
+   * Resolved at boot by `runCanopyServe`. Not an operator input, and not
    * consumed by any spawn path — it is reported under `limits.memory` on
    * `GET /daemon/status` so the daemon's memory denominator is observable
    * before a child-capacity policy is designed against it.
@@ -362,7 +362,7 @@ export interface ServeOptions {
    * Phase 2 "reverse tool channel"). When enabled, a connected WS client may
    * send `mcp_register` / `mcp_message` / `mcp_unregister` frames so the
    * daemon's agent can call tools that execute in the client (e.g. the Chrome
-   * extension's browser tools). `runQwenServe` only enables this when a caller
+   * extension's browser tools). `runCanopyServe` only enables this when a caller
    * or environment variable opts in.
    */
   clientMcpOverWs?: boolean;
@@ -370,7 +370,7 @@ export interface ServeOptions {
    * Tunnel raw CDP to a real browser tab over the reverse `/acp` WS
    * (Plan C "CDP tunnel", issue #5626). When enabled, a loopback CDP client can
    * connect to a new `/cdp` WebSocket and drive ONE real tab via the extension's
-   * `chrome.debugger`, reusing browser automation tools. `runQwenServe` enables this for
+   * `chrome.debugger`, reusing browser automation tools. `runCanopyServe` enables this for
    * Chrome extension origins or explicit env opt-in; callers may pass `false`.
    */
   cdpTunnelOverWs?: boolean;
@@ -397,10 +397,10 @@ export interface CapabilitiesEnvelope {
    */
   protocolVersions?: ServeProtocolVersions;
   /**
-   * Qwen Code CLI/SDK version served by this daemon. Optional because this is
+   * Canopy Code CLI/SDK version served by this daemon. Optional because this is
    * additive to v=1; older v=1 daemons omit it.
    */
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   mode: ServeMode;
   features: string[];
   /**

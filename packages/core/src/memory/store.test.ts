@@ -27,11 +27,11 @@ import {
 import { Storage } from '../config/storage.js';
 import { sanitizeCwd } from '../utils/paths.js';
 
-const originalMemoryLocal = process.env['QWEN_CODE_MEMORY_LOCAL'];
-const originalMemoryBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+const originalMemoryLocal = process.env['CANOPY_CODE_MEMORY_LOCAL'];
+const originalMemoryBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
 const originalMemoryProjectScope =
-  process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
-const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+  process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
+const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
 
 describe('auto-memory storage scaffold', () => {
   let tempDir: string;
@@ -41,25 +41,25 @@ describe('auto-memory storage scaffold', () => {
     clearAutoMemoryRootCache();
     Storage.setRuntimeBaseDir(null);
     if (originalMemoryLocal === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     } else {
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
     }
     if (originalMemoryBaseDir === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
     }
     if (originalMemoryProjectScope === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+      delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
     } else {
-      process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] =
+      process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] =
         originalMemoryProjectScope;
     }
     if (originalRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
     }
 
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'auto-memory-'));
@@ -71,25 +71,25 @@ describe('auto-memory storage scaffold', () => {
     clearAutoMemoryRootCache();
     Storage.setRuntimeBaseDir(null);
     if (originalMemoryLocal === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     } else {
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
     }
     if (originalMemoryBaseDir === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
     }
     if (originalMemoryProjectScope === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+      delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
     } else {
-      process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] =
+      process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] =
         originalMemoryProjectScope;
     }
     if (originalRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
     }
     await fs.rm(tempDir, {
       recursive: true,
@@ -99,29 +99,29 @@ describe('auto-memory storage scaffold', () => {
     });
   });
 
-  it('builds stable auto-memory paths under project .qwen directory', () => {
+  it('builds stable auto-memory paths under project .canopy directory', () => {
     expect(getAutoMemoryRoot(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'memory'),
+      path.join(projectRoot, '.canopy', 'memory'),
     );
     expect(getAutoMemoryIndexPath(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'memory', 'MEMORY.md'),
+      path.join(projectRoot, '.canopy', 'memory', 'MEMORY.md'),
     );
     expect(getAutoMemoryMetadataPath(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'meta.json'),
+      path.join(projectRoot, '.canopy', 'meta.json'),
     );
     expect(getAutoMemoryExtractCursorPath(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'extract-cursor.json'),
+      path.join(projectRoot, '.canopy', 'extract-cursor.json'),
     );
     expect(getAutoMemoryConsolidationLockPath(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', 'consolidation.lock'),
+      path.join(projectRoot, '.canopy', 'consolidation.lock'),
     );
     expect(getAutoMemoryTopicPath(projectRoot, 'feedback')).toBe(
-      path.join(projectRoot, '.qwen', 'memory', 'feedback.md'),
+      path.join(projectRoot, '.canopy', 'memory', 'feedback.md'),
     );
   });
 
   it('uses the runtime output directory for managed auto-memory', () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
     clearAutoMemoryRootCache();
@@ -137,8 +137,8 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('shares managed auto-memory across nested directories in the same git checkout by default', async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
-    delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
+    delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
 
@@ -158,8 +158,8 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('isolates managed auto-memory by exact workspace when workspace scope is enabled', async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
-    process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = 'workspace';
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
+    process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = 'workspace';
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
 
@@ -179,8 +179,8 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('normalizes the memory project scope value case-insensitively', async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
-    process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = '  Workspace  ';
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
+    process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = '  Workspace  ';
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
 
@@ -195,8 +195,8 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('falls back to git-root scope and warns once on an unrecognized scope value', async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
-    process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = 'exact';
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
+    process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = 'exact';
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -215,7 +215,7 @@ describe('auto-memory storage scaffold', () => {
       );
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(String(warnSpy.mock.calls[0]?.[0])).toContain(
-        'QWEN_CODE_MEMORY_PROJECT_SCOPE',
+        'CANOPY_CODE_MEMORY_PROJECT_SCOPE',
       );
     } finally {
       warnSpy.mockRestore();
@@ -223,7 +223,7 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('gives a linked git worktree its own memory root, separate from the main checkout', async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const runtimeDir = path.join(tempDir, 'runtime-output');
     Storage.setRuntimeBaseDir(runtimeDir);
     clearAutoMemoryRootCache();
@@ -249,10 +249,10 @@ describe('auto-memory storage scaffold', () => {
     expect(getAutoMemoryRoot(worktree)).not.toBe(getAutoMemoryRoot(main));
   });
 
-  it('uses QWEN_RUNTIME_DIR for managed auto-memory', () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+  it('uses CANOPY_RUNTIME_DIR for managed auto-memory', () => {
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const envRuntimeDir = path.join(tempDir, 'env-runtime-output');
-    process.env['QWEN_RUNTIME_DIR'] = envRuntimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = envRuntimeDir;
     Storage.setRuntimeBaseDir(path.join(tempDir, 'settings-runtime-output'));
     clearAutoMemoryRootCache();
 
@@ -267,7 +267,7 @@ describe('auto-memory storage scaffold', () => {
   });
 
   it('does not reuse cached roots across runtime output dirs', () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const runtimeA = path.join(tempDir, 'runtime-a');
     const runtimeB = path.join(tempDir, 'runtime-b');
 
@@ -296,11 +296,11 @@ describe('auto-memory storage scaffold', () => {
     );
   });
 
-  it('keeps QWEN_CODE_MEMORY_BASE_DIR ahead of the runtime output directory', () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+  it('keeps CANOPY_CODE_MEMORY_BASE_DIR ahead of the runtime output directory', () => {
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const memoryBaseDir = path.join(tempDir, 'memory-base');
     const runtimeDir = path.join(tempDir, 'runtime-output');
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
     Storage.setRuntimeBaseDir(runtimeDir);
     clearAutoMemoryRootCache();
 
@@ -314,10 +314,10 @@ describe('auto-memory storage scaffold', () => {
     );
   });
 
-  it('resolves QWEN_CODE_MEMORY_BASE_DIR before using it', () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+  it('resolves CANOPY_CODE_MEMORY_BASE_DIR before using it', () => {
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     const memoryBaseDir = path.join(tempDir, 'relative-memory-base');
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.relative(
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.relative(
       process.cwd(),
       memoryBaseDir,
     );

@@ -18,7 +18,7 @@ import type {
   ToolCallRequestInfo,
   ToolCallResponseInfo,
   RuntimeContentGeneratorView,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { isSlashCommand } from './ui/utils/commandUtils.js';
 import { isInlineModelOverrideAllowed } from './utils/acpModelUtils.js';
 import type { LoadedSettings } from './config/settings.js';
@@ -69,7 +69,7 @@ import {
   endInteractionSpan,
   getErrorType,
   getActiveInteractionSpan,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Content, Part, PartListUnion } from '@google/genai';
 import type { CLIUserMessage, PermissionMode } from './nonInteractive/types.js';
 import type { JsonOutputAdapterInterface } from './nonInteractive/io/BaseJsonOutputAdapter.js';
@@ -903,15 +903,16 @@ export async function runNonInteractive(
     // a new manager is installed (or in `finally`). Without
     // this, a reused stream-json session could leave callbacks
     // attached to a stale TeamManager.
-    let boundManager: import('@qwen-code/qwen-code-core').TeamManager | null =
-      null;
+    let boundManager:
+      | import('@canopy-code/canopy-code-core').TeamManager
+      | null = null;
     let approvalListener:
       | ((
-          event: import('@qwen-code/qwen-code-core').TeammateApprovalRequestEvent,
+          event: import('@canopy-code/canopy-code-core').TeammateApprovalRequestEvent,
         ) => void)
       | null = null;
     const detachFromManager = (
-      m: import('@qwen-code/qwen-code-core').TeamManager,
+      m: import('@canopy-code/canopy-code-core').TeamManager,
     ) => {
       m.setLeaderMessageCallback(null);
       if (approvalListener) {
@@ -923,7 +924,7 @@ export async function runNonInteractive(
       }
     };
     const onTeamManagerChangeHandler = (
-      manager: import('@qwen-code/qwen-code-core').TeamManager | null,
+      manager: import('@canopy-code/canopy-code-core').TeamManager | null,
     ) => {
       // Detach from the previous manager before rebinding.
       if (boundManager && boundManager !== manager) {
@@ -1829,7 +1830,7 @@ export async function runNonInteractive(
         // runs sequentially in original order. This mirrors the
         // interactive CoreToolScheduler (partitionToolCalls /
         // runConcurrently) via the shared isToolCallConcurrencySafe rule,
-        // so `qwen -p` and the TUI agree on which tools parallelise — a
+        // so `canopy -p` and the TUI agree on which tools parallelise — a
         // model turn that emits N parallel agent calls no longer executes
         // them one-at-a-time. Regardless of execution order, results are
         // finalised (emitted, recorded, appended to `toolResponseParts`)
@@ -2031,7 +2032,7 @@ export async function runNonInteractive(
         };
 
         const maxToolConcurrency = parsePositiveIntegerEnv(
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'],
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'],
           10,
         );
 
@@ -2044,7 +2045,7 @@ export async function runNonInteractive(
             // in order (so --max-tool-calls caps at exactly N and the
             // abort fires on the same call it would serially), launch only
             // the calls that fit the budget — capped at
-            // QWEN_CODE_MAX_TOOL_CONCURRENCY in flight — then finalise in
+            // CANOPY_CODE_MAX_TOOL_CONCURRENCY in flight — then finalise in
             // request order once all launched calls have settled.
             const launched: Array<{
               requestInfo: ToolCallRequestInfo;
@@ -2815,7 +2816,7 @@ export async function runNonInteractive(
             scheduler.setSkipDurableFire((job) =>
               isHeadlessLoopSentinel(job.prompt),
             );
-            // Durable tasks live under ~/.qwen (user-owned, not in the
+            // Durable tasks live under ~/.canopy (user-owned, not in the
             // working tree), so no folder-trust gate is needed here.
             await scheduler
               .enableDurable(config.getSessionId())
@@ -3093,7 +3094,7 @@ export async function runNonInteractive(
       if (!skipAdapterEmit) {
         // Wrap in try/catch: emitResult eventually hits stdout.write, which
         // can throw on EPIPE / ERR_STREAM_WRITE_AFTER_END when a piped
-        // consumer closes early (`qwen -p ... | head -n 1` is the common
+        // consumer closes early (`canopy -p ... | head -n 1` is the common
         // case). Letting that throw bubble out skips `handleBudgetExceededError`
         // / `handleError` below, dropping the documented exit code 55
         // contract — precisely when stdout is in trouble. Best-effort emit
@@ -3151,7 +3152,7 @@ export async function runNonInteractive(
       }
 
       // Cancel the wall-clock timer so it doesn't fire after a successful
-      // run completes — important for callers (e.g. the `qwen serve`
+      // run completes — important for callers (e.g. the `canopy serve`
       // daemon, SDK) that reuse a single process across many runs.
       budgetEnforcer.stop();
       abortController.signal.removeEventListener('abort', stampBudgetAbort);

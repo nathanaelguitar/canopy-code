@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import type {
   AgentResultDisplay,
   McpToolProgressData,
   ShellProgressData,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   formatVisionBridgeNoticeDisplay,
   GeminiEventType,
@@ -22,7 +22,7 @@ import {
   ToolErrorType,
   parseAndFormatApiError,
   toolResultBoundaryArtifact,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Part, GenerateContentResponseUsageMetadata } from '@google/genai';
 import type {
   CLIAssistantMessage,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,7 @@ import {
 const cleanup: string[] = [];
 
 async function tempHome(): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(tmpdir(), 'qwen-workspace-store-'));
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'canopy-workspace-store-'));
   cleanup.push(dir);
   return dir;
 }
@@ -472,7 +472,7 @@ describe('WorkspaceRegistrationStore', () => {
         }),
       },
     }));
-    vi.doMock('@qwen-code/qwen-code-core', () => ({
+    vi.doMock('@canopy-code/canopy-code-core', () => ({
       atomicWriteFile: vi.fn().mockRejectedValue(writeError),
     }));
     try {
@@ -499,7 +499,7 @@ describe('WorkspaceRegistrationStore', () => {
       expect(writeError.cause).toBe(releaseError);
     } finally {
       vi.doUnmock('proper-lockfile');
-      vi.doUnmock('@qwen-code/qwen-code-core');
+      vi.doUnmock('@canopy-code/canopy-code-core');
       vi.resetModules();
     }
   });

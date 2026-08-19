@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   isValidEditorType,
   allowEditorTypeInSandbox,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useSettings } from '../contexts/SettingsContext.js';
 
 const debugLogger = createDebugLogger('PREFERRED_EDITOR');

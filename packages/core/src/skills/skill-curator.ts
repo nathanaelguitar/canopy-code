@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import * as fs from 'node:fs/promises';
 import { constants as fsConstants } from 'node:fs';
 import * as path from 'node:path';
 import lockfile from 'proper-lockfile';
-import { QWEN_DIR } from '../config/storage.js';
+import { CANOPY_DIR } from '../config/storage.js';
 import { atomicWriteJSON } from '../utils/atomicFileWrite.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 import { parse as parseYaml } from '../utils/yaml-parser.js';
@@ -142,7 +142,7 @@ export type AutoSkillCuratorAutomaticResult =
   | { status: 'ran'; result: AutoSkillCuratorRunResult };
 
 interface CuratorPaths {
-  qwenRoot: string;
+  canopyRoot: string;
   skillsRoot: string;
   archiveRoot: string;
   statePath: string;
@@ -165,13 +165,13 @@ const LOCK_OPTIONS: lockfile.LockOptions = {
 };
 
 function getCuratorPaths(projectRoot: string): CuratorPaths {
-  const qwenRoot = path.join(projectRoot, QWEN_DIR);
+  const canopyRoot = path.join(projectRoot, CANOPY_DIR);
   return {
-    qwenRoot,
+    canopyRoot,
     skillsRoot: getProjectSkillsRoot(projectRoot),
     archiveRoot: getArchivedSkillsRoot(projectRoot),
-    statePath: path.join(qwenRoot, CURATOR_STATE_FILE),
-    lockPath: path.join(qwenRoot, CURATOR_LOCK_FILE),
+    statePath: path.join(canopyRoot, CURATOR_STATE_FILE),
+    lockPath: path.join(canopyRoot, CURATOR_LOCK_FILE),
   };
 }
 
@@ -293,7 +293,7 @@ async function readState(statePath: string): Promise<AutoSkillCuratorState> {
   }
   // Mirror the noFollow/lstat guards every write already uses: a state file
   // that is a symlink (committable via git mode 120000, e.g. pointing at
-  // /dev/zero or a path outside .qwen/) or a FIFO would otherwise be followed,
+  // /dev/zero or a path outside .canopy/) or a FIFO would otherwise be followed,
   // driving an unbounded read (OOM) or blocking the CLI boot indefinitely.
   if (!stat.isFile() || stat.isSymbolicLink()) {
     throw new Error(`Auto-skill curator refuses unsafe path ${statePath}.`);
@@ -425,12 +425,12 @@ async function scanManagedSkills(root: string): Promise<ManagedAutoSkill[]> {
     .sort((a, b) => a.directoryName.localeCompare(b.directoryName));
 }
 
-async function ensureSafeQwenRoot(paths: CuratorPaths): Promise<void> {
-  await fs.mkdir(paths.qwenRoot, { recursive: true });
-  const stat = await fs.lstat(paths.qwenRoot);
+async function ensureSafeCanopyRoot(paths: CuratorPaths): Promise<void> {
+  await fs.mkdir(paths.canopyRoot, { recursive: true });
+  const stat = await fs.lstat(paths.canopyRoot);
   if (!stat.isDirectory() || stat.isSymbolicLink()) {
     throw new Error(
-      `Auto-skill curator refuses unsafe path ${paths.qwenRoot}.`,
+      `Auto-skill curator refuses unsafe path ${paths.canopyRoot}.`,
     );
   }
 }
@@ -448,7 +448,7 @@ async function withCuratorLock<T>(
   operation: (paths: CuratorPaths) => Promise<T>,
 ): Promise<T> {
   const paths = getCuratorPaths(projectRoot);
-  await ensureSafeQwenRoot(paths);
+  await ensureSafeCanopyRoot(paths);
   // proper-lockfile acquires `${lockPath}.lock` with an atomic mkdir. Do not
   // create or validate `lockPath` itself: it is not the lock and would leave a
   // permanent placeholder file behind after every curator operation.

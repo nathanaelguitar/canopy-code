@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -99,7 +99,7 @@ describe('releaseWorktree', () => {
   });
 
   it('frees a path whose directory was deleted by hand', () => {
-    // What `rm -rf .qwen/tmp` does to a review worktree.
+    // What `rm -rf .canopy/tmp` does to a review worktree.
     git('worktree', 'add', '-q', 'wt', '-b', 'topic');
     rmSync(join(repo, 'wt'), { recursive: true, force: true });
 
@@ -120,15 +120,15 @@ describe('releaseWorktree', () => {
     // The other half of the deadlock: `cleanStale` deletes the review branch
     // after freeing the worktree, and `branch -D` fails while the phantom
     // registration claims it.
-    git('worktree', 'add', '-q', 'wt', '-b', 'qwen-review/pr-1');
+    git('worktree', 'add', '-q', 'wt', '-b', 'canopy-review/pr-1');
     rmSync(join(repo, 'wt'), { recursive: true, force: true });
 
-    expect(() => git('branch', '-D', 'qwen-review/pr-1')).toThrow(
+    expect(() => git('branch', '-D', 'canopy-review/pr-1')).toThrow(
       /used by worktree|checked out/,
     );
 
     releaseWorktree(join(repo, 'wt'));
-    expect(() => git('branch', '-D', 'qwen-review/pr-1')).not.toThrow();
+    expect(() => git('branch', '-D', 'canopy-review/pr-1')).not.toThrow();
   });
 
   it('is a no-op when there is nothing registered', () => {

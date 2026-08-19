@@ -7,7 +7,7 @@
 import { access, cp, mkdir, readdir, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import type { CommandModule } from 'yargs';
-import { isNodeError, resolveBundleDir } from '@qwen-code/qwen-code-core';
+import { isNodeError, resolveBundleDir } from '@canopy-code/canopy-code-core';
 import { getErrorMessage } from '../../utils/errors.js';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
 
@@ -67,13 +67,13 @@ async function handleNew(args: NewArgs) {
         version: '1.0.0',
       };
       await writeFile(
-        join(args.path, 'qwen-extension.json'),
+        join(args.path, 'canopy-extension.json'),
         JSON.stringify(manifest, null, 2),
       );
       writeStdoutLine(`Successfully created new extension at ${args.path}.`);
     }
     writeStdoutLine(
-      `You can install this using "qwen extensions link ${args.path}" to test it out.`,
+      `You can install this using "canopy extensions link ${args.path}" to test it out.`,
     );
   } catch (error) {
     writeStderrLine(getErrorMessage(error));

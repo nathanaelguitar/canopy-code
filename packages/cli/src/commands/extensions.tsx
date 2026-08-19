@@ -18,7 +18,7 @@ import { sourcesCommand } from './extensions/sources.js';
 
 export const extensionsCommand: CommandModule = {
   command: 'extensions <command>',
-  describe: 'Manage Qwen Code extensions.',
+  describe: 'Manage Canopy Code extensions.',
   builder: (yargs) =>
     yargs
       .command(installCommand)

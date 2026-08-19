@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -42,7 +42,7 @@ vi.mock('../../../utils/runtimeFetchOptions.js', () => ({
 }));
 
 describe('DefaultOpenAICompatibleProvider', () => {
-  const MAX_OUTPUT_TOKENS_ENV = 'QWEN_CODE_MAX_OUTPUT_TOKENS';
+  const MAX_OUTPUT_TOKENS_ENV = 'CANOPY_CODE_MAX_OUTPUT_TOKENS';
   let provider: DefaultOpenAICompatibleProvider;
   let mockContentGeneratorConfig: ContentGeneratorConfig;
   let mockCliConfig: Config;
@@ -106,7 +106,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       const headers = provider.buildHeaders();
 
       expect(headers).toEqual({
-        'User-Agent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
+        'User-Agent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
       });
     });
 
@@ -140,7 +140,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       const headers = provider.buildHeaders();
 
       expect(headers).toEqual({
-        'User-Agent': `QwenCode/unknown (${process.platform}; ${process.arch})`,
+        'User-Agent': `CanopyCode/unknown (${process.platform}; ${process.arch})`,
       });
     });
   });
@@ -156,7 +156,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
           timeout: 60000,
           maxRetries: 2,
           defaultHeaders: {
-            'User-Agent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
+            'User-Agent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
           },
         }),
       );
@@ -177,7 +177,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
           timeout: DEFAULT_TIMEOUT,
           maxRetries: DEFAULT_MAX_RETRIES,
           defaultHeaders: {
-            'User-Agent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
+            'User-Agent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
           },
         }),
       );
@@ -258,7 +258,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       expect(result.max_tokens).toBe(128_000);
     });
 
-    it('should ignore malformed QWEN_CODE_MAX_OUTPUT_TOKENS values', () => {
+    it('should ignore malformed CANOPY_CODE_MAX_OUTPUT_TOKENS values', () => {
       const request: OpenAI.Chat.ChatCompletionCreateParams = {
         model: 'gpt-4',
         messages: [{ role: 'user', content: 'Hello' }],
@@ -273,7 +273,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       }
     });
 
-    it('should respect a valid QWEN_CODE_MAX_OUTPUT_TOKENS value', () => {
+    it('should respect a valid CANOPY_CODE_MAX_OUTPUT_TOKENS value', () => {
       process.env[MAX_OUTPUT_TOKENS_ENV] = '9000';
       const request: OpenAI.Chat.ChatCompletionCreateParams = {
         model: 'gpt-4',
@@ -496,7 +496,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       expect(result).not.toHaveProperty('custom_param');
     });
 
-    it('mirrors reasoning_content into reasoning for Qwen3 assistant history turns without mutating the source request', () => {
+    it('mirrors reasoning_content into reasoning for Canopy3 assistant history turns without mutating the source request', () => {
       const originalRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: 'Qwen/Qwen3.6-35B-A3B',
         messages: [
@@ -526,7 +526,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       ).toBeUndefined();
     });
 
-    it('does not overwrite an explicit reasoning field on Qwen3 assistant history turns', () => {
+    it('does not overwrite an explicit reasoning field on Canopy3 assistant history turns', () => {
       const originalRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: 'Qwen3-32B',
         messages: [
@@ -552,7 +552,7 @@ describe('DefaultOpenAICompatibleProvider', () => {
       expect(assistant.reasoning_content).toBe('Legacy reasoning field');
     });
 
-    it('does not mirror reasoning_content for non-Qwen3 OpenAI-compatible models', () => {
+    it('does not mirror reasoning_content for non-Canopy3 OpenAI-compatible models', () => {
       const originalRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: 'gpt-4o',
         messages: [

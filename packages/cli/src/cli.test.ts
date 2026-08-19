@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { FatalError } from '@qwen-code/qwen-code-core';
+import { FatalError } from '@canopy-code/canopy-code-core';
 import { AlreadyReportedError } from './utils/errors.js';
 import {
   MCP_COMMANDS,
@@ -146,8 +146,8 @@ describe('runCliEntry', () => {
     CLI_VERSION: process.env['CLI_VERSION'],
     QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN:
       process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'],
-    QWEN_CODE_MANAGED_NPM_UPDATE_VERSION:
-      process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'],
+    CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION:
+      process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'],
   };
 
   let stdout: string[];
@@ -180,11 +180,11 @@ describe('runCliEntry', () => {
     } else {
       process.env['CLI_VERSION'] = savedEnv.CLI_VERSION;
     }
-    if (savedEnv.QWEN_CODE_MANAGED_NPM_UPDATE_VERSION === undefined) {
-      delete process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'];
+    if (savedEnv.CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION === undefined) {
+      delete process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'];
     } else {
-      process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'] =
-        savedEnv.QWEN_CODE_MANAGED_NPM_UPDATE_VERSION;
+      process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'] =
+        savedEnv.CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION;
     }
     if (savedEnv.QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN === undefined) {
       delete process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'];
@@ -206,7 +206,7 @@ describe('runCliEntry', () => {
   });
 
   it('runs a managed update worker without starting the CLI', async () => {
-    process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION'] = '2.0.0';
+    process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'] = '2.0.0';
     process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'] = 'guard-secret';
     mocks.installManagedNpmUpdate.mockImplementationOnce(async () => {
       expect(
@@ -217,7 +217,9 @@ describe('runCliEntry', () => {
     await runCliEntry([]);
 
     expect(mocks.installManagedNpmUpdate).toHaveBeenCalledWith('2.0.0');
-    expect(process.env['QWEN_CODE_MANAGED_NPM_UPDATE_VERSION']).toBeUndefined();
+    expect(
+      process.env['CANOPY_CODE_MANAGED_NPM_UPDATE_VERSION'],
+    ).toBeUndefined();
     expect(mocks.main).not.toHaveBeenCalled();
   });
 
@@ -236,10 +238,10 @@ describe('runCliEntry', () => {
     await runCliEntry(['--help']);
 
     const helpText = stdout.join('');
-    expect(helpText).toContain('Usage: qwen [options] [command]');
-    expect(helpText).toContain('Manage Qwen Code hooks');
+    expect(helpText).toContain('Usage: canopy [options] [command]');
+    expect(helpText).toContain('Manage Canopy Code hooks');
     expect(helpText).toContain('Manage MCP servers');
-    expect(helpText).toContain('Run Qwen Code as a local HTTP daemon');
+    expect(helpText).toContain('Run Canopy Code as a local HTTP daemon');
     expect(helpText).toContain('--model');
     expect(helpText).toContain('-p, --prompt');
     expect(helpText).toContain('--safe-mode');
@@ -401,22 +403,22 @@ describe('runCliEntry', () => {
 });
 
 describe('stampCliEntryEnv', () => {
-  // Isolated because the CLI exports QWEN_CODE_CLI to every shell it spawns —
-  // a test run started from inside a qwen session inherits it.
+  // Isolated because the CLI exports CANOPY_CODE_CLI to every shell it spawns —
+  // a test run started from inside a canopy session inherits it.
   let originalCli: string | undefined;
   let tempDir: string;
 
   beforeEach(() => {
-    originalCli = process.env['QWEN_CODE_CLI'];
-    delete process.env['QWEN_CODE_CLI'];
-    tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-entry-stamp-'));
+    originalCli = process.env['CANOPY_CODE_CLI'];
+    delete process.env['CANOPY_CODE_CLI'];
+    tempDir = mkdtempSync(path.join(tmpdir(), 'canopy-entry-stamp-'));
   });
 
   afterEach(() => {
     if (originalCli !== undefined) {
-      process.env['QWEN_CODE_CLI'] = originalCli;
+      process.env['CANOPY_CODE_CLI'] = originalCli;
     } else {
-      delete process.env['QWEN_CODE_CLI'];
+      delete process.env['CANOPY_CODE_CLI'];
     }
     rmSync(tempDir, { recursive: true, force: true });
   });
@@ -424,13 +426,13 @@ describe('stampCliEntryEnv', () => {
   it('stamps the built bin entry so skill shell-outs reach THIS build', () => {
     // A direct workspace launch (`node dist/index.js`) never passes through
     // scripts/cli-entry.js, so without this stamp every
-    // `"${QWEN_CODE_CLI:-qwen}"` resolved a global install off PATH.
+    // `"${CANOPY_CODE_CLI:-canopy}"` resolved a global install off PATH.
     const entry = path.join(tempDir, 'index.js');
     writeFileSync(entry, '#!/usr/bin/env node\nconsole.log("hi");\n');
 
     stampCliEntryEnv(entry);
 
-    expect(process.env['QWEN_CODE_CLI']).toBe(entry);
+    expect(process.env['CANOPY_CODE_CLI']).toBe(entry);
   });
 
   it("never overwrites an outer launcher's stamp", () => {
@@ -439,11 +441,11 @@ describe('stampCliEntryEnv', () => {
     // cannot see, and both run before runCliEntryPoint in the same process.
     const entry = path.join(tempDir, 'index.js');
     writeFileSync(entry, '#!/usr/bin/env node\n');
-    process.env['QWEN_CODE_CLI'] = '/outer/launcher/qwen';
+    process.env['CANOPY_CODE_CLI'] = '/outer/launcher/canopy';
 
     stampCliEntryEnv(entry);
 
-    expect(process.env['QWEN_CODE_CLI']).toBe('/outer/launcher/qwen');
+    expect(process.env['CANOPY_CODE_CLI']).toBe('/outer/launcher/canopy');
   });
 
   it('treats an inherited empty string as unset', () => {
@@ -452,11 +454,11 @@ describe('stampCliEntryEnv', () => {
     // still stamp its own.
     const entry = path.join(tempDir, 'index.js');
     writeFileSync(entry, '#!/usr/bin/env node\n');
-    process.env['QWEN_CODE_CLI'] = '';
+    process.env['CANOPY_CODE_CLI'] = '';
 
     stampCliEntryEnv(entry);
 
-    expect(process.env['QWEN_CODE_CLI']).toBe(entry);
+    expect(process.env['CANOPY_CODE_CLI']).toBe(entry);
   });
 
   it.skipIf(process.platform === 'win32')(
@@ -470,7 +472,7 @@ describe('stampCliEntryEnv', () => {
 
       stampCliEntryEnv(entry);
 
-      expect(process.env['QWEN_CODE_CLI']).toBe(entry);
+      expect(process.env['CANOPY_CODE_CLI']).toBe(entry);
       expect(statSync(entry).mode & 0o111).not.toBe(0);
     },
   );
@@ -478,7 +480,7 @@ describe('stampCliEntryEnv', () => {
   it('leaves the slot unset when the derived entry does not exist', () => {
     stampCliEntryEnv(path.join(tempDir, 'no', 'such', 'index.js'));
 
-    expect(process.env['QWEN_CODE_CLI']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_CLI']).toBeUndefined();
   });
 
   it('derives the bin entry one level up from the compiled module', () => {
@@ -498,12 +500,12 @@ describe('stampCliEntryEnv', () => {
   it('default derivation never throws and never stamps outside a built layout', () => {
     // Under vitest Vite rewrites new URL(…, import.meta.url) to a non-file
     // URL, and in dev runs the derived ../index.js is the unbuilt
-    // packages/cli/index.js. Both must keep the bare-`qwen` fallback — a
+    // packages/cli/index.js. Both must keep the bare-`canopy` fallback — a
     // failed derivation taking the CLI down would be worse than the version
     // skew this stamp exists to fix.
     stampCliEntryEnv();
 
-    expect(process.env['QWEN_CODE_CLI']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_CLI']).toBeUndefined();
   });
 });
 
@@ -512,7 +514,7 @@ describe('bootstrap import boundaries', () => {
     const source = readFileSync('src/cli.ts', 'utf8');
 
     expect(source).not.toContain("import yargs from 'yargs'");
-    expect(source).not.toContain("from '@qwen-code/qwen-code-core'");
+    expect(source).not.toContain("from '@canopy-code/canopy-code-core'");
     expect(source).not.toContain("import './gemini.js'");
     expect(source).not.toContain("import { main } from './gemini.js'");
     expect(source).not.toContain("from './utils/acp-startup-profiler.js'");
@@ -553,7 +555,7 @@ describe('bootstrap import boundaries', () => {
   });
 
   it('publishes the daemon compile cache without overriding user policy', () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-compile-cache-'));
+    const tempDir = mkdtempSync(path.join(tmpdir(), 'canopy-compile-cache-'));
     const entryPath = path.join(tempDir, 'cli-entry.mjs');
     const unsupportedEntryPath = path.join(
       tempDir,
@@ -585,7 +587,7 @@ describe('bootstrap import boundaries', () => {
         [
           'process.stdout.write(JSON.stringify({',
           '  cacheDir: process.env.NODE_COMPILE_CACHE,',
-          '  pendingCacheDir: process.env.QWEN_CODE_PENDING_COMPILE_CACHE,',
+          '  pendingCacheDir: process.env.CANOPY_CODE_PENDING_COMPILE_CACHE,',
           '}));',
         ].join('\n'),
       );
@@ -642,11 +644,11 @@ describe('bootstrap import boundaries', () => {
   it.skipIf(process.platform === 'win32')(
     'reloads the CLI through a stable shim after an update',
     () => {
-      const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-cli-update-'));
-      const wrongDir = mkdtempSync(path.join(tmpdir(), 'qwen-cli-wrong-'));
+      const tempDir = mkdtempSync(path.join(tmpdir(), 'canopy-cli-update-'));
+      const wrongDir = mkdtempSync(path.join(tmpdir(), 'canopy-cli-wrong-'));
       const oldDir = path.join(tempDir, 'old');
       const newDir = path.join(tempDir, 'new');
-      const binPath = path.join(tempDir, 'qwen');
+      const binPath = path.join(tempDir, 'canopy');
       try {
         mkdirSync(oldDir);
         mkdirSync(newDir);
@@ -664,7 +666,7 @@ describe('bootstrap import boundaries', () => {
         );
         writeFileSync(
           path.join(newDir, 'cli.js'),
-          "process.stdout.write(`${JSON.stringify({ args: process.argv.slice(2), skip: process.env.QWEN_CODE_SKIP_UPDATE_CHECK_ONCE, hasLauncherPid: /^\\d+$/.test(process.env.QWEN_CODE_LAUNCHER_PID ?? ''), launcherPath: process.env.QWEN_CODE_LAUNCHER_PATH })}\\n`);\n",
+          "process.stdout.write(`${JSON.stringify({ args: process.argv.slice(2), skip: process.env.CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE, hasLauncherPid: /^\\d+$/.test(process.env.CANOPY_CODE_LAUNCHER_PID ?? ''), launcherPath: process.env.CANOPY_CODE_LAUNCHER_PATH })}\\n`);\n",
         );
         writeFileSync(
           binPath,
@@ -672,10 +674,10 @@ describe('bootstrap import boundaries', () => {
         );
         chmodSync(binPath, 0o755);
         writeFileSync(
-          path.join(wrongDir, 'qwen'),
+          path.join(wrongDir, 'canopy'),
           '#!/bin/sh\necho wrong-launcher\n',
         );
-        chmodSync(path.join(wrongDir, 'qwen'), 0o755);
+        chmodSync(path.join(wrongDir, 'canopy'), 0o755);
 
         const output = execFileSync(binPath, ['--prompt', 'a&b'], {
           encoding: 'utf8',
@@ -698,14 +700,16 @@ describe('bootstrap import boundaries', () => {
   );
 
   it('does not pass the standalone launcher hint to child processes', () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-cli-launcher-env-'));
+    const tempDir = mkdtempSync(
+      path.join(tmpdir(), 'canopy-cli-launcher-env-'),
+    );
     const entryPath = path.join(tempDir, 'entry.mjs');
-    const launcherPath = path.join(tempDir, 'qwen');
+    const launcherPath = path.join(tempDir, 'canopy');
     try {
       copyFileSync('../../scripts/cli-entry.js', entryPath);
       writeFileSync(
         path.join(tempDir, 'cli.js'),
-        'process.stdout.write(JSON.stringify({ launcherPath: process.env.QWEN_CODE_LAUNCHER_PATH }));\n',
+        'process.stdout.write(JSON.stringify({ launcherPath: process.env.CANOPY_CODE_LAUNCHER_PATH }));\n',
       );
       writeFileSync(launcherPath, '#!/bin/sh\n');
       chmodSync(launcherPath, 0o755);
@@ -714,7 +718,7 @@ describe('bootstrap import boundaries', () => {
         encoding: 'utf8',
         env: {
           ...process.env,
-          QWEN_CODE_LAUNCHER_PATH: launcherPath,
+          CANOPY_CODE_LAUNCHER_PATH: launcherPath,
         },
       });
 
@@ -730,7 +734,7 @@ describe('bootstrap import boundaries', () => {
       ['../../scripts/cli-entry.js', '--version'],
       {
         encoding: 'utf8',
-        env: { ...process.env, QWEN_CODE_RELAUNCH_ARGS: 'not-json' },
+        env: { ...process.env, CANOPY_CODE_RELAUNCH_ARGS: 'not-json' },
       },
     );
 
@@ -770,10 +774,10 @@ describe('bootstrap import boundaries', () => {
   });
 
   it('resolves and pins managed updates from the configured home', () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-managed-npm-'));
+    const tempDir = mkdtempSync(path.join(tmpdir(), 'canopy-managed-npm-'));
     const entryDir = path.join(tempDir, 'bootstrap');
     const entryPath = path.join(entryDir, 'cli-entry.mjs');
-    const qwenHome = path.join(tempDir, 'custom', 'qwen');
+    const canopyHome = path.join(tempDir, 'custom', 'canopy');
     try {
       mkdirSync(entryDir, { recursive: true });
       copyFileSync('../../scripts/cli-entry.js', entryPath);
@@ -781,45 +785,45 @@ describe('bootstrap import boundaries', () => {
         .update(realpathSync(entryPath))
         .digest('hex')
         .slice(0, 16);
-      const launcherRoot = path.join(qwenHome, 'updates', 'npm', bootstrapId);
+      const launcherRoot = path.join(canopyHome, 'updates', 'npm', bootstrapId);
       const packageRoot = path.join(
         launcherRoot,
         'versions',
         '2.0.0',
         'node_modules',
-        '@qwen-code',
-        'qwen-code',
+        '@canopy-code',
+        'canopy-code',
       );
       mkdirSync(packageRoot, { recursive: true });
       writeFileSync(
         path.join(entryDir, 'cli.js'),
-        "process.stdout.write(JSON.stringify({ build: 'base', pin: process.env.QWEN_CODE_MANAGED_NPM_PIN }));\n",
+        "process.stdout.write(JSON.stringify({ build: 'base', pin: process.env.CANOPY_CODE_MANAGED_NPM_PIN }));\n",
       );
       writeFileSync(
         path.join(entryDir, 'package.json'),
         JSON.stringify({
-          name: '@qwen-code/qwen-code',
+          name: '@canopy-code/canopy-code',
           version: '1.0.0',
         }),
       );
       writeFileSync(
         path.join(packageRoot, 'package.json'),
         JSON.stringify({
-          name: '@qwen-code/qwen-code',
+          name: '@canopy-code/canopy-code',
           version: '2.0.0',
         }),
       );
       writeFileSync(
         path.join(packageRoot, 'cli.js'),
-        "process.stdout.write(JSON.stringify({ build: 'managed-2', managed: process.env.QWEN_CODE_MANAGED_NPM_UPDATE, launcher: process.env.QWEN_CODE_CLI, pin: process.env.QWEN_CODE_MANAGED_NPM_PIN, args: process.argv.slice(2) }));\n",
+        "process.stdout.write(JSON.stringify({ build: 'managed-2', managed: process.env.CANOPY_CODE_MANAGED_NPM_UPDATE, launcher: process.env.CANOPY_CODE_CLI, pin: process.env.CANOPY_CODE_MANAGED_NPM_PIN, args: process.argv.slice(2) }));\n",
       );
       mkdirSync(launcherRoot, { recursive: true });
       const bootstrapStat = statSync(entryPath);
 
-      mkdirSync(path.join(tempDir, '.qwen'), { recursive: true });
+      mkdirSync(path.join(tempDir, '.canopy'), { recursive: true });
       writeFileSync(
-        path.join(tempDir, '.qwen', '.env'),
-        '\uFEFFQWEN_HOME: ~\\custom\\qwen\n',
+        path.join(tempDir, '.canopy', '.env'),
+        '\uFEFFCANOPY_HOME: ~\\custom\\canopy\n',
       );
       const childEnv: NodeJS.ProcessEnv = {
         ...process.env,
@@ -830,7 +834,7 @@ describe('bootstrap import boundaries', () => {
         TMP: tempDir,
       };
       delete childEnv['QWEN_HOME'];
-      delete childEnv['QWEN_CODE_MANAGED_NPM_PIN'];
+      delete childEnv['CANOPY_CODE_MANAGED_NPM_PIN'];
       const baseSession = JSON.parse(
         execFileSync(process.execPath, [entryPath, '--prompt', 'hello'], {
           encoding: 'utf8',
@@ -854,7 +858,7 @@ describe('bootstrap import boundaries', () => {
             encoding: 'utf8',
             env: {
               ...childEnv,
-              QWEN_CODE_MANAGED_NPM_PIN: baseSession.pin,
+              CANOPY_CODE_MANAGED_NPM_PIN: baseSession.pin,
             },
           }),
         ),
@@ -869,8 +873,8 @@ describe('bootstrap import boundaries', () => {
       ).toMatchObject({ build: 'base' });
 
       writeFileSync(
-        path.join(tempDir, '.qwen', '.env'),
-        `QWEN_HOME:${qwenHome}\n`,
+        path.join(tempDir, '.canopy', '.env'),
+        `QWEN_HOME:${canopyHome}\n`,
       );
       expect(
         JSON.parse(
@@ -881,8 +885,8 @@ describe('bootstrap import boundaries', () => {
         ),
       ).toMatchObject({ build: 'base' });
       writeFileSync(
-        path.join(tempDir, '.qwen', '.env'),
-        `QWEN_HOME:   \nOTHER=${qwenHome}\n`,
+        path.join(tempDir, '.canopy', '.env'),
+        `QWEN_HOME:   \nOTHER=${canopyHome}\n`,
       );
       expect(
         JSON.parse(
@@ -893,8 +897,8 @@ describe('bootstrap import boundaries', () => {
         ),
       ).toMatchObject({ build: 'base' });
       writeFileSync(
-        path.join(tempDir, '.qwen', '.env'),
-        '\uFEFFQWEN_HOME: ~\\custom\\qwen\n',
+        path.join(tempDir, '.canopy', '.env'),
+        '\uFEFFCANOPY_HOME: ~\\custom\\canopy\n',
       );
       const output = execFileSync(
         process.execPath,
@@ -934,7 +938,7 @@ describe('bootstrap import boundaries', () => {
             env: {
               ...childEnv,
               QWEN_HOME: 'different-relative-home',
-              QWEN_CODE_MANAGED_NPM_PIN: managedSession.pin,
+              CANOPY_CODE_MANAGED_NPM_PIN: managedSession.pin,
             },
           }),
         ),
@@ -950,11 +954,11 @@ describe('bootstrap import boundaries', () => {
       );
 
       const emptyHomeRoot = path.join(tempDir, 'empty-home');
-      const emptyQwenHome = path.join(emptyHomeRoot, '.qwen');
-      mkdirSync(emptyQwenHome, { recursive: true });
+      const emptyCanopyHome = path.join(emptyHomeRoot, '.canopy');
+      mkdirSync(emptyCanopyHome, { recursive: true });
       renameSync(
-        path.join(qwenHome, 'updates'),
-        path.join(emptyQwenHome, 'updates'),
+        path.join(canopyHome, 'updates'),
+        path.join(emptyCanopyHome, 'updates'),
       );
       const emptyHomeEnv = {
         ...childEnv,
@@ -997,7 +1001,7 @@ describe('bootstrap import boundaries', () => {
       writeFileSync(
         path.join(entryDir, 'package.json'),
         JSON.stringify({
-          name: '@qwen-code/qwen-code',
+          name: '@canopy-code/canopy-code',
           version: '3.0.0',
         }),
       );
@@ -1007,7 +1011,7 @@ describe('bootstrap import boundaries', () => {
             encoding: 'utf8',
             env: {
               ...emptyHomeEnv,
-              QWEN_CODE_MANAGED_NPM_UPDATE: 'true',
+              CANOPY_CODE_MANAGED_NPM_UPDATE: 'true',
             },
           }),
         ),
@@ -1018,7 +1022,7 @@ describe('bootstrap import boundaries', () => {
   }, 60_000);
 
   it('falls through to cli.js when wrapper package.json lookup fails', () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-cli-entry-'));
+    const tempDir = mkdtempSync(path.join(tmpdir(), 'canopy-cli-entry-'));
     const entryDir = path.join(tempDir, 'bin');
     try {
       mkdirSync(entryDir);

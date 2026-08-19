@@ -7,7 +7,7 @@
 import type { GenerateContentResponse } from '@google/genai';
 import { AuthType } from '../core/contentGenerator.js';
 import {
-  isQwenQuotaExceededError,
+  isCanopyQuotaExceededError,
   isQuotaExhaustedError,
   formatQuotaExhaustedMessage,
 } from './quotaErrorDetection.js';
@@ -142,12 +142,12 @@ export function isTransientCapacityError(error: unknown): boolean {
 
 /**
  * Detects whether persistent retry mode is explicitly enabled.
- * Requires the user to opt in via QWEN_CODE_UNATTENDED_RETRY — we intentionally
+ * Requires the user to opt in via CANOPY_CODE_UNATTENDED_RETRY — we intentionally
  * do NOT auto-activate on CI=true, because silently turning a fast-fail CI job
  * into an infinite-wait job would be surprising and dangerous.
  */
 export function isUnattendedMode(): boolean {
-  const val = process.env['QWEN_CODE_UNATTENDED_RETRY'];
+  const val = process.env['CANOPY_CODE_UNATTENDED_RETRY'];
   return val === 'true' || val === '1';
 }
 
@@ -333,7 +333,7 @@ export async function retryWithBackoff<T>(
       // Classification drives logging plus one control decision: a 'fail-fast'
       // verdict keeps a permanent error out of the unbounded persistent loop
       // (see shouldPersist below). Normal retry control still follows
-      // shouldRetryOnError and the persistent policy. Computed before the Qwen
+      // shouldRetryOnError and the persistent policy. Computed before the Canopy
       // quota fast-fail so the original error (status, request id, provider
       // body) is always classified and logged, even when we replace it with a
       // guidance message.
@@ -349,16 +349,19 @@ export async function retryWithBackoff<T>(
         throw error;
       }
 
-      // Check for Qwen OAuth quota exceeded error - throw immediately without retry
-      if (authType === AuthType.QWEN_OAUTH && isQwenQuotaExceededError(error)) {
+      // Check for Canopy OAuth quota exceeded error - throw immediately without retry
+      if (
+        authType === AuthType.CANOPY_OAUTH &&
+        isCanopyQuotaExceededError(error)
+      ) {
         debugLogger.error(
-          'Qwen OAuth quota exceeded, fast-failing',
+          'Canopy OAuth quota exceeded, fast-failing',
           retryDiagnostics,
           error,
         );
         throw new Error(
-          `Qwen OAuth free tier has been discontinued as of 2026-04-15.\n\n` +
-            `To continue using Qwen Code, try one of these alternatives:\n` +
+          `Canopy OAuth free tier has been discontinued as of 2026-04-15.\n\n` +
+            `To continue using Canopy Code, try one of these alternatives:\n` +
             `  - OpenRouter:    https://openrouter.ai/docs/quickstart\n` +
             `  - Fireworks AI:  https://docs.fireworks.ai/api-reference/introduction\n` +
             `  - ModelStudio:   https://help.aliyun.com/zh/model-studio/coding-plan\n\n` +

@@ -1,7 +1,7 @@
 {
   "name": "starter-example",
   "version": "1.0.0",
-  "description": "Complete example Qwen Code extension (context, agent, command, skill, and MCP server)",
+  "description": "Complete example Canopy Code extension (context, agent, command, skill, and MCP server)",
   "type": "module",
   "main": "example.js",
   "scripts": {

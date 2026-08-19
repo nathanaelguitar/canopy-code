@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import {
   clearWorktreeSession,
   type Config,
   type WorktreeSession,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useWorktreeSession } from './useWorktreeSession.js';
 
 const SESSION_ID = 'test-session-id';
@@ -30,7 +30,7 @@ function makeMockConfig(sidecarPath: string): Config {
 
 const sample: WorktreeSession = {
   slug: 'my-feature',
-  worktreePath: '/repo/.qwen/worktrees/my-feature',
+  worktreePath: '/repo/.canopy/worktrees/my-feature',
   worktreeBranch: 'worktree-my-feature',
   originalCwd: '/repo',
   originalBranch: 'main',

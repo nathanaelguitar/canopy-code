@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -55,7 +55,7 @@ export function buildManagedRememberPrompt(
 }
 
 export function buildBareRememberPrompt(fact: string): string {
-  return `Please save the following fact to memory (e.g. append to QWEN.md in the project root):\n\n${fact.trim()}`;
+  return `Please save the following fact to memory (e.g. append to CANOPY.md in the project root):\n\n${fact.trim()}`;
 }
 
 async function buildCleanMemorySystemPrompt(
@@ -66,7 +66,7 @@ async function buildCleanMemorySystemPrompt(
     await ensureUserAutoMemoryScaffold();
   } catch {
     // User-level memory is best-effort elsewhere in managed memory. Keep
-    // project memory usable if ~/.qwen/memories cannot be scaffolded.
+    // project memory usable if ~/.canopy/memories cannot be scaffolded.
   }
   const [projectIndex, userIndex] = await Promise.all([
     readAutoMemoryIndex(projectRoot),
@@ -89,11 +89,11 @@ async function buildCleanMemorySystemPrompt(
 
 function buildRememberSystemPrompt(memoryPrompt: string): string {
   return [
-    'You are saving one explicit durable memory for Qwen Code.',
+    'You are saving one explicit durable memory for Canopy Code.',
     '',
     'Rules:',
     '- Save only information provided in the task prompt.',
-    '- Use the managed auto-memory system only; do not write QWEN.md or AGENTS.md.',
+    '- Use the managed auto-memory system only; do not write CANOPY.md or AGENTS.md.',
     '- Do not inspect or depend on any user-visible chat session history.',
     '- Use read/list/search/write/edit tools only inside the managed memory directories.',
     '- When finished, report only whether the memory update completed; do not quote or summarize memory content.',
@@ -223,7 +223,7 @@ export async function runManagedRememberByAgent(params: {
       ? rebuildUserAutoMemoryIndex().catch((err: unknown) => {
           // Mirrors existing managed-memory behavior: user memory is useful
           // when available, but project memory writes should not fail because
-          // ~/.qwen/memories cannot be indexed.
+          // ~/.canopy/memories cannot be indexed.
           debugLogger.error('User memory index rebuild failed:', err);
         })
       : Promise.resolve(),

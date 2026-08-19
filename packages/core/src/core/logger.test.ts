@@ -29,14 +29,14 @@ import type { Content } from '@google/genai';
 
 import os from 'node:os';
 
-const GEMINI_DIR_NAME = '.qwen';
+const GEMINI_DIR_NAME = '.canopy';
 const TMP_DIR_NAME = 'tmp';
 const LOG_FILE_NAME = 'logs.json';
 const CHECKPOINT_FILE_NAME = 'checkpoint.json';
 
 const projectDir = process.cwd();
 const hash = getProjectHash(projectDir);
-const TEST_HOME_DIR = path.join(os.tmpdir(), 'qwen-core-logger-home');
+const TEST_HOME_DIR = path.join(os.tmpdir(), 'canopy-core-logger-home');
 
 let originalHome: string | undefined;
 let testGeminiDir: string;
@@ -861,14 +861,17 @@ describe('Logger', () => {
     it('only undoes USER entries (model_switch is left intact)', async () => {
       await logger.logMessage(MessageSenderType.USER, 'real prompt');
       vi.advanceTimersByTime(1000);
-      await logger.logMessage(MessageSenderType.MODEL_SWITCH, 'qwen→qwen-max');
+      await logger.logMessage(
+        MessageSenderType.MODEL_SWITCH,
+        'canopy→qwen-max',
+      );
 
       // The model-switch write does NOT update lastLoggedUserEntry, so undo
       // still targets the earlier USER row.
       const removed = await logger.removeLastUserMessage();
       expect(removed).toBe(true);
       const onDisk = await readLogFile();
-      expect(onDisk.map((e) => e.message)).toEqual(['qwen→qwen-max']);
+      expect(onDisk.map((e) => e.message)).toEqual(['canopy→qwen-max']);
     });
 
     it('returns false when the tracked entry is no longer on disk', async () => {
@@ -1012,7 +1015,10 @@ describe('Logger', () => {
       expect(trackedAfterUser).not.toBeNull();
 
       vi.mocked(atomicWriteFile).mockRejectedValueOnce(new Error('Disk full'));
-      await logger.logMessage(MessageSenderType.MODEL_SWITCH, 'qwen→qwen-max');
+      await logger.logMessage(
+        MessageSenderType.MODEL_SWITCH,
+        'canopy→qwen-max',
+      );
 
       // Tracker is unchanged — the non-USER failure didn't shift which
       // row was the most recent user prompt.

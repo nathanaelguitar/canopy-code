@@ -1,36 +1,36 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 import {
-  QWEN_CODE_DESKTOP_ENV,
-  QWEN_CODE_SERVE_ENV,
+  CANOPY_CODE_DESKTOP_ENV,
+  CANOPY_CODE_SERVE_ENV,
 } from './acp-channel-fallback.js';
 
 import { writeStderrLineSafe } from '../utils/stdioHelpers.js';
 
 export const DEFAULT_EXCLUDED_ENV_VARS = ['DEBUG', 'DEBUG_MODE'];
 
-export const ENV_CORRUPTED_PATH = 'QWEN_CODE_SETTINGS_CORRUPTED_PATH';
-export const ENV_WAS_RECOVERED = 'QWEN_CODE_SETTINGS_WAS_RECOVERED';
+export const ENV_CORRUPTED_PATH = 'CANOPY_CODE_SETTINGS_CORRUPTED_PATH';
+export const ENV_WAS_RECOVERED = 'CANOPY_CODE_SETTINGS_WAS_RECOVERED';
 export const ENV_ACP_REPEATED_TOOL_FAILURE_GUARD =
-  'QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
+  'CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
 
-// QWEN_HOME and QWEN_RUNTIME_DIR control where global state (settings, OAuth
+// QWEN_HOME and CANOPY_RUNTIME_DIR control where global state (settings, OAuth
 // credentials, installation IDs, etc.) is written. A project `.env` must never
 // redirect these — that would split global state between the real home and a
 // project-controlled directory. Always excluded from project .env files,
 // regardless of user-configurable `advanced.excludedEnvVars`.
 export const PROJECT_ENV_HARDCODED_EXCLUSIONS = [
   'QWEN_HOME',
-  'QWEN_RUNTIME_DIR',
-  'QWEN_CODE_MCP_APPROVALS_PATH',
-  'QWEN_CODE_TRUSTED_FOLDERS_PATH',
+  'CANOPY_RUNTIME_DIR',
+  'CANOPY_CODE_MCP_APPROVALS_PATH',
+  'CANOPY_CODE_TRUSTED_FOLDERS_PATH',
   // Runtime attribution markers are stamped by trusted launchers. A project
   // `.env` must not spoof client channel telemetry.
-  QWEN_CODE_SERVE_ENV,
-  QWEN_CODE_DESKTOP_ENV,
+  CANOPY_CODE_SERVE_ENV,
+  CANOPY_CODE_DESKTOP_ENV,
   ENV_CORRUPTED_PATH,
   ENV_WAS_RECOVERED,
   // This is an operator rollout policy. A project must not be able to promote
@@ -38,15 +38,15 @@ export const PROJECT_ENV_HARDCODED_EXCLUSIONS = [
   ENV_ACP_REPEATED_TOOL_FAILURE_GUARD,
   // Project memory routing is frozen daemon-wide before workspace env files
   // load, so only the operator's launch environment or CLI flag may set it.
-  'QWEN_CODE_MEMORY_PROJECT_SCOPE',
-  // QWEN_TLS_INSECURE (and NODE_TLS_REJECT_UNAUTHORIZED, which it mirrors)
+  'CANOPY_CODE_MEMORY_PROJECT_SCOPE',
+  // CANOPY_TLS_INSECURE (and NODE_TLS_REJECT_UNAUTHORIZED, which it mirrors)
   // disable TLS certificate verification for all outbound API connections. A
   // project `.env` must never enable either — that would let an untrusted repo
   // silently turn off MITM protection. Opt-in stays with the user via the
   // `--insecure` flag, the shell environment, or a home `.env`. The initial
   // `.env` load only consults this list, so both keys must be here (not just
   // RELOAD_EXCLUDED_KEYS, which only applies on reload).
-  'QWEN_TLS_INSECURE',
+  'CANOPY_TLS_INSECURE',
   'NODE_TLS_REJECT_UNAUTHORIZED',
   // NODE_EXTRA_CA_CERTS reaches the same outcome by adding a TLS trust
   // anchor instead of disabling verification.
@@ -170,17 +170,17 @@ export const PROJECT_ENV_HARDCODED_EXCLUSIONS = [
   'BROWSER',
   // QWEN_CLI_ENTRY is the script path daemon-spawned session processes run.
   // A project `.env` or settings.env fixing it turns
-  // `cd <untrusted repo> && qwen serve` into code execution as the daemon
+  // `cd <untrusted repo> && canopy serve` into code execution as the daemon
   // via an attacker-chosen ACP entrypoint, for every workspace's sessions.
   'QWEN_CLI_ENTRY',
-  // QWEN_CDP_MCP_COMMAND is the command the daemon spawns as the
-  // browser-automation MCP adapter, and QWEN_SERVE_CDP_TUNNEL_OVER_WS
+  // CANOPY_CDP_MCP_COMMAND is the command the daemon spawns as the
+  // browser-automation MCP adapter, and CANOPY_SERVE_CDP_TUNNEL_OVER_WS
   // switches that tunnel surface on. A project `.env` or settings.env fixing
   // either hijacks the daemon the same way QWEN_CLI_ENTRY does; values the
   // operator set in the daemon's launch env still apply.
-  'QWEN_CDP_MCP_COMMAND',
-  'QWEN_SERVE_CDP_TUNNEL_OVER_WS',
-  // DEV gates the daemon's inherited-loader-env scrub (run-qwen-serve.ts);
+  'CANOPY_CDP_MCP_COMMAND',
+  'CANOPY_SERVE_CDP_TUNNEL_OVER_WS',
+  // DEV gates the daemon's inherited-loader-env scrub (run-canopy-serve.ts);
   // only the dev harness (scripts/dev.js) stamps it into the launch env. A
   // project file setting it would silently keep loader vars in the base env
   // distributed to every workspace's session children — reopening the #8653
@@ -223,9 +223,9 @@ export function isHardcodedProjectEnvExclusion(key: string): boolean {
 
 export const HOME_ENV_BOOTSTRAP_KEYS = [
   'QWEN_HOME',
-  'QWEN_RUNTIME_DIR',
-  'QWEN_CODE_MCP_APPROVALS_PATH',
-  'QWEN_CODE_TRUSTED_FOLDERS_PATH',
+  'CANOPY_RUNTIME_DIR',
+  'CANOPY_CODE_MCP_APPROVALS_PATH',
+  'CANOPY_CODE_TRUSTED_FOLDERS_PATH',
 ] as const;
 
 // Loader-affecting variables inherited from the launching shell. A daemon or
@@ -492,7 +492,7 @@ export function reportRejectedLoaderKeys(
     loaderKeyRejectionReporter(source, freshKeys);
   } else {
     writeStderrLineSafe(
-      `qwen: ${source} cannot set loader-affecting env vars; ignored: ` +
+      `canopy: ${source} cannot set loader-affecting env vars; ignored: ` +
         freshKeys.join(', '),
     );
   }

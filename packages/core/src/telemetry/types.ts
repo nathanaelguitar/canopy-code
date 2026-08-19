@@ -204,7 +204,7 @@ export class ToolCallEvent implements BaseTelemetryEvent {
     // command's actual answer, already emitted in stdout `result` /
     // `structured_result`). Recording them again as ordinary tool-call
     // function_args duplicates that data into telemetry surfaces (OTLP
-    // exports, QwenLogger, ui-telemetry stream, the chat-recording UI
+    // exports, CanopyLogger, ui-telemetry stream, the chat-recording UI
     // event mirror) where it can leak off-device. Replace with a shared
     // placeholder constant so consumers still see the call happened —
     // duration, success, decision metrics are preserved — but the
@@ -856,7 +856,7 @@ export class ApiRetryEvent implements BaseTelemetryEvent {
   retry_delay_ms: number;
   /**
    * Reports the backoff delay following this failed attempt (NOT the attempt's
-   * own duration — that lives on the corresponding `qwen-code.llm_request`
+   * own duration — that lives on the corresponding `canopy-code.llm_request`
    * span's `duration_ms` attribute). Set equal to `retry_delay_ms` so the
    * LogToSpanProcessor bridge span visualises the sleep window between the
    * failed and next attempt in the trace timeline.
@@ -1391,7 +1391,7 @@ export class ExtensionDisableEvent implements BaseTelemetryEvent {
 }
 
 export class PromptSuggestionEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.prompt_suggestion';
+  'event.name': 'canopy-code.prompt_suggestion';
   'event.timestamp': string;
   outcome: 'accepted' | 'ignored' | 'suppressed';
   prompt_id?: string;
@@ -1418,7 +1418,7 @@ export class PromptSuggestionEvent implements BaseTelemetryEvent {
     was_focused_when_shown?: boolean;
     reason?: string;
   }) {
-    this['event.name'] = 'qwen-code.prompt_suggestion';
+    this['event.name'] = 'canopy-code.prompt_suggestion';
     this['event.timestamp'] = new Date().toISOString();
     this.outcome = params.outcome;
     this.prompt_id = params.prompt_id ?? 'user_intent';
@@ -1435,7 +1435,7 @@ export class PromptSuggestionEvent implements BaseTelemetryEvent {
 }
 
 export class SpeculationEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.speculation';
+  'event.name': 'canopy-code.speculation';
   'event.timestamp': string;
   outcome: 'accepted' | 'aborted' | 'failed';
   turns_used: number;
@@ -1454,7 +1454,7 @@ export class SpeculationEvent implements BaseTelemetryEvent {
     boundary_type?: string;
     had_pipelined_suggestion: boolean;
   }) {
-    this['event.name'] = 'qwen-code.speculation';
+    this['event.name'] = 'canopy-code.speculation';
     this['event.timestamp'] = new Date().toISOString();
     this.outcome = params.outcome;
     this.turns_used = params.turns_used;
@@ -1468,18 +1468,18 @@ export class SpeculationEvent implements BaseTelemetryEvent {
 
 /** #4721 P-telemetry: the `workflow` keyword steered a turn toward the tool. */
 export class WorkflowKeywordEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.workflow_keyword';
+  'event.name': 'canopy-code.workflow_keyword';
   'event.timestamp': string;
 
   constructor() {
-    this['event.name'] = 'qwen-code.workflow_keyword';
+    this['event.name'] = 'canopy-code.workflow_keyword';
     this['event.timestamp'] = new Date().toISOString();
   }
 }
 
 /** #4721 P-telemetry: a workflow run reached a terminal state. */
 export class WorkflowRunEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.workflow_run';
+  'event.name': 'canopy-code.workflow_run';
   'event.timestamp': string;
   status: string;
   agents_dispatched: number;
@@ -1496,7 +1496,7 @@ export class WorkflowRunEvent implements BaseTelemetryEvent {
     tokens_spent: number;
     duration_ms: number;
   }) {
-    this['event.name'] = 'qwen-code.workflow_run';
+    this['event.name'] = 'canopy-code.workflow_run';
     this['event.timestamp'] = new Date().toISOString();
     this.status = params.status;
     this.agents_dispatched = params.agents_dispatched;
@@ -1512,7 +1512,7 @@ export class WorkflowRunEvent implements BaseTelemetryEvent {
 // ---------------------------------------------------------------------------
 
 export class MemoryExtractEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.memory.extract';
+  'event.name': 'canopy-code.memory.extract';
   'event.timestamp': string;
   /** 'auto' = triggered by session turn; 'manual' = user-initiated */
   trigger: 'auto' | 'manual';
@@ -1538,7 +1538,7 @@ export class MemoryExtractEvent implements BaseTelemetryEvent {
     touched_topics: string[];
     duration_ms: number;
   }) {
-    this['event.name'] = 'qwen-code.memory.extract';
+    this['event.name'] = 'canopy-code.memory.extract';
     this['event.timestamp'] = new Date().toISOString();
     this.trigger = params.trigger;
     this.status = params.status;
@@ -1550,7 +1550,7 @@ export class MemoryExtractEvent implements BaseTelemetryEvent {
 }
 
 export class MemoryDreamEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.memory.dream';
+  'event.name': 'canopy-code.memory.dream';
   'event.timestamp': string;
   /** 'auto' = scheduler-triggered; 'manual' = user ran /dream */
   trigger: 'auto' | 'manual';
@@ -1567,7 +1567,7 @@ export class MemoryDreamEvent implements BaseTelemetryEvent {
     touched_topics: string[];
     duration_ms: number;
   }) {
-    this['event.name'] = 'qwen-code.memory.dream';
+    this['event.name'] = 'canopy-code.memory.dream';
     this['event.timestamp'] = new Date().toISOString();
     this.trigger = params.trigger;
     this.status = params.status;
@@ -1579,7 +1579,7 @@ export class MemoryDreamEvent implements BaseTelemetryEvent {
 }
 
 export class MemoryRecallEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.memory.recall';
+  'event.name': 'canopy-code.memory.recall';
   'event.timestamp': string;
   query_length: number;
   docs_scanned: number;
@@ -1594,7 +1594,7 @@ export class MemoryRecallEvent implements BaseTelemetryEvent {
     strategy: 'none' | 'heuristic' | 'model';
     duration_ms: number;
   }) {
-    this['event.name'] = 'qwen-code.memory.recall';
+    this['event.name'] = 'canopy-code.memory.recall';
     this['event.timestamp'] = new Date().toISOString();
     this.query_length = params.query_length;
     this.docs_scanned = params.docs_scanned;
@@ -1615,7 +1615,7 @@ export type MemoryRecallDiscardReason =
   | 'no_relevant_results';
 
 export class MemoryRecallDeliveryEvent implements BaseTelemetryEvent {
-  'event.name': 'qwen-code.memory.recall.delivery';
+  'event.name': 'canopy-code.memory.recall.delivery';
   'event.timestamp': string;
   phase: MemoryRecallDeliveryPhase;
   delivery_point: MemoryRecallDeliveryPoint;
@@ -1632,7 +1632,7 @@ export class MemoryRecallDeliveryEvent implements BaseTelemetryEvent {
     docs_selected: number;
     latency_ms: number;
   }) {
-    this['event.name'] = 'qwen-code.memory.recall.delivery';
+    this['event.name'] = 'canopy-code.memory.recall.delivery';
     this['event.timestamp'] = new Date().toISOString();
     this.phase = params.phase;
     this.delivery_point = params.delivery_point;

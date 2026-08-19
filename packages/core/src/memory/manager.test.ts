@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -104,7 +104,7 @@ describe('MemoryManager', () => {
 
     beforeEach(async () => {
       vi.resetAllMocks();
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = '1';
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = '1';
       clearAutoMemoryRootCache();
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mgr-extract-'));
       projectRoot = path.join(tempDir, 'project');
@@ -113,7 +113,7 @@ describe('MemoryManager', () => {
     });
 
     afterEach(async () => {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });
     });
@@ -138,8 +138,8 @@ describe('MemoryManager', () => {
     });
 
     it.each([
-      ['private', '.qwen/memory/user/test.md'],
-      ['team', '.qwen/team-memory/test.md'],
+      ['private', '.canopy/memory/user/test.md'],
+      ['team', '.canopy/team-memory/test.md'],
     ])(
       'skips extraction when history writes to a %s memory file',
       async (_label, filePath) => {
@@ -240,7 +240,7 @@ describe('MemoryManager', () => {
     beforeEach(() => {
       vi.resetAllMocks();
       vi.mocked(runSkillReviewByAgent).mockResolvedValue({
-        touchedSkillFiles: ['/project/.qwen/skills/test/SKILL.md'],
+        touchedSkillFiles: ['/project/.canopy/skills/test/SKILL.md'],
       });
     });
 
@@ -369,7 +369,7 @@ describe('MemoryManager', () => {
       await fs.mkdir(projectRoot, { recursive: true });
       skillFilePath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         'auto-skill-foo',
         'SKILL.md',
@@ -414,14 +414,14 @@ describe('MemoryManager', () => {
       expect(pendingSkills).toBeDefined();
       expect(pendingSkills).toHaveLength(1);
 
-      // The skill must no longer be under .qwen/skills/
+      // The skill must no longer be under .canopy/skills/
       await expect(fs.access(skillFilePath)).rejects.toThrow();
     });
 
     it('stages a new skill whose name exists only in the archive', async () => {
       const archivedManifest = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'archived-skills',
         'auto-skill-foo',
         'SKILL.md',
@@ -470,7 +470,7 @@ describe('MemoryManager', () => {
       expect(record.status).toBe('completed');
       expect(record.metadata?.['pendingSkills']).toBeUndefined();
 
-      // The skill must still be under .qwen/skills/
+      // The skill must still be under .canopy/skills/
       await expect(fs.access(skillFilePath)).resolves.toBeUndefined();
     });
 
@@ -631,7 +631,7 @@ describe('MemoryManager', () => {
       await fs.mkdir(projectRoot, { recursive: true });
       skillFilePath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         'auto-skill-foo',
         'SKILL.md',
@@ -693,10 +693,10 @@ describe('MemoryManager', () => {
       const taskId = record.id;
       await mgr.acceptPendingSkillFromTask(taskId, 'auto-skill-foo');
 
-      // The skill must now exist at its final path under .qwen/skills/
+      // The skill must now exist at its final path under .canopy/skills/
       const finalPath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         'auto-skill-foo',
         'SKILL.md',
@@ -716,10 +716,10 @@ describe('MemoryManager', () => {
       const taskId = record.id;
       await mgr.rejectPendingSkillFromTask(taskId, 'auto-skill-foo');
 
-      // The skill must NOT exist under .qwen/skills/
+      // The skill must NOT exist under .canopy/skills/
       const finalPath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         'auto-skill-foo',
         'SKILL.md',
@@ -729,7 +729,7 @@ describe('MemoryManager', () => {
       // The staged dir must also be gone
       const stagedPath = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'pending-skills',
         'auto-skill-foo',
       );
@@ -745,7 +745,7 @@ describe('MemoryManager', () => {
       const mgr = new MemoryManager();
       const names = ['auto-skill-a', 'auto-skill-b', 'auto-skill-c'];
       const files = names.map((n) =>
-        path.join(projectRoot, '.qwen', 'skills', n, 'SKILL.md'),
+        path.join(projectRoot, '.canopy', 'skills', n, 'SKILL.md'),
       );
       vi.mocked(runSkillReviewByAgent).mockImplementation(async () => {
         for (const f of files) {
@@ -791,7 +791,7 @@ describe('MemoryManager', () => {
 
     beforeEach(async () => {
       vi.resetAllMocks();
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = '1';
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = '1';
       clearAutoMemoryRootCache();
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mgr-dream-'));
       projectRoot = path.join(tempDir, 'project');
@@ -808,7 +808,7 @@ describe('MemoryManager', () => {
     });
 
     afterEach(async () => {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });
     });
@@ -1044,7 +1044,7 @@ describe('MemoryManager', () => {
 
     beforeEach(async () => {
       vi.resetAllMocks();
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = '1';
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = '1';
       clearAutoMemoryRootCache();
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mgr-cancel-'));
       projectRoot = path.join(tempDir, 'project');
@@ -1056,7 +1056,7 @@ describe('MemoryManager', () => {
     });
 
     afterEach(async () => {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
       clearAutoMemoryRootCache();
       await fs.rm(tempDir, { recursive: true, force: true });
     });
@@ -1674,13 +1674,13 @@ describe('MemoryManager', () => {
 
       // Without forceFullProtocol (all indexes empty → condensed path)
       const condensed = mgr.buildAutoMemoryPrompt(
-        '/project/.qwen/memory',
+        '/project/.canopy/memory',
         null,
       );
 
       // With forceFullProtocol → full verbose path
       const full = mgr.buildAutoMemoryPrompt(
-        '/project/.qwen/memory',
+        '/project/.canopy/memory',
         null,
         undefined,
         undefined,

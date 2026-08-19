@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { AsyncFzf } from 'fzf';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { Suggestion } from '../components/SuggestionsDisplay.js';
 import {
   CommandKind,

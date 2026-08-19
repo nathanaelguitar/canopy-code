@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@
  *  1. the daemon's workspace MCP status (injected via getMcpServers) — this
  *     covers servers registered at runtime via POST /workspace/mcp/servers;
  *     any server whose name contains "a2ui" is a candidate, connected first;
- *  2. fallback: `mcpServers` in the workspace `.qwen/settings.json` (when the
+ *  2. fallback: `mcpServers` in the workspace `.canopy/settings.json` (when the
  *     daemon status is unavailable).
  * Transports: stdio (command/args) and streamable HTTP (httpUrl). Legacy SSE
  * (`url`) is intentionally unsupported.
@@ -34,7 +34,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
-import { QWEN_SERVER_TOKEN_ENV } from '../channel-worker-env.js';
+import { CANOPY_SERVER_TOKEN_ENV } from '../channel-worker-env.js';
 import { snapshotProcessEnv } from '../env-snapshot.js';
 import {
   sendGenerationClosedError,
@@ -47,7 +47,7 @@ const A2UI_MIME = 'application/a2ui+json';
 const ACTION_TOOL = 'action';
 const CALL_TIMEOUT_MS = 15_000;
 const SCRUBBED_STDIO_ENV_KEYS: ReadonlySet<string> = new Set([
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 ]);
 
 export interface McpServerConfigLike {
@@ -123,7 +123,7 @@ export async function findFromSettingsFile(
 ): Promise<McpServerConfigLike | null> {
   try {
     const raw = await fsp.readFile(
-      path.join(workspaceCwd, '.qwen', 'settings.json'),
+      path.join(workspaceCwd, '.canopy', 'settings.json'),
       'utf8',
     );
     const settings = JSON.parse(raw) as {
@@ -228,7 +228,7 @@ export async function callA2uiAction(
   env?: Readonly<Record<string, string | undefined>>,
 ): Promise<A2uiActionResult> {
   const transport = buildTransport(cfg, env);
-  const client = new Client({ name: 'qwen-serve-a2ui', version: '0.0.1' });
+  const client = new Client({ name: 'canopy-serve-a2ui', version: '0.0.1' });
   try {
     await client.connect(transport, { timeout: CALL_TIMEOUT_MS });
     const result = (await client.callTool(

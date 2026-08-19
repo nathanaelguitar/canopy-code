@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import process from 'node:process';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { BlockList, isIP } from 'node:net';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
-import type { AvailableModel } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
+import type { AvailableModel } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import { buildVoiceKeyterms } from './voice-keyterms.js';
 import {
@@ -107,7 +107,7 @@ function readSettingsEnv(
     : undefined;
 }
 
-function isQwenBaseUrl(baseUrl: string): boolean {
+function isCanopyBaseUrl(baseUrl: string): boolean {
   try {
     const hostname = new URL(baseUrl).hostname.toLowerCase();
     return (
@@ -466,7 +466,7 @@ function readApiKey(
   baseUrl: string,
   env: Readonly<Record<string, string | undefined>> | undefined,
 ): string | undefined {
-  if (!model.envKey && !isQwenBaseUrl(baseUrl)) {
+  if (!model.envKey && !isCanopyBaseUrl(baseUrl)) {
     return undefined;
   }
   const envKey = model.envKey ?? DEFAULT_OPENAI_API_KEY;
@@ -483,7 +483,7 @@ function readApiKey(
   if (settingsEnvValue) {
     return settingsEnvValue;
   }
-  if (!model.envKey && isQwenBaseUrl(baseUrl)) {
+  if (!model.envKey && isCanopyBaseUrl(baseUrl)) {
     const authApiKey = settings.merged.security?.auth?.apiKey;
     return typeof authApiKey === 'string' && authApiKey.trim().length > 0
       ? authApiKey.trim()
@@ -612,7 +612,7 @@ export function resolveVoiceStreamConfig(
   };
 }
 
-// Common spoken-language names → the codes Qwen-ASR's asr_options.language wants.
+// Common spoken-language names → the codes Canopy-ASR's asr_options.language wants.
 const LANGUAGE_CODES: Record<string, string> = {
   english: 'en',
   chinese: 'zh',
@@ -663,7 +663,7 @@ function tokenize(value: string): string[] {
 }
 
 /**
- * On non-speech audio (silence/noise) Qwen-ASR can hallucinate the keyterm
+ * On non-speech audio (silence/noise) Canopy-ASR can hallucinate the keyterm
  * context back as the transcript. Detect that — a multi-word result whose tokens
  * are almost entirely keyterms — so the bias list never lands in the prompt.
  * Short results are left alone so genuine terse utterances ("grep regex") pass.
@@ -698,7 +698,7 @@ export function isKeytermEcho(
   return isEcho;
 }
 
-// Qwen-ASR caps each audio file at 10 MB / 5 minutes. Our 16 kHz mono 16-bit WAV
+// Canopy-ASR caps each audio file at 10 MB / 5 minutes. Our 16 kHz mono 16-bit WAV
 // is ~32 KB/s, so guard before encoding to give a clear error on overlong holds.
 export const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const MAX_TRANSCRIPTION_ERROR_LENGTH = 200;
@@ -745,13 +745,13 @@ function transcriptionAbortSignal(abortSignal?: AbortSignal): AbortSignal {
 }
 
 /**
- * Transcribe via the DashScope/Qwen-ASR OpenAI-compatible protocol: the audio
+ * Transcribe via the DashScope/Canopy-ASR OpenAI-compatible protocol: the audio
  * is sent as an `input_audio` chat message and the transcript comes back as the
  * assistant message content. (DashScope does NOT serve the Whisper-style
  * `/audio/transcriptions` endpoint — it 404s.) Keyterm biasing goes in a leading
  * system message with structured content; language/itn go in `asr_options`.
  */
-async function transcribeViaQwenAsr(
+async function transcribeViaCanopyAsr(
   audio: RecordedVoiceAudio,
   voiceConfig: VoiceTranscriptionConfig,
   options: {
@@ -883,7 +883,7 @@ export async function transcribeVoiceAudio(
   const transport = resolveVoiceTransport(voiceConfig.model);
   switch (transport) {
     case 'qwen-asr-chat':
-      return transcribeViaQwenAsr(
+      return transcribeViaCanopyAsr(
         audio,
         voiceConfig,
         {

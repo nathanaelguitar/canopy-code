@@ -5,7 +5,7 @@
  */
 
 import ansiEscapes from 'ansi-escapes';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import stringWidth from 'string-width';
 import stripAnsi from 'strip-ansi';
 import {
@@ -117,7 +117,7 @@ export interface TerminalResizeReflowHandle {
    * cannot rely on React alone after an external clear. Only the wake path
    * may call this — ordinary refreshStatic callers must stay write-free in
    * VP (replaying the pre-change frame would flash stale content). Absent
-   * under QWEN_CODE_LEGACY_RESIZE_ERASE: the VP wake path then stays
+   * under CANOPY_CODE_LEGACY_RESIZE_ERASE: the VP wake path then stays
    * write-free (static remount bump only), matching pre-PR behavior.
    */
   repaint?: () => void;
@@ -173,7 +173,7 @@ export function installTerminalResizeReflow(
   stdout: NodeJS.WriteStream,
   options: ResizeReflowOptions = {},
 ): TerminalResizeReflowHandle {
-  if (process.env['QWEN_CODE_LEGACY_RESIZE_ERASE'] === '1') {
+  if (process.env['CANOPY_CODE_LEGACY_RESIZE_ERASE'] === '1') {
     return { restore: () => {} };
   }
   const isVP = options.virtualViewport ?? false;

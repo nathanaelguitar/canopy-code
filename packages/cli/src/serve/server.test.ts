@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,7 +37,7 @@ import {
   ChannelWorkerControlError,
   type ChannelWorkerControlState,
 } from './channel-worker-manager.js';
-import { runQwenServe, type RunHandle } from './run-qwen-serve.js';
+import { runCanopyServe, type RunHandle } from './run-canopy-serve.js';
 import {
   getServeAppLifecycle,
   type ServeAppLifecycle,
@@ -87,8 +87,8 @@ import {
   type PrepareExtensionInstallOptions,
   type PreparedExtensionMutation,
   type SessionListItem,
-} from '@qwen-code/qwen-code-core';
-import * as qwenCore from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import * as canopyCore from '@canopy-code/canopy-code-core';
 import type { DaemonStatusProvider } from '@qwen-code/acp-bridge';
 import {
   CancelSentinelCollisionError,
@@ -232,9 +232,9 @@ vi.mock('node:fs', async (importOriginal) => {
     realpathSync: wrapped,
   };
 });
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...original,
     readWorktreeSession: (...args: unknown[]) =>
@@ -300,7 +300,7 @@ const baseOpts: ServeOptions = {
   mode: 'http-bridge',
 };
 
-// Direct app tests bypass runQwenServe's reconciler cleanup.
+// Direct app tests bypass runCanopyServe's reconciler cleanup.
 const createdApps = new Set<ReturnType<typeof createServeAppImpl>>();
 const createdAppLifecycles = new Map<
   ReturnType<typeof createServeAppImpl>,
@@ -467,17 +467,17 @@ function restoreEnv(key: string, value: string | undefined): void {
 }
 
 let serverTestEnvironmentRoot: string;
-let previousServerTestQwenHome: string | undefined;
+let previousServerTestCanopyHome: string | undefined;
 let previousServerTestRuntimeDir: string | undefined;
 
 beforeAll(async () => {
-  previousServerTestQwenHome = process.env['QWEN_HOME'];
-  previousServerTestRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+  previousServerTestCanopyHome = process.env['QWEN_HOME'];
+  previousServerTestRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
   serverTestEnvironmentRoot = await fsp.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-server-suite-'),
+    path.join(os.tmpdir(), 'canopy-server-suite-'),
   );
   process.env['QWEN_HOME'] = path.join(serverTestEnvironmentRoot, 'home');
-  process.env['QWEN_RUNTIME_DIR'] = path.join(
+  process.env['CANOPY_RUNTIME_DIR'] = path.join(
     serverTestEnvironmentRoot,
     'runtime',
   );
@@ -485,8 +485,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  restoreEnv('QWEN_HOME', previousServerTestQwenHome);
-  restoreEnv('QWEN_RUNTIME_DIR', previousServerTestRuntimeDir);
+  restoreEnv('QWEN_HOME', previousServerTestCanopyHome);
+  restoreEnv('CANOPY_RUNTIME_DIR', previousServerTestRuntimeDir);
   resetHomeEnvBootstrapForTesting();
   await fsp.rm(serverTestEnvironmentRoot, {
     recursive: true,
@@ -774,7 +774,7 @@ const EXPECTED_REGISTERED_FEATURES = [
 interface FakeBridgeOpts {
   /**
    * #4282 fold-in 1 (gpt-5.5 C2): tests that exercise workspace
-   * mutation routes with `X-Qwen-Client-Id` set need the fakeBridge
+   * mutation routes with `X-Canopy-Client-Id` set need the fakeBridge
    * to advertise those ids as "known", or the new client-id
    * validator returns 400. Defaults to an empty set.
    */
@@ -1799,7 +1799,7 @@ function fakeBridge(opts: FakeBridgeOpts = {}): FakeBridge {
   const initWorkspaceImpl =
     opts.initWorkspaceImpl ??
     (async () => ({
-      path: path.resolve(WS_BOUND, 'QWEN.md'),
+      path: path.resolve(WS_BOUND, 'CANOPY.md'),
       action: 'created' as const,
     }));
   const restartMcpServerCalls: FakeBridge['restartMcpServerCalls'] = [];
@@ -3327,13 +3327,15 @@ describe('createServeApp', () => {
   describe('Web Shell static serving', () => {
     let webShellDir: string;
     const INDEX_HTML =
-      '<!doctype html><html><head><title>Qwen Code Web terminal</title>' +
+      '<!doctype html><html><head><title>Canopy Code Web terminal</title>' +
       '<script type="module" src="/assets/app.js"></script></head>' +
       '<body><div id="root"></div></body></html>';
     const host = `127.0.0.1:${baseOpts.port}`;
 
     beforeEach(async () => {
-      webShellDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-webshell-'));
+      webShellDir = await fsp.mkdtemp(
+        path.join(os.tmpdir(), 'canopy-webshell-'),
+      );
       await fsp.writeFile(path.join(webShellDir, 'index.html'), INDEX_HTML);
       await fsp.mkdir(path.join(webShellDir, 'assets'));
       await fsp.writeFile(
@@ -3674,7 +3676,7 @@ describe('createServeApp', () => {
     it('serves the shell when webShellDir is under a dotfile path (e.g. ~/.nvm)', async () => {
       // Regression: the send library defaults to dotfiles:'ignore', which
       // returns 404 for any path containing a segment starting with '.'.
-      // Users who installed qwen via nvm have the package under
+      // Users who installed canopy via nvm have the package under
       // ~/.nvm/.../web-shell/index.html.
       const dotParent = await fsp.mkdtemp(path.join(os.tmpdir(), '.fake-nvm-'));
       const nestedShellDir = path.join(dotParent, 'web-shell');
@@ -3753,11 +3755,11 @@ describe('createServeApp', () => {
 
   describe('GET /workspace/channel/observed-contacts', () => {
     it('is assembled behind bearer authentication', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
-      const qwenHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-observed-contact-server-'),
+      const previousCanopyHome = process.env['QWEN_HOME'];
+      const canopyHome = await fsp.mkdtemp(
+        path.join(os.tmpdir(), 'canopy-observed-contact-server-'),
       );
-      process.env['QWEN_HOME'] = qwenHome;
+      process.env['QWEN_HOME'] = canopyHome;
       try {
         const app = createServeApp({
           ...baseOpts,
@@ -3778,9 +3780,9 @@ describe('createServeApp', () => {
         expect(authenticated.status).toBe(200);
         expect(authenticated.body).toEqual({ users: [], groups: [] });
       } finally {
-        if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-        else process.env['QWEN_HOME'] = previousQwenHome;
-        await fsp.rm(qwenHome, { recursive: true, force: true });
+        if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+        else process.env['QWEN_HOME'] = previousCanopyHome;
+        await fsp.rm(canopyHome, { recursive: true, force: true });
       }
     });
   });
@@ -3870,9 +3872,9 @@ describe('createServeApp', () => {
     });
 
     it('returns the v1 envelope', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-capabilities-'),
+        path.join(os.tmpdir(), 'canopy-capabilities-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
@@ -3907,7 +3909,7 @@ describe('createServeApp', () => {
         });
       } finally {
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
@@ -4121,9 +4123,9 @@ describe('createServeApp', () => {
     });
 
     it('advertises workspace voice transcription when a batch ASR model is configured', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-voice-capability-'),
+        path.join(os.tmpdir(), 'canopy-voice-capability-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
@@ -4156,7 +4158,7 @@ describe('createServeApp', () => {
         expect(res.body.features).toContain('workspace_voice_transcription');
       } finally {
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
@@ -4307,9 +4309,9 @@ describe('createServeApp', () => {
     });
 
     it('drops cached Voice capability and runtime env while trust is applying', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-voice-capability-transition-'),
+        path.join(os.tmpdir(), 'canopy-voice-capability-transition-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
@@ -4375,16 +4377,16 @@ describe('createServeApp', () => {
         expect(applying.body.features).not.toContain('workspace_generation');
       } finally {
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
 
     it('loads workspace environment for direct-embed Voice capability checks', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const previousWorkspaceAsrKey = process.env['WORKSPACE_ASR_KEY'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-voice-capability-env-'),
+        path.join(os.tmpdir(), 'canopy-voice-capability-env-'),
       );
       const workspace = path.join(tempHome, 'workspace');
       try {
@@ -4421,7 +4423,7 @@ describe('createServeApp', () => {
         expect(res.body.features).toContain('workspace_voice_transcription');
       } finally {
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         restoreEnv('WORKSPACE_ASR_KEY', previousWorkspaceAsrKey);
         resetHomeEnvBootstrapForTesting();
       }
@@ -4458,11 +4460,11 @@ describe('createServeApp', () => {
     });
 
     it('advertises browser automation MCP only when the CDP adapter can connect', async () => {
-      const previousCdpMcpCommand = process.env['QWEN_CDP_MCP_COMMAND'];
-      const previousAcpHttp = process.env['QWEN_SERVE_ACP_HTTP'];
+      const previousCdpMcpCommand = process.env['CANOPY_CDP_MCP_COMMAND'];
+      const previousAcpHttp = process.env['CANOPY_SERVE_ACP_HTTP'];
       try {
-        process.env['QWEN_CDP_MCP_COMMAND'] = '/opt/qwen-cdp-mcp-adapter';
-        delete process.env['QWEN_SERVE_ACP_HTTP'];
+        process.env['CANOPY_CDP_MCP_COMMAND'] = '/opt/canopy-cdp-mcp-adapter';
+        delete process.env['CANOPY_SERVE_ACP_HTTP'];
 
         const enabledApp = createServeApp({
           ...baseOpts,
@@ -4474,7 +4476,7 @@ describe('createServeApp', () => {
         expect(enabledRes.status).toBe(200);
         expect(enabledRes.body.features).toContain('browser_automation_mcp');
 
-        process.env['QWEN_SERVE_ACP_HTTP'] = '0';
+        process.env['CANOPY_SERVE_ACP_HTTP'] = '0';
         const disabledApp = createServeApp({
           ...baseOpts,
           cdpTunnelOverWs: true,
@@ -4487,15 +4489,15 @@ describe('createServeApp', () => {
           'browser_automation_mcp',
         );
       } finally {
-        restoreEnv('QWEN_CDP_MCP_COMMAND', previousCdpMcpCommand);
-        restoreEnv('QWEN_SERVE_ACP_HTTP', previousAcpHttp);
+        restoreEnv('CANOPY_CDP_MCP_COMMAND', previousCdpMcpCommand);
+        restoreEnv('CANOPY_SERVE_ACP_HTTP', previousAcpHttp);
       }
     });
 
     it('omits mcp_workspace_pool / mcp_pool_restart when mcpPoolActive=false (F2 #4175 commit 5)', async () => {
-      // Mirrors the env-var kill switch path: `run-qwen-serve.ts` infers
+      // Mirrors the env-var kill switch path: `run-canopy-serve.ts` infers
       // `mcpPoolActive: false` when the parent process has
-      // `QWEN_SERVE_NO_MCP_POOL=1`. Verify the capability envelope
+      // `CANOPY_SERVE_NO_MCP_POOL=1`. Verify the capability envelope
       // tracks the toggle so SDK clients pre-flighting on the tags
       // observe accurate "pool is off" semantics.
       const app = createServeApp({ ...baseOpts, mcpPoolActive: false });
@@ -4613,13 +4615,15 @@ describe('createServeApp', () => {
   describe('read-only status routes', () => {
     it('registers workspace permissions without settings persistence and requires a live session for writes', async () => {
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-permissions-readonly-'),
+        path.join(os.tmpdir(), 'canopy-permissions-readonly-'),
       );
       try {
         const expectedWorkspaceCwd = await fsp.realpath(wsRoot);
         const bridge = fakeBridge();
         const invokeWorkspaceCommand = vi.fn(async () => {
-          throw new SessionNotFoundError('workspace-command:qwen/permissions');
+          throw new SessionNotFoundError(
+            'workspace-command:canopy/permissions',
+          );
         });
         bridge.invokeWorkspaceCommand = invokeWorkspaceCommand;
         const app = createServeApp(
@@ -4776,14 +4780,14 @@ describe('createServeApp', () => {
 
     it('returns workspace skills from the bridge and providers from daemon-local settings', async () => {
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-providers-'),
+        path.join(os.tmpdir(), 'canopy-serve-providers-'),
       );
-      const previousQwenHome = process.env['QWEN_HOME'];
-      const previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
+      const previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       const previousSystemSettings =
-        process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+        process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
       const previousSystemDefaults =
-        process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
+        process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'];
       const skills: ServeWorkspaceSkillsStatus = {
         v: 1,
         workspaceCwd: WS_BOUND,
@@ -4801,12 +4805,12 @@ describe('createServeApp', () => {
       };
       try {
         process.env['QWEN_HOME'] = path.join(tempHome, 'home');
-        process.env['QWEN_RUNTIME_DIR'] = path.join(tempHome, 'runtime');
-        process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
+        process.env['CANOPY_RUNTIME_DIR'] = path.join(tempHome, 'runtime');
+        process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] = path.join(
           tempHome,
           'system-settings.json',
         );
-        process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
+        process.env['CANOPY_CODE_SYSTEM_DEFAULTS_PATH'] = path.join(
           tempHome,
           'system-defaults.json',
         );
@@ -4841,10 +4845,10 @@ describe('createServeApp', () => {
         expect(bridge.workspaceSkillsCalls).toBe(1);
         expect(bridge.workspaceProvidersCalls).toBe(0);
       } finally {
-        restoreEnv('QWEN_HOME', previousQwenHome);
-        restoreEnv('QWEN_RUNTIME_DIR', previousRuntimeDir);
-        restoreEnv('QWEN_CODE_SYSTEM_SETTINGS_PATH', previousSystemSettings);
-        restoreEnv('QWEN_CODE_SYSTEM_DEFAULTS_PATH', previousSystemDefaults);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
+        restoreEnv('CANOPY_RUNTIME_DIR', previousRuntimeDir);
+        restoreEnv('CANOPY_CODE_SYSTEM_SETTINGS_PATH', previousSystemSettings);
+        restoreEnv('CANOPY_CODE_SYSTEM_DEFAULTS_PATH', previousSystemDefaults);
         resetHomeEnvBootstrapForTesting();
         await fsp.rm(tempHome, { recursive: true, force: true });
       }
@@ -5271,7 +5275,7 @@ describe('createServeApp', () => {
         vi
           .spyOn(ExtensionManager.prototype, 'prepareExtensionUpdate')
           .mockImplementation(async function ({ extension, signal }) {
-            const state = await qwenCore.checkForExtensionUpdate(
+            const state = await canopyCore.checkForExtensionUpdate(
               extension,
               this,
               signal,
@@ -5390,7 +5394,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .set('Content-Type', 'application/octet-stream')
           .send(Buffer.from('archive-content'));
 
@@ -5417,7 +5421,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .set('Content-Type', 'application/octet-stream')
           .send(Buffer.from('boundary-content'));
 
@@ -5846,7 +5850,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-2')
+        .set('X-Canopy-Client-Id', 'client-2')
         .send({ source: 'owner/repo', consent: true });
 
       expect(res.status).toBe(400);
@@ -5854,11 +5858,11 @@ describe('createServeApp', () => {
     });
 
     it('does not treat unknown workspace trust as trusted for extension install', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const previousTrustedFoldersPath =
-        process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+        process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-extension-trust-'),
+        path.join(os.tmpdir(), 'canopy-extension-trust-'),
       );
       let managerTrustedFlag: boolean | undefined;
       const restore = mockExtensionManagerMethods({
@@ -5871,7 +5875,7 @@ describe('createServeApp', () => {
       });
       try {
         process.env['QWEN_HOME'] = tempHome;
-        process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+        process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
           tempHome,
           TRUSTED_FOLDERS_FILENAME,
         );
@@ -5895,7 +5899,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/installed-ext', consent: true });
 
         expect(res.status).toBe(202);
@@ -5905,9 +5909,9 @@ describe('createServeApp', () => {
       } finally {
         restore();
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         restoreEnv(
-          'QWEN_CODE_TRUSTED_FOLDERS_PATH',
+          'CANOPY_CODE_TRUSTED_FOLDERS_PATH',
           previousTrustedFoldersPath,
         );
         resetHomeEnvBootstrapForTesting();
@@ -5949,7 +5953,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({
             source: 'https://example.com/installed-ext',
             ref: 'v1.2.3',
@@ -5991,7 +5995,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ value: 123 });
         expect(invalidSetting.status).toBe(400);
 
@@ -6016,7 +6020,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ value: 'super-secret' });
         expect(answer.status).toBe(200);
         expect(answer.body).toEqual({ accepted: true });
@@ -6128,7 +6132,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/marketplace', consent: true });
 
         let interactionId = '';
@@ -6167,7 +6171,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ pluginName: 'missing-plugin' });
         expect(invalid.status).toBe(400);
 
@@ -6190,7 +6194,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ pluginName: 'example-plugin' });
         expect(answer.status).toBe(200);
         await vi.waitFor(() => {
@@ -6437,7 +6441,7 @@ describe('createServeApp', () => {
         });
 
         const invalid = await install(
-          'C:\\Users\\test\\missing-qwen-extension',
+          'C:\\Users\\test\\missing-canopy-extension',
         );
         expect(invalid.status).toBe(400);
 
@@ -6657,7 +6661,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/first-ext', consent: true });
         expect(first.status).toBe(202);
 
@@ -6677,7 +6681,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/second-ext', consent: true });
         expect(second.status).toBe(202);
 
@@ -6697,7 +6701,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/third-ext', consent: true });
         expect(third.status).toBe(202);
 
@@ -6791,7 +6795,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/first-ext', consent: true });
         await vi.waitFor(() => expect(firstStarted).toBe(true));
 
@@ -6799,7 +6803,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/second-ext', consent: true });
         await vi.waitFor(() => expect(commits).toEqual(['second-ext']));
 
@@ -6839,7 +6843,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/warning-ext', consent: true });
 
         await vi.waitFor(async () => {
@@ -6885,7 +6889,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source: 'https://example.com/warning-ext', consent: true });
 
         await vi.waitFor(async () => {
@@ -6927,7 +6931,7 @@ describe('createServeApp', () => {
             .post('/workspace/extensions/install')
             .set('Host', `127.0.0.1:${tokenOpts.port}`)
             .set('Authorization', 'Bearer secret')
-            .set('X-Qwen-Client-Id', 'client-1')
+            .set('X-Canopy-Client-Id', 'client-1')
             .send({
               source: `https://example.com/installed-ext-${i}`,
               consent: true,
@@ -7104,7 +7108,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({
             source: 'https://example.com/private-ext',
             consent: true,
@@ -7189,7 +7193,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({
             source: 'https://example.com/installed-ext',
             consent: true,
@@ -7261,7 +7265,7 @@ describe('createServeApp', () => {
             .post('/workspace/extensions/install')
             .set('Host', `127.0.0.1:${tokenOpts.port}`)
             .set('Authorization', 'Bearer secret')
-            .set('X-Qwen-Client-Id', 'client-1')
+            .set('X-Canopy-Client-Id', 'client-1')
             .send({
               source: 'https://example.com/installed-ext',
               consent: true,
@@ -7276,13 +7280,13 @@ describe('createServeApp', () => {
             .post('/workspace/extensions/check-updates')
             .set('Host', `127.0.0.1:${tokenOpts.port}`)
             .set('Authorization', 'Bearer secret')
-            .set('X-Qwen-Client-Id', 'client-1')
+            .set('X-Canopy-Client-Id', 'client-1')
             .send({}),
           request(app)
             .post('/workspace/extensions/refresh')
             .set('Host', `127.0.0.1:${tokenOpts.port}`)
             .set('Authorization', 'Bearer secret')
-            .set('X-Qwen-Client-Id', 'client-1')
+            .set('X-Canopy-Client-Id', 'client-1')
             .send({}),
         ]);
         const releaseTimer = setTimeout(() => releaseInstall?.(), 100);
@@ -7330,7 +7334,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ source: 'owner/repo' });
 
       expect(res.status).toBe(400);
@@ -7352,7 +7356,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ source: 'owner/repo', ref: '', consent: true });
 
       expect(res.status).toBe(400);
@@ -7372,7 +7376,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ source: 'owner/repo', ref: 123, consent: true });
 
       expect(res.status).toBe(400);
@@ -7381,7 +7385,7 @@ describe('createServeApp', () => {
 
     it('rejects unsupported local extension installs before queuing', async () => {
       const localExtensionDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-local-extension-'),
+        path.join(os.tmpdir(), 'canopy-local-extension-'),
       );
       const tokenOpts: ServeOptions = { ...baseOpts, token: 'secret' };
       const bridge = fakeBridge({ knownClientIds: ['client-1'] });
@@ -7395,7 +7399,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ source: localExtensionDir, consent: true });
 
       expect(res.status).toBe(400);
@@ -7415,13 +7419,13 @@ describe('createServeApp', () => {
           undefined,
           { bridge },
         );
-        const source = 'C:\\Users\\test\\qwen-local-extension';
+        const source = 'C:\\Users\\test\\canopy-local-extension';
 
         const res = await request(app)
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source, consent: true });
 
         expect(res.status).toBe(400);
@@ -7445,7 +7449,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: 'http://169.254.169.254/latest/meta-data',
           consent: true,
@@ -7474,7 +7478,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({
             source,
             consent: true,
@@ -7506,7 +7510,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source, consent: true });
 
         expect(res.status).toBe(400);
@@ -7532,7 +7536,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ source, consent: true });
 
         expect(res.status).toBe(400);
@@ -7553,7 +7557,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: 'https://example.com/repo',
           ref: '--upload-pack=/bin/sh',
@@ -7577,7 +7581,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: 'https://user:pass@example.com/repo',
           consent: true,
@@ -7600,7 +7604,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ source: '@scope/ext', ref: 'v1', consent: true });
 
       expect(res.status).toBe(400);
@@ -7623,7 +7627,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: 'https://example.com/repo',
           registry: 'https://registry.example.com',
@@ -7650,7 +7654,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: '@scope/ext',
           registry: 'http://registry.example.com',
@@ -7674,7 +7678,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: '@scope/ext',
           registry: 'not a url',
@@ -7698,7 +7702,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: '@scope/ext',
           registry: 'https://169.254.169.254',
@@ -7722,7 +7726,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/install')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           source: '@scope/ext',
           registry: 'https://user:pass@registry.example.com',
@@ -7801,7 +7805,7 @@ describe('createServeApp', () => {
             .post('/workspace/extensions/install')
             .set('Host', `127.0.0.1:${tokenOpts.port}`)
             .set('Authorization', 'Bearer secret')
-            .set('X-Qwen-Client-Id', 'client-1')
+            .set('X-Canopy-Client-Id', 'client-1')
             .send({
               source: `https://example.com/${name}`,
               consent: true,
@@ -7815,7 +7819,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/check-updates')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({})
           .then((response) => response);
         await new Promise((resolve) => setTimeout(resolve, 20));
@@ -7857,7 +7861,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/test-ext/enable')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ scope: 'team' });
 
       expect(res.status).toBe(400);
@@ -7881,7 +7885,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/TEST-EXT/enable')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ scope: 'workspace' });
         expect(enable.status).toBe(202);
 
@@ -7889,7 +7893,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/TEST-EXT/disable')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ scope: 'user' });
         expect(disable.status).toBe(202);
 
@@ -8026,7 +8030,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/install')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({
             source: 'https://example.com/installed-ext',
             consent: true,
@@ -8041,7 +8045,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/refresh')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({})
           .then((response) => response);
         const res = await refresh;
@@ -8086,7 +8090,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/test-ext/enable')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ scope: 'workspace' });
         expect(enable.status).toBe(202);
         await vi.waitFor(() => {
@@ -8099,7 +8103,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/refresh')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
         const requestStarted = new Promise<void>((resolve) => {
           refreshRequest.on('request', () => resolve());
@@ -8137,7 +8141,7 @@ describe('createServeApp', () => {
         .post('/workspace/extensions/test-ext/update')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-2')
+        .set('X-Canopy-Client-Id', 'client-2')
         .send({});
 
       expect(res.status).toBe(400);
@@ -8147,7 +8151,7 @@ describe('createServeApp', () => {
     it('queues extension update when an update is available', async () => {
       const restore = mockExtensionManagerMethods();
       const checkForExtensionUpdate = vi
-        .spyOn(qwenCore, 'checkForExtensionUpdate')
+        .spyOn(canopyCore, 'checkForExtensionUpdate')
         .mockResolvedValue(ExtensionUpdateState.UPDATE_AVAILABLE);
       try {
         const tokenOpts: ServeOptions = { ...baseOpts, token: 'secret' };
@@ -8210,7 +8214,7 @@ describe('createServeApp', () => {
         },
       });
       const checkForExtensionUpdate = vi
-        .spyOn(qwenCore, 'checkForExtensionUpdate')
+        .spyOn(canopyCore, 'checkForExtensionUpdate')
         .mockResolvedValue(ExtensionUpdateState.UPDATE_AVAILABLE);
       try {
         const tokenOpts: ServeOptions = { ...baseOpts, token: 'secret' };
@@ -8225,7 +8229,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/test-ext/update')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
         expect(update.status).toBe(202);
 
@@ -8258,7 +8262,7 @@ describe('createServeApp', () => {
           )
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({ value: 'updated-secret' });
         expect(answer.status).toBe(200);
 
@@ -8301,7 +8305,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/missing-ext/update')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
 
         expect(res.status).toBe(202);
@@ -8322,7 +8326,7 @@ describe('createServeApp', () => {
     it('broadcasts failed extension update when no update is available', async () => {
       const restore = mockExtensionManagerMethods();
       const checkForExtensionUpdate = vi
-        .spyOn(qwenCore, 'checkForExtensionUpdate')
+        .spyOn(canopyCore, 'checkForExtensionUpdate')
         .mockResolvedValue(ExtensionUpdateState.UP_TO_DATE);
       try {
         const tokenOpts: ServeOptions = { ...baseOpts, token: 'secret' };
@@ -8337,7 +8341,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/test-ext/update')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
 
         expect(res.status).toBe(202);
@@ -8357,7 +8361,7 @@ describe('createServeApp', () => {
     it('broadcasts failed extension update when update check fails', async () => {
       const restore = mockExtensionManagerMethods();
       const checkForExtensionUpdate = vi
-        .spyOn(qwenCore, 'checkForExtensionUpdate')
+        .spyOn(canopyCore, 'checkForExtensionUpdate')
         .mockRejectedValue(
           new Error('https://user:token@example.com/check failed'),
         );
@@ -8374,7 +8378,7 @@ describe('createServeApp', () => {
           .post('/workspace/extensions/test-ext/update')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
 
         expect(res.status).toBe(202);
@@ -8435,7 +8439,7 @@ describe('createServeApp', () => {
           .delete('/workspace/extensions/TEST-EXT')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1');
+          .set('X-Canopy-Client-Id', 'client-1');
 
         expect(res.status).toBe(202);
         await vi.waitFor(() => {
@@ -8474,7 +8478,7 @@ describe('createServeApp', () => {
           .delete('/workspace/extensions/https%3A%2F%2Fexample.com%2Ftest-ext')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1');
+          .set('X-Canopy-Client-Id', 'client-1');
 
         expect(res.status).toBe(202);
         await vi.waitFor(() => {
@@ -8520,7 +8524,7 @@ describe('createServeApp', () => {
           .delete('/workspace/extensions/plain-name')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1');
+          .set('X-Canopy-Client-Id', 'client-1');
 
         expect(res.status).toBe(202);
         await vi.waitFor(() => {
@@ -8560,7 +8564,7 @@ describe('createServeApp', () => {
           .delete('/workspace/extensions/https%3A%2F%2Fexample.com%2Fmissing')
           .set('Host', `127.0.0.1:${tokenOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('X-Qwen-Client-Id', 'client-1');
+          .set('X-Canopy-Client-Id', 'client-1');
 
         expect(res.status).toBe(202);
         await vi.waitFor(() => {
@@ -8580,7 +8584,7 @@ describe('createServeApp', () => {
         v: 1,
         sessionId: 's-1',
         workspaceCwd: WS_BOUND,
-        state: { models: { currentModelId: 'qwen3' } },
+        state: { models: { currentModelId: 'canopy3' } },
       };
       const commands: ServeSessionSupportedCommandsStatus = {
         v: 1,
@@ -8803,7 +8807,7 @@ describe('createServeApp', () => {
         sessionId: 's-1',
         workspaceCwd: WS_BOUND,
         usage: {
-          modelName: 'qwen3',
+          modelName: 'canopy3',
           totalTokens: 5000,
           contextWindowSize: 200000,
           breakdown: {
@@ -8851,7 +8855,7 @@ describe('createServeApp', () => {
             sessionId,
             workspaceCwd: WS_BOUND,
             usage: {
-              modelName: 'qwen3',
+              modelName: 'canopy3',
               totalTokens: 0,
               contextWindowSize: 200000,
               breakdown: {
@@ -9110,7 +9114,7 @@ describe('createServeApp', () => {
       const heartbeat = await request(app)
         .post(`/session/${sessionId}/heartbeat`)
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'detail-client')
+        .set('X-Canopy-Client-Id', 'detail-client')
         .send({});
 
       expect(context.status).toBe(200);
@@ -9261,7 +9265,7 @@ describe('createServeApp', () => {
       expect(bridge.continueSessionCalls).toEqual(['s-1']);
     });
 
-    it('forwards X-Qwen-Client-Id to continueSession', async () => {
+    it('forwards X-Canopy-Client-Id to continueSession', async () => {
       const bridge = fakeBridge({
         continueSessionImpl: async () => ({
           accepted: true,
@@ -9280,7 +9284,7 @@ describe('createServeApp', () => {
         .post('/session/s-1/continue')
         .set('Host', `127.0.0.1:${tokenOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-xyz')
+        .set('X-Canopy-Client-Id', 'client-xyz')
         .send({ prompt: 'must not appear in logs' });
 
       expect(res.status).toBe(200);
@@ -9501,7 +9505,7 @@ describe('createServeApp', () => {
         .post(`/session/${sessionId}/mid-turn-message`)
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret');
-      if (clientId !== undefined) r.set('X-Qwen-Client-Id', clientId);
+      if (clientId !== undefined) r.set('X-Canopy-Client-Id', clientId);
       return r.send(body);
     };
     const midTurnApp = (bridge: FakeBridge) =>
@@ -9732,7 +9736,7 @@ describe('createServeApp', () => {
       expect(res.body.sessionId).toBe('missing');
     });
 
-    it('400 on a malformed X-Qwen-Client-Id (never reaches the bridge)', async () => {
+    it('400 on a malformed X-Canopy-Client-Id (never reaches the bridge)', async () => {
       const bridge = fakeBridge();
       const res = await midTurnPost(
         midTurnApp(bridge),
@@ -9776,7 +9780,7 @@ describe('createServeApp', () => {
         .delete('/session/s-1/mid-turn-messages/mid-1')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-9');
+        .set('X-Canopy-Client-Id', 'client-9');
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ removed: true });
@@ -9834,7 +9838,7 @@ describe('createServeApp', () => {
         .get('/session/s-1/mid-turn-messages')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-9');
+        .set('X-Canopy-Client-Id', 'client-9');
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         messages: [
@@ -9865,13 +9869,13 @@ describe('createServeApp', () => {
       expect(res.body.sessionId).toBe('missing');
     });
 
-    it('400 on a malformed X-Qwen-Client-Id (never reaches the bridge)', async () => {
+    it('400 on a malformed X-Canopy-Client-Id (never reaches the bridge)', async () => {
       const bridge = fakeBridge();
       const res = await request(queryApp(bridge))
         .get('/session/s-1/mid-turn-messages')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'bad client id with spaces');
+        .set('X-Canopy-Client-Id', 'bad client id with spaces');
       expect(res.status).toBe(400);
       expect(bridge.getMidTurnMessagesCalls).toEqual([]);
     });
@@ -9890,7 +9894,7 @@ describe('createServeApp', () => {
         .get('/session/s-1/mid-turn-messages')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'rogue');
+        .set('X-Canopy-Client-Id', 'rogue');
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
       expect(bridge.getMidTurnMessagesCalls).toEqual([
@@ -9967,7 +9971,7 @@ describe('createServeApp', () => {
         .get('/session/s-1/pending-prompts')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'rogue');
+        .set('X-Canopy-Client-Id', 'rogue');
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
     });
@@ -10028,7 +10032,7 @@ describe('createServeApp', () => {
         .delete('/session/s-1/pending-prompts/p-1')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'rogue');
+        .set('X-Canopy-Client-Id', 'rogue');
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
     });
@@ -10598,7 +10602,7 @@ describe('createServeApp', () => {
                       method: 'session/new',
                       params: {
                         workspaceCwd: WS_BOUND,
-                        _meta: { 'qwen-code/sessionId': sessionId },
+                        _meta: { 'canopy-code/sessionId': sessionId },
                       },
                     }),
                   );
@@ -10891,7 +10895,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .send({ cwd: '/work/a', modelServiceId: 'qwen-prod' });
+        .send({ cwd: '/work/a', modelServiceId: 'canopy-prod' });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         sessionId: 'fake-0',
@@ -10900,7 +10904,7 @@ describe('createServeApp', () => {
         clientId: 'client-0',
       });
       expect(bridge.calls).toEqual([
-        { workspaceCwd: WORK_A, modelServiceId: 'qwen-prod' },
+        { workspaceCwd: WORK_A, modelServiceId: 'canopy-prod' },
       ]);
     });
 
@@ -10923,7 +10927,7 @@ describe('createServeApp', () => {
       }
     });
 
-    it('forwards X-Qwen-Client-Id to the bridge on create/attach', async () => {
+    it('forwards X-Canopy-Client-Id to the bridge on create/attach', async () => {
       const bridge = fakeBridge({
         spawnImpl: async (req) => ({
           sessionId: 'fake-identity',
@@ -10936,7 +10940,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-existing')
+        .set('X-Canopy-Client-Id', 'client-existing')
         .send({ cwd: '/work/a' });
       expect(res.status).toBe(200);
       expect(res.body.clientId).toBe('client-existing');
@@ -10951,14 +10955,14 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad client id')
+        .set('X-Canopy-Client-Id', 'bad client id')
         .send({ cwd: '/work/a' });
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({ code: 'invalid_client_id' });
       expect(bridge.calls).toHaveLength(0);
     });
 
-    it('204 detaches without client identity when X-Qwen-Client-Id is absent', async () => {
+    it('204 detaches without client identity when X-Canopy-Client-Id is absent', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(baseOpts, undefined, { bridge });
       const res = await request(app)
@@ -11060,7 +11064,7 @@ describe('createServeApp', () => {
       const mockCreate = vi.fn().mockResolvedValue({
         success: true,
         worktree: {
-          path: '/work/a/.qwen/worktrees/my-task',
+          path: '/work/a/.canopy/worktrees/my-task',
           branch: 'worktree-my-task',
         },
       });
@@ -11079,13 +11083,13 @@ describe('createServeApp', () => {
         expect(res.status).toBe(200);
         expect(res.body.worktree).toEqual({
           slug: 'my-task',
-          path: '/work/a/.qwen/worktrees/my-task',
+          path: '/work/a/.canopy/worktrees/my-task',
           branch: 'worktree-my-task',
         });
         expect(bridge.calls[0]?.sessionScope).toBe('thread');
         expect(bridge.changeSessionCwdCalls).toHaveLength(1);
         expect(bridge.changeSessionCwdCalls[0]?.path).toBe(
-          '/work/a/.qwen/worktrees/my-task',
+          '/work/a/.canopy/worktrees/my-task',
         );
         expect(mockCreate).toHaveBeenCalledWith('my-task', 'main');
       } finally {
@@ -12486,7 +12490,7 @@ describe('createServeApp', () => {
         const res = await request(app)
           .post(`/session/persisted-1/${action}`)
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
         expect(res.status).toBe(200);
         const calls = action === 'load' ? bridge.loadCalls : bridge.resumeCalls;
@@ -12519,7 +12523,7 @@ describe('createServeApp', () => {
     it('400s unknown explicit cwd before touching the bridge', async () => {
       const missingCwd = path.join(
         os.tmpdir(),
-        `qwen-missing-workspace-${Date.now()}`,
+        `canopy-missing-workspace-${Date.now()}`,
       );
       for (const action of ['load', 'resume'] as const) {
         const bridge = fakeBridge();
@@ -13021,7 +13025,7 @@ describe('createServeApp', () => {
       mockWt.readSidecar = () =>
         Promise.resolve({
           slug: 'my-task',
-          worktreePath: `${WS_BOUND}/.qwen/worktrees/my-task`,
+          worktreePath: `${WS_BOUND}/.canopy/worktrees/my-task`,
           worktreeBranch: 'worktree-my-task',
           originalCwd: WS_BOUND,
           originalBranch: 'main',
@@ -13037,12 +13041,12 @@ describe('createServeApp', () => {
         expect(res.status).toBe(200);
         expect(res.body.worktree).toEqual({
           slug: 'my-task',
-          path: `${WS_BOUND}/.qwen/worktrees/my-task`,
+          path: `${WS_BOUND}/.canopy/worktrees/my-task`,
           branch: 'worktree-my-task',
         });
         expect(bridge.changeSessionCwdCalls).toHaveLength(1);
         expect(bridge.changeSessionCwdCalls[0].path).toBe(
-          `${WS_BOUND}/.qwen/worktrees/my-task`,
+          `${WS_BOUND}/.canopy/worktrees/my-task`,
         );
         expect(bridge.setSessionWorktreeCalls).toHaveLength(1);
       } finally {
@@ -13090,7 +13094,7 @@ describe('createServeApp', () => {
       mockWt.readSidecar = () =>
         Promise.resolve({
           slug: 'dead-task',
-          worktreePath: `${WS_BOUND}/.qwen/worktrees/dead-task`,
+          worktreePath: `${WS_BOUND}/.canopy/worktrees/dead-task`,
           worktreeBranch: 'worktree-dead-task',
           originalCwd: WS_BOUND,
           originalBranch: 'main',
@@ -13316,7 +13320,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/prompt')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ prompt: [{ type: 'text', text: 'hi' }] });
       expect(res.status).toBe(202);
       await new Promise((r) => setTimeout(r, 20));
@@ -13376,7 +13380,7 @@ describe('createServeApp', () => {
     });
 
     it('accepts channel-prompt classification only from the workspace worker', async () => {
-      // `qwen.channel.prompt` opts a turn out of loop-detected rejection;
+      // `canopy.channel.prompt` opts a turn out of loop-detected rejection;
       // a forged key from an unauthorized caller must be dropped at the
       // route (and again at the bridge admission strip), never reaching
       // the trusted prompt context.
@@ -13452,7 +13456,7 @@ describe('createServeApp', () => {
         .send({
           prompt: [{ type: 'text', text: 'hi' }],
           delivery,
-          _meta: { 'qwen.daemon.channelDelivery': { forged: true } },
+          _meta: { 'canopy.daemon.channelDelivery': { forged: true } },
         });
 
       expect(res.status).toBe(202);
@@ -13519,7 +13523,7 @@ describe('createServeApp', () => {
 
         expect(res.status).toBe(202);
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.prompt_id',
+          'canopy-code.prompt_id',
           res.body.promptId,
         );
       } finally {
@@ -13579,7 +13583,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/prompt')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-stale')
+        .set('X-Canopy-Client-Id', 'client-stale')
         .send({ prompt: [{ type: 'text', text: 'hi' }] });
 
       expect(res.status).toBe(400);
@@ -13677,18 +13681,18 @@ describe('createServeApp', () => {
     let runtimeDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-sessions-'),
+        path.join(os.tmpdir(), 'canopy-serve-sessions-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -14539,7 +14543,7 @@ describe('createServeApp', () => {
       );
       const readSidecar = vi.fn(async () => ({
         slug: 'catalog-worktree',
-        worktreePath: `${WS_BOUND}/.qwen/worktrees/catalog-worktree`,
+        worktreePath: `${WS_BOUND}/.canopy/worktrees/catalog-worktree`,
         worktreeBranch: 'worktree-catalog-worktree',
         originalCwd: WS_BOUND,
         originalBranch: 'main',
@@ -14585,7 +14589,7 @@ describe('createServeApp', () => {
         expect(readSidecar).toHaveBeenCalledTimes(1);
 
         sourced.sessions[0]!.worktree!.slug = 'request-local-change';
-        await new qwenCore.SessionOrganizationService(
+        await new canopyCore.SessionOrganizationService(
           WS_BOUND,
         ).updateSessionOrganization(sessionId, { isPinned: true });
         clientCount = 2;
@@ -14811,7 +14815,7 @@ describe('createServeApp', () => {
       const controller = new AbortController();
       const reason = new Error('cancelled after organization read');
       const readSnapshotSpy = vi
-        .spyOn(qwenCore.SessionOrganizationService.prototype, 'readSnapshot')
+        .spyOn(canopyCore.SessionOrganizationService.prototype, 'readSnapshot')
         .mockImplementation(async () => {
           controller.abort(reason);
           return { groups: [], sessions: new Map() };
@@ -15077,7 +15081,7 @@ describe('createServeApp', () => {
 
     it('isolates cached catalogs by runtime root for the same workspace', async () => {
       const otherRuntimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-sessions-secondary-'),
+        path.join(os.tmpdir(), 'canopy-serve-sessions-secondary-'),
       );
       const primaryId = '550e8400-e29b-41d4-a716-446655440011';
       const secondaryId = '550e8400-e29b-41d4-a716-446655440012';
@@ -15158,11 +15162,11 @@ describe('createServeApp', () => {
           { status: 'rejected', reason: error },
         ]);
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.cache_status',
+          'canopy-code.daemon.session_list.cache_status',
           'scan',
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.cache_status',
+          'canopy-code.daemon.session_list.cache_status',
           'single_flight',
         );
 
@@ -15187,41 +15191,41 @@ describe('createServeApp', () => {
           { runtimeBaseDir: runtimeDir },
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.cache_status',
+          'canopy-code.daemon.session_list.cache_status',
           'cache_hit',
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.cache_age_ms',
+          'canopy-code.daemon.session_list.cache_age_ms',
           expect.any(Number),
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.archive_state',
+          'canopy-code.daemon.session_list.archive_state',
           'active',
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.query_kind',
+          'canopy-code.daemon.session_list.query_kind',
           'metadata',
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.persisted_sessions',
+          'canopy-code.daemon.session_list.persisted_sessions',
           0,
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.scan_pages',
+          'canopy-code.daemon.session_list.scan_pages',
           1,
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.truncated',
+          'canopy-code.daemon.session_list.truncated',
           false,
         );
         expect(setAttribute).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_list.scan_duration_ms',
+          'canopy-code.daemon.session_list.scan_duration_ms',
           expect.any(Number),
         );
         expect(
           setAttribute.mock.calls.filter(
             ([name]) =>
-              name === 'qwen-code.daemon.session_list.scan_duration_ms',
+              name === 'canopy-code.daemon.session_list.scan_duration_ms',
           ),
         ).toHaveLength(2);
       } finally {
@@ -15255,7 +15259,7 @@ describe('createServeApp', () => {
         await sidecarReleased;
         return {
           slug: scannedSlug,
-          worktreePath: `${WS_BOUND}/.qwen/worktrees/${scannedSlug}`,
+          worktreePath: `${WS_BOUND}/.canopy/worktrees/${scannedSlug}`,
           worktreeBranch: `worktree-${scannedSlug}`,
           originalCwd: WS_BOUND,
           originalBranch: 'main',
@@ -16572,18 +16576,18 @@ describe('createServeApp', () => {
     let runtimeDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-session-info-'),
+        path.join(os.tmpdir(), 'canopy-serve-session-info-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -16992,7 +16996,7 @@ describe('createServeApp', () => {
 
       const res = await auth(
         request(app).get('/session/session-A/artifacts'),
-      ).set('X-Qwen-Client-Id', 'client-1');
+      ).set('X-Canopy-Client-Id', 'client-1');
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
@@ -17031,7 +17035,7 @@ describe('createServeApp', () => {
       const app = createServeApp(tokenOpts, undefined, { bridge });
 
       const res = await auth(request(app).get('/session/ghost/artifacts')).set(
-        'X-Qwen-Client-Id',
+        'X-Canopy-Client-Id',
         'client-1',
       );
 
@@ -17074,7 +17078,7 @@ describe('createServeApp', () => {
       const app = createServeApp(tokenOpts, undefined, { bridge });
 
       const res = await auth(request(app).post('/session/session-A/artifacts'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({
           title: 'Lineage',
           url: 'https://example.com/lineage',
@@ -17119,7 +17123,7 @@ describe('createServeApp', () => {
       const app = createServeApp(tokenOpts, undefined, { bridge });
 
       const res = await auth(request(app).post('/session/session-A/artifacts'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ title: 'Bad link', url: 'javascript:alert(1)' });
 
       expect(res.status).toBe(400);
@@ -17165,7 +17169,7 @@ describe('createServeApp', () => {
 
       const res = await auth(
         request(app).delete('/session/session-A/artifacts/missing'),
-      ).set('X-Qwen-Client-Id', 'client-1');
+      ).set('X-Canopy-Client-Id', 'client-1');
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -17188,7 +17192,7 @@ describe('createServeApp', () => {
 
       const res = await auth(
         request(app).delete('/session/session-A/artifacts/artifact-1'),
-      ).set('X-Qwen-Client-Id', 'client-1');
+      ).set('X-Canopy-Client-Id', 'client-1');
 
       expect(res.status).toBe(200);
       expect(bridge.removeSessionArtifactCalls).toEqual([
@@ -17215,7 +17219,7 @@ describe('createServeApp', () => {
 
       const res = await auth(
         request(app).delete('/session/session-A/artifacts/artifact-1'),
-      ).set('X-Qwen-Client-Id', 'client-b');
+      ).set('X-Canopy-Client-Id', 'client-b');
 
       expect(res.status).toBe(403);
       expect(res.body).toEqual({
@@ -17251,7 +17255,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/model')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ modelId: 'qwen3-coder' });
       expect(res.status).toBe(200);
       expect(bridge.setModelCalls[0]?.context).toEqual({
@@ -17387,7 +17391,7 @@ describe('createServeApp', () => {
       await request(app)
         .post('/session/session-A/recap')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(bridge.generateSessionRecapCalls[0]?.context).toEqual({
         clientId: 'client-1',
@@ -17409,13 +17413,13 @@ describe('createServeApp', () => {
       expect(res.body.sessionId).toBe('missing');
     });
 
-    it('400 on malformed X-Qwen-Client-Id header', async () => {
+    it('400 on malformed X-Canopy-Client-Id header', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(baseOpts, undefined, { bridge });
       const res = await request(app)
         .post('/session/session-A/recap')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad client id with spaces')
+        .set('X-Canopy-Client-Id', 'bad client id with spaces')
         .send();
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -17446,7 +17450,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/generate')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Accept', 'text/event-stream')
         .send({ prompt: 'Translate hello' });
 
@@ -17580,7 +17584,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/btw')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ question: '  what now?  ' });
 
       expect(res.status).toBe(200);
@@ -17624,7 +17628,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/btw')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad client id')
+        .set('X-Canopy-Client-Id', 'bad client id')
         .send({ question: 'what now?' });
 
       expect(res.status).toBe(400);
@@ -17696,7 +17700,7 @@ describe('createServeApp', () => {
       expect(bridge.shellCalls).toHaveLength(0);
     });
 
-    it('403 client_id_required before command validation when enabled without X-Qwen-Client-Id', async () => {
+    it('403 client_id_required before command validation when enabled without X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(
@@ -17710,11 +17714,11 @@ describe('createServeApp', () => {
       expect(bridge.shellCalls).toHaveLength(0);
     });
 
-    it('400 invalid_client_id for malformed X-Qwen-Client-Id before bridge dispatch', async () => {
+    it('400 invalid_client_id for malformed X-Canopy-Client-Id before bridge dispatch', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/session/session-A/shell'))
-        .set('X-Qwen-Client-Id', 'bad client id')
+        .set('X-Canopy-Client-Id', 'bad client id')
         .send({ command: 'pwd' });
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -17725,7 +17729,7 @@ describe('createServeApp', () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/session/session-A/shell'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ command: '   ' });
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('`command` is required');
@@ -17736,7 +17740,7 @@ describe('createServeApp', () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/session/session-A/shell'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ command: 'pwd' });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -17762,7 +17766,7 @@ describe('createServeApp', () => {
       });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/session/session-A/shell'))
-        .set('X-Qwen-Client-Id', 'client-2')
+        .set('X-Canopy-Client-Id', 'client-2')
         .send({ command: 'pwd' });
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -17782,7 +17786,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/shell')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ command: 'pwd' });
       expect(res.status).toBe(401);
       expect(res.body.code).toBe('token_required');
@@ -17801,7 +17805,7 @@ describe('createServeApp', () => {
       const disabled = await auth(
         request(disabledApp).post('/session/session-A/shell'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ command: 'pwd' });
       expect(disabled.status).toBe(403);
       expect(disabled.body.errorKind).toBe('session_shell_disabled');
@@ -17817,7 +17821,7 @@ describe('createServeApp', () => {
       const clientRequired = await auth(
         request(clientRequiredApp).post('/session/session-A/shell'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ command: 'pwd' });
       expect(clientRequired.status).toBe(403);
       expect(clientRequired.body.errorKind).toBe('client_id_required');
@@ -17883,7 +17887,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).post('/session/session-A/approval-mode'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ mode: 'plan' });
       expect(res.status).toBe(200);
       expect(bridge.setApprovalModeCalls[0]?.context).toEqual({
@@ -18022,7 +18026,7 @@ describe('createServeApp', () => {
 
     it('returns a committed branch even if the runtime generation closes afterward', async () => {
       const runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-branch-cleanup-'),
+        path.join(os.tmpdir(), 'canopy-branch-cleanup-'),
       );
       const staleBranchId = '550e8400-e29b-41d4-a716-446655440125';
       const chatsDir = path.join(
@@ -18313,7 +18317,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/fork')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ directive: 'review the current code' });
 
       expect(res.status).toBe(202);
@@ -18474,7 +18478,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/language')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ language: 'ja' });
       expect(res.status).toBe(200);
       expect(bridge.setLanguageCalls[0]?.context).toEqual({
@@ -18566,7 +18570,7 @@ describe('createServeApp', () => {
       // Use a real temp directory so the workspace service can perform
       // filesystem operations.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-test-'),
+        path.join(os.tmpdir(), 'canopy-init-test-'),
       );
       try {
         const bridge = fakeBridge();
@@ -18582,20 +18586,20 @@ describe('createServeApp', () => {
         ).send({});
         expect(res.status).toBe(200);
         expect(res.body.action).toBe('created');
-        expect(res.body.path).toContain('QWEN.md');
+        expect(res.body.path).toContain('CANOPY.md');
       } finally {
         await fsp.rm(wsRoot, { recursive: true, force: true });
       }
     });
 
     it('forwards force:true to the bridge', async () => {
-      // Create a workspace with an existing non-empty QWEN.md to trigger
+      // Create a workspace with an existing non-empty CANOPY.md to trigger
       // the conflict → force:true overwrite path.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-force-'),
+        path.join(os.tmpdir(), 'canopy-init-force-'),
       );
       try {
-        await fsp.writeFile(path.join(wsRoot, 'QWEN.md'), 'existing content');
+        await fsp.writeFile(path.join(wsRoot, 'CANOPY.md'), 'existing content');
         const bridge = fakeBridge();
         const opts: ServeOptions = {
           ...baseOpts,
@@ -18616,11 +18620,11 @@ describe('createServeApp', () => {
 
     it('passes client identity into the bridge', async () => {
       // #4282 fold-in 1 (gpt-5.5 C2): the workspace mutation route
-      // validates `X-Qwen-Client-Id` against `bridge.knownClientIds()`.
+      // validates `X-Canopy-Client-Id` against `bridge.knownClientIds()`.
       // Register `client-1` so the validation succeeds and the request
       // goes through without a 400.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-client-'),
+        path.join(os.tmpdir(), 'canopy-init-client-'),
       );
       try {
         const bridge = fakeBridge({ knownClientIds: ['client-1'] });
@@ -18631,7 +18635,7 @@ describe('createServeApp', () => {
         };
         const app = createServeApp(opts, undefined, { bridge });
         const res = await auth(request(app).post('/workspace/init'), opts.port)
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
         // Verify the request succeeds — the workspace service receives
         // the originator through the request context.
@@ -18641,7 +18645,7 @@ describe('createServeApp', () => {
       }
     });
 
-    it('400 invalid_client_id when X-Qwen-Client-Id is not in knownClientIds', async () => {
+    it('400 invalid_client_id when X-Canopy-Client-Id is not in knownClientIds', async () => {
       // #4282 fold-in 1 (gpt-5.5 C2): the validator rejects forged
       // headers with a structured 400 instead of stamping the
       // originator on the SSE event.
@@ -18649,7 +18653,7 @@ describe('createServeApp', () => {
       const opts: ServeOptions = { ...baseOpts, token: 'secret' };
       const app = createServeApp(opts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/init'), opts.port)
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({});
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -18674,11 +18678,11 @@ describe('createServeApp', () => {
       // Create a workspace with existing non-empty content and do NOT
       // pass force:true — the workspace service raises 409.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-conflict-'),
+        path.join(os.tmpdir(), 'canopy-init-conflict-'),
       );
       try {
         await fsp.writeFile(
-          path.join(wsRoot, 'QWEN.md'),
+          path.join(wsRoot, 'CANOPY.md'),
           'non-empty content here',
         );
         const bridge = fakeBridge();
@@ -18696,7 +18700,7 @@ describe('createServeApp', () => {
         expect(res.body).toMatchObject({
           code: 'workspace_init_conflict',
         });
-        expect(res.body.path).toContain('QWEN.md');
+        expect(res.body.path).toContain('CANOPY.md');
       } finally {
         await fsp.rm(wsRoot, { recursive: true, force: true });
       }
@@ -18706,7 +18710,7 @@ describe('createServeApp', () => {
       // The workspace service raises path-escape when the configured
       // contextFilename resolves outside the workspace.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-escape-'),
+        path.join(os.tmpdir(), 'canopy-init-escape-'),
       );
       try {
         const bridge = fakeBridge();
@@ -18736,17 +18740,17 @@ describe('createServeApp', () => {
     it('400 + code:workspace_init_symlink on WorkspaceInitSymlinkError (#4297 fold-in 1)', async () => {
       // Create a workspace where the target context file is a symlink.
       const wsRoot = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-init-symlink-'),
+        path.join(os.tmpdir(), 'canopy-init-symlink-'),
       );
       try {
         const outsideDir = await fsp.mkdtemp(
-          path.join(os.tmpdir(), 'qwen-init-outside-'),
+          path.join(os.tmpdir(), 'canopy-init-outside-'),
         );
         try {
           await fsp.writeFile(path.join(outsideDir, 'target.md'), 'outside');
           await fsp.symlink(
             path.join(outsideDir, 'target.md'),
-            path.join(wsRoot, 'QWEN.md'),
+            path.join(wsRoot, 'CANOPY.md'),
           );
           const bridge = fakeBridge();
           const opts: ServeOptions = {
@@ -18801,9 +18805,9 @@ describe('createServeApp', () => {
     });
 
     it('passes validated client identity and refreshes cached serve features', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-reload-capabilities-'),
+        path.join(os.tmpdir(), 'canopy-reload-capabilities-'),
       );
       const reload = vi.fn(async () => {
         await fsp.writeFile(
@@ -18853,7 +18857,7 @@ describe('createServeApp', () => {
         );
 
         const res = await auth(request(app).post('/workspace/reload'))
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send({});
         expect(res.status).toBe(200);
         expect(reload).toHaveBeenCalledWith(
@@ -18869,7 +18873,7 @@ describe('createServeApp', () => {
         expect(after.body.features).toContain('workspace_voice_transcription');
       } finally {
         await fsp.rm(tempHome, { recursive: true, force: true });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
@@ -19874,7 +19878,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/workspace/trust/request')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ desiredState: 'untrusted' });
 
       expect(res.status).toBe(401);
@@ -19883,7 +19887,7 @@ describe('createServeApp', () => {
     });
 
     it('POST /workspace/trust/request publishes trust_change_requested without writing trustedFolders', async () => {
-      const atomicWriteSpy = vi.spyOn(qwenCore, 'atomicWriteFileSync');
+      const atomicWriteSpy = vi.spyOn(canopyCore, 'atomicWriteFileSync');
       const requestWorkspaceTrustChange = vi.fn(async () => ({
         accepted: true,
         desiredState: 'untrusted' as const,
@@ -19900,7 +19904,7 @@ describe('createServeApp', () => {
       });
 
       const res = await auth(request(app).post('/workspace/trust/request'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ desiredState: 'untrusted', reason: 'remote user request' });
 
       expect(res.status).toBe(202);
@@ -19944,7 +19948,7 @@ describe('createServeApp', () => {
       });
 
       const res = await auth(request(app).post('/workspace/trust/request'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ desiredState: 'trusted' });
 
       expect(res.status).toBe(409);
@@ -19965,13 +19969,13 @@ describe('createServeApp', () => {
       });
 
       const invalid = await auth(request(app).post('/workspace/trust/request'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ desiredState: 'maybe' });
       expect(invalid.status).toBe(400);
       expect(invalid.body.code).toBe('invalid_desired_state');
 
       const overlong = await auth(request(app).post('/workspace/trust/request'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ desiredState: 'trusted', reason: 'x'.repeat(1025) });
       expect(overlong.status).toBe(400);
       expect(overlong.body.code).toBe('invalid_reason');
@@ -20200,17 +20204,17 @@ describe('createServeApp', () => {
       const bridge = fakeBridge({ knownClientIds: ['client-1'] });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/docs/restart'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({});
       expect(res.status).toBe(200);
       expect(bridge.restartMcpServerCalls).toHaveLength(1);
     });
 
-    it('400 invalid_client_id on unknown X-Qwen-Client-Id', async () => {
+    it('400 invalid_client_id on unknown X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/docs/restart'))
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({});
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -20313,7 +20317,7 @@ describe('createServeApp', () => {
       const bridge = fakeBridge({ knownClientIds: ['client-1'] });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ name: 'echo', config: { command: 'echo', args: ['hello'] } });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -20332,7 +20336,7 @@ describe('createServeApp', () => {
       });
     });
 
-    it('400 fresh add requires X-Qwen-Client-Id', async () => {
+    it('400 fresh add requires X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers')).send({
@@ -20357,7 +20361,7 @@ describe('createServeApp', () => {
       });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ name: 'echo', config: { command: 'echo' } });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -20444,11 +20448,11 @@ describe('createServeApp', () => {
       expect(bridge.addRuntimeMcpServerCalls).toHaveLength(0);
     });
 
-    it('400 invalid_client_id on unknown X-Qwen-Client-Id', async () => {
+    it('400 invalid_client_id on unknown X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({ name: 'echo', config: { command: 'echo' } });
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -20469,7 +20473,7 @@ describe('createServeApp', () => {
       });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ name: 'echo', config: { command: 'echo' } });
       expect(res.status).toBe(409);
       expect(res.body.code).toBe('mcp_budget_would_exceed');
@@ -20492,7 +20496,7 @@ describe('createServeApp', () => {
       });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ name: 'broken', config: { command: 'bad-cmd' } });
       expect(res.status).toBe(502);
       expect(res.body).toMatchObject({
@@ -20514,7 +20518,7 @@ describe('createServeApp', () => {
       });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/mcp/servers'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ name: 'echo', config: { command: 'echo' } });
       expect(res.status).toBe(503);
       expect(res.body.code).toBe('acp_channel_unavailable');
@@ -20532,7 +20536,7 @@ describe('createServeApp', () => {
       const bridge = fakeBridge({ knownClientIds: ['client-1'] });
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).delete('/workspace/mcp/servers/echo'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -20548,7 +20552,7 @@ describe('createServeApp', () => {
       });
     });
 
-    it('400 remove requires X-Qwen-Client-Id', async () => {
+    it('400 remove requires X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(
@@ -20574,7 +20578,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).delete('/workspace/mcp/servers/ghost'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -20598,7 +20602,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).delete('/workspace/mcp/servers/shadowed-srv'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -20615,7 +20619,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).delete('/workspace/mcp/servers/bad%2Fname'),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_server_name');
@@ -20629,7 +20633,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).delete(`/workspace/mcp/servers/${overlong}`),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_server_name');
@@ -20648,7 +20652,7 @@ describe('createServeApp', () => {
         const res = await auth(
           request(app).delete(`/workspace/mcp/servers/${pathSegment}`),
         )
-          .set('X-Qwen-Client-Id', 'client-1')
+          .set('X-Canopy-Client-Id', 'client-1')
           .send();
         expect(res.status).toBe(400);
         expect(res.body.code).toBe('invalid_server_name');
@@ -20668,11 +20672,11 @@ describe('createServeApp', () => {
       expect(bridge.removeRuntimeMcpServerCalls).toHaveLength(0);
     });
 
-    it('400 invalid_client_id on unknown X-Qwen-Client-Id', async () => {
+    it('400 invalid_client_id on unknown X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).delete('/workspace/mcp/servers/echo'))
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send();
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -20806,17 +20810,17 @@ describe('createServeApp', () => {
         persistDisabledTools: async () => {},
       });
       const res = await auth(request(app).post('/workspace/tools/Bash/enable'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ enabled: false });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ toolName: 'Bash', enabled: false });
     });
 
-    it('400 invalid_client_id on unknown X-Qwen-Client-Id', async () => {
+    it('400 invalid_client_id on unknown X-Canopy-Client-Id', async () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).post('/workspace/tools/Bash/enable'))
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({ enabled: false });
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -21024,7 +21028,7 @@ describe('createServeApp', () => {
       const res = await auth(
         request(app).post('/workspace/skills/review/enable'),
       )
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({ enabled: false });
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -21153,7 +21157,7 @@ describe('createServeApp', () => {
         primaryWorkspaceTrusted: true,
       });
       const res = await auth(request(app).post('/workspace/skills/enable'))
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .send({ skillNames: ['review'], enabled: false });
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -21190,7 +21194,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/permission/req-1')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ outcome: { outcome: 'cancelled' } });
       expect(res.status).toBe(200);
       // F3 Commit 2 — `fromLoopback` is derived from the kernel-stamped
@@ -21316,7 +21320,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/permission/req-1')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ outcome: { outcome: 'selected', optionId: 'allow' } });
       expect(res.status).toBe(200);
       expect(bridge.permissionVotes[0]?.context).toEqual({
@@ -21335,7 +21339,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/permission/req-1')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-unknown')
+        .set('X-Canopy-Client-Id', 'client-unknown')
         .send({ outcome: { outcome: 'selected', optionId: 'allow' } });
 
       expect(res.status).toBe(400);
@@ -21457,7 +21461,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/cancel')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({});
       expect(res.status).toBe(204);
       expect(bridge.cancelCalls[0]?.context).toEqual({
@@ -21509,7 +21513,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .delete('/session/session-A')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send();
       expect(res.status).toBe(204);
       expect(bridge.closeCalls[0]?.context).toEqual({
@@ -21542,7 +21546,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .delete('/session/session-A')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad-client')
+        .set('X-Canopy-Client-Id', 'bad-client')
         .send();
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -21603,19 +21607,19 @@ describe('createServeApp', () => {
     let wsDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-session-export-'),
+        path.join(os.tmpdir(), 'canopy-serve-session-export-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
       wsDir = realpathSync(runtimeDir);
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -21654,7 +21658,7 @@ describe('createServeApp', () => {
             parts: [{ text: 'export response' }],
           },
           cwd: wsDir,
-          model: 'qwen-test',
+          model: 'canopy-test',
         },
       ];
       const body = records.map((record) => JSON.stringify(record)).join('\n');
@@ -21682,7 +21686,7 @@ describe('createServeApp', () => {
       expect(res.headers['cache-control']).toBe('no-store');
       expect(res.headers['x-content-type-options']).toBe('nosniff');
       expect(res.headers['content-disposition']).toMatch(
-        /^attachment; filename="qwen-code-export-.+\.html"$/,
+        /^attachment; filename="canopy-code-export-.+\.html"$/,
       );
       expect(res.text).toContain('id="chat-data"');
       expect(res.text).toContain('hello export');
@@ -21821,19 +21825,19 @@ describe('createServeApp', () => {
     let wsDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-session-transcript-'),
+        path.join(os.tmpdir(), 'canopy-serve-session-transcript-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
       wsDir = realpathSync(runtimeDir);
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -22556,19 +22560,19 @@ describe('createServeApp', () => {
     let wsDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-batch-delete-'),
+        path.join(os.tmpdir(), 'canopy-serve-batch-delete-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
       wsDir = realpathSync(runtimeDir);
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -22719,7 +22723,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/sessions/delete')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad-client')
+        .set('X-Canopy-Client-Id', 'bad-client')
         .send({ sessionIds: [sid] });
       expect(res.status).toBe(200);
       expect(res.body.removed).toEqual([]);
@@ -23072,19 +23076,19 @@ describe('createServeApp', () => {
     let wsDir: string;
 
     beforeEach(async () => {
-      previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       runtimeDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-serve-session-archive-'),
+        path.join(os.tmpdir(), 'canopy-serve-session-archive-'),
       );
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
       wsDir = realpathSync(runtimeDir);
     });
 
     afterEach(async () => {
       if (previousRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
       }
       await fsp.rm(runtimeDir, { recursive: true, force: true });
     });
@@ -23913,7 +23917,7 @@ describe('createServeApp', () => {
       const bridge = fakeBridge();
       const app = createServeApp(tokenOpts, undefined, { bridge });
       const res = await auth(request(app).patch('/session/session-A/metadata'))
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ displayName: 'test' });
       expect(res.status).toBe(200);
       expect(bridge.updateMetadataCalls[0]?.context).toEqual({
@@ -23972,7 +23976,7 @@ describe('createServeApp', () => {
           '/workspaces/ws-secondary/session/session-A/metadata',
         ),
       )
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .send({ displayName: 'Secondary session' });
 
       expect(res.status).toBe(200);
@@ -24090,7 +24094,7 @@ describe('createServeApp', () => {
       'renames a persisted %s session in the selected workspace',
       async (state) => {
         const runtimeBaseDir = await fsp.mkdtemp(
-          path.join(os.tmpdir(), 'qwen-workspace-metadata-'),
+          path.join(os.tmpdir(), 'canopy-workspace-metadata-'),
         );
         const sessionId = `550e8400-e29b-41d4-a716-4466554400${
           state === 'active' ? '31' : '32'
@@ -24152,7 +24156,7 @@ describe('createServeApp', () => {
 
     it('returns 404 for a missing persisted session and 409 for a store conflict', async () => {
       const runtimeBaseDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-workspace-metadata-conflict-'),
+        path.join(os.tmpdir(), 'canopy-workspace-metadata-conflict-'),
       );
       const sessionId = '550e8400-e29b-41d4-a716-446655440033';
       const secondaryBridge = fakeBridge({
@@ -24214,7 +24218,7 @@ describe('createServeApp', () => {
 
     it('rejects a rename when the session is live in another workspace runtime', async () => {
       const runtimeBaseDir = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-workspace-metadata-live-owner-'),
+        path.join(os.tmpdir(), 'canopy-workspace-metadata-live-owner-'),
       );
       const sessionId = '550e8400-e29b-41d4-a716-446655440034';
       const chatsDir = path.join(
@@ -24302,7 +24306,7 @@ describe('createServeApp', () => {
       expect(bridge.heartbeatCalls).toEqual([{ sessionId: 'session-A' }]);
     });
 
-    it('forwards X-Qwen-Client-Id into the bridge context and echoes it back', async () => {
+    it('forwards X-Canopy-Client-Id into the bridge context and echoes it back', async () => {
       const bridge = fakeBridge({
         heartbeatImpl: (sessionId, context) => ({
           sessionId,
@@ -24316,7 +24320,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/heartbeat')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1');
+        .set('X-Canopy-Client-Id', 'client-1');
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         sessionId: 'session-A',
@@ -24334,7 +24338,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/heartbeat')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'bad client id');
+        .set('X-Canopy-Client-Id', 'bad client id');
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({ code: 'invalid_client_id' });
       expect(bridge.heartbeatCalls).toHaveLength(0);
@@ -24350,7 +24354,7 @@ describe('createServeApp', () => {
       const res = await request(app)
         .post('/session/session-A/heartbeat')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-unknown');
+        .set('X-Canopy-Client-Id', 'client-unknown');
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
         code: 'invalid_client_id',
@@ -24420,13 +24424,13 @@ describe('createServeApp', () => {
       const cookieOnly = await request(app)
         .get('/capabilities')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('Cookie', 'qwen-daemon-token=secret');
+        .set('Cookie', 'canopy-daemon-token=secret');
       expect(cookieOnly.status).toBe(401);
 
       const cookieWithWrongBearer = await request(app)
         .get('/capabilities')
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('Cookie', 'qwen-daemon-token=secret')
+        .set('Cookie', 'canopy-daemon-token=secret')
         .set('Authorization', 'Bearer wrong');
       expect(cookieWithWrongBearer.status).toBe(401);
     });
@@ -24482,7 +24486,7 @@ describe('createServeApp', () => {
       // The whole point of `--require-auth` is to harden the
       // loopback default; the unauthenticated `/health` carve-out
       // would defeat that on shared dev hosts. Boot-time check in
-      // `runQwenServe` guarantees a token whenever the flag is on,
+      // `runCanopyServe` guarantees a token whenever the flag is on,
       // so this 401 is reachable only under operator opt-in.
       const app = createServeApp({
         ...baseOpts,
@@ -24986,7 +24990,7 @@ describe('createServeApp', () => {
         detail: 'summary',
       });
       // Voice is advertised even with a token configured: browsers authenticate
-      // the WS via the `qwen-bearer.*` subprotocol, so the token no longer
+      // the WS via the `canopy-bearer.*` subprotocol, so the token no longer
       // suppresses the capability.
       expect(withAuth.body.capabilities.features).toContain('voice_transcribe');
     });
@@ -24997,7 +25001,7 @@ describe('createServeApp', () => {
       const app = createServeApp(baseOpts, undefined, {
         bridge,
         daemonLog,
-        qwenCodeVersion: '1.2.3-test',
+        canopyCodeVersion: '1.2.3-test',
       });
 
       const res = await request(app)
@@ -25014,7 +25018,7 @@ describe('createServeApp', () => {
           pid: process.pid,
           mode: 'http-bridge',
           workspaceCwd: expect.any(String),
-          qwenCodeVersion: '1.2.3-test',
+          canopyCodeVersion: '1.2.3-test',
           daemonId: 'test-daemon',
         },
         security: {
@@ -25156,7 +25160,7 @@ describe('createServeApp', () => {
             },
           },
           auth: {
-            supportedDeviceFlowProviders: ['qwen-oauth'],
+            supportedDeviceFlowProviders: ['canopy-oauth'],
             pendingDeviceFlowCount: 0,
           },
         },
@@ -25179,16 +25183,16 @@ describe('createServeApp', () => {
 
   describe('POST /channels/:channelName/webhooks/:source', () => {
     it('isolates webhook configs across workspace sources', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
-      const previousWebhookSecret = process.env['QWEN_SHARED_WEBHOOK_SECRET'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
+      const previousWebhookSecret = process.env['CANOPY_SHARED_WEBHOOK_SECRET'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-multi-home-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-multi-home-'),
       );
       const primary = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-primary-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-primary-'),
       );
       const secondary = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-secondary-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-secondary-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
@@ -25196,10 +25200,10 @@ describe('createServeApp', () => {
           [primary, 'primary-channel'],
           [secondary, 'secondary-channel'],
         ]) {
-          const qwenDir = path.join(workspace, '.qwen');
-          await fsp.mkdir(qwenDir);
+          const canopyDir = path.join(workspace, '.canopy');
+          await fsp.mkdir(canopyDir);
           await fsp.writeFile(
-            path.join(qwenDir, 'settings.json'),
+            path.join(canopyDir, 'settings.json'),
             JSON.stringify({
               channels: {
                 [channel]: {
@@ -25207,7 +25211,7 @@ describe('createServeApp', () => {
                   webhooks: {
                     sources: {
                       ci: {
-                        secretEnv: 'QWEN_SHARED_WEBHOOK_SECRET',
+                        secretEnv: 'CANOPY_SHARED_WEBHOOK_SECRET',
                         targets: {
                           default: {
                             chatId: `${channel}-chat`,
@@ -25223,7 +25227,7 @@ describe('createServeApp', () => {
             'utf8',
           );
         }
-        process.env['QWEN_SHARED_WEBHOOK_SECRET'] = 'primary-secret';
+        process.env['CANOPY_SHARED_WEBHOOK_SECRET'] = 'primary-secret';
         resetHomeEnvBootstrapForTesting();
 
         const enqueueChannelWebhookTask = vi.fn(async () => ({
@@ -25239,12 +25243,12 @@ describe('createServeApp', () => {
               {
                 workspaceCwd: primary,
                 channelNames: ['primary-channel'],
-                env: { QWEN_SHARED_WEBHOOK_SECRET: 'primary-secret' },
+                env: { CANOPY_SHARED_WEBHOOK_SECRET: 'primary-secret' },
               },
               {
                 workspaceCwd: secondary,
                 channelNames: ['secondary-channel'],
-                env: { QWEN_SHARED_WEBHOOK_SECRET: 'secondary-secret' },
+                env: { CANOPY_SHARED_WEBHOOK_SECRET: 'secondary-secret' },
               },
             ],
           },
@@ -25253,17 +25257,17 @@ describe('createServeApp', () => {
         const primaryResponse = await request(app)
           .post('/channels/primary-channel/webhooks/ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'primary-secret')
+          .set('x-canopy-webhook-secret', 'primary-secret')
           .send({ eventType: 'ci', targetRef: 'default', title: 'Primary' });
         const secondaryResponse = await request(app)
           .post('/channels/secondary-channel/webhooks/ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secondary-secret')
+          .set('x-canopy-webhook-secret', 'secondary-secret')
           .send({ eventType: 'ci', targetRef: 'default', title: 'Secondary' });
         const leakedSecretResponse = await request(app)
           .post('/channels/secondary-channel/webhooks/ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'primary-secret')
+          .set('x-canopy-webhook-secret', 'primary-secret')
           .send({ eventType: 'ci', targetRef: 'default', title: 'Wrong' });
 
         expect(primaryResponse.status).toBe(202);
@@ -25306,25 +25310,25 @@ describe('createServeApp', () => {
             retryDelay: 100,
           }),
         ]);
-        restoreEnv('QWEN_HOME', previousQwenHome);
-        restoreEnv('QWEN_SHARED_WEBHOOK_SECRET', previousWebhookSecret);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
+        restoreEnv('CANOPY_SHARED_WEBHOOK_SECRET', previousWebhookSecret);
         resetHomeEnvBootstrapForTesting();
       }
     });
 
     it('refreshes webhook authentication when the manager config version changes', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-runtime-home-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-runtime-home-'),
       );
       const workspace = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-runtime-workspace-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-runtime-workspace-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
-        await fsp.mkdir(path.join(workspace, '.qwen'));
+        await fsp.mkdir(path.join(workspace, '.canopy'));
         await fsp.writeFile(
-          path.join(workspace, '.qwen', 'settings.json'),
+          path.join(workspace, '.canopy', 'settings.json'),
           JSON.stringify({
             channels: {
               old: {
@@ -25383,7 +25387,7 @@ describe('createServeApp', () => {
           request(app)
             .post(`/channels/${channel}/webhooks/ci`)
             .set('Host', `127.0.0.1:${baseOpts.port}`)
-            .set('x-qwen-webhook-secret', secret)
+            .set('x-canopy-webhook-secret', secret)
             .send({ eventType: 'ci', targetRef: 'default', title: 'Build' });
 
         expect((await send('old', 'old-secret')).status).toBe(202);
@@ -25420,18 +25424,18 @@ describe('createServeApp', () => {
             retryDelay: 100,
           }),
         ]);
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
 
     it('is only mounted when enqueueChannelWebhookTask is available', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-'),
       );
       const workspace = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-workspace-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-workspace-'),
       );
       try {
         process.env['QWEN_HOME'] = tempHome;
@@ -25491,7 +25495,7 @@ describe('createServeApp', () => {
         const mounted = await request(withEnqueue)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25520,7 +25524,7 @@ describe('createServeApp', () => {
         const webhookSecretOnly = await request(withBearerAuth)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25532,7 +25536,7 @@ describe('createServeApp', () => {
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
           .set('Content-Type', 'application/json')
-          .set('x-qwen-webhook-secret', 'wrong')
+          .set('x-canopy-webhook-secret', 'wrong')
           .send('{');
         expect(invalidSecretMalformedJson.status).toBe(401);
 
@@ -25540,7 +25544,7 @@ describe('createServeApp', () => {
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
           .set('Authorization', 'Bearer secret')
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25567,11 +25571,11 @@ describe('createServeApp', () => {
           .set('Access-Control-Request-Method', 'POST')
           .set(
             'Access-Control-Request-Headers',
-            'X-Qwen-Webhook-Secret, Content-Type',
+            'X-Canopy-Webhook-Secret, Content-Type',
           );
         expect(preflight.status).toBe(204);
         expect(preflight.headers['access-control-allow-headers']).not.toContain(
-          'X-Qwen-Webhook-Secret',
+          'X-Canopy-Webhook-Secret',
         );
 
         const rateLimited = createServeApp(
@@ -25591,7 +25595,7 @@ describe('createServeApp', () => {
         const firstWebhook = await request(rateLimited)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25601,8 +25605,8 @@ describe('createServeApp', () => {
         const secondWebhook = await request(rateLimited)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('X-Qwen-Client-Id', 'rotated-client')
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('X-Canopy-Client-Id', 'rotated-client')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25622,18 +25626,18 @@ describe('createServeApp', () => {
           maxRetries: 10,
           retryDelay: 100,
         });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
 
     it('skips malformed webhook config instead of crashing the server', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-bad-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-bad-'),
       );
       const workspace = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-workspace-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-workspace-'),
       );
       const stderrSpy = vi
         .spyOn(process.stderr, 'write')
@@ -25664,7 +25668,7 @@ describe('createServeApp', () => {
         const res = await request(app)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25694,18 +25698,18 @@ describe('createServeApp', () => {
           maxRetries: 10,
           retryDelay: 100,
         });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
 
     it('keeps valid webhook sources when a sibling source is malformed', async () => {
-      const previousQwenHome = process.env['QWEN_HOME'];
+      const previousCanopyHome = process.env['QWEN_HOME'];
       const tempHome = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-bad-source-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-bad-source-'),
       );
       const workspace = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-channel-webhooks-workspace-'),
+        path.join(os.tmpdir(), 'canopy-channel-webhooks-workspace-'),
       );
       const stderrSpy = vi
         .spyOn(process.stderr, 'write')
@@ -25730,7 +25734,7 @@ describe('createServeApp', () => {
                       },
                     },
                     jenkins: {
-                      secretEnv: 'QWEN_MISSING_WEBHOOK_SECRET',
+                      secretEnv: 'CANOPY_MISSING_WEBHOOK_SECRET',
                       targets: {
                         default: {
                           chatId: 'group-1',
@@ -25757,7 +25761,7 @@ describe('createServeApp', () => {
         const res = await request(app)
           .post('/channels/dingtalk-main/webhooks/github-ci')
           .set('Host', `127.0.0.1:${baseOpts.port}`)
-          .set('x-qwen-webhook-secret', 'secret-value')
+          .set('x-canopy-webhook-secret', 'secret-value')
           .send({
             eventType: 'ci_failed',
             targetRef: 'default',
@@ -25787,7 +25791,7 @@ describe('createServeApp', () => {
           maxRetries: 10,
           retryDelay: 100,
         });
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
       }
     });
@@ -25862,7 +25866,7 @@ describe('computeKeepaliveIntervalMs', () => {
   });
 });
 
-describe('runQwenServe', () => {
+describe('runCanopyServe', () => {
   // Some CI containers disable IPv6 entirely; binding ::1 then fails with
   // EADDRNOTAVAIL.
   const hasIpv6Loopback = Object.values(os.networkInterfaces()).some(
@@ -25877,10 +25881,10 @@ describe('runQwenServe', () => {
 
   beforeEach(async () => {
     runtimeDir = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-serve-runtime-'),
+      path.join(os.tmpdir(), 'canopy-serve-runtime-'),
     );
     // Keep real scheduled task state out of startup/shutdown tests; otherwise a
-    // developer's ~/.qwen/scheduled_tasks.json could rehydrate sessions here.
+    // developer's ~/.canopy/scheduled_tasks.json could rehydrate sessions here.
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -25897,13 +25901,13 @@ describe('runQwenServe', () => {
     // Scrub any env vars individual tests may have set so leftover
     // state can't leak into the next test in this worker.
     delete process.env['QWEN_SERVER_TOKEN'];
-    delete process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'];
-    delete process.env['QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS'];
+    delete process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'];
+    delete process.env['CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS'];
   });
 
   it('refuses to bind 0.0.0.0 without a token', async () => {
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '0.0.0.0',
         port: 0,
         mode: 'http-bridge',
@@ -25915,7 +25919,7 @@ describe('runQwenServe', () => {
     // Boot-loud check: silently dropping the flag would leave the
     // operator believing loopback is hardened when it isn't.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -25926,7 +25930,7 @@ describe('runQwenServe', () => {
 
   it("refuses to start with --allow-origin '*' on loopback when no token is configured", async () => {
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -25936,7 +25940,7 @@ describe('runQwenServe', () => {
   });
 
   it("starts with --allow-origin '*' when a token is configured", async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -25952,12 +25956,12 @@ describe('runQwenServe', () => {
       'https://anywhere.example.com',
     );
     expect(res.headers.get('access-control-expose-headers')).toBe(
-      'Retry-After, X-Qwen-Event-Epoch, X-Qwen-SSE-Stream-Id',
+      'Retry-After, X-Canopy-Event-Epoch, X-Canopy-SSE-Stream-Id',
     );
   });
 
   it('uses normalized token for session shell capability across REST and ACP initialize', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -25986,10 +25990,12 @@ describe('runQwenServe', () => {
     });
     expect(initRes.status).toBe(200);
     const init = (await initRes.json()) as {
-      result: { agentCapabilities: { _meta: { qwen: { methods: string[] } } } };
+      result: {
+        agentCapabilities: { _meta: { canopy: { methods: string[] } } };
+      };
     };
-    expect(init.result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/session/shell',
+    expect(init.result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/session/shell',
     );
   });
 
@@ -25998,7 +26004,7 @@ describe('runQwenServe', () => {
       .spyOn(process.stderr, 'write')
       .mockImplementation((() => true) as typeof process.stderr.write);
     try {
-      handle = await runQwenServe({
+      handle = await runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26030,21 +26036,23 @@ describe('runQwenServe', () => {
     });
     expect(initRes.status).toBe(200);
     const init = (await initRes.json()) as {
-      result: { agentCapabilities: { _meta: { qwen: { methods: string[] } } } };
+      result: {
+        agentCapabilities: { _meta: { canopy: { methods: string[] } } };
+      };
     };
-    expect(init.result.agentCapabilities._meta.qwen.methods).not.toContain(
-      '_qwen/session/shell',
+    expect(init.result.agentCapabilities._meta.canopy.methods).not.toContain(
+      '_canopy/session/shell',
     );
   });
 
-  // PR 14 fix (review #4247): runQwenServe is the documented embedded
+  // PR 14 fix (review #4247): runCanopyServe is the documented embedded
   // entry point, so budget validation must live here, not just in the
   // yargs CLI handler. Embedded callers (other tools wrapping the
   // daemon, deps.bridge test injection) silently produced an uncapped
   // child pre-fix despite requesting enforce.
   it('rejects non-positive mcpClientBudget (#4175 PR 14)', async () => {
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26052,7 +26060,7 @@ describe('runQwenServe', () => {
       }),
     ).rejects.toThrow(/mcpClientBudget/);
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26063,7 +26071,7 @@ describe('runQwenServe', () => {
 
   it('rejects mcpBudgetMode=enforce without a budget (#4175 PR 14)', async () => {
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26084,7 +26092,7 @@ describe('runQwenServe', () => {
     'rejects invalid promptDeadlineMs (%s) at boot (#4514 T2.9)',
     async (_label, value) => {
       await expect(
-        runQwenServe({
+        runCanopyServe({
           hostname: '127.0.0.1',
           port: 0,
           mode: 'http-bridge',
@@ -26102,7 +26110,7 @@ describe('runQwenServe', () => {
     'rejects invalid maxPendingPromptsPerSession (%s) at boot',
     async (_label, value) => {
       await expect(
-        runQwenServe({
+        runCanopyServe({
           hostname: '127.0.0.1',
           port: 0,
           mode: 'http-bridge',
@@ -26121,7 +26129,7 @@ describe('runQwenServe', () => {
     'rejects invalid writerIdleTimeoutMs (%s) at boot (#4514 T2.9)',
     async (_label, value) => {
       await expect(
-        runQwenServe({
+        runCanopyServe({
           hostname: '127.0.0.1',
           port: 0,
           mode: 'http-bridge',
@@ -26138,7 +26146,7 @@ describe('runQwenServe', () => {
     // 504 instantly. Boot-loud rejection with a clear error pointing
     // at the cap prevents the footwound.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26148,7 +26156,7 @@ describe('runQwenServe', () => {
   });
 
   it('accepts writerIdleTimeoutMs above the JS timer cap (#4530 review)', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26170,23 +26178,23 @@ describe('runQwenServe', () => {
     ['negative', '-5'],
     ['zero', '0'],
   ])(
-    'rejects invalid QWEN_SERVE_PROMPT_DEADLINE_MS env var (%s) at boot (#4514 T2.9)',
+    'rejects invalid CANOPY_SERVE_PROMPT_DEADLINE_MS env var (%s) at boot (#4514 T2.9)',
     async (_label, value) => {
-      process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'] = value;
+      process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'] = value;
       await expect(
-        runQwenServe({
+        runCanopyServe({
           hostname: '127.0.0.1',
           port: 0,
           mode: 'http-bridge',
         }),
-      ).rejects.toThrow(/QWEN_SERVE_PROMPT_DEADLINE_MS/);
+      ).rejects.toThrow(/CANOPY_SERVE_PROMPT_DEADLINE_MS/);
     },
   );
 
-  it('rejects QWEN_SERVE_PROMPT_DEADLINE_MS that exceeds JS timer cap (#4514 T2.9)', async () => {
-    process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'] = '2147483648';
+  it('rejects CANOPY_SERVE_PROMPT_DEADLINE_MS that exceeds JS timer cap (#4514 T2.9)', async () => {
+    process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'] = '2147483648';
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26194,12 +26202,12 @@ describe('runQwenServe', () => {
     ).rejects.toThrow(/Exceeds maximum JS timer delay/);
   });
 
-  it('accepts a valid QWEN_SERVE_PROMPT_DEADLINE_MS env var (#4514 T2.9 happy path)', async () => {
+  it('accepts a valid CANOPY_SERVE_PROMPT_DEADLINE_MS env var (#4514 T2.9 happy path)', async () => {
     // Pin the env-fallback shape end-to-end: env var → ServeOptions
     // field → /capabilities advertises the conditional tag. Closes
     // the "no tests at all" gap wenshao flagged on `parseDeadlineEnv`.
-    process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'] = '30000';
-    handle = await runQwenServe({
+    process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'] = '30000';
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26211,25 +26219,25 @@ describe('runQwenServe', () => {
   });
 
   // wenshao review #4530 inline #5: sibling env var
-  // `QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS` had zero dedicated coverage
+  // `CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS` had zero dedicated coverage
   // — a copy-paste error reading the wrong env-var name in
-  // `runQwenServe` would have passed all existing tests. Mirror the
+  // `runCanopyServe` would have passed all existing tests. Mirror the
   // prompt-deadline env-var plumbing while preserving writer-idle's
   // larger arithmetic-only budget range.
-  it('rejects invalid QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS env var at boot (#4514 T2.9)', async () => {
-    process.env['QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS'] = 'abc';
+  it('rejects invalid CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS env var at boot (#4514 T2.9)', async () => {
+    process.env['CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS'] = 'abc';
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
       }),
-    ).rejects.toThrow(/QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS/);
+    ).rejects.toThrow(/CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS/);
   });
 
-  it('accepts QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS above JS timer cap (#4530 review)', async () => {
-    process.env['QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS'] = '2147483648';
-    handle = await runQwenServe({
+  it('accepts CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS above JS timer cap (#4530 review)', async () => {
+    process.env['CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS'] = '2147483648';
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26240,9 +26248,9 @@ describe('runQwenServe', () => {
     expect(caps.features).toContain('writer_idle_timeout');
   });
 
-  it('accepts a valid QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS env var (#4514 T2.9 happy path)', async () => {
-    process.env['QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS'] = '60000';
-    handle = await runQwenServe({
+  it('accepts a valid CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS env var (#4514 T2.9 happy path)', async () => {
+    process.env['CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS'] = '60000';
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26254,19 +26262,19 @@ describe('runQwenServe', () => {
   });
 
   // Round 6 (wenshao R5 line 216): replaced the R3 `process.env`
-  // mutation tests. `runQwenServe` now passes per-handle env
+  // mutation tests. `runCanopyServe` now passes per-handle env
   // overrides via `BridgeOptions.childEnvOverrides`, NOT by mutating
   // global `process.env` — so concurrent embedded daemons don't
   // cross-contaminate each other's MCP budget env. The two tests
-  // below assert (a) runQwenServe doesn't touch process.env and
-  // (b) a pre-existing process.env value survives runQwenServe
-  // calls unrelated to MCP overrides (proving runQwenServe is no
+  // below assert (a) runCanopyServe doesn't touch process.env and
+  // (b) a pre-existing process.env value survives runCanopyServe
+  // calls unrelated to MCP overrides (proving runCanopyServe is no
   // longer the source of env mutation).
   it('does not mutate process.env when caller provides mcp budget options (#4247 R6 line 216)', async () => {
     // Sanity-check: no MCP env vars set before.
-    delete process.env['QWEN_SERVE_MCP_CLIENT_BUDGET'];
-    delete process.env['QWEN_SERVE_MCP_BUDGET_MODE'];
-    handle = await runQwenServe({
+    delete process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET'];
+    delete process.env['CANOPY_SERVE_MCP_BUDGET_MODE'];
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26276,35 +26284,35 @@ describe('runQwenServe', () => {
     // Pre-R6 this leaked into global process.env. Post-R6 the values
     // travel via `BridgeOptions.childEnvOverrides` closure → only
     // the spawned ACP child sees them.
-    expect(process.env['QWEN_SERVE_MCP_CLIENT_BUDGET']).toBeUndefined();
-    expect(process.env['QWEN_SERVE_MCP_BUDGET_MODE']).toBeUndefined();
+    expect(process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET']).toBeUndefined();
+    expect(process.env['CANOPY_SERVE_MCP_BUDGET_MODE']).toBeUndefined();
   });
 
   it('preserves pre-existing process.env values (no longer wipes globals on omit) (#4247 R6 line 216)', async () => {
     // Pre-R6 the "scrub on omit" code path delete'd these from
-    // process.env. Post-R6 runQwenServe doesn't touch process.env
+    // process.env. Post-R6 runCanopyServe doesn't touch process.env
     // at all; the override mechanism handles "scrub" at the
     // per-handle level inside the bridge's spawn factory. So if an
-    // operator had QWEN_SERVE_MCP_CLIENT_BUDGET exported in their
+    // operator had CANOPY_SERVE_MCP_CLIENT_BUDGET exported in their
     // shell BEFORE starting the daemon, it stays in their process
     // env (and gets ignored by this daemon's child, which receives
     // `undefined` via overrides to scrub it on spawn).
-    process.env['QWEN_SERVE_MCP_CLIENT_BUDGET'] = '99';
+    process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET'] = '99';
     try {
-      handle = await runQwenServe({
+      handle = await runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
         // No mcpClientBudget — override will scrub the var on spawn.
       });
-      expect(process.env['QWEN_SERVE_MCP_CLIENT_BUDGET']).toBe('99');
+      expect(process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET']).toBe('99');
     } finally {
-      delete process.env['QWEN_SERVE_MCP_CLIENT_BUDGET'];
+      delete process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET'];
     }
   });
 
   it('starts with --require-auth + token on loopback', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26323,7 +26331,7 @@ describe('runQwenServe', () => {
 
   it('accepts QWEN_SERVER_TOKEN from the env when binding non-loopback', async () => {
     process.env['QWEN_SERVER_TOKEN'] = 'env-secret';
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '0.0.0.0',
       port: 0,
       mode: 'http-bridge',
@@ -26332,7 +26340,7 @@ describe('runQwenServe', () => {
   });
 
   it('starts on a loopback ephemeral port without a token', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26354,7 +26362,7 @@ describe('runQwenServe', () => {
     // bricked every request. Fix treats 0 / Infinity / non-finite as
     // "leave the property unset" so Node's default (no cap) actually
     // applies.
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26370,7 +26378,7 @@ describe('runQwenServe', () => {
   });
 
   it('--max-connections Infinity treated as unlimited (tanzhenxin issue 1)', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26384,7 +26392,7 @@ describe('runQwenServe', () => {
   });
 
   it('--max-connections 100 sets the cap as supplied', async () => {
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: '127.0.0.1',
       port: 0,
       mode: 'http-bridge',
@@ -26397,7 +26405,7 @@ describe('runQwenServe', () => {
     // Silent fail-OPEN on a CLI typo would weaken the DoS guard.
     // Boot-loud is the right behavior for an unparseable cap.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26405,7 +26413,7 @@ describe('runQwenServe', () => {
       }),
     ).rejects.toThrow(/maxConnections: NaN/);
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26418,7 +26426,7 @@ describe('runQwenServe', () => {
     // The previous Set lookup was case-sensitive, so `Localhost` was
     // treated as non-loopback and refused to boot without a token.
     // Fix lowercases the operator-supplied hostname before lookup.
-    handle = await runQwenServe({
+    handle = await runCanopyServe({
       hostname: 'Localhost',
       port: 0,
       mode: 'http-bridge',
@@ -26430,9 +26438,9 @@ describe('runQwenServe', () => {
     'strips brackets from `[::1]` before passing to app.listen()',
     async () => {
       // Node's app.listen wants the unbracketed IPv6 literal — `[::1]`
-      // would fail with ENOTFOUND. The fixup is in runQwenServe's
+      // would fail with ENOTFOUND. The fixup is in runCanopyServe's
       // bind-time normalization.
-      handle = await runQwenServe({
+      handle = await runCanopyServe({
         hostname: '[::1]',
         port: 0,
         mode: 'http-bridge',
@@ -26455,7 +26463,7 @@ describe('runQwenServe', () => {
     // mangled to `2001:db8::1]:8080` and let Node ENOTFOUND. Catch it
     // upstream with a clear error pointing at the right separation.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '[2001:db8::1]:8080',
         port: 0,
         mode: 'http-bridge',
@@ -26470,7 +26478,7 @@ describe('runQwenServe', () => {
     // produce a misleading `[localhost:4170]:port` URL, then fail
     // at `app.listen()` with ENOTFOUND. Catch upstream.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: 'localhost:4170',
         port: 0,
         mode: 'http-bridge',
@@ -26479,7 +26487,7 @@ describe('runQwenServe', () => {
       /Invalid --hostname "localhost:4170".*looks like a "host:port" combination/,
     );
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1:4170',
         port: 0,
         mode: 'http-bridge',
@@ -26487,7 +26495,7 @@ describe('runQwenServe', () => {
     ).rejects.toThrow(/Invalid --hostname "127\.0\.0\.1:4170"/);
     if (hasIpv6Loopback) {
       // But raw IPv6 (multiple colons) still works.
-      handle = await runQwenServe({
+      handle = await runCanopyServe({
         hostname: '::1',
         port: 0,
         mode: 'http-bridge',
@@ -26501,7 +26509,7 @@ describe('runQwenServe', () => {
     // typing `[]` clearly meant something specific, not wildcard — fail
     // loudly instead of silently exposing the daemon on every interface.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '[]',
         port: 0,
         mode: 'http-bridge',
@@ -26516,10 +26524,10 @@ describe('runQwenServe', () => {
     // once at boot; `/capabilities.workspaceCwd` returns the canonical
     // form, NOT the raw input. Tests inject a fake bridge here so we
     // verify the route layer's canonicalization (not the bridge's),
-    // making this a true E2E that doesn't require a real `qwen --acp`
+    // making this a true E2E that doesn't require a real `canopy --acp`
     // child.
     const bridge = fakeBridge();
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         hostname: '127.0.0.1',
         port: 0,
@@ -26544,14 +26552,14 @@ describe('runQwenServe', () => {
     // Without the boot-time stat check, `canonicalizeWorkspace`'s
     // ENOENT fallback to `path.resolve` would let the daemon boot
     // pointed at a non-existent directory; every `POST /session`
-    // would then spawn a `qwen --acp` child with that cwd and the
+    // would then spawn a `canopy --acp` child with that cwd and the
     // agent would fail with an opaque ENOENT.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
-        workspace: `/tmp/qwen-serve-no-such-path-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        workspace: `/tmp/canopy-serve-no-such-path-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       }),
     ).rejects.toThrow(/directory does not exist/);
   });
@@ -26567,7 +26575,7 @@ describe('runQwenServe', () => {
     // test would then see ENOENT instead of the expected
     // "not a directory" branch.
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26578,7 +26586,7 @@ describe('runQwenServe', () => {
 
   it('rejects relative --workspace at boot', async () => {
     await expect(
-      runQwenServe({
+      runCanopyServe({
         hostname: '127.0.0.1',
         port: 0,
         mode: 'http-bridge',
@@ -26589,7 +26597,7 @@ describe('runQwenServe', () => {
 
   it('drains the bridge before closing the listener', async () => {
     const bridge = fakeBridge();
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -26600,7 +26608,7 @@ describe('runQwenServe', () => {
   });
 
   it('wires fsFactory + emit through to the read routes (#4175 PR 19 follow-up #2)', async () => {
-    // Pin the contract that `runQwenServe` constructs the workspace
+    // Pin the contract that `runCanopyServe` constructs the workspace
     // filesystem boundary, threads its emit hook through to
     // `createServeApp`, and that boundary actually drives the new
     // PR 19 read routes. A regression that drops the `fsFactory`
@@ -26609,11 +26617,11 @@ describe('runQwenServe', () => {
     const captured: BridgeEvent[] = [];
     const bridge = fakeBridge();
     const wsRoot = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-runqwen-fs-'),
+      path.join(os.tmpdir(), 'canopy-runcanopy-fs-'),
     );
     await fsp.writeFile(path.join(wsRoot, 'a.txt'), 'hello');
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           hostname: '127.0.0.1',
           port: 0,
@@ -26650,7 +26658,7 @@ describe('runQwenServe', () => {
   it('keeps deps.fsFactory override out of REST routes', async () => {
     // The bridge can use an injected multi-root factory, but REST routes
     // still serialize primary-relative paths. Pin that REST gets the
-    // primary-only factory built by runQwenServe instead of the injected one.
+    // primary-only factory built by runCanopyServe instead of the injected one.
     const sentinelMessage = 'sentinel-from-fake-factory';
     const fsFactory: WorkspaceFileSystemFactory = {
       assertCanWrite: () => {},
@@ -26695,10 +26703,10 @@ describe('runQwenServe', () => {
     };
     const bridge = fakeBridge();
     const wsRoot = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-runqwen-rest-fs-'),
+      path.join(os.tmpdir(), 'canopy-runcanopy-rest-fs-'),
     );
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           hostname: '127.0.0.1',
           port: 0,
@@ -26726,11 +26734,11 @@ describe('runQwenServe', () => {
     // for review.
     const bridge = fakeBridge();
     const wsRoot = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-runqwen-trust-'),
+      path.join(os.tmpdir(), 'canopy-runcanopy-trust-'),
     );
     try {
       const captured: BridgeEvent[] = [];
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           hostname: '127.0.0.1',
           port: 0,
@@ -26762,17 +26770,17 @@ describe('runQwenServe', () => {
   it('trust snapshot=false flows through deps.trustedWorkspace into the boundary (#4175 PR 19 follow-up #2)', async () => {
     // PR 19 has no write routes, so the trust gate's effect on
     // mutating intents can't be observed via HTTP. Instead, we
-    // construct the same factory that runQwenServe would build,
-    // with the same `trusted` value runQwenServe would pass, and
+    // construct the same factory that runCanopyServe would build,
+    // with the same `trusted` value runCanopyServe would pass, and
     // assert the gate trips. The contract is: when
     // `deps.trustedWorkspace = false`, the factory's
     // `assertTrustedForIntent` rejects writes with
     // `untrusted_workspace` — exactly what PR 20 will rely on.
     const wsRoot = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-runqwen-untrust-'),
+      path.join(os.tmpdir(), 'canopy-runcanopy-untrust-'),
     );
     try {
-      // Mirror runQwenServe's construction. If `runQwenServe`
+      // Mirror runCanopyServe's construction. If `runCanopyServe`
       // changes the call shape (different deps order, different
       // fields), this test will start failing to type-check —
       // which is the point: the failure is the audit trail.
@@ -26802,7 +26810,7 @@ describe('runQwenServe', () => {
 
   it('handle.close() is idempotent — concurrent + repeat calls share one drain cycle', async () => {
     const bridge = fakeBridge();
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -26821,7 +26829,7 @@ describe('runQwenServe', () => {
 
   it('force-closes connections after the shutdown timeout', async () => {
     const bridge = fakeBridge();
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -26858,19 +26866,19 @@ describe('runQwenServe', () => {
     const sigintBefore = process.listenerCount('SIGINT');
     const sigtermBefore = process.listenerCount('SIGTERM');
 
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
 
-    // runQwenServe attaches one of each.
+    // runCanopyServe attaches one of each.
     expect(process.listenerCount('SIGINT')).toBe(sigintBefore + 1);
     expect(process.listenerCount('SIGTERM')).toBe(sigtermBefore + 1);
 
     await handle.close();
     handle = undefined;
 
-    // After drain completes, the listener that runQwenServe added is gone.
+    // After drain completes, the listener that runCanopyServe added is gone.
     // (Detaching during drain would leave a second-signal-during-shutdown
     // hitting Node's default termination behavior; this design detaches at
     // the end of `finish` so the `if (shuttingDown) return` guard is the
@@ -26935,7 +26943,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27125,10 +27133,10 @@ describe('GET /session/:id/events (SSE)', () => {
           `/session/sess-A/events?connectReason=prompt_restart&previousStreamId=${predecessor}`,
         )
         .set('Host', `127.0.0.1:${baseOpts.port}`)
-        .set('X-Qwen-Client-Id', 'client-1');
+        .set('X-Canopy-Client-Id', 'client-1');
 
       expect(res.status).toBe(200);
-      const streamId = res.headers['x-qwen-sse-stream-id'];
+      const streamId = res.headers['x-canopy-sse-stream-id'];
       expect(streamId).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
@@ -27157,19 +27165,19 @@ describe('GET /session/:id/events (SSE)', () => {
           .mock.calls.filter(([message]) => message === 'SSE stream closed'),
       ).toHaveLength(1);
       expect(setAttribute).toHaveBeenCalledWith(
-        'qwen-code.daemon.sse.stream_id',
+        'canopy-code.daemon.sse.stream_id',
         streamId,
       );
       expect(setAttribute).toHaveBeenCalledWith(
-        'qwen-code.daemon.sse.close_reason',
+        'canopy-code.daemon.sse.close_reason',
         'source_complete',
       );
       expect(setAttribute).toHaveBeenCalledWith(
-        'qwen-code.daemon.sse.event_frames_write_settled',
+        'canopy-code.daemon.sse.event_frames_write_settled',
         1,
       );
       expect(setAttribute).toHaveBeenCalledWith(
-        'qwen-code.daemon.sse.duration_ms',
+        'canopy-code.daemon.sse.duration_ms',
         expect.any(Number),
       );
       expect(
@@ -27220,7 +27228,7 @@ describe('GET /session/:id/events (SSE)', () => {
       expect(res.status).toBe(404);
       expect(
         setAttribute.mock.calls.some(
-          ([key]) => key === 'qwen-code.daemon.sse.stream_id',
+          ([key]) => key === 'canopy-code.daemon.sse.stream_id',
         ),
       ).toBe(false);
     } finally {
@@ -27242,7 +27250,7 @@ describe('GET /session/:id/events (SSE)', () => {
         '/session/sess-A/events?connectReason=%0Aforged&previousStreamId=not-a-uuid',
       )
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'invalid client id');
+      .set('X-Canopy-Client-Id', 'invalid client id');
 
     expect(res.status).toBe(200);
     expect(daemonLog.info).toHaveBeenCalledWith(
@@ -27277,7 +27285,7 @@ describe('GET /session/:id/events (SSE)', () => {
     const responsePromise = request(app)
       .get('/session/sess-%E2%80%A8A/events?connectReason=resume')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'client-1')
+      .set('X-Canopy-Client-Id', 'client-1')
       .then((response) => response);
 
     await vi.waitFor(() => {
@@ -27343,7 +27351,7 @@ describe('GET /session/:id/events (SSE)', () => {
 
     release.resolve();
     const res = await responsePromise;
-    expect(res.headers['x-qwen-sse-stream-id']).toBe(streamId);
+    expect(res.headers['x-canopy-sse-stream-id']).toBe(streamId);
     expect(getActiveSseCount()).toBe(beforeActive);
   });
 
@@ -27642,7 +27650,7 @@ describe('GET /session/:id/events (SSE)', () => {
           await new Promise(() => {});
         })(),
       );
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27700,7 +27708,7 @@ describe('GET /session/:id/events (SSE)', () => {
           await new Promise(() => {});
         })(),
       );
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27746,7 +27754,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27783,7 +27791,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27812,7 +27820,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27834,7 +27842,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27849,7 +27857,7 @@ describe('GET /session/:id/events (SSE)', () => {
     expect(frames[0]?.id).toBe('42');
   });
 
-  it('forwards a valid X-Qwen-Event-Epoch header to the bridge as the epoch option', async () => {
+  it('forwards a valid X-Canopy-Event-Epoch header to the bridge as the epoch option', async () => {
     const seen: Array<string | undefined> = [];
     const bridge = fakeBridge({
       async *subscribeImpl(_sessionId, opts) {
@@ -27858,7 +27866,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27867,14 +27875,14 @@ describe('GET /session/:id/events (SSE)', () => {
     const res = await fetch(`http://127.0.0.1:${port}/session/sess-A/events`, {
       headers: {
         'Last-Event-ID': '17',
-        'X-Qwen-Event-Epoch': 'epoch-abc',
+        'X-Canopy-Event-Epoch': 'epoch-abc',
       },
     });
     await readSseFrames(res.body!, 1);
     expect(seen).toEqual(['epoch-abc']);
   });
 
-  it('degrades an invalid X-Qwen-Event-Epoch header to "not provided"', async () => {
+  it('degrades an invalid X-Canopy-Event-Epoch header to "not provided"', async () => {
     // Invalid tokens must NOT abort the subscription — the bus just falls
     // back to the numeric stale-cursor heuristic.
     const seen: Array<string | undefined> = [];
@@ -27885,7 +27893,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27894,7 +27902,7 @@ describe('GET /session/:id/events (SSE)', () => {
     const res = await fetch(`http://127.0.0.1:${port}/session/sess-A/events`, {
       headers: {
         'Last-Event-ID': '17',
-        'X-Qwen-Event-Epoch': 'not a valid token!',
+        'X-Canopy-Event-Epoch': 'not a valid token!',
       },
     });
     await readSseFrames(res.body!, 1);
@@ -27909,14 +27917,14 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
     const port = (handle.server.address() as { port: number }).port;
 
     const res = await fetch(`http://127.0.0.1:${port}/session/sess-A/events`);
-    expect(res.headers.get('x-qwen-event-epoch')).toBe('epoch-xyz');
+    expect(res.headers.get('x-canopy-event-epoch')).toBe('epoch-xyz');
     await readSseFrames(res.body!, 1);
   });
 
@@ -27929,7 +27937,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27951,7 +27959,7 @@ describe('GET /session/:id/events (SSE)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27973,7 +27981,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new Error('bridge must not be touched');
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -27992,7 +28000,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new Error('bridge must not be touched');
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28011,7 +28019,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new Error('bridge must not be touched');
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28032,7 +28040,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new SessionNotFoundError(sessionId);
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28102,7 +28110,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new Error('agent died');
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28140,7 +28148,7 @@ describe('GET /session/:id/events (SSE)', () => {
         throw new BridgeTimeoutError('initialize', 5000);
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28177,7 +28185,7 @@ describe('GET /session/:id/events (SSE)', () => {
           await new Promise(() => {});
         },
       });
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
         { bridge },
       );
@@ -28223,7 +28231,7 @@ describe('GET /session/:id/events (SSE)', () => {
           await new Promise(() => {});
         },
       });
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
         { bridge },
       );
@@ -28264,7 +28272,7 @@ describe('GET /session/:id/events (SSE)', () => {
           throw new Error('agent died');
         },
       });
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
         { bridge },
       );
@@ -28301,7 +28309,7 @@ describe('GET /session/:id/events (SSE)', () => {
           throw new BridgeTimeoutError('initialize', 5000);
         },
       });
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
         { bridge },
       );
@@ -28334,7 +28342,7 @@ describe('GET /session/:id/events (SSE)', () => {
         })();
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28357,7 +28365,7 @@ describe('GET /session/:id/events (SSE)', () => {
         })();
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -28473,7 +28481,7 @@ describe('--allow-origin CORS allowlist (T2.4 #4514)', () => {
     );
     expect(res.headers['access-control-max-age']).toBe('86400');
     expect(res.headers['access-control-expose-headers']).toBe(
-      'Retry-After, X-Qwen-Event-Epoch, X-Qwen-SSE-Stream-Id',
+      'Retry-After, X-Canopy-Event-Epoch, X-Canopy-SSE-Stream-Id',
     );
   });
 
@@ -28493,7 +28501,7 @@ describe('--allow-origin CORS allowlist (T2.4 #4514)', () => {
     );
     expect(res.headers['access-control-allow-methods']).toMatch(/POST/);
     expect(res.headers['access-control-expose-headers']).toBe(
-      'Retry-After, X-Qwen-Event-Epoch, X-Qwen-SSE-Stream-Id',
+      'Retry-After, X-Canopy-Event-Epoch, X-Canopy-SSE-Stream-Id',
     );
     expect(res.text).toBe('');
   });
@@ -28614,12 +28622,12 @@ describe('--allow-origin CORS allowlist (T2.4 #4514)', () => {
   });
 });
 
-describe('runQwenServe SIGINT handler', () => {
+describe('runCanopyServe SIGINT handler', () => {
   it('does not register signal handlers until the listener is up', () => {
     // Sanity: we register `once` so we don't leak across test runs.
     // No assertion beyond "module loads without throwing"; full lifecycle
     // is covered indirectly by the loopback boot test above.
-    expect(typeof runQwenServe).toBe('function');
+    expect(typeof runCanopyServe).toBe('function');
     void vi.fn(); // silence unused-import lint if vitest tree-shakes
   });
 });
@@ -29040,7 +29048,7 @@ describe('createServeApp ServeAppDeps.fsFactory wiring (#4175 PR 18)', () => {
   it('passes custom ignore files through resolveBridgeFsFactory', async () => {
     const { resolveBridgeFsFactory } = await import('./server.js');
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-serve-fs-ignore-'),
+      path.join(os.tmpdir(), 'canopy-serve-fs-ignore-'),
     );
     try {
       await fsp.writeFile(path.join(tmp, '.cursorignore'), 'secret.txt\n');
@@ -29072,7 +29080,7 @@ describe('createServeApp ServeAppDeps.fsFactory wiring (#4175 PR 18)', () => {
     const { isFsError } = await import('./fs/index.js');
     const os = await import('node:os');
     const tmp = await import('node:fs').then((m) =>
-      m.promises.mkdtemp(path.join(os.tmpdir(), 'qwen-serve-default-trust-')),
+      m.promises.mkdtemp(path.join(os.tmpdir(), 'canopy-serve-default-trust-')),
     );
     try {
       const app = createServeApp(
@@ -29124,7 +29132,7 @@ describe('auth device-flow routes', () => {
     let starts = 0;
     return {
       provider: {
-        providerId: 'qwen-oauth' as const,
+        providerId: 'canopy-oauth' as const,
         async start() {
           starts += 1;
           return {
@@ -29167,9 +29175,9 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(res.status).toBe(201);
-    expect(res.body.providerId).toBe('qwen-oauth');
+    expect(res.body.providerId).toBe('canopy-oauth');
     expect(res.body.userCode).toBe('USER-1');
     expect(res.body.attached).toBe(false);
     expect(typeof res.body.deviceFlowId).toBe('string');
@@ -29219,7 +29227,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
 
     expect(res.status).toBe(201);
     expect(primaryPublish).not.toHaveBeenCalled();
@@ -29237,7 +29245,7 @@ describe('auth device-flow routes', () => {
     const res = await request(app)
       .post('/workspace/auth/device-flow')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(res.status).toBe(401);
     expect(res.body.code).toBe('token_required');
   });
@@ -29251,7 +29259,7 @@ describe('auth device-flow routes', () => {
       .send({ providerId: 'totally-fake' });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('unsupported_provider');
-    expect(res.body.supportedProviders).toContain('qwen-oauth');
+    expect(res.body.supportedProviders).toContain('canopy-oauth');
   });
 
   it('POST is idempotent take-over for the same providerId — second POST returns 200 + attached:true', async () => {
@@ -29260,13 +29268,13 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(first.status).toBe(201);
     const second = await request(app)
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(second.status).toBe(200);
     expect(second.body.attached).toBe(true);
     expect(second.body.deviceFlowId).toBe(first.body.deviceFlowId);
@@ -29290,8 +29298,8 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-A')
-      .send({ providerId: 'qwen-oauth' });
+      .set('X-Canopy-Client-Id', 'sdk-A')
+      .send({ providerId: 'canopy-oauth' });
     expect(first.status).toBe(201);
     // Fresh starter MUST see the verification material — they ARE
     // the initiator.
@@ -29304,8 +29312,8 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-B')
-      .send({ providerId: 'qwen-oauth' });
+      .set('X-Canopy-Client-Id', 'sdk-B')
+      .send({ providerId: 'canopy-oauth' });
     expect(takeoverDifferent.status).toBe(200);
     expect(takeoverDifferent.body.attached).toBe(true);
     expect(takeoverDifferent.body.deviceFlowId).toBe(first.body.deviceFlowId);
@@ -29322,7 +29330,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(takeoverAnon.status).toBe(200);
     expect(takeoverAnon.body.attached).toBe(true);
     expect(takeoverAnon.body).not.toHaveProperty('userCode');
@@ -29332,8 +29340,8 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-A')
-      .send({ providerId: 'qwen-oauth' });
+      .set('X-Canopy-Client-Id', 'sdk-A')
+      .send({ providerId: 'canopy-oauth' });
     expect(takeoverSame.status).toBe(200);
     expect(takeoverSame.body.attached).toBe(true);
     expect(takeoverSame.body.userCode).toBe('USER-1');
@@ -29351,7 +29359,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(first.status).toBe(201);
     expect(first.body.userCode).toBe('USER-1');
 
@@ -29359,7 +29367,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(reattach.status).toBe(200);
     expect(reattach.body.attached).toBe(true);
     expect(reattach.body.deviceFlowId).toBe(first.body.deviceFlowId);
@@ -29377,7 +29385,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     const id = post.body.deviceFlowId as string;
     const ok = await request(app)
       .get(`/workspace/auth/device-flow/${id}`)
@@ -29401,7 +29409,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     const id = post.body.deviceFlowId as string;
     const first = await request(app)
       .delete(`/workspace/auth/device-flow/${id}`)
@@ -29427,7 +29435,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     const id = start.body.deviceFlowId as string;
     const status = await request(app)
       .get('/workspace/auth/status')
@@ -29435,7 +29443,7 @@ describe('auth device-flow routes', () => {
       .set('Host', `127.0.0.1:${baseOpts.port}`);
     expect(status.status).toBe(200);
     expect(status.body.v).toBe(1);
-    expect(status.body.supportedDeviceFlowProviders).toContain('qwen-oauth');
+    expect(status.body.supportedDeviceFlowProviders).toContain('canopy-oauth');
     expect(status.body.pendingDeviceFlows).toHaveLength(1);
     expect(status.body.pendingDeviceFlows[0].deviceFlowId).toBe(id);
     // Status payload MUST NOT echo userCode/verificationUri.
@@ -29469,7 +29477,7 @@ describe('auth device-flow routes', () => {
       .send({
         providerId: 'custom-openai-compatible',
         apiKey: 'sk-test',
-        protocol: 'qwen-oauth',
+        protocol: 'canopy-oauth',
       });
 
     expect(res.status).toBe(400);
@@ -29713,7 +29721,7 @@ describe('auth device-flow routes', () => {
     // through `sendBridgeError`'s generic 500 path. Build a fake
     // provider whose start always throws.
     const failingProvider: DeviceFlowProvider = {
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       async start() {
         throw new UpstreamDeviceFlowError('mocked upstream outage');
       },
@@ -29730,7 +29738,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(res.status).toBe(502);
     expect(res.body.code).toBe('upstream_error');
     expect(res.body.error).toContain('mocked upstream outage');
@@ -29740,7 +29748,7 @@ describe('auth device-flow routes', () => {
     // PR 21 fold-in 0 P1-13: cover the time-based expiry path via an
     // injected registry with a controlled clock + manual sweeper trigger.
     const fakeProvider: DeviceFlowProvider = {
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       async start() {
         return {
           deviceCode: brandSecret('device-1'),
@@ -29760,7 +29768,8 @@ describe('auth device-flow routes', () => {
     const intervalsRegistered: Array<{ cb: () => void }> = [];
     const registry = new DeviceFlowRegistry({
       events: { publish: () => {} },
-      resolveProvider: (id) => (id === 'qwen-oauth' ? fakeProvider : undefined),
+      resolveProvider: (id) =>
+        id === 'canopy-oauth' ? fakeProvider : undefined,
       now: () => now,
       // Run polls forever-deferred; sweeper interval is what we drive.
       schedule: (_ms, _cb) => ({ cancelled: false }) as never,
@@ -29783,7 +29792,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(startRes.status).toBe(201);
     const id = startRes.body.deviceFlowId as string;
 
@@ -29859,7 +29868,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     expect(res.status).toBe(409);
     expect(res.body.code).toBe('too_many_active_flows');
   });
@@ -29907,8 +29916,8 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-A')
-      .send({ providerId: 'qwen-oauth' });
+      .set('X-Canopy-Client-Id', 'sdk-A')
+      .send({ providerId: 'canopy-oauth' });
     const id = post.body.deviceFlowId as string;
     expect(typeof id).toBe('string');
 
@@ -29916,7 +29925,7 @@ describe('auth device-flow routes', () => {
       .get(`/workspace/auth/device-flow/${id}`)
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-A');
+      .set('X-Canopy-Client-Id', 'sdk-A');
     expect(matchingCaller.status).toBe(200);
     expect(matchingCaller.body.deviceFlowId).toBe(id);
     expect(matchingCaller.body.userCode).toBe('USER-1');
@@ -29940,7 +29949,7 @@ describe('auth device-flow routes', () => {
       .get(`/workspace/auth/device-flow/${id}`)
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-B');
+      .set('X-Canopy-Client-Id', 'sdk-B');
     expect(differentCaller.status).toBe(200);
     expect(differentCaller.body.deviceFlowId).toBe(id);
     expect(differentCaller.body).not.toHaveProperty('userCode');
@@ -29949,8 +29958,8 @@ describe('auth device-flow routes', () => {
     expect(differentCaller.body).not.toHaveProperty('initiatorClientId');
   });
 
-  it('GET /workspace/auth/device-flow/:id returns 400 invalid_client_id when X-Qwen-Client-Id is malformed (qwen-latest review N3)', async () => {
-    // PR #4291 follow-up review (qwen-latest, N3): the GET handler's
+  it('GET /workspace/auth/device-flow/:id returns 400 invalid_client_id when X-Canopy-Client-Id is malformed (canopy-latest review N3)', async () => {
+    // PR #4291 follow-up review (canopy-latest, N3): the GET handler's
     // strict-clientId behavior — added in this PR to drive the
     // `callerIsInitiator` gate — was documented in JSDoc but not
     // pinned in CI. A future refactor that removes or reorders the
@@ -29962,7 +29971,7 @@ describe('auth device-flow routes', () => {
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     const id = post.body.deviceFlowId as string;
 
     // Over-length: 129 chars.
@@ -29971,7 +29980,7 @@ describe('auth device-flow routes', () => {
       .get(`/workspace/auth/device-flow/${id}`)
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', tooLong);
+      .set('X-Canopy-Client-Id', tooLong);
     expect(tooLongRes.status).toBe(400);
     expect(tooLongRes.body.code).toBe('invalid_client_id');
 
@@ -29981,29 +29990,29 @@ describe('auth device-flow routes', () => {
       .get(`/workspace/auth/device-flow/${id}`)
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'has spaces and "quotes"');
+      .set('X-Canopy-Client-Id', 'has spaces and "quotes"');
     expect(badChars.status).toBe(400);
     expect(badChars.body.code).toBe('invalid_client_id');
   });
 
   it('GET /workspace/auth/device-flow/:id returns userCode for an anonymously-started flow when the GET caller is also anonymous', async () => {
-    // PR #4291 follow-up review (qwen-latest, #3): the original
+    // PR #4291 follow-up review (canopy-latest, #3): the original
     // gate required both `initiatorClientId` AND `callerClientId`
     // to be defined and equal — which silently locked anonymous-
     // started flows out of their own data (the SDK that didn't
-    // pass `X-Qwen-Client-Id` on POST also doesn't pass it on
+    // pass `X-Canopy-Client-Id` on POST also doesn't pass it on
     // GET, but the response body switched from "useful" to
     // "redacted public envelope" with HTTP 200 and no error). Fix:
     // also accept `both undefined` as the same caller. The gate's
     // purpose is to prevent CROSS-client reads, not to lock
     // anonymous flows out of themselves.
     const { app } = buildApp({ token: 'tkn' });
-    // Start anonymously (no X-Qwen-Client-Id header).
+    // Start anonymously (no X-Canopy-Client-Id header).
     const post = await request(app)
       .post('/workspace/auth/device-flow')
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .send({ providerId: 'qwen-oauth' });
+      .send({ providerId: 'canopy-oauth' });
     const id = post.body.deviceFlowId as string;
     expect(typeof id).toBe('string');
     // Anonymous GET — must still see the verification fields.
@@ -30023,7 +30032,7 @@ describe('auth device-flow routes', () => {
       .get(`/workspace/auth/device-flow/${id}`)
       .set('Authorization', 'Bearer tkn')
       .set('Host', `127.0.0.1:${baseOpts.port}`)
-      .set('X-Qwen-Client-Id', 'sdk-X');
+      .set('X-Canopy-Client-Id', 'sdk-X');
     expect(identified.status).toBe(200);
     expect(identified.body).not.toHaveProperty('userCode');
     expect(identified.body).not.toHaveProperty('verificationUri');
@@ -30319,7 +30328,7 @@ describe('T2.9 prompt absolute deadline (issue #4514)', () => {
             else signal?.addEventListener('abort', onAbort, { once: true });
           }),
       });
-      const localHandle = await runQwenServe(
+      const localHandle = await runCanopyServe(
         {
           hostname: '127.0.0.1',
           port: 0,
@@ -30628,7 +30637,7 @@ describe('T2.9 SSE writer idle timeout (issue #4514)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         hostname: '127.0.0.1',
         port: 0,
@@ -30698,7 +30707,7 @@ describe('T2.9 SSE writer idle timeout (issue #4514)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       { hostname: '127.0.0.1', port: 0, mode: 'http-bridge' },
       { bridge },
     );
@@ -30770,7 +30779,7 @@ describe('T2.9 SSE writer idle timeout (issue #4514)', () => {
         await new Promise(() => {});
       },
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         hostname: '127.0.0.1',
         port: 0,
@@ -30867,7 +30876,7 @@ describe('T2.9 SSE writer idle timeout (issue #4514)', () => {
           await new Promise(() => {});
         },
       });
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           hostname: '127.0.0.1',
           port: 0,
@@ -31022,23 +31031,23 @@ describe('sendBridgeError daemonLog routing', () => {
 describe('Live conversation runtime lifecycle', () => {
   async function enableLiveVoiceAtBoot() {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-runtime-boot-'),
+      path.join(os.tmpdir(), 'canopy-live-runtime-boot-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
-    await fsp.mkdir(qwenHome, { recursive: true });
+    const canopyHome = path.join(tmp, 'canopy-home');
+    await fsp.mkdir(canopyHome, { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
     return async () => {
-      restoreEnv('QWEN_HOME', previousQwenHome);
+      restoreEnv('QWEN_HOME', previousCanopyHome);
       resetHomeEnvBootstrapForTesting();
       await fsp.rm(tmp, { recursive: true, force: true });
     };
@@ -31046,19 +31055,19 @@ describe('Live conversation runtime lifecycle', () => {
 
   async function disableLiveVoiceAtBoot() {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-runtime-disabled-'),
+      path.join(os.tmpdir(), 'canopy-live-runtime-disabled-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
-    await fsp.mkdir(qwenHome, { recursive: true });
+    const canopyHome = path.join(tmp, 'canopy-home');
+    await fsp.mkdir(canopyHome, { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({ experimental: { liveVoice: { enabled: false } } }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
     return async () => {
-      restoreEnv('QWEN_HOME', previousQwenHome);
+      restoreEnv('QWEN_HOME', previousCanopyHome);
       resetHomeEnvBootstrapForTesting();
       await fsp.rm(tmp, { recursive: true, force: true });
     };
@@ -31139,9 +31148,9 @@ describe('Live conversation runtime lifecycle', () => {
       voiceCoordinator: new WorkspaceVoiceCoordinator(),
       getSessionBridges: () =>
         registry.listManaged().map((runtime) => runtime.bridge),
-      daemonEnv: { QWEN_SERVE_ACP_HTTP: '1' },
+      daemonEnv: { CANOPY_SERVE_ACP_HTTP: '1' },
       runtimePlatform: 'darwin',
-      webShellDir: path.join(os.tmpdir(), 'qwen-live-web-shell'),
+      webShellDir: path.join(os.tmpdir(), 'canopy-live-web-shell'),
     } as Parameters<typeof createServeApp>[2]);
     const coordinator = app.locals['liveSessionCoordinator'] as {
       start(call: {
@@ -31546,7 +31555,7 @@ describe('Live conversation runtime lifecycle', () => {
       });
     const updateOrganization = vi
       .spyOn(
-        qwenCore.SessionOrganizationService.prototype,
+        canopyCore.SessionOrganizationService.prototype,
         'updateSessionOrganization',
       )
       .mockResolvedValue({
@@ -31859,12 +31868,12 @@ describe('Live conversation runtime lifecycle', () => {
 
   it('rejects canonical aliases of the configured Live root before publication', async () => {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-reserved-root-'),
+      path.join(os.tmpdir(), 'canopy-live-reserved-root-'),
     );
     const realHome = path.join(tmp, 'real-home');
     const linkedHome = path.join(tmp, 'linked-home');
     const alternateRootAlias = path.join(tmp, 'alternate-root-alias');
-    const relativeRoot = path.join('Documents', 'Qwen Code', 'Conversations');
+    const relativeRoot = path.join('Documents', 'Canopy Code', 'Conversations');
     const realRoot = path.join(realHome, relativeRoot);
     const realChild = path.join(realRoot, 'conversation-probe');
     await fsp.mkdir(realChild, { recursive: true });
@@ -31910,7 +31919,7 @@ describe('Live conversation runtime lifecycle', () => {
     'keeps ordinary creation available when the Live root cannot be inspected',
     async () => {
       const tmp = await fsp.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-live-unreadable-root-'),
+        path.join(os.tmpdir(), 'canopy-live-unreadable-root-'),
       );
       const ordinaryCwd = path.join(tmp, 'ordinary-workspace');
       const configuredRoot = path.join(tmp, 'looped-conversations');
@@ -32124,20 +32133,20 @@ describe('Live Appshot server integration', () => {
     } = {},
   ) {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-appshot-enabled-'),
+      path.join(os.tmpdir(), 'canopy-live-appshot-enabled-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
-    await fsp.mkdir(qwenHome, { recursive: true });
+    const canopyHome = path.join(tmp, 'canopy-home');
+    await fsp.mkdir(canopyHome, { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
     const primaryCwd = path.resolve(path.sep, 'work', 'live-appshot-primary');
     const conversationCwd = path.resolve(
@@ -32201,7 +32210,7 @@ describe('Live Appshot server integration', () => {
       liveCoordinator: coordinator,
       liveSessionCoordinator,
       runtimePlatform: 'darwin',
-      webShellDir: path.join(os.tmpdir(), 'qwen-live-web-shell'),
+      webShellDir: path.join(os.tmpdir(), 'canopy-live-web-shell'),
     });
     return {
       app,
@@ -32227,7 +32236,7 @@ describe('Live Appshot server integration', () => {
       },
       async cleanup() {
         (app.locals['stopLiveCoordinator'] as (() => void) | undefined)?.();
-        restoreEnv('QWEN_HOME', previousQwenHome);
+        restoreEnv('QWEN_HOME', previousCanopyHome);
         resetHomeEnvBootstrapForTesting();
         await fsp.rm(tmp, { recursive: true, force: true });
       },
@@ -32240,7 +32249,7 @@ describe('Live Appshot server integration', () => {
       options: baseOpts,
       deps: {
         runtimePlatform: 'linux' as const,
-        webShellDir: path.join(os.tmpdir(), 'qwen-live-web-shell'),
+        webShellDir: path.join(os.tmpdir(), 'canopy-live-web-shell'),
       },
     },
     {
@@ -32248,7 +32257,7 @@ describe('Live Appshot server integration', () => {
       options: { ...baseOpts, serveWebShell: false },
       deps: {
         runtimePlatform: 'darwin' as const,
-        webShellDir: path.join(os.tmpdir(), 'qwen-live-web-shell'),
+        webShellDir: path.join(os.tmpdir(), 'canopy-live-web-shell'),
       },
     },
   ])('does not expose Live in $name', async ({ options, deps }) => {
@@ -32281,16 +32290,16 @@ describe('Live Appshot server integration', () => {
 
   it('does not initialize Live dependencies when disabled at daemon startup', async () => {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-disabled-host-'),
+      path.join(os.tmpdir(), 'canopy-live-disabled-host-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
-    await fsp.mkdir(qwenHome, { recursive: true });
+    const canopyHome = path.join(tmp, 'canopy-home');
+    await fsp.mkdir(canopyHome, { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({ experimental: { liveVoice: { enabled: false } } }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
 
     const primaryCwd = path.join(tmp, 'primary');
@@ -32374,7 +32383,7 @@ describe('Live Appshot server integration', () => {
       expect(registry.getByWorkspaceCwd(conversationCwd)).toBeUndefined();
     } finally {
       (app?.locals['stopLiveCoordinator'] as (() => void) | undefined)?.();
-      restoreEnv('QWEN_HOME', previousQwenHome);
+      restoreEnv('QWEN_HOME', previousCanopyHome);
       resetHomeEnvBootstrapForTesting();
       await fsp.rm(tmp, { recursive: true, force: true });
     }
@@ -32382,20 +32391,20 @@ describe('Live Appshot server integration', () => {
 
   it('hard-gates Live and its runtime when ACP HTTP is disabled at boot', async () => {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-acp-disabled-'),
+      path.join(os.tmpdir(), 'canopy-live-acp-disabled-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
-    await fsp.mkdir(qwenHome, { recursive: true });
+    const canopyHome = path.join(tmp, 'canopy-home');
+    await fsp.mkdir(canopyHome, { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: { enabled: true, apiKey: 'test-realtime-key' },
         },
       }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
 
     const primaryCwd = path.join(tmp, 'primary');
@@ -32431,7 +32440,7 @@ describe('Live Appshot server integration', () => {
       removable: false,
     };
     const createWorkspaceRuntime = vi.fn(async () => liveRuntime);
-    const daemonEnv: NodeJS.ProcessEnv = { QWEN_SERVE_ACP_HTTP: '0' };
+    const daemonEnv: NodeJS.ProcessEnv = { CANOPY_SERVE_ACP_HTTP: '0' };
     let app: ReturnType<typeof createServeApp> | undefined;
     try {
       app = createServeApp({ ...baseOpts, workspace: primaryCwd }, undefined, {
@@ -32442,7 +32451,7 @@ describe('Live Appshot server integration', () => {
         runtimePlatform: 'darwin',
         webShellDir: path.join(tmp, 'web-shell'),
       });
-      daemonEnv['QWEN_SERVE_ACP_HTTP'] = '1';
+      daemonEnv['CANOPY_SERVE_ACP_HTTP'] = '1';
 
       const capabilities = await request(app)
         .get('/capabilities')
@@ -32468,7 +32477,7 @@ describe('Live Appshot server integration', () => {
           | (() => Promise<void>)
           | undefined
       )?.();
-      restoreEnv('QWEN_HOME', previousQwenHome);
+      restoreEnv('QWEN_HOME', previousCanopyHome);
       resetHomeEnvBootstrapForTesting();
       await fsp.rm(tmp, { recursive: true, force: true });
     }
@@ -32613,14 +32622,14 @@ describe('Live Appshot server integration', () => {
 
   it('does not let workspace settings override Live provider configuration', async () => {
     const tmp = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-live-provider-scope-'),
+      path.join(os.tmpdir(), 'canopy-live-provider-scope-'),
     );
-    const qwenHome = path.join(tmp, 'qwen-home');
+    const canopyHome = path.join(tmp, 'canopy-home');
     const workspace = path.join(tmp, 'workspace');
-    await fsp.mkdir(qwenHome, { recursive: true });
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(canopyHome, { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         experimental: {
           liveVoice: {
@@ -32631,11 +32640,11 @@ describe('Live Appshot server integration', () => {
       }),
     );
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({ experimental: { liveVoice: { enabled: false } } }),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     resetHomeEnvBootstrapForTesting();
     const settingsRuntime = await import('../config/settings.js');
     const loadSettings = vi.spyOn(settingsRuntime, 'loadSettings');
@@ -32666,7 +32675,7 @@ describe('Live Appshot server integration', () => {
       );
     } finally {
       (app?.locals['stopLiveCoordinator'] as (() => void) | undefined)?.();
-      restoreEnv('QWEN_HOME', previousQwenHome);
+      restoreEnv('QWEN_HOME', previousCanopyHome);
       resetHomeEnvBootstrapForTesting();
       loadSettings.mockRestore();
       await fsp.rm(tmp, { recursive: true, force: true });

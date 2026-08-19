@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,10 +12,10 @@ import { escapeAnsiCtrlCodes } from '../../ui/utils/textUtils.js';
 
 export type RealtimeCallEpoch = string | number;
 
-export const QWEN_REALTIME_INPUT_SAMPLE_RATE = 16_000;
-export const QWEN_REALTIME_OUTPUT_SAMPLE_RATE = 24_000;
+export const CANOPY_REALTIME_INPUT_SAMPLE_RATE = 16_000;
+export const CANOPY_REALTIME_OUTPUT_SAMPLE_RATE = 24_000;
 
-export const QWEN_REALTIME_LIMITS = {
+export const CANOPY_REALTIME_LIMITS = {
   maxInputAudioFrameBytes: 64 * 1024,
   maxOutputAudioFrameBytes: 256 * 1024,
   maxBufferedSocketBytes: 1024 * 1024,
@@ -75,7 +75,7 @@ const REMAIN_SILENT_TOOL = {
 
 const DEFAULT_INSTRUCTIONS = `## Identity, tone, and role
 
-You are Qwen Code, a general-purpose agentic assistant that helps the user complete tasks across coding, browsing, apps, documents, research, and other digital workflows.
+You are Canopy Code, a general-purpose agentic assistant that helps the user complete tasks across coding, browsing, apps, documents, research, and other digital workflows.
 
 Be concise, clear, and efficient. Keep responses tight and useful—no fluff.
 
@@ -142,13 +142,15 @@ When interacting with the user, do not mention "backend". Present every work as 
 * By default, share progress updates only when they are brief, grounded, and genuinely useful.
 * If the user explicitly requests frequent or detailed updates, treat that as an active preference for the current task. Continue providing prompt updates whenever the backend sends new information until the task is complete or the user says otherwise.`;
 
-export function buildQwenRealtimeInstructions(startupContext?: string): string {
+export function buildCanopyRealtimeInstructions(
+  startupContext?: string,
+): string {
   return startupContext
     ? `${DEFAULT_INSTRUCTIONS}\n\n${startupContext}`
     : DEFAULT_INSTRUCTIONS;
 }
 
-export interface QwenRealtimeConfig {
+export interface CanopyRealtimeConfig {
   endpoint: string;
   apiKey?: string;
   model: string;
@@ -157,7 +159,7 @@ export interface QwenRealtimeConfig {
   instructions?: string;
 }
 
-export interface QwenRealtimeDeps {
+export interface CanopyRealtimeDeps {
   createWebSocket?: (
     url: string,
     options: {
@@ -247,10 +249,10 @@ export interface RealtimeIgnoredEvent extends RealtimeEventContext {
 
 export interface RealtimeCloseInfo {
   reason: 'client' | 'remote' | 'error';
-  error?: QwenRealtimeError;
+  error?: CanopyRealtimeError;
 }
 
-export interface QwenRealtimeCallbacks {
+export interface CanopyRealtimeCallbacks {
   onReady?: (event: RealtimeEventContext & { sessionId?: string }) => void;
   onSpeechStarted?: (event: RealtimeSpeechEvent) => void;
   onSpeechStopped?: (event: RealtimeSpeechEvent) => void;
@@ -271,7 +273,7 @@ export interface QwenRealtimeCallbacks {
   onBargeIn?: (event: RealtimeResponseEvent) => void;
   onIgnoredEvent?: (event: RealtimeIgnoredEvent) => void;
   onAudioDropped?: (event: RealtimeEventContext) => void;
-  onError?: (error: QwenRealtimeError) => void;
+  onError?: (error: CanopyRealtimeError) => void;
   onClose?: (info: RealtimeCloseInfo) => void;
 }
 
@@ -288,7 +290,7 @@ export interface RealtimeCloseOptions {
   discardPendingInput?: boolean;
 }
 
-export interface QwenRealtimeSession {
+export interface CanopyRealtimeSession {
   readonly callEpoch: RealtimeCallEpoch;
   readonly closed: Promise<RealtimeCloseInfo>;
   pushAudio: (pcm16: Uint8Array) => boolean;
@@ -303,10 +305,13 @@ export interface QwenRealtimeSession {
   close: (options?: RealtimeCloseOptions) => void;
 }
 
-export type QwenRealtimeErrorKind = 'configuration' | 'transient' | 'protocol';
+export type CanopyRealtimeErrorKind =
+  | 'configuration'
+  | 'transient'
+  | 'protocol';
 
-export interface QwenRealtimeErrorOptions {
-  kind?: QwenRealtimeErrorKind;
+export interface CanopyRealtimeErrorOptions {
+  kind?: CanopyRealtimeErrorKind;
   status?: number;
   providerType?: string;
   param?: string;
@@ -317,7 +322,7 @@ function classifyRealtimeErrorKind(
   code: string | undefined,
   message: string,
   status?: number,
-): QwenRealtimeErrorKind {
+): CanopyRealtimeErrorKind {
   const normalized = `${code ?? ''} ${message}`.toLowerCase();
   if (
     status === 429 ||
@@ -349,10 +354,10 @@ function classifyRealtimeErrorKind(
   return 'protocol';
 }
 
-export class QwenRealtimeError extends Error {
+export class CanopyRealtimeError extends Error {
   readonly code?: string;
   readonly fatal: boolean;
-  readonly kind: QwenRealtimeErrorKind;
+  readonly kind: CanopyRealtimeErrorKind;
   readonly status?: number;
   readonly providerType?: string;
   readonly param?: string;
@@ -362,10 +367,10 @@ export class QwenRealtimeError extends Error {
     message: string,
     code?: string,
     fatal = true,
-    options: QwenRealtimeErrorOptions = {},
+    options: CanopyRealtimeErrorOptions = {},
   ) {
     super(message);
-    this.name = 'QwenRealtimeError';
+    this.name = 'CanopyRealtimeError';
     this.code = code;
     this.fatal = fatal;
     this.kind =
@@ -403,7 +408,7 @@ interface ProviderMessage extends Record<string, unknown> {
   event_id?: unknown;
 }
 
-export function deriveQwenOmniRealtimeUrl(
+export function deriveCanopyOmniRealtimeUrl(
   endpoint: string,
   model: string,
 ): string {
@@ -447,7 +452,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function optionalString(
   value: unknown,
-  maxChars: number = QWEN_REALTIME_LIMITS.maxIdentifierChars,
+  maxChars: number = CANOPY_REALTIME_LIMITS.maxIdentifierChars,
 ): string | undefined {
   return typeof value === 'string' && value.length <= maxChars
     ? value
@@ -466,7 +471,7 @@ function sanitizeErrorText(raw: unknown, apiKey?: string): string {
       ? raw
       : Buffer.isBuffer(raw) || raw instanceof Uint8Array
         ? Buffer.from(raw).toString('utf8')
-        : 'Qwen Realtime request failed.';
+        : 'Canopy Realtime request failed.';
   if (apiKey) text = text.split(apiKey).join('[REDACTED]');
   return escapeAnsiCtrlCodes(text).slice(0, MAX_ERROR_MESSAGE_CHARS);
 }
@@ -484,7 +489,7 @@ function optionalHttpStatus(value: unknown): number | undefined {
 function parseAudioDelta(value: unknown): Uint8Array | undefined {
   if (typeof value !== 'string' || value.length === 0) return undefined;
   const maxBase64Chars =
-    Math.ceil(QWEN_REALTIME_LIMITS.maxOutputAudioFrameBytes / 3) * 4 + 4;
+    Math.ceil(CANOPY_REALTIME_LIMITS.maxOutputAudioFrameBytes / 3) * 4 + 4;
   if (value.length > maxBase64Chars || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
     return undefined;
   }
@@ -492,18 +497,18 @@ function parseAudioDelta(value: unknown): Uint8Array | undefined {
   if (
     decoded.length === 0 ||
     decoded.length % 2 !== 0 ||
-    decoded.length > QWEN_REALTIME_LIMITS.maxOutputAudioFrameBytes
+    decoded.length > CANOPY_REALTIME_LIMITS.maxOutputAudioFrameBytes
   ) {
     return undefined;
   }
   return new Uint8Array(decoded);
 }
 
-export function openQwenRealtimeSession(
-  config: QwenRealtimeConfig,
-  callbacks: QwenRealtimeCallbacks = {},
-  deps: QwenRealtimeDeps = {},
-): Promise<QwenRealtimeSession> {
+export function openCanopyRealtimeSession(
+  config: CanopyRealtimeConfig,
+  callbacks: CanopyRealtimeCallbacks = {},
+  deps: CanopyRealtimeDeps = {},
+): Promise<CanopyRealtimeSession> {
   const connectTimeoutMs = deps.connectTimeoutMs ?? CONNECT_TIMEOUT_MS;
   const createWebSocket =
     deps.createWebSocket ??
@@ -515,18 +520,18 @@ export function openQwenRealtimeSession(
         handshakeTimeout: options.handshakeTimeout,
       }) as unknown as SocketLike);
 
-  return new Promise<QwenRealtimeSession>((resolve, reject) => {
+  return new Promise<CanopyRealtimeSession>((resolve, reject) => {
     if (deps.abortSignal?.aborted) {
-      reject(new QwenRealtimeError('Realtime connection was aborted.'));
+      reject(new CanopyRealtimeError('Realtime connection was aborted.'));
       return;
     }
 
     let realtimeUrl: string;
     try {
-      realtimeUrl = deriveQwenOmniRealtimeUrl(config.endpoint, config.model);
+      realtimeUrl = deriveCanopyOmniRealtimeUrl(config.endpoint, config.model);
     } catch (error) {
       reject(
-        new QwenRealtimeError(
+        new CanopyRealtimeError(
           sanitizeErrorText(
             error instanceof Error ? error.message : error,
             config.apiKey,
@@ -545,13 +550,13 @@ export function openQwenRealtimeSession(
         headers: config.apiKey
           ? { Authorization: `Bearer ${config.apiKey}` }
           : {},
-        maxPayload: QWEN_REALTIME_LIMITS.maxIncomingMessageBytes,
+        maxPayload: CANOPY_REALTIME_LIMITS.maxIncomingMessageBytes,
         perMessageDeflate: false,
         handshakeTimeout: connectTimeoutMs,
       });
     } catch (error) {
       reject(
-        new QwenRealtimeError(
+        new CanopyRealtimeError(
           sanitizeErrorText(
             error instanceof Error ? error.message : error,
             config.apiKey,
@@ -615,7 +620,7 @@ export function openQwenRealtimeSession(
         return true;
       } catch (error) {
         fail(
-          new QwenRealtimeError(
+          new CanopyRealtimeError(
             sanitizeErrorText(
               error instanceof Error ? error.message : error,
               config.apiKey,
@@ -658,7 +663,7 @@ export function openQwenRealtimeSession(
       }
     };
 
-    const notifyError = (error: QwenRealtimeError) => {
+    const notifyError = (error: CanopyRealtimeError) => {
       try {
         callbacks.onError?.(error);
       } catch {
@@ -666,15 +671,15 @@ export function openQwenRealtimeSession(
       }
     };
 
-    const unrecoverableInputError = (): QwenRealtimeError =>
-      new QwenRealtimeError(
+    const unrecoverableInputError = (): CanopyRealtimeError =>
+      new CanopyRealtimeError(
         'Realtime connection ended before accepted speech finished transcribing.',
         'unrecoverable_input',
         true,
         { kind: 'protocol' },
       );
 
-    const pendingInputLossError = (): QwenRealtimeError | undefined => {
+    const pendingInputLossError = (): CanopyRealtimeError | undefined => {
       const hasUnresolvedCommittedInput = [...committedInputItemIds].some(
         (itemId) => !completedInputTranscripts.has(itemId),
       );
@@ -685,7 +690,7 @@ export function openQwenRealtimeSession(
         : undefined;
     };
 
-    function fail(error: QwenRealtimeError): void {
+    function fail(error: CanopyRealtimeError): void {
       if (terminal) return;
       const inputLossError = pendingInputLossError();
       const reportedError =
@@ -704,7 +709,7 @@ export function openQwenRealtimeSession(
     }
 
     const protocolError = (message: string, code: string) => {
-      fail(new QwenRealtimeError(message, code));
+      fail(new CanopyRealtimeError(message, code));
     };
 
     const sendJson = (body: Record<string, unknown>): boolean => {
@@ -714,7 +719,7 @@ export function openQwenRealtimeSession(
         return true;
       } catch (error) {
         fail(
-          new QwenRealtimeError(
+          new CanopyRealtimeError(
             sanitizeErrorText(
               error instanceof Error ? error.message : error,
               config.apiKey,
@@ -1265,14 +1270,14 @@ export function openQwenRealtimeSession(
       }
     };
 
-    const session: QwenRealtimeSession = {
+    const session: CanopyRealtimeSession = {
       callEpoch: config.callEpoch,
       closed,
       pushAudio: (pcm16) => {
         if (pcm16.length === 0) return false;
         if (
           pcm16.length % 2 !== 0 ||
-          pcm16.length > QWEN_REALTIME_LIMITS.maxInputAudioFrameBytes
+          pcm16.length > CANOPY_REALTIME_LIMITS.maxInputAudioFrameBytes
         ) {
           throw new RangeError(
             'Realtime input must be a bounded PCM16 audio frame.',
@@ -1282,7 +1287,8 @@ export function openQwenRealtimeSession(
           terminal ||
           closedByClient ||
           ws.readyState !== ws.OPEN ||
-          (ws.bufferedAmount ?? 0) > QWEN_REALTIME_LIMITS.maxBufferedSocketBytes
+          (ws.bufferedAmount ?? 0) >
+            CANOPY_REALTIME_LIMITS.maxBufferedSocketBytes
         ) {
           if (!backpressureWarned) {
             backpressureWarned = true;
@@ -1339,7 +1345,7 @@ export function openQwenRealtimeSession(
         if (
           typeof update.output !== 'string' ||
           update.output.trim().length === 0 ||
-          update.output.length > QWEN_REALTIME_LIMITS.maxFunctionOutputChars
+          update.output.length > CANOPY_REALTIME_LIMITS.maxFunctionOutputChars
         ) {
           throw new RangeError(
             'Realtime handoff update exceeded the allowed size.',
@@ -1379,7 +1385,7 @@ export function openQwenRealtimeSession(
         if (
           typeof text !== 'string' ||
           text.trim().length === 0 ||
-          text.length > QWEN_REALTIME_LIMITS.maxFunctionOutputChars
+          text.length > CANOPY_REALTIME_LIMITS.maxFunctionOutputChars
         ) {
           throw new RangeError(
             'Realtime backend context exceeded the allowed size.',
@@ -1392,7 +1398,7 @@ export function openQwenRealtimeSession(
         if (
           typeof message !== 'string' ||
           message.trim().length === 0 ||
-          message.length > QWEN_REALTIME_LIMITS.maxFunctionOutputChars
+          message.length > CANOPY_REALTIME_LIMITS.maxFunctionOutputChars
         ) {
           throw new RangeError(
             'Realtime speech request exceeded the allowed size.',
@@ -1432,7 +1438,8 @@ export function openQwenRealtimeSession(
           input_audio_transcription: {
             model: 'qwen3-asr-flash-realtime',
           },
-          instructions: config.instructions ?? buildQwenRealtimeInstructions(),
+          instructions:
+            config.instructions ?? buildCanopyRealtimeInstructions(),
           turn_detection: {
             type: 'semantic_vad',
             create_response: true,
@@ -1455,7 +1462,7 @@ export function openQwenRealtimeSession(
       }
       const raw = String(args[0]);
       if (
-        Buffer.byteLength(raw) > QWEN_REALTIME_LIMITS.maxIncomingMessageBytes
+        Buffer.byteLength(raw) > CANOPY_REALTIME_LIMITS.maxIncomingMessageBytes
       ) {
         protocolError(
           'Realtime provider message exceeded the allowed size.',
@@ -1627,16 +1634,17 @@ export function openQwenRealtimeSession(
           const itemId = optionalString(message['item_id']);
           const text = optionalString(
             message['text'] ?? message['delta'] ?? '',
-            QWEN_REALTIME_LIMITS.maxTranscriptChars,
+            CANOPY_REALTIME_LIMITS.maxTranscriptChars,
           );
           const stash = optionalString(
             message['stash'] ?? '',
-            QWEN_REALTIME_LIMITS.maxTranscriptChars,
+            CANOPY_REALTIME_LIMITS.maxTranscriptChars,
           );
           if (
             text === undefined ||
             stash === undefined ||
-            text.length + stash.length > QWEN_REALTIME_LIMITS.maxTranscriptChars
+            text.length + stash.length >
+              CANOPY_REALTIME_LIMITS.maxTranscriptChars
           ) {
             protocolError(
               'Realtime input transcript exceeded the allowed size.',
@@ -1674,7 +1682,7 @@ export function openQwenRealtimeSession(
           }
           const transcript = optionalString(
             message['transcript'],
-            QWEN_REALTIME_LIMITS.maxTranscriptChars,
+            CANOPY_REALTIME_LIMITS.maxTranscriptChars,
           );
           if (transcript === undefined) {
             protocolError(
@@ -1704,7 +1712,7 @@ export function openQwenRealtimeSession(
             fail(inputLossError);
           } else {
             notifyError(
-              new QwenRealtimeError(
+              new CanopyRealtimeError(
                 sanitizeErrorText(
                   error?.['message'] ??
                     error?.['code'] ??
@@ -1820,7 +1828,7 @@ export function openQwenRealtimeSession(
           }
           const delta = optionalString(
             message['delta'],
-            QWEN_REALTIME_LIMITS.maxTextDeltaChars,
+            CANOPY_REALTIME_LIMITS.maxTextDeltaChars,
           );
           if (delta === undefined) {
             protocolError(
@@ -1859,7 +1867,7 @@ export function openQwenRealtimeSession(
           }
           const text = optionalString(
             message['text'] ?? message['transcript'],
-            QWEN_REALTIME_LIMITS.maxTranscriptChars,
+            CANOPY_REALTIME_LIMITS.maxTranscriptChars,
           );
           if (text === undefined) {
             protocolError(
@@ -1897,7 +1905,7 @@ export function openQwenRealtimeSession(
           const callId = optionalString(message['call_id']);
           const delta = optionalString(
             message['delta'],
-            QWEN_REALTIME_LIMITS.maxFunctionArgumentsChars,
+            CANOPY_REALTIME_LIMITS.maxFunctionArgumentsChars,
           );
           if (!callId || delta === undefined) {
             protocolError(
@@ -1920,7 +1928,7 @@ export function openQwenRealtimeSession(
           }
           if (
             !existing &&
-            pendingCalls.size >= QWEN_REALTIME_LIMITS.maxPendingFunctionCalls
+            pendingCalls.size >= CANOPY_REALTIME_LIMITS.maxPendingFunctionCalls
           ) {
             protocolError(
               'Realtime provider created too many pending function calls.',
@@ -1939,7 +1947,7 @@ export function openQwenRealtimeSession(
           };
           if (
             call.arguments.length + delta.length >
-            QWEN_REALTIME_LIMITS.maxFunctionArgumentsChars
+            CANOPY_REALTIME_LIMITS.maxFunctionArgumentsChars
           ) {
             protocolError(
               'Realtime function arguments exceeded the allowed size.',
@@ -1969,7 +1977,7 @@ export function openQwenRealtimeSession(
           const name = optionalString(message['name']);
           const args = optionalString(
             message['arguments'],
-            QWEN_REALTIME_LIMITS.maxFunctionArgumentsChars,
+            CANOPY_REALTIME_LIMITS.maxFunctionArgumentsChars,
           );
           if (!callId || !name || args === undefined) {
             protocolError(
@@ -1994,7 +2002,7 @@ export function openQwenRealtimeSession(
           }
           if (
             !existing &&
-            pendingCalls.size >= QWEN_REALTIME_LIMITS.maxPendingFunctionCalls
+            pendingCalls.size >= CANOPY_REALTIME_LIMITS.maxPendingFunctionCalls
           ) {
             protocolError(
               'Realtime provider created too many pending function calls.',
@@ -2027,7 +2035,7 @@ export function openQwenRealtimeSession(
           const name = optionalString(item['name']);
           const args = optionalString(
             item['arguments'],
-            QWEN_REALTIME_LIMITS.maxFunctionArgumentsChars,
+            CANOPY_REALTIME_LIMITS.maxFunctionArgumentsChars,
           );
           if (!callId || !name || args === undefined) break;
           const existing = pendingCalls.get(callId);
@@ -2046,7 +2054,7 @@ export function openQwenRealtimeSession(
           }
           if (
             !existing &&
-            pendingCalls.size >= QWEN_REALTIME_LIMITS.maxPendingFunctionCalls
+            pendingCalls.size >= CANOPY_REALTIME_LIMITS.maxPendingFunctionCalls
           ) {
             protocolError(
               'Realtime provider created too many pending function calls.',
@@ -2149,7 +2157,7 @@ export function openQwenRealtimeSession(
           );
           if (status === 'failed') {
             notifyError(
-              new QwenRealtimeError(
+              new CanopyRealtimeError(
                 'Realtime response failed.',
                 'response_failed',
                 false,
@@ -2176,12 +2184,12 @@ export function openQwenRealtimeSession(
           const errorMessage = sanitizeErrorText(
             providerError?.['message'] ??
               providerError?.['code'] ??
-              'Qwen Realtime request failed.',
+              'Canopy Realtime request failed.',
             config.apiKey,
           );
           const kind = classifyRealtimeErrorKind(code, errorMessage, status);
           fail(
-            new QwenRealtimeError(errorMessage, code, true, {
+            new CanopyRealtimeError(errorMessage, code, true, {
               kind,
               status,
               providerType,
@@ -2204,7 +2212,7 @@ export function openQwenRealtimeSession(
         : 'Realtime provider rejected the WebSocket upgrade.';
       const kind = classifyRealtimeErrorKind(code, errorMessage, status);
       fail(
-        new QwenRealtimeError(errorMessage, code, true, {
+        new CanopyRealtimeError(errorMessage, code, true, {
           kind,
           status,
         }),
@@ -2221,7 +2229,7 @@ export function openQwenRealtimeSession(
       );
       const status = optionalHttpStatus(statusMatch?.[1]);
       fail(
-        new QwenRealtimeError(
+        new CanopyRealtimeError(
           errorText,
           status ? `http_${status}` : 'socket_error',
           true,
@@ -2243,7 +2251,7 @@ export function openQwenRealtimeSession(
       const reason = sanitizeErrorText(args[1], config.apiKey);
       const suffix = code ? ` (${code}${reason ? `: ${reason}` : ''})` : '';
       const reasonKind = classifyRealtimeErrorKind(undefined, reason);
-      const error = new QwenRealtimeError(
+      const error = new CanopyRealtimeError(
         `Realtime connection closed unexpectedly${suffix}.`,
         'connection_closed',
         true,
@@ -2266,7 +2274,7 @@ export function openQwenRealtimeSession(
     });
 
     abortListener = () => {
-      fail(new QwenRealtimeError('Realtime connection was aborted.'));
+      fail(new CanopyRealtimeError('Realtime connection was aborted.'));
     };
     deps.abortSignal?.addEventListener('abort', abortListener, { once: true });
     if (deps.abortSignal?.aborted) abortListener();
@@ -2274,7 +2282,7 @@ export function openQwenRealtimeSession(
     connectTimer = setTimeout(() => {
       if (!ready) {
         fail(
-          new QwenRealtimeError(
+          new CanopyRealtimeError(
             'Realtime connection timed out.',
             'connection_timeout',
           ),

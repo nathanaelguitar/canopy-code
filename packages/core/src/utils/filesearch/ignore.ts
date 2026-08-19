@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ignore from 'ignore';
 import picomatch from 'picomatch';
-import { getQwenIgnoreFileNames } from '../qwenIgnoreParser.js';
+import { getCanopyIgnoreFileNames } from '../canopy-ignore-parser.js';
 import { createDebugLogger } from '../debugLogger.js';
 
 const hasFileExtension = picomatch('**/*[*.]*');
@@ -17,7 +17,7 @@ const debugLogger = createDebugLogger('FILE_SEARCH_IGNORE');
 export interface LoadIgnoreRulesOptions {
   projectRoot: string;
   useGitignore: boolean;
-  useQwenignore: boolean;
+  useCanopyignore: boolean;
   customIgnoreFiles?: string[];
   ignoreDirs: string[];
 }
@@ -32,14 +32,14 @@ export function loadIgnoreRules(options: LoadIgnoreRulesOptions): Ignore {
     }
   }
 
-  if (options.useQwenignore) {
-    for (const ignoreFileName of getQwenIgnoreFileNames(
+  if (options.useCanopyignore) {
+    for (const ignoreFileName of getCanopyIgnoreFileNames(
       options.customIgnoreFiles,
     )) {
-      const qwenignorePath = path.join(options.projectRoot, ignoreFileName);
-      const qwenignoreContent = readIgnoreFile(qwenignorePath);
-      if (qwenignoreContent !== undefined) {
-        ignorer.addSource(qwenignoreContent);
+      const canopyignorePath = path.join(options.projectRoot, ignoreFileName);
+      const canopyignoreContent = readIgnoreFile(canopyignorePath);
+      if (canopyignoreContent !== undefined) {
+        ignorer.addSource(canopyignoreContent);
       }
     }
   }

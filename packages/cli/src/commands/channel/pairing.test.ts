@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,14 +29,14 @@ type ListArgs = Parameters<
 // uses (#7017): `--cwd` selects the scope, and two workspaces sharing a
 // channel name never see each other's requests through the CLI.
 describe('channel pairing CLI (--cwd scoping)', () => {
-  let qwenHome: string;
+  let canopyHome: string;
   let wsA: string;
   let wsB: string;
-  const originalQwenHome = process.env['QWEN_HOME'];
+  const originalCanopyHome = process.env['QWEN_HOME'];
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-pairing-cli-'));
-    process.env['QWEN_HOME'] = qwenHome;
+    canopyHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-pairing-cli-'));
+    process.env['QWEN_HOME'] = canopyHome;
     wsA = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-a-'));
     wsB = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-b-'));
     vi.mocked(writeStdoutLine).mockClear();
@@ -44,12 +44,12 @@ describe('channel pairing CLI (--cwd scoping)', () => {
   });
 
   afterEach(() => {
-    if (originalQwenHome !== undefined) {
-      process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome !== undefined) {
+      process.env['QWEN_HOME'] = originalCanopyHome;
     } else {
       delete process.env['QWEN_HOME'];
     }
-    for (const dir of [qwenHome, wsA, wsB]) {
+    for (const dir of [canopyHome, wsA, wsB]) {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -170,7 +170,7 @@ export function resolveTestScope(input: {
 
   const affected = affectedWorkspaces(changed, globs);
   // The root goes FIRST: on a name collision a member must win — this very
-  // repo's root and packages/cli share the name `@qwen-code/qwen-code`, and
+  // repo's root and packages/cli share the name `@canopy-code/canopy-code`, and
   // last-write-wins would resolve a dependent of the CLI package to the root,
   // silently dropping the member's dependents from the closure.
   const graph = input.rootPackage ? [input.rootPackage, ...packages] : packages;

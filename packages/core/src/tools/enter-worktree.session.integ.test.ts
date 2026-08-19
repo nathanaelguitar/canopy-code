@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ describe('EnterWorktreeTool — WorktreeSession sidecar', () => {
   beforeEach(async () => {
     // Resolve via realpath so macOS `/var` → `/private/var` symlink
     // matches what `git rev-parse --show-toplevel` returns.
-    const raw = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-enter-sess-'));
+    const raw = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-enter-sess-'));
     repoRoot = await fs.realpath(raw);
     execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repoRoot });
     execFileSync('git', ['config', 'user.email', 't@e.com'], { cwd: repoRoot });
@@ -95,7 +95,7 @@ describe('EnterWorktreeTool — WorktreeSession sidecar', () => {
     // a fresh `enter_worktree` overwrites any stale sidecar.
     //
     // (The nested-worktree guard in execute() rejects this when cwd is
-    //  inside .qwen/worktrees/, but our test cwd is repoRoot, not the
+    //  inside .canopy/worktrees/, but our test cwd is repoRoot, not the
     //  worktree, so the guard doesn't trip.)
     await tool.build({ name: 'second' }).execute(new AbortController().signal);
 

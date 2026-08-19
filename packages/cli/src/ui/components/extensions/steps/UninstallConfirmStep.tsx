@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   type Extension,
   createDebugLogger,
   getExtensionDisplayName,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { theme } from '../../../semantic-colors.js';
 import { useKeypress } from '../../../hooks/useKeypress.js';
 import { t, getCurrentLanguage } from '../../../../i18n/index.js';
@@ -60,7 +60,10 @@ export function UninstallConfirmStep({
     <Box flexDirection="column" gap={1}>
       <Text color={theme.status.error}>
         {t('Are you sure you want to uninstall extension "{{name}}"?', {
-          name: getExtensionDisplayName(selectedExtension, getCurrentLanguage()),
+          name: getExtensionDisplayName(
+            selectedExtension,
+            getCurrentLanguage(),
+          ),
         })}
       </Text>
       <Text color={theme.status.error}>

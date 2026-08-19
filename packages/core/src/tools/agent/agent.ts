@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -229,7 +229,7 @@ export interface AgentParams {
   read_only?: boolean;
   /**
    * When set to `'worktree'`, spins up a temporary git worktree under
-   * `<projectRoot>/.qwen/worktrees/agent-<7hex>` and instructs the agent to
+   * `<projectRoot>/.canopy/worktrees/agent-<7hex>` and instructs the agent to
    * confine all file operations to that path. After the agent completes:
    * - if no changes were made, the worktree is auto-removed;
    * - if changes were made, the worktree is preserved and its path/branch
@@ -407,7 +407,7 @@ function permissionModeToApprovalMode(mode: PermissionMode): ApprovalMode {
  * independent imports of this module observe the same Symbol identity.
  */
 export const TOOL_REGISTRY_REBUILT: unique symbol = Symbol.for(
-  'qwen-code:tool-registry-rebuilt',
+  'canopy-code:tool-registry-rebuilt',
 );
 
 /**
@@ -728,7 +728,7 @@ export class AgentTool extends BaseDeclarativeTool<AgentParams, ToolResult> {
           minLength: 2,
           maxLength: 50,
           description:
-            'Only valid with subagent_type "fork". Loads a project profile from .qwen/fork-profiles/<name>.md and applies its tools and optional promptHint. Cannot be combined with fork_tools.',
+            'Only valid with subagent_type "fork". Loads a project profile from .canopy/fork-profiles/<name>.md and applies its tools and optional promptHint. Cannot be combined with fork_tools.',
         },
         run_in_background: {
           type: 'boolean',
@@ -747,7 +747,7 @@ export class AgentTool extends BaseDeclarativeTool<AgentParams, ToolResult> {
           type: 'string',
           enum: ['worktree'],
           description:
-            "Isolation mode. 'worktree' creates a temporary git worktree under <projectRoot>/.qwen/worktrees/agent-<7hex> so the agent works on an isolated copy of the repo. The worktree is auto-removed if the agent makes no changes; otherwise the worktree path and branch are returned in the result.",
+            "Isolation mode. 'worktree' creates a temporary git worktree under <projectRoot>/.canopy/worktrees/agent-<7hex> so the agent works on an isolated copy of the repo. The worktree is auto-removed if the agent makes no changes; otherwise the worktree path and branch are returned in the result.",
         },
         working_dir: {
           type: 'string',
@@ -1873,7 +1873,7 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
   }
 
   /**
-   * Wrap a subagent body in `qwen-code.subagent` span lifecycle.
+   * Wrap a subagent body in `canopy-code.subagent` span lifecycle.
    *
    * Single entry point for the 3 invocation paths (foreground named, fork,
    * background). Captures the invoker span context (for fork/background's
@@ -2031,7 +2031,7 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
       signal?: AbortSignal;
       updateOutput?: (output: ToolResultDisplay) => void;
       /**
-       * Optional sink the qwen-code.subagent span wrapper passes in so this
+       * Optional sink the canopy-code.subagent span wrapper passes in so this
        * method can report its actual terminal state (the outer try/catch
        * swallows errors, so the wrapper cannot derive it from a throw).
        * Review wenshao @ #4410.
@@ -2742,12 +2742,12 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
       } else if (this.params.isolation === 'worktree') {
         const cwd = this.config.getTargetDir();
         // Refuse nested isolation. If the parent itself is already
-        // running inside a worktree (cwd contains `.qwen/worktrees/`),
+        // running inside a worktree (cwd contains `.canopy/worktrees/`),
         // creating a sibling isolation worktree at the repo root
         // would leave the model's mental map pointing at the outer
         // worktree while the override aimed it at the inner one.
         // Same guard `enter_worktree` uses.
-        if (/\.qwen[\\/]worktrees[\\/]/.test(cwd)) {
+        if (/\.canopy[\\/]worktrees[\\/]/.test(cwd)) {
           return failWorktreeProvisioning(
             `Failed to set up worktree isolation: parent is already inside ` +
               `a worktree (${cwd}). Nested isolation worktrees are not ` +
@@ -2768,7 +2768,7 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
           );
         }
         // Anchor the worktree at the repo top-level so monorepo subdir
-        // launches still gather worktrees under `<repoRoot>/.qwen/...`,
+        // launches still gather worktrees under `<repoRoot>/.canopy/...`,
         // which is also the path the startup sweep scans.
         const projectRoot = (await probe.getRepoTopLevel()) ?? cwd;
         const wtService =
@@ -3789,7 +3789,7 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
         // do this in their finally blocks. Without it, every AgentTool /
         // SkillTool the fork's model instantiates from this registry leaks
         // its change-listener on shared SubagentManager / SkillManager.
-        // Wrap fork body in qwen-code.subagent span (#3731 Phase 3). Forks
+        // Wrap fork body in canopy-code.subagent span (#3731 Phase 3). Forks
         // are fire-and-forget — span gets a NEW traceId + `Link` back to the
         // invoking tool span. Spec recommends Link for "long running
         // asynchronous data processing operations" (OTel trace spec). Span
@@ -3855,8 +3855,8 @@ class AgentToolInvocation extends BaseToolInvocation<AgentParams, ToolResult> {
       }
 
       const fgHookOpts = { ...hookOpts, signal: fgAbortController.signal };
-      // Wrap in qwen-code.subagent span (#3731 Phase 3). Foreground
-      // invocations are child spans of the AGENT tool's `qwen-code.tool`
+      // Wrap in canopy-code.subagent span (#3731 Phase 3). Foreground
+      // invocations are child spans of the AGENT tool's `canopy-code.tool`
       // span, inheriting its traceId so the trace tree stays unified.
       const runFramed = () =>
         this.runWithSubagentSpan(

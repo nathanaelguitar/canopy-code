@@ -11,7 +11,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { glob } from 'glob';
-import { convertTomlToMarkdown } from '@qwen-code/qwen-code-core';
+import { convertTomlToMarkdown } from '@canopy-code/canopy-code-core';
 import { t } from '../i18n/index.js';
 
 export interface MigrationResult {
@@ -157,7 +157,7 @@ ${t('The TOML format for commands is being deprecated in favor of Markdown forma
 ${t('Markdown format is more readable and easier to edit.')}
 
 ${t('You can migrate these files automatically using:')}
-  qwen-code migrate-commands
+  canopy-code migrate-commands
 
 ${t('Or manually convert each file:')}
   - ${t('TOML: prompt = "..." / description = "..."')}

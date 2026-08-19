@@ -1,21 +1,21 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review load-rules`: read project-specific code-review rules from
+// `canopy review load-rules`: read project-specific code-review rules from
 // the **base branch** of a PR and emit a combined Markdown file.
 //
 // Rules are loaded from the base branch (not the PR branch) so a malicious
-// PR cannot inject `.qwen/review-rules.md` content that bypasses scrutiny.
+// PR cannot inject `.canopy/review-rules.md` content that bypasses scrutiny.
 // Sources, in order:
 //
-//   1. `.qwen/review-rules.md`
+//   1. `.canopy/review-rules.md`
 //   2. `.github/copilot-instructions.md` (preferred)
 //      OR `copilot-instructions.md` (fallback — only one is loaded)
 //   3. `AGENTS.md` — only the `## Code Review` section
-//   4. `QWEN.md`   — only the `## Code Review` section
+//   4. `CANOPY.md`   — only the `## Code Review` section
 //
 // Missing files are skipped silently. If no rules are found, the script
 // writes an empty file (or omits the file when `--out` is not given) and
@@ -63,11 +63,11 @@ function loadCombined(baseRef: string): {
   const sections: string[] = [];
   const loaded: string[] = [];
 
-  // 1. Qwen-native rules.
-  const qwenRules = showFile(baseRef, '.qwen/review-rules.md');
-  if (qwenRules) {
-    sections.push(`### From .qwen/review-rules.md\n\n${qwenRules.trim()}`);
-    loaded.push('.qwen/review-rules.md');
+  // 1. Canopy-native rules.
+  const canopyRules = showFile(baseRef, '.canopy/review-rules.md');
+  if (canopyRules) {
+    sections.push(`### From .canopy/review-rules.md\n\n${canopyRules.trim()}`);
+    loaded.push('.canopy/review-rules.md');
   }
 
   // 2. Copilot-compatible rules: prefer .github/copilot-instructions.md;
@@ -99,13 +99,13 @@ function loadCombined(baseRef: string): {
     }
   }
 
-  // 4. QWEN.md — extract Code Review section only.
-  const qwenMd = showFile(baseRef, 'QWEN.md');
-  if (qwenMd) {
-    const section = extractCodeReviewSection(qwenMd);
+  // 4. CANOPY.md — extract Code Review section only.
+  const canopyMd = showFile(baseRef, 'CANOPY.md');
+  if (canopyMd) {
+    const section = extractCodeReviewSection(canopyMd);
     if (section) {
-      sections.push(`### From QWEN.md\n\n${section}`);
-      loaded.push('QWEN.md');
+      sections.push(`### From CANOPY.md\n\n${section}`);
+      loaded.push('CANOPY.md');
     }
   }
 
@@ -136,7 +136,7 @@ async function runLoadRules(args: LoadRulesArgs): Promise<void> {
 export const loadRulesCommand: CommandModule = {
   command: 'load-rules <base_ref>',
   describe:
-    'Read project review rules from the base branch (.qwen/review-rules.md, .github/copilot-instructions.md, AGENTS.md, QWEN.md) and write a combined Markdown file',
+    'Read project review rules from the base branch (.canopy/review-rules.md, .github/copilot-instructions.md, AGENTS.md, CANOPY.md) and write a combined Markdown file',
   builder: (yargs) =>
     yargs
       .positional('base_ref', {

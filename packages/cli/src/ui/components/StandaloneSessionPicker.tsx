@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   SessionService,
   type Config,
   type SessionListItem,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { KeypressProvider } from '../contexts/KeypressContext.js';
 import { ConfigContext } from '../contexts/ConfigContext.js';
 import { SettingsContext } from '../contexts/SettingsContext.js';
@@ -113,7 +113,7 @@ export async function showResumeSessionPicker(
   const sessionService = new SessionService(cwd);
   const hasSession = await sessionService.loadLastSession();
   if (!hasSession) {
-    writeStdoutLine('No sessions found. Start a new session with `qwen`.');
+    writeStdoutLine('No sessions found. Start a new session with `canopy`.');
     return undefined;
   }
 

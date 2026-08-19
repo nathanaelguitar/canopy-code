@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { act } from 'react';
 import { render } from 'ink-testing-library';
 import { describe, expect, it, vi } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -18,7 +18,7 @@ import { MessageType, StreamingState } from '../types.js';
 import { StatusLineDialog } from './StatusLineDialog.js';
 
 function createSettings(): LoadedSettings {
-  const dir = mkdtempSync(path.join(tmpdir(), 'qwen-statusline-'));
+  const dir = mkdtempSync(path.join(tmpdir(), 'canopy-statusline-'));
   return new LoadedSettings(
     {
       settings: {},
@@ -47,8 +47,8 @@ function createSettings(): LoadedSettings {
 
 const config = {
   getCliVersion: () => '1.2.3',
-  getModel: () => 'qwen3-code-plus',
-  getModelDisplayName: () => 'Qwen3 Code Plus',
+  getModel: () => 'canopy3-code-plus',
+  getModelDisplayName: () => 'Canopy3 Code Plus',
   getTargetDir: () => '/repo/project',
   getContentGeneratorConfig: () => ({
     contextWindowSize: 1000,
@@ -57,7 +57,7 @@ const config = {
 } as Config;
 
 const uiState = {
-  currentModel: 'qwen3-code-plus',
+  currentModel: 'canopy3-code-plus',
   branchName: 'feature/pr-4087-statusline',
   streamingState: StreamingState.Idle,
   sessionStats: {
@@ -110,7 +110,7 @@ describe('StatusLineDialog', () => {
       frame.indexOf('current-dir'),
     );
     expect(lastFrame()).toContain('Preview');
-    expect(lastFrame()).toContain('Qwen3 Code Plus high');
+    expect(lastFrame()).toContain('Canopy3 Code Plus high');
   });
 
   it('persists selected presets on enter', async () => {
@@ -205,7 +205,7 @@ describe('StatusLineDialog', () => {
     await press(' ');
 
     expect(lastFrame()).toContain(
-      '\u279c project · git:(feature/pr-4087-statusline) · Qwen3 Code Plus high · 1.0k Context 25% used',
+      '\u279c project · git:(feature/pr-4087-statusline) · Canopy3 Code Plus high · 1.0k Context 25% used',
     );
 
     await press('\r');

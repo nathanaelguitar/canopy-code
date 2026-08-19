@@ -14,7 +14,7 @@ const useTerminalSizeMock = vi.mocked(useTerminalSize.useTerminalSize);
 
 const defaultProps = {
   version: '1.0.0',
-  authDisplayType: AuthDisplayType.QWEN_OAUTH,
+  authDisplayType: AuthDisplayType.CANOPY_OAUTH,
   model: 'qwen-coder-plus',
   workingDirectory: '/home/user/projects/test',
 };
@@ -44,7 +44,7 @@ describe('<Header />', () => {
     useTerminalSizeMock.mockReturnValue({ columns: 60, rows: 24 });
     const { lastFrame } = render(<Header {...defaultProps} />);
     expect(lastFrame()).not.toContain('██╔═══██╗');
-    expect(lastFrame()).toContain('>_ Qwen Code');
+    expect(lastFrame()).toContain('>_ Canopy Code');
   });
 
   it('displays the version number', () => {
@@ -63,7 +63,7 @@ describe('<Header />', () => {
 
   it('displays auth type and model', () => {
     const { lastFrame } = render(<Header {...defaultProps} />);
-    expect(lastFrame()).toContain('Qwen OAuth');
+    expect(lastFrame()).toContain('Canopy OAuth');
     expect(lastFrame()).toContain('qwen-coder-plus');
   });
 
@@ -128,9 +128,9 @@ describe('<Header />', () => {
     const frame = lastFrame() ?? '';
     expect(frame).toContain('Built-in DataWorks Official Skills');
     // Subtitle sits between the title and the auth line.
-    const titleIdx = frame.indexOf('>_ Qwen Code');
+    const titleIdx = frame.indexOf('>_ Canopy Code');
     const subtitleIdx = frame.indexOf('Built-in DataWorks Official Skills');
-    const authIdx = frame.indexOf('Qwen OAuth');
+    const authIdx = frame.indexOf('Canopy OAuth');
     expect(titleIdx).toBeLessThan(subtitleIdx);
     expect(subtitleIdx).toBeLessThan(authIdx);
   });
@@ -141,8 +141,8 @@ describe('<Header />', () => {
     // Title and auth still both render at their usual positions; the
     // spacer between them is just whitespace-padding, so we assert the
     // visible chrome the user sees.
-    expect(frame).toContain('>_ Qwen Code');
-    expect(frame).toContain('Qwen OAuth');
+    expect(frame).toContain('>_ Canopy Code');
+    expect(frame).toContain('Canopy OAuth');
   });
 
   it('renders the custom banner title in place of the default brand', () => {
@@ -150,7 +150,7 @@ describe('<Header />', () => {
       <Header {...defaultProps} customBannerTitle="Acme CLI" />,
     );
     expect(lastFrame()).toContain('Acme CLI');
-    expect(lastFrame()).not.toContain('>_ Qwen Code');
+    expect(lastFrame()).not.toContain('>_ Canopy Code');
     // version suffix is still appended
     expect(lastFrame()).toContain('v1.0.0');
   });
@@ -181,7 +181,7 @@ describe('<Header />', () => {
     expect(lastFrame()).not.toContain('X'.repeat(60));
   });
 
-  it('hides the logo column when neither custom tier fits — does NOT fall back to the default Qwen logo (preserves white-label intent)', () => {
+  it('hides the logo column when neither custom tier fits — does NOT fall back to the default Canopy logo (preserves white-label intent)', () => {
     const { lastFrame } = render(
       <Header
         {...defaultProps}
@@ -192,16 +192,16 @@ describe('<Header />', () => {
     expect(lastFrame()).not.toContain('X'.repeat(150));
     expect(lastFrame()).not.toContain('Y'.repeat(150));
     // Info panel still renders.
-    expect(lastFrame()).toContain('Qwen OAuth');
+    expect(lastFrame()).toContain('Canopy OAuth');
   });
 
-  it('falls back to the default Qwen logo when no custom art was provided at all', () => {
+  it('falls back to the default Canopy logo when no custom art was provided at all', () => {
     useTerminalSizeMock.mockReturnValue({ columns: 60, rows: 24 });
     const { lastFrame } = render(<Header {...defaultProps} />);
-    // With no customAsciiArt, narrow widths still hide the QWEN logo, but a
+    // With no customAsciiArt, narrow widths still hide the CANOPY logo, but a
     // wide enough terminal would show it — the previous test already covers
     // the wide case. This one just confirms the no-custom-art path doesn't
     // incidentally hide the logo.
-    expect(lastFrame()).toContain('>_ Qwen Code');
+    expect(lastFrame()).toContain('>_ Canopy Code');
   });
 });

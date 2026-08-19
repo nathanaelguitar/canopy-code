@@ -10,8 +10,8 @@ const mockEnvHttpProxyAgent = vi.hoisted(() =>
   })),
 );
 const mockNormalizeProxyUrl = vi.hoisted(() => vi.fn((url?: string) => url));
-const mockStorageGetGlobalQwenDir = vi.hoisted(() =>
-  vi.fn(() => '/tmp/qwen-home'),
+const mockStorageGetGlobalCanopyDir = vi.hoisted(() =>
+  vi.fn(() => '/tmp/canopy-home'),
 );
 const mockReadChannelMemory = vi.hoisted(() => vi.fn());
 const mockGetChannelMemoryRevision = vi.hoisted(() => vi.fn());
@@ -107,7 +107,7 @@ vi.mock('undici', () => ({
   setGlobalDispatcher: mockSetGlobalDispatcher,
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   addChannelMemoryEntries: mockAddChannelMemoryEntries,
   clearChannelMemory: mockClearChannelMemory,
   getChannelMemoryRevision: mockGetChannelMemoryRevision,
@@ -120,7 +120,7 @@ vi.mock('@qwen-code/qwen-code-core', () => ({
   removeChannelMemoryEntries: mockRemoveChannelMemoryEntries,
   updateChannelMemoryEntry: mockUpdateChannelMemoryEntry,
   Storage: {
-    getGlobalQwenDir: mockStorageGetGlobalQwenDir,
+    getGlobalCanopyDir: mockStorageGetGlobalCanopyDir,
   },
 }));
 
@@ -177,12 +177,12 @@ const invokeStartHandler = async (
   if (!handler) {
     throw new Error('startCommand handler is missing');
   }
-  await handler({ _: [], $0: 'qwen', ...args } as StartCommandArgs);
+  await handler({ _: [], $0: 'canopy', ...args } as StartCommandArgs);
 };
 
 const mockParsedChannelConfig = {
-  cwd: '/tmp/qwen-channel-test',
-  model: 'qwen-test-model',
+  cwd: '/tmp/canopy-channel-test',
+  model: 'canopy-test-model',
   sessionScope: 'user',
   type: 'telegram',
 };
@@ -201,7 +201,7 @@ beforeEach(() => {
   mockBridgeStart.mockResolvedValue(undefined);
   mockChannelConnect.mockRejectedValue(new Error('stop after channel setup'));
   mockCreateChannel.mockReturnValue(mockChannel);
-  mockFindCliEntryPath.mockReturnValue('/tmp/qwen-cli-entry.js');
+  mockFindCliEntryPath.mockReturnValue('/tmp/canopy-cli-entry.js');
   mockGetExtensionManager.mockResolvedValue({ getLoadedExtensions: () => [] });
   mockGetPlugin.mockResolvedValue({ createChannel: mockCreateChannel });
   mockLoadSettings.mockReturnValue({ merged: { channels: {} } });
@@ -216,7 +216,7 @@ beforeEach(() => {
   mockReadServiceInfo.mockReturnValue(null);
   mockRouterGetTarget.mockReturnValue(undefined);
   mockRouterRestoreSessions.mockResolvedValue({ failed: 0, restored: 0 });
-  mockStorageGetGlobalQwenDir.mockReturnValue('/tmp/qwen-home');
+  mockStorageGetGlobalCanopyDir.mockReturnValue('/tmp/canopy-home');
   mockChannelLoopStoreCreate.mockResolvedValue({ id: 'job-1' });
   mockChannelLoopStoreCreateForTarget.mockResolvedValue({ id: 'job-1' });
   mockChannelLoopStoreListForTarget.mockResolvedValue([]);
@@ -225,7 +225,7 @@ beforeEach(() => {
   delete process.env['https_proxy'];
   delete process.env['HTTP_PROXY'];
   delete process.env['http_proxy'];
-  delete process.env['QWEN_CODE_DISABLE_CRON'];
+  delete process.env['CANOPY_CODE_DISABLE_CRON'];
 });
 
 describe('resolveProxy', () => {
@@ -277,7 +277,7 @@ describe('resolveProxy', () => {
 
 describe('resolveExtensionChannelEntrySpecifier', () => {
   it('returns a file URL for extension channel entry paths', () => {
-    const extensionPath = join('/tmp', 'qwen extension');
+    const extensionPath = join('/tmp', 'canopy extension');
     const entry = join('dist', 'channel.js');
 
     expect(resolveExtensionChannelEntrySpecifier(extensionPath, entry)).toBe(
@@ -287,7 +287,7 @@ describe('resolveExtensionChannelEntrySpecifier', () => {
 });
 
 describe('startCommand.handler', () => {
-  it('refuses to start when channels are managed by qwen serve', async () => {
+  it('refuses to start when channels are managed by canopy serve', async () => {
     mockReadServiceInfo.mockReturnValue({
       owner: 'serve',
       pid: 1234,
@@ -309,7 +309,7 @@ describe('startCommand.handler', () => {
     }
 
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
-      expect.stringContaining('managed by qwen serve'),
+      expect.stringContaining('managed by canopy serve'),
     );
     expect(mockBridgeStart).not.toHaveBeenCalled();
   });
@@ -371,7 +371,7 @@ describe('startCommand.handler', () => {
         chatId: 'chat-1',
         isGroup: false,
       },
-      cwd: '/tmp/qwen-channel-test',
+      cwd: '/tmp/canopy-channel-test',
       cron: '0 9 * * *',
       prompt: 'post summary',
       recurring: true,
@@ -428,7 +428,7 @@ describe('startCommand.handler', () => {
 
   it('does not expose channel loops when cron is disabled', async () => {
     const channels = { telegram: { type: 'telegram' } };
-    process.env['QWEN_CODE_DISABLE_CRON'] = '1';
+    process.env['CANOPY_CODE_DISABLE_CRON'] = '1';
     mockLoadSettings.mockReturnValue({ merged: { channels } });
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
       throw new Error(`process.exit: ${String(code)}`);
@@ -440,7 +440,7 @@ describe('startCommand.handler', () => {
       );
     } finally {
       exitSpy.mockRestore();
-      delete process.env['QWEN_CODE_DISABLE_CRON'];
+      delete process.env['CANOPY_CODE_DISABLE_CRON'];
     }
 
     const options = mockCreateChannel.mock.calls[0]?.[3] as
@@ -456,7 +456,7 @@ describe('startCommand.handler', () => {
       telegram: { type: 'telegram' },
       feishu: { type: 'feishu' },
     };
-    process.env['QWEN_CODE_DISABLE_CRON'] = '1';
+    process.env['CANOPY_CODE_DISABLE_CRON'] = '1';
     mockLoadSettings.mockReturnValue({ merged: { channels } });
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
       throw new Error(`process.exit: ${String(code)}`);
@@ -466,7 +466,7 @@ describe('startCommand.handler', () => {
       await expect(invokeStartHandler({})).rejects.toThrow('process.exit: 1');
     } finally {
       exitSpy.mockRestore();
-      delete process.env['QWEN_CODE_DISABLE_CRON'];
+      delete process.env['CANOPY_CODE_DISABLE_CRON'];
     }
 
     expect(mockCreateChannel).toHaveBeenCalledTimes(2);
@@ -617,7 +617,7 @@ describe('startCommand.handler', () => {
     const bridge = mockAcpBridge.mock.results[0]!.value;
     const router = mockSessionRouter.mock.results[0]!.value;
     expect(mockAcpBridge).toHaveBeenCalledWith({
-      cliEntryPath: '/tmp/qwen-cli-entry.js',
+      cliEntryPath: '/tmp/canopy-cli-entry.js',
       cwd: mockParsedChannelConfig.cwd,
       model: mockParsedChannelConfig.model,
     });
@@ -1085,7 +1085,7 @@ describe('startCommand.handler', () => {
     const router = mockSessionRouter.mock.results[0]!.value;
     expect(mockAcpBridge).toHaveBeenCalledTimes(1);
     expect(mockAcpBridge).toHaveBeenCalledWith({
-      cliEntryPath: '/tmp/qwen-cli-entry.js',
+      cliEntryPath: '/tmp/canopy-cli-entry.js',
       cwd: process.cwd(),
       model: 'shared-model',
     });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import type {
   ConversationRecord,
   GoalSnapshotV2,
   ResumedSessionData,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 import type { HistoryItem } from '../types.js';
 import { MAX_INLINE_IMAGES_PER_ITEM } from './inline-image-parts.js';
@@ -370,7 +370,7 @@ describe('resumeHistoryUtils', () => {
 
   describe('UserPromptSubmit hook context provenance', () => {
     const tagged =
-      '<qwen:user-prompt-submit-context>\ninjected hook context\n</qwen:user-prompt-submit-context>';
+      '<canopy:user-prompt-submit-context>\ninjected hook context\n</canopy:user-prompt-submit-context>';
 
     const buildUserItems = (record: Record<string, unknown>) => {
       const conversation = {
@@ -488,7 +488,7 @@ describe('resumeHistoryUtils', () => {
       );
       const userItem = items.find((i) => i.type === 'user') as { text: string };
       expect(userItem.text).toBe('@file.ts summarize this');
-      expect(userItem.text).not.toContain('qwen:user-prompt-submit-context');
+      expect(userItem.text).not.toContain('canopy:user-prompt-submit-context');
     });
 
     it('strips a trailing tagged part when at_command userText is absent', () => {
@@ -734,9 +734,9 @@ describe('resumeHistoryUtils', () => {
               { text: 'expanded model prompt' } as Part,
               {
                 text: [
-                  '<qwen:user-prompt-submit-context>',
+                  '<canopy:user-prompt-submit-context>',
                   'hook-only context',
-                  '</qwen:user-prompt-submit-context>',
+                  '</canopy:user-prompt-submit-context>',
                 ].join('\n'),
               } as Part,
             ],
@@ -773,9 +773,9 @@ describe('resumeHistoryUtils', () => {
               { text: 'expanded model prompt' } as Part,
               {
                 text: [
-                  '<qwen:user-prompt-submit-context>',
+                  '<canopy:user-prompt-submit-context>',
                   'hook-only context',
-                  '</qwen:user-prompt-submit-context>',
+                  '</canopy:user-prompt-submit-context>',
                 ].join('\n'),
               } as Part,
             ],
@@ -806,9 +806,9 @@ describe('resumeHistoryUtils', () => {
               { text: 'user prompt' } as Part,
               {
                 text: [
-                  '<qwen:user-prompt-submit-context>',
+                  '<canopy:user-prompt-submit-context>',
                   'hook-only context',
-                  '</qwen:user-prompt-submit-context>',
+                  '</canopy:user-prompt-submit-context>',
                 ].join('\n'),
               } as Part,
             ],
@@ -865,9 +865,9 @@ describe('resumeHistoryUtils', () => {
             parts: [
               {
                 text: [
-                  '<qwen:user-prompt-submit-context>',
+                  '<canopy:user-prompt-submit-context>',
                   'hook-only context',
-                  '</qwen:user-prompt-submit-context>',
+                  '</canopy:user-prompt-submit-context>',
                 ].join('\n'),
               } as Part,
             ],
@@ -1076,7 +1076,7 @@ describe('resumeHistoryUtils', () => {
                   nodeVersion: '20.x',
                   npmVersion: '10.x',
                   sandboxEnv: 'none',
-                  modelVersion: 'qwen',
+                  modelVersion: 'canopy',
                   selectedAuthType: 'none',
                   ideClient: 'none',
                   sessionId: 'abc',

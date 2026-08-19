@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   isRequest,
   isResponse,
   parseInbound,
-  QWEN_METHOD_NS,
+  CANOPY_METHOD_NS,
   RPC,
 } from './json-rpc.js';
 
@@ -68,7 +68,7 @@ describe('json-rpc helpers', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('exposes the qwen extension namespace', () => {
-    expect(QWEN_METHOD_NS).toBe('_qwen/');
+  it('exposes the canopy extension namespace', () => {
+    expect(CANOPY_METHOD_NS).toBe('_canopy/');
   });
 });

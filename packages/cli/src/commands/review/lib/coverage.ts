@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1229,7 +1229,7 @@ type GapText = Record<Exclude<Delivery, 'ok'>, GapEntry>;
  * that every delivery check still passes.
  */
 const rebuildFix = (role: 'verify' | 'reverse-audit', noun: string): string =>
-  `build the prompt with \`"\${QWEN_CODE_CLI:-qwen}" review agent-prompt ` +
+  `build the prompt with \`"\${CANOPY_CODE_CLI:-canopy}" review agent-prompt ` +
   `--plan <plan> --role ${role} --findings <file> [--rules <rules file>] ` +
   // --round is MANDATORY for a reverse-audit build (`agent-prompt` refuses a
   // round-less call — the label keys the record and the budget gate's

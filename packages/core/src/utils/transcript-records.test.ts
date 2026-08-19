@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -355,7 +355,7 @@ describe('projectUserTranscriptForDisplay', () => {
 
   it('does not trust bare displayText without a final context tag', () => {
     const taggedPart = {
-      text: '<qwen:user-prompt-submit-context>user-authored text</qwen:user-prompt-submit-context>',
+      text: '<canopy:user-prompt-submit-context>user-authored text</canopy:user-prompt-submit-context>',
     };
     expect(
       projectUserTranscriptForDisplay({

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,13 +10,13 @@ import { type CommandContext } from '../ui/commands/types.js';
 import { createMockCommandContext } from '../test-utils/mockCommandContext.js';
 import * as systemInfoUtils from './systemInfo.js';
 import * as authModule from '../config/auth.js';
-import * as allProviders from '@qwen-code/qwen-code-core';
+import * as allProviders from '@canopy-code/canopy-code-core';
 
 vi.mock('./systemInfo.js');
 vi.mock('../config/auth.js');
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    (await importOriginal()) as typeof import('@qwen-code/qwen-code-core');
+    (await importOriginal()) as typeof import('@canopy-code/canopy-code-core');
   return {
     ...actual,
     findProviderByCredentials: vi.fn(actual.findProviderByCredentials),

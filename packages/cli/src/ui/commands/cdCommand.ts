@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { CommandKind, type SlashCommand } from './types.js';
 import { getSingleDirPathCompletions } from './directoryCommand.js';
-import { resolvePath } from '@qwen-code/qwen-code-core';
+import { resolvePath } from '@canopy-code/canopy-code-core';
 import {
   isFolderTrustEnabled,
   loadTrustedFolders,
@@ -155,7 +155,7 @@ export const cdCommand: SlashCommand = {
           pendingTrustedPathConfirmations.set(rawInvocation, realTargetPath);
           return {
             type: 'confirm_action' as const,
-            prompt: `Move this session to ${realTargetPath}? Qwen Code will be able to read, edit, and execute files there. This folder will be trusted for future sessions.`,
+            prompt: `Move this session to ${realTargetPath}? Canopy Code will be able to read, edit, and execute files there. This folder will be trusted for future sessions.`,
             originalInvocation: {
               raw: rawInvocation,
             },

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -110,7 +110,7 @@ export interface RuntimeDiagnosticsCollectorOptions {
   now?: () => string;
 }
 
-const RUNTIME_PROFILE_ENV = 'QWEN_CODE_PROFILE_RUNTIME';
+const RUNTIME_PROFILE_ENV = 'CANOPY_CODE_PROFILE_RUNTIME';
 
 export function isRuntimeDiagnosticsEnabled(
   env: NodeJS.ProcessEnv = process.env,

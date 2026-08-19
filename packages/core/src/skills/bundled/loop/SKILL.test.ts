@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -101,7 +101,7 @@ describe('bundled loop skill', () => {
     const { body } = loadLoopSkill();
 
     expect(body).toContain('## loop.md task-file mode');
-    expect(body).toContain('.qwen/loop.md');
+    expect(body).toContain('.canopy/loop.md');
     expect(body).toContain('`<<loop.md-dynamic>>`');
     expect(body).toContain('`<<loop.md>>`');
   });

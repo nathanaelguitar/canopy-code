@@ -16,7 +16,7 @@ import {
   IDEConnectionStatus,
   ideContextStore,
   type IDEConnectionState,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useSettings } from '../contexts/SettingsContext.js';
 import { isWorkspaceTrusted } from '../../config/trustedFolders.js';
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,8 +9,8 @@ import {
   AskUserQuestionDialog,
   computeHeaderCap,
 } from './AskUserQuestionDialog.js';
-import type { ToolAskUserQuestionConfirmationDetails } from '@qwen-code/qwen-code-core';
-import { ToolConfirmationOutcome } from '@qwen-code/qwen-code-core';
+import type { ToolAskUserQuestionConfirmationDetails } from '@canopy-code/canopy-code-core';
+import { ToolConfirmationOutcome } from '@canopy-code/canopy-code-core';
 import { renderWithProviders } from '../../../test-utils/render.js';
 import stripAnsi from 'strip-ansi';
 

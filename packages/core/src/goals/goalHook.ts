@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ export const MAX_GOAL_ITERATIONS = 50;
 export const GOAL_JUDGE_TIMEOUT_MS = 25_000;
 export const GOAL_HOOK_TIMEOUT_SECONDS = 30;
 export const GOAL_HOOK_TIMEOUT_MS = GOAL_HOOK_TIMEOUT_SECONDS * 1000;
-export const GOAL_HOOK_ID_OUTPUT_KEY = 'qwenGoalHookId';
+export const GOAL_HOOK_ID_OUTPUT_KEY = 'canopyGoalHookId';
 const GOAL_ABORTED_REASON =
   'Goal max iterations reached; cleared. Re-set with `/goal <condition>` if you still need it.';
 const GOAL_JUDGE_TIMEOUT_MESSAGE =

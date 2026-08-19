@@ -10,7 +10,7 @@ import {
   createDebugLogger,
   resolveOpenAILogDir,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { CommandContext } from '../ui/commands/types.js';
 
 const debugLogger = createDebugLogger('SESSION_PATHS');

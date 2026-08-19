@@ -23,20 +23,20 @@ const mockRegisterPermissionRelay = vi.hoisted(() => vi.fn());
 const mockRegisterSessionCleanup = vi.hoisted(() => vi.fn());
 const mockSessionsPath = vi.hoisted(() => vi.fn(() => '/tmp/sessions.json'));
 const mockDaemonSessionRoutesPath = vi.hoisted(() =>
-  vi.fn(() => '/tmp/qwen/channels/daemon/workspace-hash/routes.json'),
+  vi.fn(() => '/tmp/canopy/channels/daemon/workspace-hash/routes.json'),
 );
 const mockDaemonChannelLoopPath = vi.hoisted(() =>
-  vi.fn(() => '/tmp/qwen/channels/daemon/workspace-hash/cron.json'),
+  vi.fn(() => '/tmp/canopy/channels/daemon/workspace-hash/cron.json'),
 );
 const mockDaemonObservedContactsPath = vi.hoisted(() =>
   vi.fn(
-    () => '/tmp/qwen/channels/daemon/workspace-hash/observed-contacts.json',
+    () => '/tmp/canopy/channels/daemon/workspace-hash/observed-contacts.json',
   ),
 );
 const mockDaemonChannelStateDir = vi.hoisted(() =>
   vi.fn(
     (workspace: string, channelName: string) =>
-      `/tmp/qwen/channels/daemon/${workspace === '/workspace' ? 'workspace-hash' : 'other-hash'}/instances/${channelName}-hash`,
+      `/tmp/canopy/channels/daemon/${workspace === '/workspace' ? 'workspace-hash' : 'other-hash'}/instances/${channelName}-hash`,
   ),
 );
 const mockObserveContact = vi.hoisted(() => vi.fn());
@@ -205,7 +205,7 @@ vi.mock('@qwen-code/acp-bridge/workspacePaths', () => ({
   canonicalizeWorkspace: mockCanonicalizeWorkspace,
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   addChannelMemoryEntries: mockAddChannelMemoryEntries,
   clearChannelMemory: mockClearChannelMemory,
   getChannelMemoryRevision: mockGetChannelMemoryRevision,
@@ -417,7 +417,7 @@ describe('createDaemonSessionFactory', () => {
     const factory = createDaemonSessionFactory({
       client: sdk.client,
       DaemonSessionClient: sdk.DaemonSessionClient,
-      clientId: 'qwen-channel-worker',
+      clientId: 'canopy-channel-worker',
     });
 
     await factory({ workspaceCwd: '/workspace', modelServiceId: 'qwen-plus' });
@@ -435,7 +435,7 @@ describe('createDaemonSessionFactory', () => {
         sessionScope: 'thread',
         sourceType: 'channel',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
     expect(sdk.DaemonSessionClient.resume).toHaveBeenCalledWith(
       sdk.client,
@@ -445,7 +445,7 @@ describe('createDaemonSessionFactory', () => {
         modelServiceId: 'qwen-plus',
         sessionScope: 'thread',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
   });
 
@@ -454,7 +454,7 @@ describe('createDaemonSessionFactory', () => {
     const factory = createDaemonSessionFactory({
       client: sdk.client,
       DaemonSessionClient: sdk.DaemonSessionClient,
-      clientId: 'qwen-channel-worker',
+      clientId: 'canopy-channel-worker',
     });
 
     await factory({
@@ -475,7 +475,7 @@ describe('createDaemonSessionFactory', () => {
         sessionScope: 'thread',
         sourceType: 'channel',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
     expect(sdk.DaemonSessionClient.resume).toHaveBeenCalledWith(
       sdk.client,
@@ -485,7 +485,7 @@ describe('createDaemonSessionFactory', () => {
         approvalMode: 'yolo',
         sessionScope: 'thread',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
   });
 
@@ -494,7 +494,7 @@ describe('createDaemonSessionFactory', () => {
     const factory = createDaemonSessionFactory({
       client: sdk.client,
       DaemonSessionClient: sdk.DaemonSessionClient,
-      clientId: 'qwen-channel-worker',
+      clientId: 'canopy-channel-worker',
     });
 
     await factory({ workspaceCwd: '/workspace', sourceId: 'dingtalk-main' });
@@ -512,7 +512,7 @@ describe('createDaemonSessionFactory', () => {
         sourceType: 'channel',
         sourceId: 'dingtalk-main',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
     // The load branch never re-stamps creation attribution: no sourceId in the
     // load request even when the factory request carried one.
@@ -523,7 +523,7 @@ describe('createDaemonSessionFactory', () => {
         workspaceCwd: '/workspace',
         sessionScope: 'thread',
       },
-      'qwen-channel-worker',
+      'canopy-channel-worker',
     );
   });
 });
@@ -924,7 +924,7 @@ describe('runChannelDaemonWorker', () => {
           list: expect.any(Function),
         },
         stateDir:
-          '/tmp/qwen/channels/daemon/workspace-hash/instances/telegram-hash',
+          '/tmp/canopy/channels/daemon/workspace-hash/instances/telegram-hash',
       }),
     );
     expect(mockDaemonChannelStateDir).toHaveBeenCalledWith(
@@ -933,7 +933,7 @@ describe('runChannelDaemonWorker', () => {
     );
     expect(mockDaemonObservedContactsPath).toHaveBeenCalledWith('/workspace');
     expect(mockObservedContactStore).toHaveBeenCalledWith(
-      '/tmp/qwen/channels/daemon/workspace-hash/observed-contacts.json',
+      '/tmp/canopy/channels/daemon/workspace-hash/observed-contacts.json',
     );
     const channelOptions = mockCreateChannel.mock.calls[0]![3] as {
       observedContacts: {
@@ -974,7 +974,7 @@ describe('runChannelDaemonWorker', () => {
       expect.any(Object),
       '/workspace',
       'user',
-      '/tmp/qwen/channels/daemon/workspace-hash/routes.json',
+      '/tmp/canopy/channels/daemon/workspace-hash/routes.json',
       { recoveryMode: 'lazy' },
     );
     expect(mockRouterRestoreRoutes).toHaveBeenCalledTimes(1);
@@ -1014,7 +1014,7 @@ describe('runChannelDaemonWorker', () => {
 
     expect(mockDaemonChannelLoopPath).toHaveBeenCalledWith('/workspace');
     expect(mockChannelLoopStore).toHaveBeenCalledWith({
-      filePath: '/tmp/qwen/channels/daemon/workspace-hash/cron.json',
+      filePath: '/tmp/canopy/channels/daemon/workspace-hash/cron.json',
     });
     const channelOptions = mockCreateChannel.mock.calls[0]![3] as {
       loopController?: {
@@ -2034,81 +2034,85 @@ describe('daemonWorkerCommand', () => {
     mockProcessExit();
 
     await expect(
-      daemonWorkerCommand.handler({ channel: ['telegram'], _: [], $0: 'qwen' }),
+      daemonWorkerCommand.handler({
+        channel: ['telegram'],
+        _: [],
+        $0: 'canopy',
+      }),
     ).rejects.toThrow('process.exit 1');
 
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
-      '[Channel] daemon worker failed: daemon-worker is an internal qwen serve command.',
+      '[Channel] daemon worker failed: daemon-worker is an internal canopy serve command.',
     );
   });
 
   it('rejects the legacy static internal sentinel', async () => {
     mockProcessExit();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', '1');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', '1');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       await expect(
         daemonWorkerCommand.handler({
           channel: ['telegram'],
           _: [],
-          $0: 'qwen',
+          $0: 'canopy',
         }),
       ).rejects.toThrow('process.exit 1');
     } finally {
       restoreSend();
     }
 
-    expect(process.env['QWEN_CHANNEL_DAEMON_WORKER']).toBeUndefined();
+    expect(process.env['CANOPY_CHANNEL_DAEMON_WORKER']).toBeUndefined();
     expect(process.env['QWEN_DAEMON_URL']).toBeUndefined();
-    expect(process.env['QWEN_DAEMON_WORKSPACE']).toBeUndefined();
+    expect(process.env['CANOPY_DAEMON_WORKSPACE']).toBeUndefined();
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
-      '[Channel] daemon worker failed: daemon-worker is an internal qwen serve command.',
+      '[Channel] daemon worker failed: daemon-worker is an internal canopy serve command.',
     );
   });
 
   it('rejects internal sentinel without parent IPC', async () => {
     mockProcessExit();
     const restoreSend = stubProcessSend(undefined);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       await expect(
         daemonWorkerCommand.handler({
           channel: ['telegram'],
           _: [],
-          $0: 'qwen',
+          $0: 'canopy',
         }),
       ).rejects.toThrow('process.exit 1');
     } finally {
       restoreSend();
     }
 
-    expect(process.env['QWEN_CHANNEL_DAEMON_WORKER']).toBeUndefined();
+    expect(process.env['CANOPY_CHANNEL_DAEMON_WORKER']).toBeUndefined();
     expect(process.env['QWEN_DAEMON_URL']).toBeUndefined();
-    expect(process.env['QWEN_DAEMON_WORKSPACE']).toBeUndefined();
+    expect(process.env['CANOPY_DAEMON_WORKSPACE']).toBeUndefined();
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
-      '[Channel] daemon worker failed: daemon-worker is an internal qwen serve command.',
+      '[Channel] daemon worker failed: daemon-worker is an internal canopy serve command.',
     );
   });
 
   it('scrubs daemon connection env before validating channel selection', async () => {
     mockProcessExit();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_TOKEN', 'daemon-token');
     vi.stubEnv('QWEN_SERVER_TOKEN', 'server-token');
     vi.stubEnv('QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN', 'guard-secret');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       await expect(
-        daemonWorkerCommand.handler({ channel: [' '], _: [], $0: 'qwen' }),
+        daemonWorkerCommand.handler({ channel: [' '], _: [], $0: 'canopy' }),
       ).rejects.toThrow('process.exit 1');
     } finally {
       restoreSend();
@@ -2118,8 +2122,8 @@ describe('daemonWorkerCommand', () => {
     expect(process.env['QWEN_SERVER_TOKEN']).toBeUndefined();
     expect(process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN']).toBeUndefined();
     expect(process.env['QWEN_DAEMON_URL']).toBeUndefined();
-    expect(process.env['QWEN_DAEMON_WORKSPACE']).toBeUndefined();
-    expect(process.env['QWEN_CHANNEL_DAEMON_WORKER']).toBeUndefined();
+    expect(process.env['CANOPY_DAEMON_WORKSPACE']).toBeUndefined();
+    expect(process.env['CANOPY_CHANNEL_DAEMON_WORKER']).toBeUndefined();
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
       '[Channel] daemon worker failed: --channel requires a non-empty channel name.',
     );
@@ -2133,9 +2137,9 @@ describe('daemonWorkerCommand', () => {
   it('scrubs inherited loader env vars before starting channels', async () => {
     mockProcessExit();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     vi.stubEnv('NODE_OPTIONS', '--import file:///other-checkout/register.mjs');
     vi.stubEnv(
       'npm_config_node-options',
@@ -2144,7 +2148,7 @@ describe('daemonWorkerCommand', () => {
 
     try {
       await expect(
-        daemonWorkerCommand.handler({ channel: [' '], _: [], $0: 'qwen' }),
+        daemonWorkerCommand.handler({ channel: [' '], _: [], $0: 'canopy' }),
       ).rejects.toThrow('process.exit 1');
     } finally {
       restoreSend();
@@ -2164,17 +2168,17 @@ describe('daemonWorkerCommand', () => {
   it('scrubs daemon connection env when required env validation fails', async () => {
     mockProcessExit();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_TOKEN', 'daemon-token');
     vi.stubEnv('QWEN_SERVER_TOKEN', 'server-token');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       await expect(
         daemonWorkerCommand.handler({
           channel: ['telegram'],
           _: [],
-          $0: 'qwen',
+          $0: 'canopy',
         }),
       ).rejects.toThrow('process.exit 1');
     } finally {
@@ -2183,8 +2187,8 @@ describe('daemonWorkerCommand', () => {
 
     expect(process.env['QWEN_DAEMON_TOKEN']).toBeUndefined();
     expect(process.env['QWEN_SERVER_TOKEN']).toBeUndefined();
-    expect(process.env['QWEN_DAEMON_WORKSPACE']).toBeUndefined();
-    expect(process.env['QWEN_CHANNEL_DAEMON_WORKER']).toBeUndefined();
+    expect(process.env['CANOPY_DAEMON_WORKSPACE']).toBeUndefined();
+    expect(process.env['CANOPY_CHANNEL_DAEMON_WORKER']).toBeUndefined();
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
       '[Channel] daemon worker failed: QWEN_DAEMON_URL is required.',
     );
@@ -2194,17 +2198,17 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_TOKEN', 'daemon-token');
     vi.stubEnv('QWEN_SERVER_TOKEN', 'server-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith({
@@ -2234,9 +2238,9 @@ describe('daemonWorkerCommand', () => {
       },
     );
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     mockParseConfiguredChannels.mockResolvedValueOnce([
       parsedTelegram,
       parsedFeishu,
@@ -2258,7 +2262,7 @@ describe('daemonWorkerCommand', () => {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram', 'feishu'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2302,9 +2306,9 @@ describe('daemonWorkerCommand', () => {
       },
     );
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     mockCreateChannel.mockResolvedValueOnce({
       connect: vi.fn().mockRejectedValue(new Error('telegram failed')),
       disconnect: vi.fn(),
@@ -2315,7 +2319,7 @@ describe('daemonWorkerCommand', () => {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2341,16 +2345,16 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_TOKEN', 'daemon-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2390,15 +2394,15 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2440,15 +2444,15 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2485,9 +2489,9 @@ describe('daemonWorkerCommand', () => {
   it('honors a shutdown signal received during async setup', async () => {
     const exit = mockProcessExitNoThrow();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     let finishBridgeStart!: () => void;
     mockBridgeStart.mockImplementationOnce(
       () =>
@@ -2500,7 +2504,7 @@ describe('daemonWorkerCommand', () => {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(mockBridgeStart).toHaveBeenCalled();
@@ -2524,9 +2528,9 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const disconnect = vi.fn();
     const connect = vi.fn(
       () =>
@@ -2544,7 +2548,7 @@ describe('daemonWorkerCommand', () => {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(connect).toHaveBeenCalled();
@@ -2573,15 +2577,15 @@ describe('daemonWorkerCommand', () => {
   it('exits cleanly when the parent IPC disconnects', async () => {
     const exit = mockProcessExitNoThrow();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(mockBridgeStart).toHaveBeenCalled();
@@ -2600,9 +2604,9 @@ describe('daemonWorkerCommand', () => {
   it('exits with failure when shutdown fails', async () => {
     const exit = mockProcessExitNoThrow();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     mockBridgeStop.mockImplementationOnce(() => {
       throw new Error('stop boom');
     });
@@ -2611,7 +2615,7 @@ describe('daemonWorkerCommand', () => {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(mockBridgeStart).toHaveBeenCalled();
@@ -2632,15 +2636,15 @@ describe('daemonWorkerCommand', () => {
   it('force exits when a second signal arrives during shutdown', async () => {
     const exit = mockProcessExitNoThrow();
     const restoreSend = stubProcessSend(vi.fn() as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(mockBridgeStart).toHaveBeenCalled();
@@ -2674,16 +2678,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask: vi.fn(),
       deliverProactive,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2738,16 +2742,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask: vi.fn(),
       deliverProactive: vi.fn().mockRejectedValue(foreignError),
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2796,16 +2800,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask: vi.fn(),
       deliverProactive,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2861,16 +2865,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask: vi.fn(),
       deliverProactive,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2915,16 +2919,16 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -2964,16 +2968,16 @@ describe('daemonWorkerCommand', () => {
     const exit = mockProcessExitNoThrow();
     const send = vi.fn();
     const restoreSend = stubProcessSend(send as NodeJS.Process['send']);
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3020,16 +3024,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3079,16 +3083,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3139,16 +3143,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3205,16 +3209,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3269,16 +3273,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3338,16 +3342,16 @@ describe('daemonWorkerCommand', () => {
       validateWebhookTask,
       runWebhookTask,
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(
@@ -3405,16 +3409,16 @@ describe('daemonWorkerCommand', () => {
       runWebhookTask: vi.fn(() => never),
       deliverProactive: vi.fn(() => never),
     });
-    vi.stubEnv('QWEN_CHANNEL_DAEMON_WORKER', 'worker-token');
+    vi.stubEnv('CANOPY_CHANNEL_DAEMON_WORKER', 'worker-token');
     vi.stubEnv('QWEN_DAEMON_URL', 'http://127.0.0.1:4170');
-    vi.stubEnv('QWEN_DAEMON_WORKSPACE', '/workspace');
+    vi.stubEnv('CANOPY_DAEMON_WORKSPACE', '/workspace');
     const existingMessageListeners = process.listeners('message');
 
     try {
       const handler = daemonWorkerCommand.handler({
         channel: ['telegram'],
         _: [],
-        $0: 'qwen',
+        $0: 'canopy',
       });
       await vi.waitFor(() => {
         expect(send).toHaveBeenCalledWith(

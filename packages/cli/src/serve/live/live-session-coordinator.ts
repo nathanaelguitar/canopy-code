@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   SessionService,
   stripTerminalControlSequences,
   type SessionListItem,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   AcpSessionBridge,
   BridgeSession,
@@ -27,16 +27,16 @@ import type {
   WorkspaceRuntime,
 } from '../workspace-registry.js';
 import {
-  buildQwenRealtimeInstructions,
-  openQwenRealtimeSession,
-  QwenRealtimeError,
-  type QwenRealtimeCallbacks,
+  buildCanopyRealtimeInstructions,
+  openCanopyRealtimeSession,
+  CanopyRealtimeError,
+  type CanopyRealtimeCallbacks,
   type RealtimeCloseInfo,
-  type QwenRealtimeSession,
+  type CanopyRealtimeSession,
   type RealtimeDelegateCall,
   type RealtimeOutputTextEvent,
   type RealtimeTranscriptEntry,
-} from './qwen-realtime-session.js';
+} from './canopy-realtime-session.js';
 import { buildRealtimeStartupContext } from './realtime-startup-context.js';
 import type { LiveProviderCredential } from './provider-credentials.js';
 import {
@@ -59,7 +59,7 @@ function writeLiveDiagnostic(
   event: string,
   details: Readonly<Record<string, string | number | boolean | undefined>>,
 ): void {
-  if (process.env['QWEN_LIVE_DIAGNOSTICS'] !== '1') return;
+  if (process.env['CANOPY_LIVE_DIAGNOSTICS'] !== '1') return;
   process.stderr.write(
     `${JSON.stringify({
       timestamp: new Date().toISOString(),
@@ -82,8 +82,8 @@ function openLiveAudioCapture(
   source: LiveAudioCapture['source'],
   identifier: string,
 ): LiveAudioCapture | undefined {
-  const directory = process.env['QWEN_LIVE_DIAGNOSTICS_DIR'];
-  if (process.env['QWEN_LIVE_DIAGNOSTICS'] !== '1' || !directory?.trim()) {
+  const directory = process.env['CANOPY_LIVE_DIAGNOSTICS_DIR'];
+  if (process.env['CANOPY_LIVE_DIAGNOSTICS'] !== '1' || !directory?.trim()) {
     return undefined;
   }
   try {
@@ -146,7 +146,7 @@ export interface LiveSessionCoordinatorOptions {
   getProviderCredential: () => LiveProviderCredential;
   materializeConversationDirectory: (sessionId: string) => Promise<string>;
   discardEmptyConversationDirectory: (sessionId: string) => Promise<unknown>;
-  openRealtimeSession?: typeof openQwenRealtimeSession;
+  openRealtimeSession?: typeof openCanopyRealtimeSession;
   listRecentSessions?: (
     runtime: WorkspaceRuntime,
   ) => Promise<readonly SessionListItem[]>;
@@ -163,7 +163,7 @@ interface LiveCallContext {
   credential?: LiveProviderCredential;
   runtime?: WorkspaceRuntime;
   runtimePromise?: Promise<WorkspaceRuntime>;
-  realtime?: QwenRealtimeSession;
+  realtime?: CanopyRealtimeSession;
   realtimeGeneration: number;
   connectedGeneration?: number;
   resumeCandidate?: SessionListItem;
@@ -211,7 +211,7 @@ interface DelegateAdmission {
 interface ActiveHandoff {
   callId: string;
   generation: number;
-  source: QwenRealtimeSession;
+  source: CanopyRealtimeSession;
   admission: DelegateAdmission;
   turnComplete: Promise<void>;
   finishTurn: () => void;
@@ -269,7 +269,7 @@ type ProviderFailureBlocker =
   | undefined;
 
 function providerFailureBlocker(error: unknown): ProviderFailureBlocker {
-  if (!(error instanceof QwenRealtimeError)) return undefined;
+  if (!(error instanceof CanopyRealtimeError)) return undefined;
   if (error.kind === 'configuration') return 'provider_config';
   if (error.kind === 'transient') return 'provider_unreachable';
   return undefined;
@@ -380,7 +380,7 @@ function workerIdFromEvent(event: BridgeEvent): string | undefined {
   const rawOutput = update['rawOutput'];
   if (typeof rawOutput !== 'string') return undefined;
   const match =
-    /^\[🧵 ([A-Za-z0-9._:-]{1,8})\]\(qwen-session:\/\/([A-Za-z0-9._:-]{1,128})\) (?:started|completed(?: \(stopReason: [A-Za-z0-9._:-]{1,64}\))?)$/.exec(
+    /^\[🧵 ([A-Za-z0-9._:-]{1,8})\]\(canopy-session:\/\/([A-Za-z0-9._:-]{1,128})\) (?:started|completed(?: \(stopReason: [A-Za-z0-9._:-]{1,64}\))?)$/.exec(
       rawOutput,
     );
   if (!match?.[1] || !match[2] || match[1] !== match[2].slice(0, 8)) {
@@ -420,7 +420,7 @@ function toolPermissionEvent(
         typeof meta === 'object' &&
         meta !== null &&
         !Array.isArray(meta) &&
-        (meta as Record<string, unknown>)['qwenInteractionKind'] ===
+        (meta as Record<string, unknown>)['canopyInteractionKind'] ===
           'user_question'
       ) {
         return undefined;
@@ -431,14 +431,15 @@ function toolPermissionEvent(
 }
 
 export class LiveSessionCoordinator {
-  private readonly openRealtime: typeof openQwenRealtimeSession;
+  private readonly openRealtime: typeof openCanopyRealtimeSession;
   private readonly turnTimeoutMs: number;
   private readonly gracefulStopDrainMs: number;
   private readonly inFlightTurnAborts = new Set<AbortController>();
   private active?: LiveCallContext;
 
   constructor(private readonly options: LiveSessionCoordinatorOptions) {
-    this.openRealtime = options.openRealtimeSession ?? openQwenRealtimeSession;
+    this.openRealtime =
+      options.openRealtimeSession ?? openCanopyRealtimeSession;
     this.turnTimeoutMs =
       options.coordinatorTurnTimeoutMs ?? COORDINATOR_TURN_TIMEOUT_MS;
     this.gracefulStopDrainMs = Math.max(
@@ -505,7 +506,7 @@ export class LiveSessionCoordinator {
       if (!runtime || !currentCwd) {
         throw new Error('Live conversation workspace is unavailable.');
       }
-      context.realtimeInstructions = buildQwenRealtimeInstructions(
+      context.realtimeInstructions = buildCanopyRealtimeInstructions(
         await buildRealtimeStartupContext({
           runtime,
           workspaceRegistry: this.options.workspaceRegistry,
@@ -625,7 +626,7 @@ export class LiveSessionCoordinator {
   private callbacksFor(
     context: LiveCallContext,
     generation: number,
-  ): QwenRealtimeCallbacks {
+  ): CanopyRealtimeCallbacks {
     let diagnosticResponseId: string | undefined;
     let diagnosticAudioFrames = 0;
     let diagnosticAudioBytes = 0;
@@ -1228,7 +1229,7 @@ export class LiveSessionCoordinator {
     context: LiveCallContext,
     event: RealtimeDelegateCall,
     generation: number,
-    source: QwenRealtimeSession,
+    source: CanopyRealtimeSession,
     activeHandoff: ActiveHandoff,
     onPromptAdmitted: () => void,
   ): Promise<boolean> {
@@ -1299,7 +1300,7 @@ export class LiveSessionCoordinator {
               context.realtime === source
             ) {
               source.sendBackendContext(
-                `The Qwen Code agent could not complete the request: ${errorMessage(error)}`,
+                `The Canopy Code agent could not complete the request: ${errorMessage(error)}`,
               );
             }
           });
@@ -1319,7 +1320,7 @@ export class LiveSessionCoordinator {
     context: LiveCallContext,
     event: RealtimeDelegateCall,
     generation: number,
-    source: QwenRealtimeSession,
+    source: CanopyRealtimeSession,
     onPromptAdmitted: () => void,
   ): Promise<boolean> {
     if (!this.isActive(context)) return false;
@@ -1353,7 +1354,7 @@ export class LiveSessionCoordinator {
       );
       persisted = true;
     } catch (error) {
-      const message = `The Qwen Code agent could not complete the request: ${errorMessage(error)}`;
+      const message = `The Canopy Code agent could not complete the request: ${errorMessage(error)}`;
       if (
         this.isCurrentSocket(context, generation) &&
         context.realtime === source

@@ -42,10 +42,10 @@ describe('debugLogger', () => {
     getSessionId: () => 'test-session-123',
   };
 
-  const previousDebugLogFileEnv = process.env['QWEN_DEBUG_LOG_FILE'];
+  const previousDebugLogFileEnv = process.env['CANOPY_DEBUG_LOG_FILE'];
 
   beforeEach(async () => {
-    process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
     Storage.setRuntimeBaseDir(null);
     vi.clearAllMocks();
     vi.useFakeTimers();
@@ -63,9 +63,9 @@ describe('debugLogger', () => {
     setDebugLogSession(null);
     Storage.setRuntimeBaseDir(null);
     if (previousDebugLogFileEnv === undefined) {
-      delete process.env['QWEN_DEBUG_LOG_FILE'];
+      delete process.env['CANOPY_DEBUG_LOG_FILE'];
     } else {
-      process.env['QWEN_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
+      process.env['CANOPY_DEBUG_LOG_FILE'] = previousDebugLogFileEnv;
     }
   });
 
@@ -114,8 +114,8 @@ describe('debugLogger', () => {
       );
     });
 
-    it('does not write debug log by default when QWEN_DEBUG_LOG_FILE is unset', async () => {
-      delete process.env['QWEN_DEBUG_LOG_FILE'];
+    it('does not write debug log by default when CANOPY_DEBUG_LOG_FILE is unset', async () => {
+      delete process.env['CANOPY_DEBUG_LOG_FILE'];
 
       const logger = createDebugLogger();
       logger.info('default log');
@@ -126,9 +126,9 @@ describe('debugLogger', () => {
     });
 
     it.each(['', ' ', '0', 'false', 'off', 'no'])(
-      'does not write debug log when QWEN_DEBUG_LOG_FILE is %j',
+      'does not write debug log when CANOPY_DEBUG_LOG_FILE is %j',
       async (value) => {
-        process.env['QWEN_DEBUG_LOG_FILE'] = value;
+        process.env['CANOPY_DEBUG_LOG_FILE'] = value;
 
         const logger = createDebugLogger();
         logger.info('disabled log');
@@ -364,8 +364,8 @@ describe('debugLogger', () => {
       );
     });
 
-    it('does not create latest symlink when QWEN_DEBUG_LOG_FILE is unset', async () => {
-      delete process.env['QWEN_DEBUG_LOG_FILE'];
+    it('does not create latest symlink when CANOPY_DEBUG_LOG_FILE is unset', async () => {
+      delete process.env['CANOPY_DEBUG_LOG_FILE'];
       vi.clearAllMocks();
       resetDebugLoggingState();
       setDebugLogSession(uuidSession);
@@ -407,7 +407,7 @@ describe('debugLogger', () => {
     });
 
     it('does not create symlink when debug logging is disabled', async () => {
-      process.env['QWEN_DEBUG_LOG_FILE'] = '0';
+      process.env['CANOPY_DEBUG_LOG_FILE'] = '0';
       vi.clearAllMocks();
       resetDebugLoggingState();
       setDebugLogSession(uuidSession);

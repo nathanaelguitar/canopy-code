@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -243,7 +243,9 @@ describe('shellAstParser lazy runtime', () => {
   });
 
   it('keeps the packaged runtime deferred and parses from emitted chunks', async () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), 'qwen-shell-ast-parser-'));
+    const tempDir = mkdtempSync(
+      path.join(tmpdir(), 'canopy-shell-ast-parser-'),
+    );
     tempDirs.push(tempDir);
     const entryPath = path.join(tempDir, 'entry.ts');
     writeFileSync(

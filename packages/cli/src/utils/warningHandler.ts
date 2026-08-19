@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ function isDebugMode(): boolean {
   if (process.env['NODE_ENV'] === 'development') return true;
   const truthy = (v: string | undefined) =>
     !!v && v !== '0' && v.toLowerCase() !== 'false';
-  return truthy(process.env['DEBUG']) || truthy(process.env['QWEN_DEBUG']);
+  return truthy(process.env['DEBUG']) || truthy(process.env['CANOPY_DEBUG']);
 }
 
 let installedHandler: ((warning: Error) => void) | null = null;
@@ -48,7 +48,7 @@ export function resetWarningHandlerForTests(): void {
  * `MaxListenersExceededWarning` for AbortSignal while letting every other
  * warning through — including generic EventTarget leak warnings, which we
  * leave visible because they likely indicate a real leak elsewhere. In
- * debug mode (NODE_ENV=development, or DEBUG / QWEN_DEBUG set), all
+ * debug mode (NODE_ENV=development, or DEBUG / CANOPY_DEBUG set), all
  * warnings are forwarded so developers can still see them.
  *
  * Implementation note: simply adding a `warning` listener does NOT prevent
@@ -88,7 +88,7 @@ export function initializeWarningHandler(): void {
   >;
 
   installedHandler = (warning: Error) => {
-    // Evaluate isDebugMode() per warning so DEBUG / QWEN_DEBUG can be
+    // Evaluate isDebugMode() per warning so DEBUG / CANOPY_DEBUG can be
     // toggled at runtime (e.g. via a `/debug` slash command) without
     // re-running initializeWarningHandler.
     if (!isDebugMode() && isSuppressed(warning)) return;

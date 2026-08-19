@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@
 
 import type React from 'react';
 import { Box, Text } from 'ink';
-import type { ApprovalMode } from '@qwen-code/qwen-code-core';
+import type { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { AutoAcceptIndicator } from '../AutoAcceptIndicator.js';
 import { ContextUsageDisplay } from '../ContextUsageDisplay.js';
 import { theme } from '../../semantic-colors.js';

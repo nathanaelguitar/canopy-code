@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,23 +10,23 @@ import { resolveModelId, stripRuntimeSnapshotPrefix } from './modelId.js';
 
 describe('stripRuntimeSnapshotPrefix', () => {
   it('returns bare model IDs unchanged', () => {
-    expect(stripRuntimeSnapshotPrefix('qwen3.6-27b-autoround')).toBe(
-      'qwen3.6-27b-autoround',
+    expect(stripRuntimeSnapshotPrefix('canopy3.6-27b-autoround')).toBe(
+      'canopy3.6-27b-autoround',
     );
   });
 
   it('strips a single runtime snapshot prefix', () => {
     expect(
-      stripRuntimeSnapshotPrefix('$runtime|openai|qwen3.6-27b-autoround'),
-    ).toBe('qwen3.6-27b-autoround');
+      stripRuntimeSnapshotPrefix('$runtime|openai|canopy3.6-27b-autoround'),
+    ).toBe('canopy3.6-27b-autoround');
   });
 
   it('strips nested runtime snapshot prefixes (corruption self-heal)', () => {
     expect(
       stripRuntimeSnapshotPrefix(
-        '$runtime|openai|$runtime|openai|qwen3.6-27b-autoround',
+        '$runtime|openai|$runtime|openai|canopy3.6-27b-autoround',
       ),
-    ).toBe('qwen3.6-27b-autoround');
+    ).toBe('canopy3.6-27b-autoround');
   });
 
   it('returns the input unchanged for a malformed prefix with no model ID', () => {

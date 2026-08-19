@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -81,7 +81,7 @@ export function isDocumentNavigation(req: Request): boolean {
  * Exact session deep-link document navigations: `/session/<id>` with an
  * optional trailing slash and no further segments. Expressed as a regex (not
  * an Express route) so callers outside the runtime app — the deferred-runtime
- * gate in `run-qwen-serve.ts` — can apply the same discriminator.
+ * gate in `run-canopy-serve.ts` — can apply the same discriminator.
  */
 const SESSION_DEEP_LINK_PATH = /^\/session\/[^/]+\/?$/u;
 
@@ -151,7 +151,7 @@ function createSendIndex(
     // through a dotfile directory (e.g. ~/.nvm/.../web-shell/index.html).
     // The `send` library defaults to 'ignore' which returns a 404 for any
     // path containing a segment starting with '.', breaking users who
-    // installed qwen via nvm.
+    // installed canopy via nvm.
     res.sendFile(
       indexPath,
       { cacheControl: false, dotfiles: 'allow' },
@@ -162,7 +162,7 @@ function createSendIndex(
         // (EACCES/ESTALE on a network mount, a perms change, a partial
         // deploy).
         writeStderrLine(
-          `qwen serve: Web Shell index send failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: Web Shell index send failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         if (!res.headersSent) {
           res.status(500).type('text/plain').send('Failed to load Web Shell');
@@ -219,7 +219,7 @@ export function mountWebShellAssets(
     // it under serve debug mode so a white-screen shell has a diagnostic trail.
     if (isServeDebugMode()) {
       writeStderrLine(
-        `qwen serve: Web Shell asset not found: ${req.originalUrl}`,
+        `canopy serve: Web Shell asset not found: ${req.originalUrl}`,
       );
     }
     res.status(404).type('text/plain').send('Not found');
@@ -265,7 +265,7 @@ export function mountWebShellSpaFallback(
     // the shell vs. hitting real routes (routing-misconfig / proxy diagnosis).
     if (isServeDebugMode()) {
       writeStderrLine(
-        `qwen serve: Web Shell SPA fallback served for ${req.method} ${req.originalUrl}`,
+        `canopy serve: Web Shell SPA fallback served for ${req.method} ${req.originalUrl}`,
       );
     }
     sendIndex(res);

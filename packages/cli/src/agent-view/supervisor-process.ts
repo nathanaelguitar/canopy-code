@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -66,7 +66,7 @@ export function getAgentViewSupervisorSocketPath(
   const digest = shortHash(globalDir);
 
   if (platform === 'win32') {
-    return `\\\\.\\pipe\\qwen-agent-view-${digest}`;
+    return `\\\\.\\pipe\\canopy-agent-view-${digest}`;
   }
 
   const primaryPath = path.join(
@@ -84,7 +84,9 @@ export function getAgentViewSupervisorSocketPath(
   // path should pass a private 0700 runtimeDir (e.g. XDG_RUNTIME_DIR).
   const uid = process.getuid?.();
   const fallbackDir =
-    uid === undefined ? `qwen-agent-view-${digest}` : `qwen-agent-view-${uid}`;
+    uid === undefined
+      ? `canopy-agent-view-${digest}`
+      : `canopy-agent-view-${uid}`;
   return path.join(
     options.runtimeDir ?? os.tmpdir(),
     fallbackDir,

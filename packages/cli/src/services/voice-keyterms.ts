@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { isSubpath } from '@qwen-code/qwen-code-core';
+import { isSubpath } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import { resolvePath } from '../utils/resolvePath.js';
 
@@ -18,7 +18,7 @@ import { resolvePath } from '../utils/resolvePath.js';
 // trusted workspace (see readUserKeyterms). Mirrors Claude Code's voice keyterms
 // feature.
 const GLOBAL_KEYTERMS = [
-  'Qwen',
+  'Canopy',
   'MCP',
   'grep',
   'regex',
@@ -141,8 +141,8 @@ function resolveKeytermsFiles(
   if (!workspacePath) {
     return [];
   }
-  const qwenDir = path.dirname(workspacePath);
-  const workspaceRoot = path.dirname(qwenDir);
+  const canopyDir = path.dirname(workspacePath);
+  const workspaceRoot = path.dirname(canopyDir);
   const configured = readKeytermsFileSettings(settings);
   if (configured.length > 0) {
     return configured.map(({ path: configuredPath, scope }) => {
@@ -157,7 +157,7 @@ function resolveKeytermsFiles(
   }
   return [
     {
-      filePath: path.join(qwenDir, DEFAULT_KEYTERMS_FILENAME),
+      filePath: path.join(canopyDir, DEFAULT_KEYTERMS_FILENAME),
       workspaceRoot,
       mustBeInWorkspace: true,
     },

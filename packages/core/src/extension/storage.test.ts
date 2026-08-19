@@ -38,11 +38,12 @@ describe('ExtensionStorage', () => {
     vi.mocked(Storage).mockImplementation(
       () =>
         ({
-          getExtensionsDir: () => path.join(mockHomeDir, '.qwen', 'extensions'),
+          getExtensionsDir: () =>
+            path.join(mockHomeDir, '.canopy', 'extensions'),
         }) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     );
     vi.mocked(Storage.getUserExtensionsDir).mockReturnValue(
-      path.join(mockHomeDir, '.qwen', 'extensions'),
+      path.join(mockHomeDir, '.canopy', 'extensions'),
     );
     storage = new ExtensionStorage(extensionName);
   });
@@ -54,7 +55,7 @@ describe('ExtensionStorage', () => {
   it('should return the correct extension directory', () => {
     const expectedDir = path.join(
       mockHomeDir,
-      '.qwen',
+      '.canopy',
       'extensions',
       extensionName,
     );
@@ -64,7 +65,7 @@ describe('ExtensionStorage', () => {
   it('should return the correct config path', () => {
     const expectedPath = path.join(
       mockHomeDir,
-      '.qwen',
+      '.canopy',
       'extensions',
       extensionName,
       EXTENSIONS_CONFIG_FILENAME, // EXTENSIONS_CONFIG_FILENAME
@@ -75,7 +76,7 @@ describe('ExtensionStorage', () => {
   it('should return the correct env file path', () => {
     const expectedPath = path.join(
       mockHomeDir,
-      '.qwen',
+      '.canopy',
       'extensions',
       extensionName,
       EXTENSION_SETTINGS_FILENAME, // EXTENSION_SETTINGS_FILENAME
@@ -84,19 +85,19 @@ describe('ExtensionStorage', () => {
   });
 
   it('should return the correct user extensions directory', () => {
-    const expectedDir = path.join(mockHomeDir, '.qwen', 'extensions');
+    const expectedDir = path.join(mockHomeDir, '.canopy', 'extensions');
     expect(ExtensionStorage.getUserExtensionsDir()).toBe(expectedDir);
   });
 
   it('should create a temporary directory', async () => {
-    const mockTmpDir = '/tmp/qwen-extension-123';
+    const mockTmpDir = '/tmp/canopy-extension-123';
     vi.mocked(fs.promises.mkdtemp).mockResolvedValue(mockTmpDir);
     vi.mocked(os.tmpdir).mockReturnValue('/tmp');
 
     const result = await ExtensionStorage.createTmpDir();
 
     expect(fs.promises.mkdtemp).toHaveBeenCalledWith(
-      path.join('/tmp', 'qwen-extension'),
+      path.join('/tmp', 'canopy-extension'),
     );
     expect(result).toBe(mockTmpDir);
   });

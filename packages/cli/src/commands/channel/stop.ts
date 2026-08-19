@@ -7,8 +7,8 @@ import {
   removeServiceInfo,
 } from './pidfile.js';
 import {
-  QWEN_DAEMON_TOKEN_ENV,
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_DAEMON_TOKEN_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 } from '../../serve/channel-worker-env.js';
 
 interface StopArgs {
@@ -35,8 +35,8 @@ export const stopCommand: CommandModule<unknown, StopArgs> = {
     if (argv['daemon-url']) {
       const token =
         argv.token ??
-        process.env[QWEN_SERVER_TOKEN_ENV] ??
-        process.env[QWEN_DAEMON_TOKEN_ENV];
+        process.env[CANOPY_SERVER_TOKEN_ENV] ??
+        process.env[CANOPY_DAEMON_TOKEN_ENV];
       try {
         const sdk = (await import('@qwen-code/sdk/daemon')) as unknown as {
           DaemonClient: new (opts: { baseUrl: string; token?: string }) => {
@@ -77,7 +77,7 @@ export const stopCommand: CommandModule<unknown, StopArgs> = {
 
     if (info.owner === 'serve') {
       writeStderrLine(
-        `Channel service is managed by qwen serve (PID ${info.pid}). Stop qwen serve to stop channels.`,
+        `Channel service is managed by canopy serve (PID ${info.pid}). Stop canopy serve to stop channels.`,
       );
       process.exit(1);
     }

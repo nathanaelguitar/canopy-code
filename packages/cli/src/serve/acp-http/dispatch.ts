@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +24,7 @@ import {
   type SessionArchiveState,
   type SubagentLevel,
   IMAGE_CAPABILITY,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 // Import the permission error classes from the same module REST's
 // `sendPermissionVoteError` uses, so `instanceof` matches the class the bridge
 // actually throws (the core re-export is a distinct identity at runtime).
@@ -151,8 +151,8 @@ import type {
 } from './connection-registry.js';
 import type { DeliveryResult } from './transport-stream.js';
 import {
-  QWEN_META_KEY,
-  QWEN_METHOD_NS,
+  CANOPY_META_KEY,
+  CANOPY_METHOD_NS,
   RPC,
   error,
   isNotification,
@@ -176,7 +176,7 @@ function errMsg(err: unknown): string {
 const SESSION_WRITER_RPC_ERRORS = {
   session_writer_conflict: {
     code: SESSION_WRITER_RPC_CODES.session_writer_conflict,
-    message: 'This session is already open in another Qwen process.',
+    message: 'This session is already open in another Canopy process.',
   },
   session_writer_lost: {
     code: SESSION_WRITER_RPC_CODES.session_writer_lost,
@@ -229,122 +229,122 @@ type AddSessionArtifactInput = Parameters<
   HttpAcpBridge['addSessionArtifact']
 >[1];
 
-const SESSION_SHELL_METHOD = `${QWEN_METHOD_NS}session/shell`;
+const SESSION_SHELL_METHOD = `${CANOPY_METHOD_NS}session/shell`;
 const INVALID_PERMISSION_OUTCOME_ERROR =
   '`outcome` must be `{ outcome: "cancelled" }` or `{ outcome: "selected", optionId: string }`';
 
-const ALL_QWEN_VENDOR_METHODS: readonly string[] = [
-  `${QWEN_METHOD_NS}session/heartbeat`,
-  `${QWEN_METHOD_NS}session/context`,
-  `${QWEN_METHOD_NS}session/supported_commands`,
-  `${QWEN_METHOD_NS}session/update_metadata`,
-  `${QWEN_METHOD_NS}session/update_organization`,
-  `${QWEN_METHOD_NS}workspace/session_groups/list`,
-  `${QWEN_METHOD_NS}workspace/session_groups/create`,
-  `${QWEN_METHOD_NS}workspace/session_groups/update`,
-  `${QWEN_METHOD_NS}workspace/session_groups/delete`,
-  `${QWEN_METHOD_NS}workspace/mcp`,
-  `${QWEN_METHOD_NS}workspace/skills`,
-  `${QWEN_METHOD_NS}workspace/providers`,
-  `${QWEN_METHOD_NS}workspace/env`,
-  `${QWEN_METHOD_NS}workspace/preflight`,
-  `${QWEN_METHOD_NS}workspace/init`,
-  `${QWEN_METHOD_NS}workspace/trust`,
-  `${QWEN_METHOD_NS}workspace/trust/request`,
-  `${QWEN_METHOD_NS}workspace/permissions`,
-  `${QWEN_METHOD_NS}workspace/permissions/set`,
-  `${QWEN_METHOD_NS}workspace/voice`,
-  `${QWEN_METHOD_NS}workspace/voice/set`,
-  `${QWEN_METHOD_NS}workspace/setup-github`,
-  `${QWEN_METHOD_NS}workspace/set_tool_enabled`,
-  `${QWEN_METHOD_NS}workspace/restart_mcp_server`,
+const ALL_CANOPY_VENDOR_METHODS: readonly string[] = [
+  `${CANOPY_METHOD_NS}session/heartbeat`,
+  `${CANOPY_METHOD_NS}session/context`,
+  `${CANOPY_METHOD_NS}session/supported_commands`,
+  `${CANOPY_METHOD_NS}session/update_metadata`,
+  `${CANOPY_METHOD_NS}session/update_organization`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/list`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/create`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/update`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/delete`,
+  `${CANOPY_METHOD_NS}workspace/mcp`,
+  `${CANOPY_METHOD_NS}workspace/skills`,
+  `${CANOPY_METHOD_NS}workspace/providers`,
+  `${CANOPY_METHOD_NS}workspace/env`,
+  `${CANOPY_METHOD_NS}workspace/preflight`,
+  `${CANOPY_METHOD_NS}workspace/init`,
+  `${CANOPY_METHOD_NS}workspace/trust`,
+  `${CANOPY_METHOD_NS}workspace/trust/request`,
+  `${CANOPY_METHOD_NS}workspace/permissions`,
+  `${CANOPY_METHOD_NS}workspace/permissions/set`,
+  `${CANOPY_METHOD_NS}workspace/voice`,
+  `${CANOPY_METHOD_NS}workspace/voice/set`,
+  `${CANOPY_METHOD_NS}workspace/setup-github`,
+  `${CANOPY_METHOD_NS}workspace/set_tool_enabled`,
+  `${CANOPY_METHOD_NS}workspace/restart_mcp_server`,
   // Wave 1: session extensions
-  `${QWEN_METHOD_NS}session/recap`,
-  `${QWEN_METHOD_NS}session/btw`,
+  `${CANOPY_METHOD_NS}session/recap`,
+  `${CANOPY_METHOD_NS}session/btw`,
   SESSION_SHELL_METHOD,
-  `${QWEN_METHOD_NS}session/detach`,
-  `${QWEN_METHOD_NS}session/context_usage`,
-  `${QWEN_METHOD_NS}session/tasks`,
-  `${QWEN_METHOD_NS}session/lsp`,
-  `${QWEN_METHOD_NS}session/artifacts`,
-  `${QWEN_METHOD_NS}session/artifacts/add`,
-  `${QWEN_METHOD_NS}session/artifacts/remove`,
+  `${CANOPY_METHOD_NS}session/detach`,
+  `${CANOPY_METHOD_NS}session/context_usage`,
+  `${CANOPY_METHOD_NS}session/tasks`,
+  `${CANOPY_METHOD_NS}session/lsp`,
+  `${CANOPY_METHOD_NS}session/artifacts`,
+  `${CANOPY_METHOD_NS}session/artifacts/add`,
+  `${CANOPY_METHOD_NS}session/artifacts/remove`,
   // Wave 1: memory
-  `${QWEN_METHOD_NS}workspace/memory`,
-  `${QWEN_METHOD_NS}workspace/memory/write`,
-  `${QWEN_METHOD_NS}workspace/memory/remember`,
-  `${QWEN_METHOD_NS}workspace/memory/remember/get`,
-  `${QWEN_METHOD_NS}workspace/memory/forget`,
-  `${QWEN_METHOD_NS}workspace/memory/forget/get`,
-  `${QWEN_METHOD_NS}workspace/memory/dream`,
-  `${QWEN_METHOD_NS}workspace/memory/dream/get`,
+  `${CANOPY_METHOD_NS}workspace/memory`,
+  `${CANOPY_METHOD_NS}workspace/memory/write`,
+  `${CANOPY_METHOD_NS}workspace/memory/remember`,
+  `${CANOPY_METHOD_NS}workspace/memory/remember/get`,
+  `${CANOPY_METHOD_NS}workspace/memory/forget`,
+  `${CANOPY_METHOD_NS}workspace/memory/forget/get`,
+  `${CANOPY_METHOD_NS}workspace/memory/dream`,
+  `${CANOPY_METHOD_NS}workspace/memory/dream/get`,
   // Wave 1: files
-  `${QWEN_METHOD_NS}file/read`,
-  `${QWEN_METHOD_NS}file/read_bytes`,
-  `${QWEN_METHOD_NS}file/stat`,
-  `${QWEN_METHOD_NS}file/list`,
-  `${QWEN_METHOD_NS}file/glob`,
-  `${QWEN_METHOD_NS}file/write`,
-  `${QWEN_METHOD_NS}file/edit`,
+  `${CANOPY_METHOD_NS}file/read`,
+  `${CANOPY_METHOD_NS}file/read_bytes`,
+  `${CANOPY_METHOD_NS}file/stat`,
+  `${CANOPY_METHOD_NS}file/list`,
+  `${CANOPY_METHOD_NS}file/glob`,
+  `${CANOPY_METHOD_NS}file/write`,
+  `${CANOPY_METHOD_NS}file/edit`,
   // Wave 1: auth
-  `${QWEN_METHOD_NS}workspace/auth/status`,
-  `${QWEN_METHOD_NS}workspace/auth/device_flow/start`,
-  `${QWEN_METHOD_NS}workspace/auth/device_flow/get`,
-  `${QWEN_METHOD_NS}workspace/auth/device_flow/cancel`,
+  `${CANOPY_METHOD_NS}workspace/auth/status`,
+  `${CANOPY_METHOD_NS}workspace/auth/device_flow/start`,
+  `${CANOPY_METHOD_NS}workspace/auth/device_flow/get`,
+  `${CANOPY_METHOD_NS}workspace/auth/device_flow/cancel`,
   // Wave 1: remaining workspace
-  `${QWEN_METHOD_NS}workspace/tools`,
-  `${QWEN_METHOD_NS}workspace/mcp/tools`,
-  `${QWEN_METHOD_NS}workspace/mcp/resources`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/add`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/remove`,
-  `${QWEN_METHOD_NS}sessions/delete`,
-  `${QWEN_METHOD_NS}sessions/archive`,
-  `${QWEN_METHOD_NS}sessions/unarchive`,
+  `${CANOPY_METHOD_NS}workspace/tools`,
+  `${CANOPY_METHOD_NS}workspace/mcp/tools`,
+  `${CANOPY_METHOD_NS}workspace/mcp/resources`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/add`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/remove`,
+  `${CANOPY_METHOD_NS}sessions/delete`,
+  `${CANOPY_METHOD_NS}sessions/archive`,
+  `${CANOPY_METHOD_NS}sessions/unarchive`,
   // Wave 2: agents
-  `${QWEN_METHOD_NS}workspace/agents/list`,
-  `${QWEN_METHOD_NS}workspace/agents/get`,
-  `${QWEN_METHOD_NS}workspace/agents/create`,
-  `${QWEN_METHOD_NS}workspace/agents/update`,
-  `${QWEN_METHOD_NS}workspace/agents/delete`,
+  `${CANOPY_METHOD_NS}workspace/agents/list`,
+  `${CANOPY_METHOD_NS}workspace/agents/get`,
+  `${CANOPY_METHOD_NS}workspace/agents/create`,
+  `${CANOPY_METHOD_NS}workspace/agents/update`,
+  `${CANOPY_METHOD_NS}workspace/agents/delete`,
 ];
 
 const TRUSTED_WORKSPACE_METHODS = new Set<string>([
-  `${QWEN_METHOD_NS}workspace/mcp`,
-  `${QWEN_METHOD_NS}workspace/skills`,
-  `${QWEN_METHOD_NS}workspace/providers`,
-  `${QWEN_METHOD_NS}workspace/env`,
-  `${QWEN_METHOD_NS}workspace/preflight`,
-  `${QWEN_METHOD_NS}workspace/init`,
-  `${QWEN_METHOD_NS}workspace/permissions`,
-  `${QWEN_METHOD_NS}workspace/permissions/set`,
-  `${QWEN_METHOD_NS}workspace/voice`,
-  `${QWEN_METHOD_NS}workspace/voice/set`,
-  `${QWEN_METHOD_NS}workspace/setup-github`,
-  `${QWEN_METHOD_NS}workspace/set_tool_enabled`,
-  `${QWEN_METHOD_NS}workspace/restart_mcp_server`,
-  `${QWEN_METHOD_NS}workspace/memory`,
-  `${QWEN_METHOD_NS}workspace/memory/write`,
-  `${QWEN_METHOD_NS}workspace/memory/remember`,
-  `${QWEN_METHOD_NS}workspace/memory/remember/get`,
-  `${QWEN_METHOD_NS}workspace/memory/forget`,
-  `${QWEN_METHOD_NS}workspace/memory/forget/get`,
-  `${QWEN_METHOD_NS}workspace/memory/dream`,
-  `${QWEN_METHOD_NS}workspace/memory/dream/get`,
-  `${QWEN_METHOD_NS}file/write`,
-  `${QWEN_METHOD_NS}file/edit`,
-  `${QWEN_METHOD_NS}workspace/tools`,
-  `${QWEN_METHOD_NS}workspace/mcp/tools`,
-  `${QWEN_METHOD_NS}workspace/mcp/resources`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/add`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/remove`,
-  `${QWEN_METHOD_NS}workspace/agents/list`,
-  `${QWEN_METHOD_NS}workspace/agents/get`,
-  `${QWEN_METHOD_NS}workspace/agents/create`,
-  `${QWEN_METHOD_NS}workspace/agents/update`,
-  `${QWEN_METHOD_NS}workspace/agents/delete`,
-  `${QWEN_METHOD_NS}workspace/session_groups/create`,
-  `${QWEN_METHOD_NS}workspace/session_groups/update`,
-  `${QWEN_METHOD_NS}workspace/session_groups/delete`,
+  `${CANOPY_METHOD_NS}workspace/mcp`,
+  `${CANOPY_METHOD_NS}workspace/skills`,
+  `${CANOPY_METHOD_NS}workspace/providers`,
+  `${CANOPY_METHOD_NS}workspace/env`,
+  `${CANOPY_METHOD_NS}workspace/preflight`,
+  `${CANOPY_METHOD_NS}workspace/init`,
+  `${CANOPY_METHOD_NS}workspace/permissions`,
+  `${CANOPY_METHOD_NS}workspace/permissions/set`,
+  `${CANOPY_METHOD_NS}workspace/voice`,
+  `${CANOPY_METHOD_NS}workspace/voice/set`,
+  `${CANOPY_METHOD_NS}workspace/setup-github`,
+  `${CANOPY_METHOD_NS}workspace/set_tool_enabled`,
+  `${CANOPY_METHOD_NS}workspace/restart_mcp_server`,
+  `${CANOPY_METHOD_NS}workspace/memory`,
+  `${CANOPY_METHOD_NS}workspace/memory/write`,
+  `${CANOPY_METHOD_NS}workspace/memory/remember`,
+  `${CANOPY_METHOD_NS}workspace/memory/remember/get`,
+  `${CANOPY_METHOD_NS}workspace/memory/forget`,
+  `${CANOPY_METHOD_NS}workspace/memory/forget/get`,
+  `${CANOPY_METHOD_NS}workspace/memory/dream`,
+  `${CANOPY_METHOD_NS}workspace/memory/dream/get`,
+  `${CANOPY_METHOD_NS}file/write`,
+  `${CANOPY_METHOD_NS}file/edit`,
+  `${CANOPY_METHOD_NS}workspace/tools`,
+  `${CANOPY_METHOD_NS}workspace/mcp/tools`,
+  `${CANOPY_METHOD_NS}workspace/mcp/resources`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/add`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/remove`,
+  `${CANOPY_METHOD_NS}workspace/agents/list`,
+  `${CANOPY_METHOD_NS}workspace/agents/get`,
+  `${CANOPY_METHOD_NS}workspace/agents/create`,
+  `${CANOPY_METHOD_NS}workspace/agents/update`,
+  `${CANOPY_METHOD_NS}workspace/agents/delete`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/create`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/update`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/delete`,
 ]);
 
 const WORKSPACE_GENERATION_MUTATION_METHODS = new Set<string>([
@@ -352,33 +352,33 @@ const WORKSPACE_GENERATION_MUTATION_METHODS = new Set<string>([
   'session/load',
   'session/resume',
   'session/fork',
-  `${QWEN_METHOD_NS}workspace/init`,
-  `${QWEN_METHOD_NS}workspace/trust/request`,
-  `${QWEN_METHOD_NS}workspace/permissions/set`,
-  `${QWEN_METHOD_NS}workspace/voice/set`,
-  `${QWEN_METHOD_NS}workspace/setup-github`,
-  `${QWEN_METHOD_NS}workspace/set_tool_enabled`,
-  `${QWEN_METHOD_NS}workspace/restart_mcp_server`,
-  `${QWEN_METHOD_NS}workspace/memory/write`,
-  `${QWEN_METHOD_NS}workspace/memory/remember`,
-  `${QWEN_METHOD_NS}workspace/memory/forget`,
-  `${QWEN_METHOD_NS}workspace/memory/dream`,
-  `${QWEN_METHOD_NS}file/write`,
-  `${QWEN_METHOD_NS}file/edit`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/add`,
-  `${QWEN_METHOD_NS}workspace/mcp/servers/remove`,
-  `${QWEN_METHOD_NS}workspace/agents/create`,
-  `${QWEN_METHOD_NS}workspace/agents/update`,
-  `${QWEN_METHOD_NS}workspace/agents/delete`,
-  `${QWEN_METHOD_NS}workspace/session_groups/create`,
-  `${QWEN_METHOD_NS}workspace/session_groups/update`,
-  `${QWEN_METHOD_NS}workspace/session_groups/delete`,
+  `${CANOPY_METHOD_NS}workspace/init`,
+  `${CANOPY_METHOD_NS}workspace/trust/request`,
+  `${CANOPY_METHOD_NS}workspace/permissions/set`,
+  `${CANOPY_METHOD_NS}workspace/voice/set`,
+  `${CANOPY_METHOD_NS}workspace/setup-github`,
+  `${CANOPY_METHOD_NS}workspace/set_tool_enabled`,
+  `${CANOPY_METHOD_NS}workspace/restart_mcp_server`,
+  `${CANOPY_METHOD_NS}workspace/memory/write`,
+  `${CANOPY_METHOD_NS}workspace/memory/remember`,
+  `${CANOPY_METHOD_NS}workspace/memory/forget`,
+  `${CANOPY_METHOD_NS}workspace/memory/dream`,
+  `${CANOPY_METHOD_NS}file/write`,
+  `${CANOPY_METHOD_NS}file/edit`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/add`,
+  `${CANOPY_METHOD_NS}workspace/mcp/servers/remove`,
+  `${CANOPY_METHOD_NS}workspace/agents/create`,
+  `${CANOPY_METHOD_NS}workspace/agents/update`,
+  `${CANOPY_METHOD_NS}workspace/agents/delete`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/create`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/update`,
+  `${CANOPY_METHOD_NS}workspace/session_groups/delete`,
 ]);
 
-function advertisedQwenVendorMethods(
+function advertisedCanopyVendorMethods(
   sessionShellCommandEnabled: boolean,
 ): string[] {
-  return ALL_QWEN_VENDOR_METHODS.filter(
+  return ALL_CANOPY_VENDOR_METHODS.filter(
     (method) => sessionShellCommandEnabled || method !== SESSION_SHELL_METHOD,
   );
 }
@@ -397,7 +397,7 @@ const CONN_ROUTED_METHODS = new Set<string>([
   'session/close',
   'session/fork',
   'session/permission',
-  ...ALL_QWEN_VENDOR_METHODS,
+  ...ALL_CANOPY_VENDOR_METHODS,
 ]);
 
 // SYNC: server.ts MAX_TOOL_NAME_LENGTH / MAX_SERVER_NAME_LENGTH (both 256).
@@ -563,7 +563,7 @@ function parsePermissionResponse(
       // dropped — but log it, otherwise a client whose answers silently
       // vanished (agent sees none) has no server-side signal to chase.
       writeStderrLine(
-        'qwen serve: /acp session/permission dropping invalid `answers` (expected an object map of string values)',
+        'canopy serve: /acp session/permission dropping invalid `answers` (expected an object map of string values)',
       );
     }
   }
@@ -1029,7 +1029,7 @@ export class AcpDispatcher {
       : runtime.bridge.killSession(sessionId, { requireZeroAttaches: true });
     return cleanup.catch((err) => {
       writeStderrLine(
-        `qwen serve: /acp orphan killSession(${logSafe(sessionId)}) failed: ${logSafe(errMsg(err))}`,
+        `canopy serve: /acp orphan killSession(${logSafe(sessionId)}) failed: ${logSafe(errMsg(err))}`,
       );
       return undefined;
     });
@@ -1277,7 +1277,7 @@ export class AcpDispatcher {
         : undefined;
     } catch (err) {
       writeStderrLine(
-        `qwen serve: /acp configOptionsFor(${logSafe(sessionId)}) failed: ${logSafe(errMsg(err))}`,
+        `canopy serve: /acp configOptionsFor(${logSafe(sessionId)}) failed: ${logSafe(errMsg(err))}`,
       );
       return undefined;
     }
@@ -1366,14 +1366,14 @@ export class AcpDispatcher {
       const msg = errMsg(err);
       if (/not found|unknown session/i.test(msg)) return true;
       writeStderrLine(
-        `qwen serve: /acp cancelAbandonedPermission(${logSafe(req.sessionId)}) failed: ${logSafe(msg)}`,
+        `canopy serve: /acp cancelAbandonedPermission(${logSafe(req.sessionId)}) failed: ${logSafe(msg)}`,
       );
       return false;
     }
   }
 
   /**
-   * Build the `initialize` result advertising standard + `_qwen` caps.
+   * Build the `initialize` result advertising standard + `_canopy` caps.
    * Negotiates the protocol version: we only implement stable V1, so we
    * clamp to `[1, ACP_PROTOCOL_VERSION]` — a client asking for 0/negative
    * (ACP marks V0 a pre-release fallback) or a future version gets `1`
@@ -1404,12 +1404,12 @@ export class AcpDispatcher {
         configOptions: true,
         // Vendor extensions are advertised under `_meta` keyed by domain
         // (ACP convention, e.g. `_meta: { "zed.dev": … }`). Clients
-        // feature-detect before calling `_qwen/…` methods.
+        // feature-detect before calling `_canopy/…` methods.
         _meta: {
-          [QWEN_META_KEY]: {
+          [CANOPY_META_KEY]: {
             connectionId,
             workspaceCwd: this.boundWorkspace,
-            methods: advertisedQwenVendorMethods(
+            methods: advertisedCanopyVendorMethods(
               this.sessionShellCommandEnabled,
             ),
           },
@@ -1436,7 +1436,7 @@ export class AcpDispatcher {
       // Notification (no id) for an unowned session: no wire response to
       // send, so log it — otherwise "my cancel did nothing" is undebuggable.
       writeStderrLine(
-        `qwen serve: /acp notification for unowned session ${logSafe(sessionId)} (dropped)`,
+        `canopy serve: /acp notification for unowned session ${logSafe(sessionId)} (dropped)`,
       );
       return false;
     }
@@ -1537,7 +1537,7 @@ export class AcpDispatcher {
         this.resolveClientResponse(conn, msg, loopback);
       } catch (err) {
         writeStderrLine(
-          `qwen serve: /acp response handling error: ${logSafe(errMsg(err))}`,
+          `canopy serve: /acp response handling error: ${logSafe(errMsg(err))}`,
         );
       }
       return;
@@ -1613,7 +1613,7 @@ export class AcpDispatcher {
         case 'session/new': {
           if (id === undefined) {
             writeStderrLine(
-              'qwen serve: /acp session/new notification rejected',
+              'canopy serve: /acp session/new notification rejected',
             );
             return;
           }
@@ -1762,7 +1762,9 @@ export class AcpDispatcher {
         case 'session/load':
         case 'session/resume': {
           if (id === undefined) {
-            writeStderrLine(`qwen serve: /acp ${method} notification rejected`);
+            writeStderrLine(
+              `canopy serve: /acp ${method} notification rejected`,
+            );
             return;
           }
           const sessionId = normalizeSessionIdForLookup(
@@ -1938,8 +1940,8 @@ export class AcpDispatcher {
               const loadMeta = isObject(loadState._meta)
                 ? loadState._meta
                 : undefined;
-              const loadQwenMeta = isObject(loadMeta?.[QWEN_META_KEY])
-                ? loadMeta[QWEN_META_KEY]
+              const loadCanopyMeta = isObject(loadMeta?.[CANOPY_META_KEY])
+                ? loadMeta[CANOPY_META_KEY]
                 : undefined;
               const replayStatus =
                 method === 'session/load' && restored.partial === true
@@ -1986,8 +1988,8 @@ export class AcpDispatcher {
                     ? {
                         _meta: {
                           ...(loadMeta ?? {}),
-                          [QWEN_META_KEY]: {
-                            ...(loadQwenMeta ?? {}),
+                          [CANOPY_META_KEY]: {
+                            ...(loadCanopyMeta ?? {}),
                             sessionLoadReplay: replayStatus,
                           },
                         },
@@ -2153,7 +2155,7 @@ export class AcpDispatcher {
               conn.closeSessionStream(sessionId);
             } catch (teardownErr) {
               writeStderrLine(
-                `qwen serve: /acp session/close local teardown failed (${logSafe(sessionId)}): ${logSafe(errMsg(teardownErr))}`,
+                `canopy serve: /acp session/close local teardown failed (${logSafe(sessionId)}): ${logSafe(errMsg(teardownErr))}`,
               );
             }
           };
@@ -2211,7 +2213,7 @@ export class AcpDispatcher {
         case 'session/fork': {
           if (id === undefined) {
             writeStderrLine(
-              'qwen serve: /acp session/fork notification rejected',
+              'canopy serve: /acp session/fork notification rejected',
             );
             return;
           }
@@ -2332,7 +2334,7 @@ export class AcpDispatcher {
             // legacy `resolveClientResponse` path logs its vote/cancel
             // failures the same way).
             writeStderrLine(
-              `qwen serve: /acp session/permission rejected: \`requestId\` is required`,
+              `canopy serve: /acp session/permission rejected: \`requestId\` is required`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2354,7 +2356,7 @@ export class AcpDispatcher {
             // plain INVALID_PARAMS with no httpStatus for SDK callers.
             if (err instanceof AcpParamError) {
               writeStderrLine(
-                `qwen serve: /acp session/permission invalid params (requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
+                `canopy serve: /acp session/permission invalid params (requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
               );
               if (id !== undefined) {
                 conn.sendConn(
@@ -2386,7 +2388,7 @@ export class AcpDispatcher {
             sessionIdParam !== pendingRef.req.sessionId
           ) {
             writeStderrLine(
-              `qwen serve: /acp session/permission vote rejected: requestId ${logSafe(requestId)} does not belong to session ${logSafe(sessionIdParam)}`,
+              `canopy serve: /acp session/permission vote rejected: requestId ${logSafe(requestId)} does not belong to session ${logSafe(sessionIdParam)}`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2409,7 +2411,7 @@ export class AcpDispatcher {
           // exception). Reserve 409 for a present entry the bridge still rejects.
           if (this.registry && !pendingRef) {
             writeStderrLine(
-              `qwen serve: /acp session/permission vote dropped: no pending request for requestId ${logSafe(requestId)}`,
+              `canopy serve: /acp session/permission vote dropped: no pending request for requestId ${logSafe(requestId)}`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2426,7 +2428,7 @@ export class AcpDispatcher {
           const sessionId = pendingRef?.req.sessionId ?? sessionIdParam;
           if (!sessionId) {
             writeStderrLine(
-              `qwen serve: /acp session/permission vote dropped: no pending request for requestId ${logSafe(requestId)}`,
+              `canopy serve: /acp session/permission vote dropped: no pending request for requestId ${logSafe(requestId)}`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2446,7 +2448,7 @@ export class AcpDispatcher {
           // this connection).
           if (!conn.ownsSession(sessionId)) {
             writeStderrLine(
-              `qwen serve: /acp session/permission vote rejected: session ${logSafe(sessionId)} not owned by this connection (requestId ${logSafe(requestId)})`,
+              `canopy serve: /acp session/permission vote rejected: session ${logSafe(sessionId)} not owned by this connection (requestId ${logSafe(requestId)})`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2476,7 +2478,7 @@ export class AcpDispatcher {
             // policy-denied vote is a 403 (well-formed, authenticated, refused).
             if (err instanceof InvalidPermissionOptionError) {
               writeStderrLine(
-                `qwen serve: /acp session/permission invalid option (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
+                `canopy serve: /acp session/permission invalid option (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
               );
               if (id !== undefined) {
                 conn.sendConn(
@@ -2492,7 +2494,7 @@ export class AcpDispatcher {
             }
             if (err instanceof PermissionForbiddenError) {
               writeStderrLine(
-                `qwen serve: /acp session/permission forbidden (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
+                `canopy serve: /acp session/permission forbidden (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
               );
               if (id !== undefined) {
                 conn.sendConn(
@@ -2512,7 +2514,7 @@ export class AcpDispatcher {
               // in this build. 501 (not 500) so the SDK can say "daemon older
               // than your settings expect; upgrade".
               writeStderrLine(
-                `qwen serve: /acp session/permission policy not implemented (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
+                `canopy serve: /acp session/permission policy not implemented (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
               );
               if (id !== undefined) {
                 conn.sendConn(
@@ -2530,7 +2532,7 @@ export class AcpDispatcher {
               // the cancel sentinel), not a client mistake — 500 with a stable
               // code so the SDK can distinguish it from unrelated internals.
               writeStderrLine(
-                `qwen serve: /acp session/permission cancel-sentinel collision (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
+                `canopy serve: /acp session/permission cancel-sentinel collision (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(err.message)}`,
               );
               if (id !== undefined) {
                 conn.sendConn(
@@ -2551,7 +2553,7 @@ export class AcpDispatcher {
             // retry) — then rethrow so the outer dispatcher catch maps the
             // error for the wire.
             writeStderrLine(
-              `qwen serve: /acp session/permission vote failed (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(errMsg(err))}`,
+              `canopy serve: /acp session/permission vote failed (${logSafe(sessionId)}, requestId ${logSafe(requestId)}): ${logSafe(errMsg(err))}`,
             );
             const cancelled = this.cancelAbandonedPermission(
               { sessionId, bridgeRequestId: requestId },
@@ -2577,7 +2579,7 @@ export class AcpDispatcher {
             // present vote" and (b) make a legitimate retry on another
             // connection fail with a misleading "no pending" error.
             writeStderrLine(
-              `qwen serve: /acp session/permission vote not accepted by bridge (${logSafe(sessionId)}, requestId ${logSafe(requestId)})`,
+              `canopy serve: /acp session/permission vote not accepted by bridge (${logSafe(sessionId)}, requestId ${logSafe(requestId)})`,
             );
             if (id !== undefined) {
               conn.sendConn(
@@ -2608,7 +2610,7 @@ export class AcpDispatcher {
           // grepping a stuck prompt can then tell "vote accepted here" apart
           // from "vote never arrived" or "vote landed on another connection".
           writeStderrLine(
-            `qwen serve: /acp session/permission vote accepted (${logSafe(sessionId)}, requestId ${logSafe(requestId)}, connection ${logSafe(conn.connectionId.slice(0, 8))})`,
+            `canopy serve: /acp session/permission vote accepted (${logSafe(sessionId)}, requestId ${logSafe(requestId)}, connection ${logSafe(conn.connectionId.slice(0, 8))})`,
           );
           this.replyConn(conn, id, {});
           return;
@@ -2616,7 +2618,7 @@ export class AcpDispatcher {
 
         // STANDARD method (SDK 0.14.1, non-`unstable_`): model + mode live
         // here under categories `model`/`mode`, routed to the existing bridge
-        // setters. Replaces the old vendor `_qwen/session/set_model`.
+        // setters. Replaces the old vendor `_canopy/session/set_model`.
         case 'session/set_config_option': {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
@@ -2775,7 +2777,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/heartbeat`: {
+        case `${CANOPY_METHOD_NS}session/heartbeat`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           const result = this.bridge.recordHeartbeat(
@@ -2786,7 +2788,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/context`: {
+        case `${CANOPY_METHOD_NS}session/context`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           this.replyConn(
@@ -2797,7 +2799,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/supported_commands`: {
+        case `${CANOPY_METHOD_NS}session/supported_commands`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           this.replyConn(
@@ -2808,7 +2810,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/update_metadata`: {
+        case `${CANOPY_METHOD_NS}session/update_metadata`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const metadata = isObject(params['metadata'])
@@ -2831,7 +2833,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/update_organization`: {
+        case `${CANOPY_METHOD_NS}session/update_organization`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!sessionId) {
             throw new AcpParamError('`sessionId` is required');
@@ -2894,7 +2896,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/session_groups/list`: {
+        case `${CANOPY_METHOD_NS}workspace/session_groups/list`: {
           const workspaceCwd = this.parseBoundWorkspaceParam(params);
           const groups =
             await createSessionOrganizationService(workspaceCwd).listGroups();
@@ -2902,7 +2904,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/session_groups/create`: {
+        case `${CANOPY_METHOD_NS}workspace/session_groups/create`: {
           const workspaceCwd = this.parseBoundWorkspaceParam(params);
           const group = await createSessionOrganizationService(
             workspaceCwd,
@@ -2916,7 +2918,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/session_groups/update`: {
+        case `${CANOPY_METHOD_NS}workspace/session_groups/update`: {
           const workspaceCwd = this.parseBoundWorkspaceParam(params);
           const groupId = String(params['groupId'] ?? '');
           if (!groupId) {
@@ -2937,7 +2939,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/session_groups/delete`: {
+        case `${CANOPY_METHOD_NS}workspace/session_groups/delete`: {
           const workspaceCwd = this.parseBoundWorkspaceParam(params);
           const groupId = String(params['groupId'] ?? '');
           if (!groupId) {
@@ -2957,7 +2959,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/mcp`:
+        case `${CANOPY_METHOD_NS}workspace/mcp`:
           {
             const result = await this.workspace.getWorkspaceMcpStatus(
               this.wsCtx(conn, method),
@@ -2966,7 +2968,7 @@ export class AcpDispatcher {
             this.replyConn(conn, id, result);
           }
           return;
-        case `${QWEN_METHOD_NS}workspace/skills`:
+        case `${CANOPY_METHOD_NS}workspace/skills`:
           {
             const result = await this.workspace.getWorkspaceSkillsStatus(
               this.wsCtx(conn, method),
@@ -2975,7 +2977,7 @@ export class AcpDispatcher {
             this.replyConn(conn, id, result);
           }
           return;
-        case `${QWEN_METHOD_NS}workspace/providers`:
+        case `${CANOPY_METHOD_NS}workspace/providers`:
           {
             const result = await this.workspace.getWorkspaceProvidersStatus(
               this.wsCtx(conn, method),
@@ -2984,7 +2986,7 @@ export class AcpDispatcher {
             this.replyConn(conn, id, result);
           }
           return;
-        case `${QWEN_METHOD_NS}workspace/env`:
+        case `${CANOPY_METHOD_NS}workspace/env`:
           {
             const result = await this.workspace.getWorkspaceEnvStatus(
               this.wsCtx(conn, method),
@@ -2993,7 +2995,7 @@ export class AcpDispatcher {
             this.replyConn(conn, id, result);
           }
           return;
-        case `${QWEN_METHOD_NS}workspace/preflight`:
+        case `${CANOPY_METHOD_NS}workspace/preflight`:
           {
             const result = await this.workspace.getWorkspacePreflightStatus(
               this.wsCtx(conn, method),
@@ -3003,7 +3005,7 @@ export class AcpDispatcher {
           }
           return;
 
-        case `${QWEN_METHOD_NS}workspace/init`: {
+        case `${CANOPY_METHOD_NS}workspace/init`: {
           const rawForce = params['force'];
           if (rawForce !== undefined && typeof rawForce !== 'boolean') {
             if (id !== undefined) {
@@ -3027,7 +3029,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/trust`: {
+        case `${CANOPY_METHOD_NS}workspace/trust`: {
           const result = await this.workspace.getWorkspaceTrustStatus(
             this.wsCtx(conn, method),
           );
@@ -3035,7 +3037,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/trust/request`: {
+        case `${CANOPY_METHOD_NS}workspace/trust/request`: {
           const desiredState = params['desiredState'];
           if (desiredState !== 'trusted' && desiredState !== 'untrusted') {
             if (id !== undefined) {
@@ -3090,7 +3092,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/permissions`: {
+        case `${CANOPY_METHOD_NS}workspace/permissions`: {
           const result = await this.workspace.getWorkspacePermissionsStatus(
             this.wsCtx(conn, method),
           );
@@ -3099,7 +3101,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/permissions/set`: {
+        case `${CANOPY_METHOD_NS}workspace/permissions/set`: {
           const scope = params['scope'];
           if (scope !== 'user' && scope !== 'workspace') {
             if (id !== undefined) {
@@ -3180,7 +3182,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/voice`: {
+        case `${CANOPY_METHOD_NS}workspace/voice`: {
           const result = await this.workspace.getWorkspaceVoiceStatus(
             this.wsCtx(conn, method),
           );
@@ -3189,7 +3191,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/voice/set`: {
+        case `${CANOPY_METHOD_NS}workspace/voice/set`: {
           const update = parseWorkspaceVoiceUpdateParams(params);
           if ('error' in update) {
             if (id !== undefined) {
@@ -3207,7 +3209,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/setup-github`: {
+        case `${CANOPY_METHOD_NS}workspace/setup-github`: {
           if (params['consent'] !== true) {
             if (id !== undefined) {
               conn.sendConn(
@@ -3284,7 +3286,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/set_tool_enabled`: {
+        case `${CANOPY_METHOD_NS}workspace/set_tool_enabled`: {
           const toolName = String(params['toolName'] ?? '');
           if (!toolName || toolName.length > MAX_NAME_LENGTH) {
             if (id !== undefined) {
@@ -3308,7 +3310,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/restart_mcp_server`: {
+        case `${CANOPY_METHOD_NS}workspace/restart_mcp_server`: {
           const serverName = String(params['serverName'] ?? '');
           if (!serverName || serverName.length > MAX_NAME_LENGTH) {
             if (id !== undefined) {
@@ -3352,7 +3354,7 @@ export class AcpDispatcher {
 
         // ── Wave 1+2: ACP/REST parity methods ───────────────────────
 
-        case `${QWEN_METHOD_NS}session/recap`: {
+        case `${CANOPY_METHOD_NS}session/recap`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const result = await this.bridge.generateSessionRecap(
@@ -3364,7 +3366,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/btw`: {
+        case `${CANOPY_METHOD_NS}session/btw`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const rawQ = params['question'];
@@ -3394,7 +3396,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/shell`: {
+        case `${CANOPY_METHOD_NS}session/shell`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.sessionShellCommandEnabled) {
             if (id !== undefined) {
@@ -3430,7 +3432,7 @@ export class AcpDispatcher {
             const logClientId = logSafe(String(conn.clientId?.slice(0, 8)));
             const logCommand = logSafe(rawCmd.slice(0, 120));
             writeStderrLine(
-              `qwen serve: /acp session/shell session=${logSessionId} client=${logClientId} cmd=${logCommand}`,
+              `canopy serve: /acp session/shell session=${logSessionId} client=${logClientId} cmd=${logCommand}`,
             );
             const result = await this.bridge.executeShellCommand(
               sessionId,
@@ -3443,7 +3445,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/detach`: {
+        case `${CANOPY_METHOD_NS}session/detach`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const ctx = this.sessionCtx(conn, sessionId, loopback);
@@ -3453,7 +3455,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/context_usage`: {
+        case `${CANOPY_METHOD_NS}session/context_usage`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           const result = await this.bridge.getSessionContextUsageStatus(
@@ -3464,7 +3466,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/tasks`: {
+        case `${CANOPY_METHOD_NS}session/tasks`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           const result = await this.bridge.getSessionTasksStatus(sessionId);
@@ -3472,7 +3474,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/lsp`: {
+        case `${CANOPY_METHOD_NS}session/lsp`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           const result = await this.bridge.getSessionLspStatus(sessionId);
@@ -3480,7 +3482,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/artifacts`: {
+        case `${CANOPY_METHOD_NS}session/artifacts`: {
           const sessionId = String(params['sessionId'] ?? '');
           if (!this.requireOwned(conn, sessionId, id)) return;
           const result = await this.bridge.getSessionArtifacts(
@@ -3491,7 +3493,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/artifacts/add`: {
+        case `${CANOPY_METHOD_NS}session/artifacts/add`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const result = await this.bridge.addSessionArtifact(
@@ -3504,7 +3506,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}session/artifacts/remove`: {
+        case `${CANOPY_METHOD_NS}session/artifacts/remove`: {
           const sessionId = String(params['sessionId'] ?? '');
           await this.withMutableOwned(conn, sessionId, id, async () => {
             const artifactId = String(params['artifactId'] ?? '');
@@ -3526,7 +3528,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory`: {
+        case `${CANOPY_METHOD_NS}workspace/memory`: {
           const result = await collectWorkspaceMemoryStatus(
             this.boundWorkspace,
           );
@@ -3535,7 +3537,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/write`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/write`: {
           const content = params['content'];
           if (typeof content !== 'string') {
             if (id !== undefined)
@@ -3590,7 +3592,7 @@ export class AcpDispatcher {
           }
           const mode = (rawMode as 'append' | 'replace') ?? 'append';
           writeStderrLine(
-            `qwen serve: /acp workspace/memory/write scope=${scope} mode=${mode} client=${conn.clientId?.slice(0, 8)} bytes=${Buffer.byteLength(content, 'utf8')}`,
+            `canopy serve: /acp workspace/memory/write scope=${scope} mode=${mode} client=${conn.clientId?.slice(0, 8)} bytes=${Buffer.byteLength(content, 'utf8')}`,
           );
           const wr = await writeWorkspaceContextFile({
             scope,
@@ -3625,7 +3627,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/remember`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/remember`: {
           const content = params['content'];
           if (typeof content !== 'string' || !content.trim()) {
             if (id !== undefined) {
@@ -3710,7 +3712,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/remember/get`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/remember/get`: {
           const taskId = params['taskId'];
           if (typeof taskId !== 'string' || taskId.length === 0) {
             if (id !== undefined) {
@@ -3738,7 +3740,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/forget`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/forget`: {
           const query = params['query'];
           const trimmedQuery = typeof query === 'string' ? query.trim() : '';
           if (!trimmedQuery) {
@@ -3812,7 +3814,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/forget/get`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/forget/get`: {
           const taskId = params['taskId'];
           if (typeof taskId !== 'string' || taskId.length === 0) {
             if (id !== undefined) {
@@ -3840,7 +3842,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/dream`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/dream`: {
           try {
             const available =
               await this.bridge.isWorkspaceMemoryRememberAvailable();
@@ -3885,7 +3887,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/memory/dream/get`: {
+        case `${CANOPY_METHOD_NS}workspace/memory/dream/get`: {
           const taskId = params['taskId'];
           if (typeof taskId !== 'string' || taskId.length === 0) {
             if (id !== undefined) {
@@ -3913,7 +3915,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/read`: {
+        case `${CANOPY_METHOD_NS}file/read`: {
           const p = String(params['path'] ?? '');
           if (!p) {
             if (id !== undefined)
@@ -4012,7 +4014,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/read_bytes`: {
+        case `${CANOPY_METHOD_NS}file/read_bytes`: {
           if (!this.fsFactory) {
             if (id !== undefined)
               conn.sendConn(
@@ -4068,7 +4070,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/stat`: {
+        case `${CANOPY_METHOD_NS}file/stat`: {
           if (!this.fsFactory) {
             if (id !== undefined)
               conn.sendConn(
@@ -4092,7 +4094,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/list`: {
+        case `${CANOPY_METHOD_NS}file/list`: {
           if (!this.fsFactory) {
             if (id !== undefined)
               conn.sendConn(
@@ -4122,7 +4124,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/glob`: {
+        case `${CANOPY_METHOD_NS}file/glob`: {
           const pattern = String(params['pattern'] ?? '');
           if (!pattern) {
             if (id !== undefined)
@@ -4170,7 +4172,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/write`: {
+        case `${CANOPY_METHOD_NS}file/write`: {
           const p = String(params['path'] ?? '');
           if (!p) {
             if (id !== undefined)
@@ -4212,7 +4214,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}file/edit`: {
+        case `${CANOPY_METHOD_NS}file/edit`: {
           const p = String(params['path'] ?? '');
           if (!p) {
             if (id !== undefined)
@@ -4255,7 +4257,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/auth/status`: {
+        case `${CANOPY_METHOD_NS}workspace/auth/status`: {
           if (!this.deviceFlowRegistry) {
             this.replyConn(conn, id, { pendingDeviceFlows: [] });
             return;
@@ -4270,7 +4272,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/auth/device_flow/start`: {
+        case `${CANOPY_METHOD_NS}workspace/auth/device_flow/start`: {
           if (!this.deviceFlowRegistry) {
             if (id !== undefined)
               conn.sendConn(
@@ -4305,7 +4307,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/auth/device_flow/get`: {
+        case `${CANOPY_METHOD_NS}workspace/auth/device_flow/get`: {
           if (!this.deviceFlowRegistry) {
             if (id !== undefined)
               conn.sendConn(
@@ -4344,7 +4346,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/auth/device_flow/cancel`: {
+        case `${CANOPY_METHOD_NS}workspace/auth/device_flow/cancel`: {
           if (!this.deviceFlowRegistry) {
             if (id !== undefined)
               conn.sendConn(
@@ -4396,14 +4398,14 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/tools`: {
+        case `${CANOPY_METHOD_NS}workspace/tools`: {
           const result = await this.bridge.getWorkspaceToolsStatus();
           assertGenerationOpen?.();
           this.replyConn(conn, id, result as unknown);
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/mcp/tools`: {
+        case `${CANOPY_METHOD_NS}workspace/mcp/tools`: {
           const serverName = String(params['serverName'] ?? '');
           if (!serverName) {
             if (id !== undefined)
@@ -4419,7 +4421,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/mcp/resources`: {
+        case `${CANOPY_METHOD_NS}workspace/mcp/resources`: {
           const serverName = String(params['serverName'] ?? '');
           if (!serverName) {
             if (id !== undefined)
@@ -4435,7 +4437,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/mcp/servers/add`: {
+        case `${CANOPY_METHOD_NS}workspace/mcp/servers/add`: {
           const name = String(params['name'] ?? '');
           if (!name || name.length > MAX_NAME_LENGTH) {
             if (id !== undefined)
@@ -4470,7 +4472,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/mcp/servers/remove`: {
+        case `${CANOPY_METHOD_NS}workspace/mcp/servers/remove`: {
           const name = String(params['name'] ?? '');
           if (!name || name.length > MAX_NAME_LENGTH) {
             if (id !== undefined)
@@ -4492,7 +4494,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}sessions/delete`: {
+        case `${CANOPY_METHOD_NS}sessions/delete`: {
           const ids = this.parseSessionIds(params);
           if (this.rejectActiveLiveSessionMutation(conn, id, ids)) return;
           const svc = new SessionService(this.boundWorkspace);
@@ -4508,7 +4510,7 @@ export class AcpDispatcher {
                   const safeSessionId = logSafe(sessionId.slice(0, 8));
                   const safeMessage = logSafe(error);
                   writeStderrLine(
-                    `qwen serve: /acp sessions/delete ${phase}Session(${safeSessionId}) failed: ${safeMessage}`,
+                    `canopy serve: /acp sessions/delete ${phase}Session(${safeSessionId}) failed: ${safeMessage}`,
                   );
                 },
               }),
@@ -4517,7 +4519,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}sessions/archive`: {
+        case `${CANOPY_METHOD_NS}sessions/archive`: {
           const ids = this.parseSessionIds(params);
           if (this.rejectActiveLiveSessionMutation(conn, id, ids)) return;
           const svc = new SessionService(this.boundWorkspace, {
@@ -4542,7 +4544,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}sessions/unarchive`: {
+        case `${CANOPY_METHOD_NS}sessions/unarchive`: {
           const ids = this.parseSessionIds(params);
           const svc = new SessionService(this.boundWorkspace, {
             onWarning: logSessionArchiveWarning,
@@ -4565,7 +4567,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/agents/list`: {
+        case `${CANOPY_METHOD_NS}workspace/agents/list`: {
           const agents = await this.agentManager.listSubagents({ force: true });
           assertGenerationOpen?.();
           this.replyConn(conn, id, {
@@ -4576,7 +4578,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/agents/get`: {
+        case `${CANOPY_METHOD_NS}workspace/agents/get`: {
           const agentType = String(params['agentType'] ?? '');
           if (!agentType) {
             if (id !== undefined)
@@ -4598,7 +4600,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/agents/create`: {
+        case `${CANOPY_METHOD_NS}workspace/agents/create`: {
           const scope = params['scope'];
           if (scope !== 'workspace' && scope !== 'global') {
             if (id !== undefined)
@@ -4680,7 +4682,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/agents/update`: {
+        case `${CANOPY_METHOD_NS}workspace/agents/update`: {
           const agentType = String(params['agentType'] ?? '');
           if (!agentType) {
             if (id !== undefined)
@@ -4808,7 +4810,7 @@ export class AcpDispatcher {
           return;
         }
 
-        case `${QWEN_METHOD_NS}workspace/agents/delete`: {
+        case `${CANOPY_METHOD_NS}workspace/agents/delete`: {
           const agentType = String(params['agentType'] ?? '');
           if (!agentType) {
             if (id !== undefined)
@@ -4873,7 +4875,7 @@ export class AcpDispatcher {
       // Full detail to stderr for the operator; a coded, client-safe shape
       // on the wire (raw bridge messages may carry internal paths/details).
       writeStderrLine(
-        `qwen serve: /acp dispatch error (${logSafe(method)}): ${logSafe(errMsg(err))}`,
+        `canopy serve: /acp dispatch error (${logSafe(method)}): ${logSafe(errMsg(err))}`,
       );
       if (id !== undefined) {
         const { code, message, data } = toRpcError(err);
@@ -4898,7 +4900,7 @@ export class AcpDispatcher {
   /**
    * Current epoch token of the session's event bus, or `undefined` when
    * the session is unknown (torn down between ownership check and header
-   * write). The `/acp` GET route advertises it as `X-Qwen-Event-Epoch`
+   * write). The `/acp` GET route advertises it as `X-Canopy-Event-Epoch`
    * BEFORE `stream.open()` flushes headers (DAEMON-001).
    */
   getSessionEventEpoch(sessionId: string): string | undefined {
@@ -4957,7 +4959,7 @@ export class AcpDispatcher {
             // snapshot may lag behind live events. Same operator breadcrumb
             // the REST surface gets via the bus-level log (DAEMON-008).
             writeStderrLine(
-              `qwen serve: /acp initial replay used a DEGRADED snapshot (compaction failure) session=${logSafe(sessionId)}; replay may be incomplete`,
+              `canopy serve: /acp initial replay used a DEGRADED snapshot (compaction failure) session=${logSafe(sessionId)}; replay may be incomplete`,
             );
           }
           const snapshotEvents = [
@@ -4984,7 +4986,7 @@ export class AcpDispatcher {
           );
         } else {
           writeStderrLine(
-            `qwen serve: /acp initial replay skipped (no snapshot) session=${logSafe(sessionId)}`,
+            `canopy serve: /acp initial replay skipped (no snapshot) session=${logSafe(sessionId)}`,
           );
           conn.markInitialReplayComplete(sessionId);
           conn.endReplayDeferral(sessionId, lastDeliveredId, false);
@@ -5026,7 +5028,7 @@ export class AcpDispatcher {
           const replayedCount = (event.data as { replayedCount?: number })
             ?.replayedCount;
           writeStderrLine(
-            `qwen serve: /acp replay complete (${logSafe(sessionId)}) ` +
+            `canopy serve: /acp replay complete (${logSafe(sessionId)}) ` +
               `from=${lastEventId ?? 'none'} delivered_through=${lastDeliveredId} ` +
               `count=${replayedCount ?? 'n/a'} evicted=${sawEviction}`,
           );
@@ -5062,7 +5064,7 @@ export class AcpDispatcher {
         conn.flushBufferedSessionFrames(sessionId);
         conn.sendSession(
           sessionId,
-          notification(`${QWEN_METHOD_NS}notify`, {
+          notification(`${CANOPY_METHOD_NS}notify`, {
             kind: 'stream_error',
             error: errMsg(err),
           }),
@@ -5121,7 +5123,7 @@ export class AcpDispatcher {
           // follow-up, not this content-stream PR.
           if (binding?.graceTimer) {
             writeStderrLine(
-              `qwen serve: /acp permission cancel during reconnect grace ` +
+              `canopy serve: /acp permission cancel during reconnect grace ` +
                 `(${logSafe(sessionId)}); vote not deferred (see §1.7 follow-up)`,
             );
           }
@@ -5140,7 +5142,7 @@ export class AcpDispatcher {
           // recovery; manual intervention (restart the agent session) is needed.
           if (!cancelled) {
             writeStderrLine(
-              `qwen serve: /acp permission cancel FAILED for ${logSafe(sessionId)} (mediator stuck; no automatic recovery)`,
+              `canopy serve: /acp permission cancel FAILED for ${logSafe(sessionId)} (mediator stuck; no automatic recovery)`,
             );
           }
           return;
@@ -5196,7 +5198,7 @@ export class AcpDispatcher {
             sessionId: data.sessionId,
             toolCall: data.toolCall,
             options: data.options,
-            _meta: { [QWEN_META_KEY]: { requestId: data.requestId } },
+            _meta: { [CANOPY_META_KEY]: { requestId: data.requestId } },
           }),
           // Carry the bus cursor: a permission request is a real sequenced
           // event, so the client must resume past it.
@@ -5207,7 +5209,7 @@ export class AcpDispatcher {
       case 'stream_error': {
         conn.sendSession(
           sessionId,
-          notification(`${QWEN_METHOD_NS}notify`, {
+          notification(`${CANOPY_METHOD_NS}notify`, {
             // Spread first so a stray `kind` in event.data can't shadow the
             // discriminator the client's error handler keys on.
             ...(event.data as object),
@@ -5221,13 +5223,13 @@ export class AcpDispatcher {
       }
       default: {
         // client_evicted / slow_client_warning / state_resync_required /
-        // model_switched / approval_mode_changed / … → opaque qwen notify.
+        // model_switched / approval_mode_changed / … → opaque canopy notify.
         // `event.id` is undefined for the synthetic control frames (no SSE
         // `id:` line, so they don't burn a slot in the resume sequence) and
         // set for ring-backed daemon events.
         conn.sendSession(
           sessionId,
-          notification(`${QWEN_METHOD_NS}notify`, {
+          notification(`${CANOPY_METHOD_NS}notify`, {
             kind: event.type,
             data: event.data,
           }),
@@ -5247,7 +5249,7 @@ export class AcpDispatcher {
     msg: JsonRpcResponse,
     fromLoopback: boolean,
   ): void {
-    // Our outbound request ids are strings (`_qwen_perm_<conn>_N`); a client echoes
+    // Our outbound request ids are strings (`_canopy_perm_<conn>_N`); a client echoes
     // the same id verbatim. Anything else can't match a pending entry.
     const id = msg.id;
     if (typeof id !== 'string') return;
@@ -5261,7 +5263,7 @@ export class AcpDispatcher {
       // operator has no grep-friendly signal to correlate against a permission
       // prompt that stays blocked until teardown's `abandonPendingForSession`.
       writeStderrLine(
-        `qwen serve: /acp permission vote dropped: responding connection ${logSafe(
+        `canopy serve: /acp permission vote dropped: responding connection ${logSafe(
           conn.connectionId.slice(0, 8),
         )} does not own session ${logSafe(pending.sessionId)} (requestId ${logSafe(
           pending.bridgeRequestId,
@@ -5302,7 +5304,7 @@ export class AcpDispatcher {
       this.dropResolvedPermission(pendingConn, id);
     } catch (err) {
       writeStderrLine(
-        `qwen serve: /acp permission vote failed (${logSafe(pending.sessionId)}): ${logSafe(errMsg(err))}`,
+        `canopy serve: /acp permission vote failed (${logSafe(pending.sessionId)}): ${logSafe(errMsg(err))}`,
       );
       // Cancel BEFORE deleting, and ONLY drop the entry if the cancel
       // landed. If it also failed, keep the entry so teardown's
@@ -5363,7 +5365,7 @@ export class AcpDispatcher {
         // Notification-form prompt (no id): no response frame to send, so a
         // failure would vanish silently — log it for the operator.
         writeStderrLine(
-          `qwen serve: /acp prompt error (${logSafe(sessionId)}, notification): ${logSafe(errMsg(err))}`,
+          `canopy serve: /acp prompt error (${logSafe(sessionId)}, notification): ${logSafe(errMsg(err))}`,
         );
       }
     } finally {
@@ -5439,7 +5441,7 @@ export class AcpDispatcher {
         // starts exercising this fallback (which would otherwise be invisible).
         anchorId = undefined;
         writeStderrLine(
-          `qwen serve: /acp replySession(${logSafe(sessionId)}) ` +
+          `canopy serve: /acp replySession(${logSafe(sessionId)}) ` +
             `anchor unavailable, deferring unanchored: ` +
             logSafe(err instanceof Error ? err.message : String(err)),
         );
@@ -5463,7 +5465,7 @@ export class AcpDispatcher {
       // the connection stream, not the session stream" with a mid-flight
       // session teardown.
       writeStderrLine(
-        `qwen serve: /acp replySession(${logSafe(sessionId)}) binding gone mid-flight, ` +
+        `canopy serve: /acp replySession(${logSafe(sessionId)}) binding gone mid-flight, ` +
           `reply routed to connection stream ${conn.connectionId.slice(0, 8)}`,
       );
       conn.sendConn(frame);

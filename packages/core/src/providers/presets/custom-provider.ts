@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { AuthType } from '../../core/contentGenerator.js';
 import type { ProviderConfig } from '../types.js';
 
-export const CUSTOM_API_KEY_ENV_PREFIX = 'QWEN_CUSTOM_API_KEY_';
+export const CUSTOM_API_KEY_ENV_PREFIX = 'CANOPY_CUSTOM_API_KEY_';
 
 /**
  * Derive the env-var key that holds the API token for a custom provider.
@@ -25,7 +25,7 @@ export const CUSTOM_API_KEY_ENV_PREFIX = 'QWEN_CUSTOM_API_KEY_';
  * while still keeping the env var name pasteable into a dashboard.
  *
  * Migration note: this suffix changed from 6 → 12 chars in a recent commit.
- * Old 6-char keys persist in settings.json (and ~/.qwen/env-equivalent
+ * Old 6-char keys persist in settings.json (and ~/.canopy/env-equivalent
  * stores) until either the user reconnects under the same URL (which writes
  * the new 12-char key but leaves the old one as orphan disk state — harmless,
  * never read) or runs the "clear auth" flow. The old key is never read by

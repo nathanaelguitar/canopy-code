@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -144,14 +144,14 @@ describe('LiveHostCoordinator', () => {
       appName: 'Google Chrome',
       windowTitle: 'LIVE_APP_A',
       accessibilityText: 'AXWindow LIVE_APP_A',
-      screenshotPath: '/private/tmp/qwen-live-appshot/test.png',
+      screenshotPath: '/private/tmp/canopy-live-appshot/test.png',
     });
 
     await expect(capture).resolves.toEqual({
       appName: 'Google Chrome',
       windowTitle: 'LIVE_APP_A',
       accessibilityText: 'AXWindow LIVE_APP_A',
-      screenshotPath: '/private/tmp/qwen-live-appshot/test.png',
+      screenshotPath: '/private/tmp/canopy-live-appshot/test.png',
     });
     value.stop();
   });
@@ -214,7 +214,7 @@ describe('LiveHostCoordinator', () => {
       success: true,
       appName: 'TextEdit',
       accessibilityText: 'APPSHOT-MARKER-AMBER-4827',
-      screenshotPath: '/private/tmp/qwen-live-appshot/test.png',
+      screenshotPath: '/private/tmp/canopy-live-appshot/test.png',
     });
 
     await expect(capture).resolves.toMatchObject({

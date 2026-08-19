@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   SCREEN_READER_USER_PREFIX,
 } from '../../textConstants.js';
 import { t } from '../../../i18n/index.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { ErrorBoundary } from '../shared/ErrorBoundary.js';
 import { ICON } from '../../constants.js';
 import { sanitizeTerminalText } from '../../utils/textUtils.js';

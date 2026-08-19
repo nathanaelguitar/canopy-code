@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   SettingScope,
   type Config,
   type Extension,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { StatusMessage } from '../ExtensionsManagerDialog.js';
 import type { PluginDetailAction } from './PluginDetailView.js';
 import { ExtensionActionsView } from './ExtensionActionsView.js';

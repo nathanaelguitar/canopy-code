@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { HooksConfigSource } from '@qwen-code/qwen-code-core';
+import { HooksConfigSource } from '@canopy-code/canopy-code-core';
 import type { HookConfigDisplayInfo } from './types.js';
 import { getTranslatedSourceDisplayMap } from './constants.js';
 import { t } from '../../../i18n/index.js';

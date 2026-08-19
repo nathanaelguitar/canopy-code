@@ -137,7 +137,7 @@ describe('FileTokenStorage', () => {
       await storage.setCredentials(credentials);
 
       expect(mockFs.mkdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen'),
+        path.join('/home/test', '.canopy'),
         { recursive: true, mode: 0o700 },
       );
       expect(atomicWriteFile).toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('FileTokenStorage', () => {
       await storage.setCredentials(credentials);
 
       expect(mockFs.mkdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen'),
+        path.join('/home/test', '.canopy'),
         { recursive: true, mode: 0o700 },
       );
       expect(atomicWriteFile).toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('FileTokenStorage', () => {
       await storage.deleteCredentials('test-server');
 
       expect(mockFs.unlink).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'mcp-oauth-tokens-v2.json'),
+        path.join('/home/test', '.canopy', 'mcp-oauth-tokens-v2.json'),
       );
     });
 
@@ -377,7 +377,7 @@ describe('FileTokenStorage', () => {
       await storage.clearAll();
 
       expect(mockFs.unlink).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'mcp-oauth-tokens-v2.json'),
+        path.join('/home/test', '.canopy', 'mcp-oauth-tokens-v2.json'),
       );
     });
 
@@ -419,7 +419,7 @@ describe('FileTokenStorage', () => {
   describe('secret storage', () => {
     const secretFilePath = path.join(
       '/home/test',
-      '.qwen',
+      '.canopy',
       'extension-secrets-v1.json',
     );
 

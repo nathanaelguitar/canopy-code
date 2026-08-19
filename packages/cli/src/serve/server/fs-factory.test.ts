@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,9 @@ import { resolveBoundWorkspacesFromIdeEnv } from './fs-factory.js';
 const scratches: string[] = [];
 
 async function mkScratch(): Promise<string> {
-  const scratch = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-fs-factory-'));
+  const scratch = await fsp.mkdtemp(
+    path.join(os.tmpdir(), 'canopy-fs-factory-'),
+  );
   scratches.push(scratch);
   return scratch;
 }

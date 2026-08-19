@@ -10,7 +10,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { atomicWriteFileSync, Storage } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync, Storage } from '@canopy-code/canopy-code-core';
 
 interface TipHistoryEntry {
   totalShown: number;
@@ -128,7 +128,10 @@ export class TipHistory {
    * Load history from disk, incrementing session count.
    */
   static load(): TipHistory {
-    const filePath = path.join(Storage.getGlobalQwenDir(), 'tip_history.json');
+    const filePath = path.join(
+      Storage.getGlobalCanopyDir(),
+      'tip_history.json',
+    );
     let data: TipHistoryData = { sessionCount: 0, tips: {} };
     try {
       if (fs.existsSync(filePath)) {

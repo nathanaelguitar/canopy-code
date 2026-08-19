@@ -14,7 +14,7 @@ import {
 } from '../memory/const.js';
 import type { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { processImports } from './memoryImportProcessor.js';
-import { isSubpath, QWEN_DIR } from './paths.js';
+import { isSubpath, CANOPY_DIR } from './paths.js';
 import { Storage } from '../config/storage.js';
 import { createDebugLogger } from './debugLogger.js';
 import { findProjectRoot } from './projectRoot.js';
@@ -103,8 +103,8 @@ async function getGeminiMdFilePathsInternalForEachDir(
 
   for (const geminiMdFilename of geminiMdFilenames) {
     const resolvedHome = path.resolve(userHomePath);
-    const globalQwenDir = Storage.getGlobalQwenDir();
-    const globalMemoryPath = path.join(globalQwenDir, geminiMdFilename);
+    const globalCanopyDir = Storage.getGlobalCanopyDir();
+    const globalMemoryPath = path.join(globalCanopyDir, geminiMdFilename);
 
     // Handle the case where we're in the home directory (dir is empty string or home path)
     const resolvedDir = dir ? path.resolve(dir) : resolvedHome;
@@ -139,7 +139,7 @@ async function getGeminiMdFilePathsInternalForEachDir(
     }
 
     if (isHomeDirectory) {
-      // For home directory, only check for QWEN.md directly in the home directory
+      // For home directory, only check for CANOPY.md directly in the home directory
       const homeContextPath = path.join(resolvedHome, geminiMdFilename);
       try {
         await fs.access(homeContextPath, fsSync.constants.R_OK);
@@ -171,8 +171,8 @@ async function getGeminiMdFilePathsInternalForEachDir(
 
       while (currentDir && currentDir !== path.dirname(currentDir)) {
         if (
-          currentDir === globalQwenDir ||
-          currentDir === path.join(resolvedHome, QWEN_DIR)
+          currentDir === globalCanopyDir ||
+          currentDir === path.join(resolvedHome, CANOPY_DIR)
         ) {
           break;
         }
@@ -360,7 +360,7 @@ function createMemoryTypeClassifier(
   extensionContextFilePaths: string[],
 ): (filePath: string) => InstructionMemoryType {
   const resolvedHome = path.resolve(userHomePath);
-  const globalQwenDir = path.resolve(Storage.getGlobalQwenDir());
+  const globalCanopyDir = path.resolve(Storage.getGlobalCanopyDir());
   const resolvedRoot = foundRoot ? path.resolve(foundRoot) : undefined;
   const extensionPaths = new Set(
     extensionContextFilePaths.map((filePath) => path.resolve(filePath)),
@@ -379,13 +379,14 @@ function createMemoryTypeClassifier(
       return 'extension';
     }
 
-    if (resolvedPath.startsWith(`${globalQwenDir}${path.sep}`)) {
+    if (resolvedPath.startsWith(`${globalCanopyDir}${path.sep}`)) {
       return 'user';
     }
 
     if (
       resolvedRoot &&
-      resolvedPath === path.join(resolvedRoot, QWEN_DIR, LOCAL_CONTEXT_FILENAME)
+      resolvedPath ===
+        path.join(resolvedRoot, CANOPY_DIR, LOCAL_CONTEXT_FILENAME)
     ) {
       return 'local';
     }
@@ -403,8 +404,8 @@ function createMemoryTypeClassifier(
 }
 
 /**
- * Loads hierarchical QWEN.md files and concatenates their content.
- * Also loads path-based context rules from `.qwen/rules/` directories.
+ * Loads hierarchical CANOPY.md files and concatenates their content.
+ * Also loads path-based context rules from `.canopy/rules/` directories.
  * This function is intended for use by the server.
  *
  * @param contextRuleExcludes - Glob patterns to skip when loading rules.
@@ -437,15 +438,15 @@ export async function loadServerHierarchicalMemory(
     implicitDiscoveryEnabled,
   );
 
-  // Resolve project root once — needed both for the QWEN.local.md slot
+  // Resolve project root once — needed both for the CANOPY.local.md slot
   // (below) and for rules discovery (further down).
   const resolvedCwd = path.resolve(currentWorkingDirectory);
   const foundRoot = await findProjectRoot(resolvedCwd);
   const effectiveRoot = foundRoot ?? resolvedCwd;
 
   // Append the per-developer local context file slot:
-  // `<projectRoot>/.qwen/QWEN.local.md`. Loaded after all hierarchical
-  // QWEN.md / AGENTS.md files so local instructions can supplement or
+  // `<projectRoot>/.canopy/CANOPY.local.md`. Loaded after all hierarchical
+  // CANOPY.md / AGENTS.md files so local instructions can supplement or
   // override shared ones. Same trust + explicit-only gating as the rest
   // of the project-level discovery.
   //
@@ -453,12 +454,12 @@ export async function loadServerHierarchicalMemory(
   // fallback). Without that gate, two failure modes appear:
   //   * Deep cwd in a non-git workspace turns the slot into a per-cwd
   //     file, breaking the "single fixed slot" invariant.
-  //   * `cwd === homedir` resolves the slot path to `~/.qwen/QWEN.local.md`,
-  //     colliding with the global Qwen directory.
+  //   * `cwd === homedir` resolves the slot path to `~/.canopy/CANOPY.local.md`,
+  //     colliding with the global Canopy directory.
   if (implicitDiscoveryEnabled && folderTrust && foundRoot) {
     const localContextPath = path.join(
       foundRoot,
-      QWEN_DIR,
+      CANOPY_DIR,
       LOCAL_CONTEXT_FILENAME,
     );
     try {
@@ -496,7 +497,7 @@ export async function loadServerHierarchicalMemory(
       currentWorkingDirectory,
     );
 
-    // Only count files that match configured memory filenames (e.g., QWEN.md),
+    // Only count files that match configured memory filenames (e.g., CANOPY.md),
     // excluding system context files like output-language.md
     const memoryFilenames = new Set([
       ...getAllGeminiMdFilenames(),
@@ -507,7 +508,7 @@ export async function loadServerHierarchicalMemory(
     ).length;
   }
 
-  // Load path-based context rules from .qwen/rules/ directories.
+  // Load path-based context rules from .canopy/rules/ directories.
   const {
     content: rulesContent,
     ruleCount,
@@ -525,7 +526,7 @@ export async function loadServerHierarchicalMemory(
   }
 
   if (!memoryContent && filePaths.length === 0 && ruleCount === 0) {
-    logger.debug('No QWEN.md files or rules found.');
+    logger.debug('No CANOPY.md files or rules found.');
   }
 
   return {

@@ -7,8 +7,8 @@
 export const HEADLESS_YOLO_NO_SANDBOX_WARNING =
   'Warning: running headless with --yolo / approval-mode=yolo and no sandbox. ' +
   "All tool calls (shell, write, edit) auto-execute at this process's privilege level. " +
-  'Enable a sandbox via --sandbox / QWEN_SANDBOX, or set ' +
-  'QWEN_CODE_SUPPRESS_YOLO_WARNING=1 to silence this notice.';
+  'Enable a sandbox via --sandbox / CANOPY_SANDBOX, or set ' +
+  'CANOPY_CODE_SUPPRESS_YOLO_WARNING=1 to silence this notice.';
 
 /**
  * Returns a warning line to emit when running in YOLO without a sandbox in a
@@ -35,13 +35,13 @@ export function getHeadlessYoloSafetyWarning(
   if (config.getSandbox()) return null;
   // `SANDBOX` is set by the sandbox transport itself: macOS seatbelt sets
   // it to `sandbox-exec`, Docker/Podman to the container name (e.g.
-  // `qwen-code-sandbox`). Match the rest of the codebase
+  // `canopy-code-sandbox`). Match the rest of the codebase
   // (sandboxConfig.ts, gemini.tsx, Footer.tsx, prompts.ts, …) which all
   // treat any non-empty value as "inside a sandbox". A strict 1/true
   // check here misfires inside real sandboxes, where the helper would
   // wrongly emit a "no sandbox" warning despite the run being contained.
   if (env['SANDBOX']) return null;
-  if (isTruthyEnv(env['QWEN_CODE_SUPPRESS_YOLO_WARNING'])) return null;
+  if (isTruthyEnv(env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'])) return null;
   return HEADLESS_YOLO_NO_SANDBOX_WARNING;
 }
 

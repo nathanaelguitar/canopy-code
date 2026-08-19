@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // Matching a PR's owner/repo against `git remote -v`, extracted from the
 // /review skill's Step 1 prose and given tests, because the prose shipped
-// two bugs: a substring comparison that matched `shao/qwen-code` against a
-// `wenshao/qwen-code` remote (review one repository, post to another), and
+// two bugs: a substring comparison that matched `shao/canopy-code` against a
+// `wenshao/canopy-code` remote (review one repository, post to another), and
 // hand-guessed remote names that stopped a review before it read any code.
 // The rule is exact segment equality, case-insensitive, on the URL's host,
 // owner and repo — nothing else is a match.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   AuthType,
   resolveModelConfig,
   type ProviderModelConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   getAuthTypeFromEnv,
   resolveCliGenerationConfig,
@@ -18,9 +18,9 @@ import type { Settings } from '../config/settings.js';
 
 const mockWriteStderrLine = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...original,
     resolveModelConfig: vi.fn(),
@@ -68,11 +68,11 @@ describe('modelConfigUtils', () => {
       ).toBe(AuthType.USE_GEMINI);
     });
 
-    it('should return USE_OPENAI when the model is given via QWEN_MODEL', () => {
-      // QWEN_MODEL is a valid USE_OPENAI model var (see AUTH_ENV_MODEL_VARS),
+    it('should return USE_OPENAI when the model is given via CANOPY_MODEL', () => {
+      // CANOPY_MODEL is a valid USE_OPENAI model var (see AUTH_ENV_MODEL_VARS),
       // so a config that sets it instead of OPENAI_MODEL must still resolve.
       process.env['OPENAI_API_KEY'] = 'test-key';
-      process.env['QWEN_MODEL'] = 'qwen3-coder-plus';
+      process.env['CANOPY_MODEL'] = 'qwen3-coder-plus';
       process.env['OPENAI_BASE_URL'] =
         'https://dashscope.aliyuncs.com/compatible-mode/v1';
 
@@ -87,10 +87,10 @@ describe('modelConfigUtils', () => {
       expect(getAuthTypeFromEnv()).toBeUndefined();
     });
 
-    it('should return QWEN_OAUTH when QWEN_OAUTH is set', () => {
-      process.env['QWEN_OAUTH'] = 'true';
+    it('should return CANOPY_OAUTH when CANOPY_OAUTH is set', () => {
+      process.env['CANOPY_OAUTH'] = 'true';
 
-      expect(getAuthTypeFromEnv()).toBe(AuthType.QWEN_OAUTH);
+      expect(getAuthTypeFromEnv()).toBe(AuthType.CANOPY_OAUTH);
     });
 
     it('should return USE_GEMINI when Gemini env vars are set', () => {
@@ -137,14 +137,14 @@ describe('modelConfigUtils', () => {
       expect(getAuthTypeFromEnv()).toBeUndefined();
     });
 
-    it('should prioritize QWEN_OAUTH over other auth types when explicitly set', () => {
-      process.env['QWEN_OAUTH'] = 'true';
+    it('should prioritize CANOPY_OAUTH over other auth types when explicitly set', () => {
+      process.env['CANOPY_OAUTH'] = 'true';
       process.env['OPENAI_API_KEY'] = 'test-key';
       process.env['OPENAI_MODEL'] = 'gpt-4';
       process.env['OPENAI_BASE_URL'] = 'https://api.openai.com';
 
-      // QWEN_OAUTH is checked first, so it should be returned even when other auth vars are set
-      expect(getAuthTypeFromEnv()).toBe(AuthType.QWEN_OAUTH);
+      // CANOPY_OAUTH is checked first, so it should be returned even when other auth vars are set
+      expect(getAuthTypeFromEnv()).toBe(AuthType.CANOPY_OAUTH);
     });
 
     it('should return undefined when no auth env vars are set', () => {
@@ -159,7 +159,7 @@ describe('modelConfigUtils', () => {
       vi.resetModules();
       process.env = { ...originalEnv };
       delete process.env['OPENAI_MODEL'];
-      delete process.env['QWEN_MODEL'];
+      delete process.env['CANOPY_MODEL'];
       mockWriteStderrLine.mockClear();
     });
 
@@ -525,14 +525,14 @@ describe('modelConfigUtils', () => {
       );
     });
 
-    it('warns when a custom provider maps to qwen-oauth', () => {
+    it('warns when a custom provider maps to canopy-oauth', () => {
       const settings = makeMockSettings({
         model: { name: 'some-model' },
         modelProviders: {
           idealab: [{ id: 'qwen3.7-max' }],
         } as unknown as Settings['modelProviders'],
         providerProtocol: {
-          idealab: AuthType.QWEN_OAUTH,
+          idealab: AuthType.CANOPY_OAUTH,
         } as unknown as Settings['providerProtocol'],
       });
 
@@ -551,7 +551,7 @@ describe('modelConfigUtils', () => {
       expect(result.warnings).toEqual(
         expect.arrayContaining([
           expect.stringContaining(
-            'modelProviders provider "idealab" maps to "qwen-oauth"',
+            'modelProviders provider "idealab" maps to "canopy-oauth"',
           ),
         ]),
       );
@@ -900,14 +900,14 @@ describe('modelConfigUtils', () => {
     it('should warn when top-level generationConfig fields are ignored for a provider model', () => {
       const argv = {};
       const modelProvider: ProviderModelConfig = {
-        id: 'qwen3.6-27b',
-        name: 'qwen3.6-27b',
+        id: 'canopy3.6-27b',
+        name: 'canopy3.6-27b',
         baseUrl: 'http://localhost:8080/v1',
         envKey: 'IK_LLAMA_API_KEY',
       };
       const settings = makeMockSettings({
         model: {
-          name: 'qwen3.6-27b',
+          name: 'canopy3.6-27b',
           generationConfig: {
             contextWindowSize: 192000,
             extra_body: {
@@ -923,7 +923,7 @@ describe('modelConfigUtils', () => {
 
       vi.mocked(resolveModelConfig).mockReturnValue({
         config: {
-          model: 'qwen3.6-27b',
+          model: 'canopy3.6-27b',
           apiKey: '',
           baseUrl: 'http://localhost:8080/v1',
         },
@@ -943,7 +943,7 @@ describe('modelConfigUtils', () => {
       );
       expect(result.warnings[0]).toContain('model.generationConfig.extra_body');
       expect(result.warnings[0]).toContain(
-        'provider model "qwen3.6-27b" from modelProviders.openai',
+        'provider model "canopy3.6-27b" from modelProviders.openai',
       );
       expect(result.warnings[0]).toContain(
         'modelProviders.openai[].generationConfig',
@@ -953,13 +953,13 @@ describe('modelConfigUtils', () => {
     it('names the custom provider in ignored generationConfig warnings', () => {
       const argv = {};
       const modelProvider: ProviderModelConfig = {
-        id: 'qwen3.6-27b',
-        name: 'qwen3.6-27b',
+        id: 'canopy3.6-27b',
+        name: 'canopy3.6-27b',
         generationConfig: {},
       };
       const settings = makeMockSettings({
         model: {
-          name: 'qwen3.6-27b',
+          name: 'canopy3.6-27b',
           generationConfig: {
             contextWindowSize: 192000,
           } as Record<string, unknown>,
@@ -974,7 +974,7 @@ describe('modelConfigUtils', () => {
 
       vi.mocked(resolveModelConfig).mockReturnValue({
         config: {
-          model: 'qwen3.6-27b',
+          model: 'canopy3.6-27b',
           apiKey: '',
           baseUrl: '',
         },
@@ -989,7 +989,7 @@ describe('modelConfigUtils', () => {
       });
 
       expect(result.warnings[0]).toContain(
-        'provider model "qwen3.6-27b" from modelProviders.idealab',
+        'provider model "canopy3.6-27b" from modelProviders.idealab',
       );
       expect(result.warnings[0]).toContain(
         'modelProviders.idealab[].generationConfig',
@@ -1216,7 +1216,7 @@ describe('modelConfigUtils', () => {
         expect.objectContaining({
           env: expect.not.objectContaining({
             OPENAI_MODEL: expect.anything(),
-            QWEN_MODEL: expect.anything(),
+            CANOPY_MODEL: expect.anything(),
           }),
         }),
       );
@@ -1476,26 +1476,26 @@ describe('modelConfigUtils', () => {
       );
     });
 
-    // Edge Case 2: QWEN_MODEL is used as final fallback when OPENAI_MODEL is not set
-    it('Edge Case 2: QWEN_MODEL should be used as fallback when OPENAI_MODEL is not set', () => {
+    // Edge Case 2: CANOPY_MODEL is used as final fallback when OPENAI_MODEL is not set
+    it('Edge Case 2: CANOPY_MODEL should be used as fallback when OPENAI_MODEL is not set', () => {
       const argv = {};
-      const qwenProvider: ProviderModelConfig = {
-        id: 'qwen-env-model',
-        name: 'Qwen Env Model',
+      const canopyProvider: ProviderModelConfig = {
+        id: 'canopy-env-model',
+        name: 'Canopy Env Model',
       };
       const settings = makeMockSettings({
         model: undefined as unknown as Settings['model'],
         modelProviders: {
           [AuthType.USE_OPENAI]: [
             { id: 'other-model', name: 'Other Model' },
-            qwenProvider,
+            canopyProvider,
           ],
         },
       });
       const selectedAuthType = AuthType.USE_OPENAI;
 
       vi.mocked(resolveModelConfig).mockReturnValue({
-        config: { model: 'qwen-env-model', apiKey: '', baseUrl: '' },
+        config: { model: 'canopy-env-model', apiKey: '', baseUrl: '' },
         sources: {},
         warnings: [],
       });
@@ -1504,26 +1504,26 @@ describe('modelConfigUtils', () => {
         argv,
         settings,
         selectedAuthType,
-        env: { QWEN_MODEL: 'qwen-env-model' },
+        env: { CANOPY_MODEL: 'canopy-env-model' },
       });
 
       expect(vi.mocked(resolveModelConfig)).toHaveBeenCalledWith(
         expect.objectContaining({
-          modelProvider: qwenProvider,
+          modelProvider: canopyProvider,
         }),
       );
     });
 
-    // Edge Case 3: OPENAI_MODEL over QWEN_MODEL when both are set and settings.model.name is not set
-    it('Edge Case 3: OPENAI_MODEL should win over QWEN_MODEL when both set', () => {
+    // Edge Case 3: OPENAI_MODEL over CANOPY_MODEL when both are set and settings.model.name is not set
+    it('Edge Case 3: OPENAI_MODEL should win over CANOPY_MODEL when both set', () => {
       const argv = {};
       const openAIProvider: ProviderModelConfig = {
         id: 'openai-env-model',
         name: 'OpenAI Env Model',
       };
-      const qwenProvider: ProviderModelConfig = {
-        id: 'qwen-env-model',
-        name: 'Qwen Env Model',
+      const canopyProvider: ProviderModelConfig = {
+        id: 'canopy-env-model',
+        name: 'Canopy Env Model',
       };
       const settings = makeMockSettings({
         model: undefined as unknown as Settings['model'],
@@ -1531,7 +1531,7 @@ describe('modelConfigUtils', () => {
           [AuthType.USE_OPENAI]: [
             { id: 'other-model', name: 'Other Model' },
             openAIProvider,
-            qwenProvider,
+            canopyProvider,
           ],
         },
       });
@@ -1549,7 +1549,7 @@ describe('modelConfigUtils', () => {
         selectedAuthType,
         env: {
           OPENAI_MODEL: 'openai-env-model',
-          QWEN_MODEL: 'qwen-env-model',
+          CANOPY_MODEL: 'canopy-env-model',
         },
       });
 
@@ -1767,14 +1767,14 @@ describe('modelConfigUtils', () => {
         expect(callArgs.env?.['OPENAI_MODEL']).toBeUndefined();
       });
 
-      it('[Regression] QWEN_MODEL as fallback when OPENAI_MODEL not set', () => {
+      it('[Regression] CANOPY_MODEL as fallback when OPENAI_MODEL not set', () => {
         const settings = makeMockSettings({ model: { name: undefined } });
         const selectedAuthType = AuthType.USE_OPENAI;
-        const env = { QWEN_MODEL: 'qwen-model', OPENAI_API_KEY: 'key' };
+        const env = { CANOPY_MODEL: 'canopy-model', OPENAI_API_KEY: 'key' };
 
         vi.mocked(resolveModelConfig).mockImplementation(() => ({
-          config: { model: 'qwen-model', apiKey: 'key', baseUrl: '' },
-          sources: { model: { kind: 'env' as const, envKey: 'QWEN_MODEL' } },
+          config: { model: 'canopy-model', apiKey: 'key', baseUrl: '' },
+          sources: { model: { kind: 'env' as const, envKey: 'CANOPY_MODEL' } },
           warnings: [],
         }));
 
@@ -1785,9 +1785,9 @@ describe('modelConfigUtils', () => {
           env,
         });
 
-        // QWEN_MODEL should be passed to resolveModelConfig
+        // CANOPY_MODEL should be passed to resolveModelConfig
         const callArgs = vi.mocked(resolveModelConfig).mock.calls[0][0];
-        expect(callArgs.env?.['QWEN_MODEL']).toBe('qwen-model');
+        expect(callArgs.env?.['CANOPY_MODEL']).toBe('canopy-model');
       });
 
       it('[Regression] Non-OpenAI auth ignores OPENAI_MODEL', () => {

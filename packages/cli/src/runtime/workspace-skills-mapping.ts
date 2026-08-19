@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { SkillConfig } from '@qwen-code/qwen-code-core';
+import type { SkillConfig } from '@canopy-code/canopy-code-core';
 import type { ServeWorkspaceSkillStatus } from '@qwen-code/acp-bridge/status';
 import type { SkillDisablement } from '../config/skill-settings.js';
 

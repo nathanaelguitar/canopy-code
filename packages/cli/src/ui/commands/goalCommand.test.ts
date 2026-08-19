@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,11 +10,11 @@ import type {
   GoalRuntime,
   GoalSnapshotV2,
   GoalStateResponse,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   emptyGoalSnapshot,
   GoalPersistenceUnavailableError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { goalCommand, parseGoalCommand } from './goalCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 
@@ -23,9 +23,9 @@ const mockGetActiveGoal = vi.hoisted(() => vi.fn());
 const mockGetLastGoalTerminal = vi.hoisted(() => vi.fn());
 const mockUnregisterGoalHook = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     registerGoalHook: mockRegisterGoalHook,

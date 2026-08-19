@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -386,7 +386,7 @@ describe('session-start-profiler', () => {
 
   it('writes bounded JSONL without sensitive fields', async () => {
     const runtimeDir = await mkdtemp(join(tmpdir(), 'session-start-profiler-'));
-    vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+    vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
     vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
 
     try {
@@ -435,7 +435,7 @@ describe('session-start-profiler', () => {
 
   it('writes profile records when O_NOFOLLOW is unavailable', async () => {
     const runtimeDir = await mkdtemp(join(tmpdir(), 'session-start-profiler-'));
-    vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+    vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
     vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
     vi.resetModules();
     vi.doMock('node:fs', async (importOriginal) => {
@@ -475,7 +475,7 @@ describe('session-start-profiler', () => {
 
   it('appends to an existing JSONL file', async () => {
     const runtimeDir = await mkdtemp(join(tmpdir(), 'session-start-profiler-'));
-    vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+    vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
     vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
 
     try {
@@ -507,7 +507,7 @@ describe('session-start-profiler', () => {
 
   itNoSymlink('does not write through a symlinked JSONL file', async () => {
     const runtimeDir = await mkdtemp(join(tmpdir(), 'session-start-profiler-'));
-    vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+    vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
     vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
 
     try {
@@ -545,7 +545,7 @@ describe('session-start-profiler', () => {
       const runtimeDir = await mkdtemp(
         join(tmpdir(), 'session-start-profiler-'),
       );
-      vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+      vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
       vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
       vi.resetModules();
       vi.doMock('node:fs', async (importOriginal) => {
@@ -592,7 +592,7 @@ describe('session-start-profiler', () => {
       const runtimeDir = await mkdtemp(
         join(tmpdir(), 'session-start-profiler-'),
       );
-      vi.stubEnv('QWEN_RUNTIME_DIR', runtimeDir);
+      vi.stubEnv('CANOPY_RUNTIME_DIR', runtimeDir);
       vi.stubEnv(SESSION_START_PROFILE_ENV, '1');
 
       try {

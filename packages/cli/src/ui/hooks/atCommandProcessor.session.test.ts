@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const mockResolve = vi.fn();
 const mockFindSessionsByTitle = vi.fn();
 
-vi.mock('@qwen-code/qwen-code-core', async (orig) => {
+vi.mock('@canopy-code/canopy-code-core', async (orig) => {
   const actual = (await orig()) as Record<string, unknown>;
   return {
     ...actual,
@@ -25,12 +25,12 @@ vi.mock('@qwen-code/qwen-code-core', async (orig) => {
 
 import { handleAtCommand } from './atCommandProcessor.js';
 import { ToolCallStatus } from '../types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   FileDiscoveryService,
   StandardFileSystemService,
   COMMON_IGNORE_PATTERNS,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import * as os from 'node:os';
 import type { UseHistoryManagerReturn } from './useHistoryManager.js';
 import * as fsPromises from 'node:fs/promises';
@@ -58,7 +58,7 @@ describe('handleAtCommand @session:', () => {
       getFileService: () => new FileDiscoveryService(testRootDir),
       getFileFilteringOptions: () => ({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       }),
       getFileSystemService: () => new StandardFileSystemService(),
       getEnableRecursiveFileSearch: vi.fn(() => true),

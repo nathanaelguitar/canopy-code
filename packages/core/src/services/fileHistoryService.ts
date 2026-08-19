@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -209,7 +209,7 @@ function getBackupFileName(filePath: string, version: number): string {
 
 function resolveBackupPath(backupFileName: string, sessionId: string): string {
   const baseDir = resolve(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     FILE_HISTORY_DIR,
     sessionId,
   );

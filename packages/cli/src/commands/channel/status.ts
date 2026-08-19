@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import type { CommandModule } from 'yargs';
 import { writeStderrLine, writeStdoutLine } from '../../utils/stdioHelpers.js';
 import { readServiceInfo } from './pidfile.js';
 import type { SessionTarget } from '@qwen-code/channel-base';
 import {
-  QWEN_DAEMON_TOKEN_ENV,
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_DAEMON_TOKEN_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 } from '../../serve/channel-worker-env.js';
 import {
   formatChannelStartupFailures,
@@ -57,8 +57,8 @@ export const statusCommand: CommandModule<unknown, StatusArgs> = {
     if (argv['daemon-url']) {
       const token =
         argv.token ??
-        process.env[QWEN_SERVER_TOKEN_ENV] ??
-        process.env[QWEN_DAEMON_TOKEN_ENV];
+        process.env[CANOPY_SERVER_TOKEN_ENV] ??
+        process.env[CANOPY_DAEMON_TOKEN_ENV];
       try {
         const sdk = (await import('@qwen-code/sdk/daemon')) as unknown as {
           DaemonClient: new (opts: { baseUrl: string; token?: string }) => {
@@ -127,7 +127,7 @@ export const statusCommand: CommandModule<unknown, StatusArgs> = {
 
     if (info.owner === 'serve') {
       writeStdoutLine(
-        `Channel service: managed by qwen serve (PID ${info.pid})`,
+        `Channel service: managed by canopy serve (PID ${info.pid})`,
       );
       if (info.workerPid !== undefined) {
         writeStdoutLine(`Worker PID:      ${info.workerPid}`);
@@ -140,7 +140,7 @@ export const statusCommand: CommandModule<unknown, StatusArgs> = {
 
     // Read session data for per-channel counts
     const sessionsPath = path.join(
-      Storage.getGlobalQwenDir(),
+      Storage.getGlobalCanopyDir(),
       'channels',
       'sessions.json',
     );

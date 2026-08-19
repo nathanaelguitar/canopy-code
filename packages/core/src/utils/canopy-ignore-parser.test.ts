@@ -6,16 +6,16 @@
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
-  formatQwenIgnoreFileNames,
-  getQwenIgnoreFileNames,
-  normalizeQwenCustomIgnoreFileNames,
-  QwenIgnoreParser,
-} from './qwenIgnoreParser.js';
+  formatCanopyIgnoreFileNames,
+  getCanopyIgnoreFileNames,
+  normalizeCanopyCustomIgnoreFileNames,
+  CanopyIgnoreParser,
+} from './canopy-ignore-parser.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
-describe('QwenIgnoreParser', () => {
+describe('CanopyIgnoreParser', () => {
   let projectRoot: string;
 
   async function createTestFile(filePath: string, content = '') {
@@ -25,7 +25,9 @@ describe('QwenIgnoreParser', () => {
   }
 
   beforeEach(async () => {
-    projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'qwenignore-test-'));
+    projectRoot = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'canopyignore-test-'),
+    );
   });
 
   afterEach(async () => {
@@ -33,10 +35,10 @@ describe('QwenIgnoreParser', () => {
     vi.restoreAllMocks();
   });
 
-  describe('when .qwenignore exists', () => {
+  describe('when .canopyignore exists', () => {
     beforeEach(async () => {
       await createTestFile(
-        '.qwenignore',
+        '.canopyignore',
         'ignored.txt\n# A comment\n/ignored_dir/\n',
       );
       await createTestFile('ignored.txt', 'ignored');
@@ -51,12 +53,12 @@ describe('QwenIgnoreParser', () => {
       );
     });
 
-    it('should ignore files specified in .qwenignore', () => {
-      const parser = new QwenIgnoreParser(projectRoot);
+    it('should ignore files specified in .canopyignore', () => {
+      const parser = new CanopyIgnoreParser(projectRoot);
       expect(parser.getPatterns()).toEqual(['ignored.txt', '/ignored_dir/']);
       expect(parser.isIgnored('ignored.txt')).toBe(true);
       expect(parser.getIgnoreFileNameForPath('ignored.txt')).toBe(
-        '.qwenignore',
+        '.canopyignore',
       );
       expect(parser.isIgnored('not_ignored.txt')).toBe(false);
       expect(parser.getIgnoreFileNameForPath('not_ignored.txt')).toBe(
@@ -69,15 +71,15 @@ describe('QwenIgnoreParser', () => {
     });
 
     it('should still evaluate files whose names start with two dots', async () => {
-      await createTestFile('.qwenignore', '..secret.log');
+      await createTestFile('.canopyignore', '..secret.log');
 
-      const parser = new QwenIgnoreParser(projectRoot);
+      const parser = new CanopyIgnoreParser(projectRoot);
 
       expect(parser.isIgnored('..secret.log')).toBe(true);
     });
 
     it('should not evaluate paths outside the project root', () => {
-      const parser = new QwenIgnoreParser(projectRoot);
+      const parser = new CanopyIgnoreParser(projectRoot);
 
       expect(parser.isIgnored(path.join('..', '..secret.log'))).toBe(false);
     });
@@ -93,7 +95,7 @@ describe('QwenIgnoreParser', () => {
     });
 
     it('should ignore files specified in .agentignore and .aiignore', () => {
-      const parser = new QwenIgnoreParser(projectRoot);
+      const parser = new CanopyIgnoreParser(projectRoot);
       expect(parser.getPatterns()).toEqual([
         'agent-secret.txt',
         'ai-secret.txt',
@@ -112,18 +114,18 @@ describe('QwenIgnoreParser', () => {
 
   describe('when compatibility ignore files contain negations', () => {
     beforeEach(async () => {
-      await createTestFile('.qwenignore', 'secrets/**\n');
+      await createTestFile('.canopyignore', 'secrets/**\n');
       await createTestFile('.agentignore', '!secrets/**\n');
       await createTestFile(path.join('secrets', 'token.txt'), 'secret');
     });
 
-    it('should not let custom ignore negations unignore .qwenignore matches', () => {
-      const parser = new QwenIgnoreParser(projectRoot);
+    it('should not let custom ignore negations unignore .canopyignore matches', () => {
+      const parser = new CanopyIgnoreParser(projectRoot);
 
       expect(parser.isIgnored(path.join('secrets', 'token.txt'))).toBe(true);
       expect(
         parser.getIgnoreFileNameForPath(path.join('secrets', 'token.txt')),
-      ).toBe('.qwenignore');
+      ).toBe('.canopyignore');
     });
   });
 
@@ -137,10 +139,10 @@ describe('QwenIgnoreParser', () => {
     });
 
     it('should use configured custom ignore files instead of defaults', () => {
-      const parser = new QwenIgnoreParser(projectRoot, ['.cursorignore']);
+      const parser = new CanopyIgnoreParser(projectRoot, ['.cursorignore']);
 
       expect(parser.getIgnoreFileNames()).toEqual([
-        '.qwenignore',
+        '.canopyignore',
         '.cursorignore',
       ]);
       expect(parser.getPatterns()).toEqual(['cursor-secret.txt']);
@@ -156,11 +158,11 @@ describe('QwenIgnoreParser', () => {
   describe('custom ignore file name normalization', () => {
     it('should keep safe relative ignore files and skip unsafe paths', () => {
       expect(
-        normalizeQwenCustomIgnoreFileNames([
+        normalizeCanopyCustomIgnoreFileNames([
           ' .cursorignore ',
           '.cursorignore',
           'nested\\.ignore',
-          '.qwenignore',
+          '.canopyignore',
           '',
           '/absolute',
           '../escape',
@@ -170,28 +172,28 @@ describe('QwenIgnoreParser', () => {
       ).toEqual(['.cursorignore', 'nested/.ignore']);
     });
 
-    it('should include .qwenignore plus default custom ignore files by default', () => {
-      expect(getQwenIgnoreFileNames()).toEqual([
-        '.qwenignore',
+    it('should include .canopyignore plus default custom ignore files by default', () => {
+      expect(getCanopyIgnoreFileNames()).toEqual([
+        '.canopyignore',
         '.agentignore',
         '.aiignore',
       ]);
     });
 
-    it('should keep .qwenignore when custom ignore files are empty', () => {
-      expect(getQwenIgnoreFileNames([])).toEqual(['.qwenignore']);
+    it('should keep .canopyignore when custom ignore files are empty', () => {
+      expect(getCanopyIgnoreFileNames([])).toEqual(['.canopyignore']);
     });
 
     it('should format ignore file names for user-facing messages', () => {
-      expect(formatQwenIgnoreFileNames(['.cursorignore'])).toBe(
-        '.qwenignore, .cursorignore',
+      expect(formatCanopyIgnoreFileNames(['.cursorignore'])).toBe(
+        '.canopyignore, .cursorignore',
       );
     });
   });
 
   describe('when no supported ignore file exists', () => {
     it('should not load any patterns and not ignore any files', () => {
-      const parser = new QwenIgnoreParser(projectRoot);
+      const parser = new CanopyIgnoreParser(projectRoot);
       expect(parser.getPatterns()).toEqual([]);
       expect(parser.isIgnored('any_file.txt')).toBe(false);
     });
@@ -202,10 +204,10 @@ describe('QwenIgnoreParser', () => {
   describe('pattern whitespace', () => {
     it('keeps leading whitespace and strips only a trailing CR', async () => {
       await createTestFile(
-        '.qwenignore',
+        '.canopyignore',
         ' leading.txt\r\n  #hash.txt\r\n# real comment\r\n',
       );
-      const parser = new QwenIgnoreParser(projectRoot);
+      const parser = new CanopyIgnoreParser(projectRoot);
 
       // `getPatterns()` is public and feeds FileDiscoveryService, so the
       // stored text is asserted as well as the match result.

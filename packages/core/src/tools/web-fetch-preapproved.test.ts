@@ -47,7 +47,7 @@ describe('isPreapprovedHost', () => {
 
   it('matches path-scoped entries only within the path prefix', () => {
     expect(isPreapprovedHost('github.com', '/QwenLM')).toBe(true);
-    expect(isPreapprovedHost('github.com', '/QwenLM/qwen-code')).toBe(true);
+    expect(isPreapprovedHost('github.com', '/QwenLM/canopy-code')).toBe(true);
     expect(isPreapprovedHost('github.com', '/other-org/repo')).toBe(false);
   });
 

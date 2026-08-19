@@ -5,7 +5,7 @@
  */
 
 /**
- * Run-level budget enforcement for headless / non-interactive Qwen Code
+ * Run-level budget enforcement for headless / non-interactive Canopy Code
  * sessions. See issue QwenLM/qwen-code#4103.
  *
  * Two budgets are enforced today:

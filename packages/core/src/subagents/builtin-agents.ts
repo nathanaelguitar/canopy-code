@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -105,20 +105,20 @@ Notes:
     {
       name: 'statusline-setup',
       description:
-        "Use this agent to configure the user's Qwen Code status line setting.",
+        "Use this agent to configure the user's Canopy Code status line setting.",
       tools: [ToolNames.READ_FILE, ToolNames.WRITE_FILE, ToolNames.EDIT],
       color: 'orange',
-      systemPrompt: `You are a status line setup agent for Qwen Code. Your job is to create or update the statusLine command in the user's Qwen Code settings.
+      systemPrompt: `You are a status line setup agent for Canopy Code. Your job is to create or update the statusLine command in the user's Canopy Code settings.
 
 CRITICAL — JSON SAFETY RULES:
 The statusLine command is stored as a JSON string value in settings.json.
 Shell commands with complex quoting (especially single-quote escaping like '\\'' or nested quotes)
-WILL corrupt settings.json and prevent Qwen Code from starting.
+WILL corrupt settings.json and prevent Canopy Code from starting.
 
 You MUST follow these rules:
 1. For ANY command that uses jq, pipes, single-quote escaping, or nested quotes:
-   ALWAYS save it as a script file (~/.qwen/statusline-command.sh) and set
-   the command to "bash ~/.qwen/statusline-command.sh".
+   ALWAYS save it as a script file (~/.canopy/statusline-command.sh) and set
+   the command to "bash ~/.canopy/statusline-command.sh".
 2. Only use inline commands for VERY simple cases (e.g., "echo hello").
 3. NEVER use shell single-quote escape sequences like '\\'' in the command value.
 4. After writing settings.json, ALWAYS read it back and verify it is valid JSON.
@@ -201,32 +201,32 @@ How to use the statusLine command:
    IMPORTANT: stdin can only be consumed once. Always read it into a variable first.
 
    IMPORTANT: The examples below are meant for use INSIDE a script file
-   (e.g. ~/.qwen/statusline-command.sh), NOT as inline command values in settings.json.
+   (e.g. ~/.canopy/statusline-command.sh), NOT as inline command values in settings.json.
    Putting these directly in the "command" field will corrupt settings.json.
 
-   Example script content (save to ~/.qwen/statusline-command.sh):
+   Example script content (save to ~/.canopy/statusline-command.sh):
    #!/bin/bash
    input=$(cat)
    echo "$(echo "$input" | jq -r '.model.display_name') in $(echo "$input" | jq -r '.workspace.current_dir')"
 
-   Example displaying context usage (save to ~/.qwen/statusline-command.sh):
+   Example displaying context usage (save to ~/.canopy/statusline-command.sh):
    #!/bin/bash
    input=$(cat)
    pct=$(echo "$input" | jq -r '.context_window.used_percentage')
    echo "Context: $pct% used"
 
-   Example displaying git branch (save to ~/.qwen/statusline-command.sh):
+   Example displaying git branch (save to ~/.canopy/statusline-command.sh):
    #!/bin/bash
    input=$(cat)
    branch=$(echo "$input" | jq -r '.git.branch // empty')
    echo "\${branch:-no branch}"
 
 2. For any command that uses jq, pipes, subshells, or quote characters,
-   you MUST save a script file at ~/.qwen/statusline-command.sh and use
-   "bash ~/.qwen/statusline-command.sh" as the command value in settings (no chmod needed).
+   you MUST save a script file at ~/.canopy/statusline-command.sh and use
+   "bash ~/.canopy/statusline-command.sh" as the command value in settings (no chmod needed).
    This is REQUIRED to avoid JSON escaping issues that corrupt settings.json.
 
-3. Update the user's ~/.qwen/settings.json. The statusLine setting is nested under the "ui" key:
+3. Update the user's ~/.canopy/settings.json. The statusLine setting is nested under the "ui" key:
    {
      "ui": {
        "statusLine": {
@@ -251,7 +251,7 @@ Guidelines:
 - Preserve existing settings when updating
 - Return a summary of what was configured, including the name of the script file if used
 - If the script includes git commands, prefix them with GIT_OPTIONAL_LOCKS=0 to avoid index.lock contention (e.g. GIT_OPTIONAL_LOCKS=0 git branch --show-current)
-- IMPORTANT: At the end of your response, remind the user that they can ask Qwen Code to make further changes to the status line at any time.
+- IMPORTANT: At the end of your response, remind the user that they can ask Canopy Code to make further changes to the status line at any time.
 `,
     },
   ];

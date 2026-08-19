@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review findings`: the review's findings as data, and the per-finding
+// `canopy review findings`: the review's findings as data, and the per-finding
 // outcome ledger `--fix` writes back into it.
 //
 // Everything else in this pipeline that matters is already a computed artifact —
@@ -589,7 +589,7 @@ const WORKSPACE_IN_COMMAND_RE = /--workspace="([^"]+)"/;
  * One `test-delta` path as a finding would write it: repo-relative, unkeyed.
  *
  * Two things are stripped away. `failingFilesOf` keys a file by its vitest
- * project when the runner prints one (`@qwen-code/qwen-code::src/x.test.ts`) —
+ * project when the runner prints one (`@canopy-code/canopy-code::src/x.test.ts`) —
  * a finding never writes that prefix, so a keyed entry could never match and the
  * guard no-opped silently on the one shape a real projects run emits. And a
  * per-workspace command prints paths relative to that workspace, so

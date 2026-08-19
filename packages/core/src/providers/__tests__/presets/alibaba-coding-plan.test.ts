@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ import {
   computeModelListVersion,
   getDefaultModelIds,
   resolveBaseUrl,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 describe('coding plan provider', () => {
   it('creates a Coding Plan install plan', () => {

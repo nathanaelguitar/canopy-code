@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ describe('convertQoderPlugin', () => {
       displayName: 'Sample plugin',
       description: 'A synthetic Qoder plugin',
     });
-    fs.writeFileSync(path.join(root, 'QWEN.md'), '# Qwen context', 'utf-8');
+    fs.writeFileSync(path.join(root, 'CANOPY.md'), '# Canopy context', 'utf-8');
     fs.writeFileSync(
       path.join(root, 'system-prompt.md'),
       '# System context',
@@ -89,7 +89,7 @@ describe('convertQoderPlugin', () => {
       version: '2.0.0',
       displayName: 'Sample plugin',
       description: 'A synthetic Qoder plugin',
-      contextFileName: ['QWEN.md', 'system-prompt.md'],
+      contextFileName: ['CANOPY.md', 'system-prompt.md'],
     });
     expect(result.config.mcpServers?.['sample']).toMatchObject({
       httpUrl: 'https://example.com/mcp',
@@ -126,7 +126,7 @@ describe('convertQoderPlugin', () => {
     expect(result.originSource).toBe('Qoder');
     const converted = JSON.parse(
       fs.readFileSync(
-        path.join(result.extensionDir, 'qwen-extension.json'),
+        path.join(result.extensionDir, 'canopy-extension.json'),
         'utf-8',
       ),
     ) as Record<string, unknown>;
@@ -168,7 +168,7 @@ describe('convertQoderPlugin', () => {
     expect(selected.originSource).toBe('Claude');
     const selectedConfig = JSON.parse(
       fs.readFileSync(
-        path.join(selected.extensionDir, 'qwen-extension.json'),
+        path.join(selected.extensionDir, 'canopy-extension.json'),
         'utf-8',
       ),
     ) as Record<string, unknown>;
@@ -180,7 +180,7 @@ describe('convertQoderPlugin', () => {
     expect(unselected.originSource).toBe('Qoder');
     const unselectedConfig = JSON.parse(
       fs.readFileSync(
-        path.join(unselected.extensionDir, 'qwen-extension.json'),
+        path.join(unselected.extensionDir, 'canopy-extension.json'),
         'utf-8',
       ),
     ) as Record<string, unknown>;
@@ -199,7 +199,7 @@ describe('convertQoderPlugin', () => {
     const result = await convertQoderPlugin(root);
     const generated = JSON.parse(
       fs.readFileSync(
-        path.join(result.convertedDir, 'qwen-extension.json'),
+        path.join(result.convertedDir, 'canopy-extension.json'),
         'utf-8',
       ),
     ) as Record<string, unknown>;
@@ -216,7 +216,7 @@ describe('convertQoderPlugin', () => {
       name: 'sample-qoder-plugin',
       contextFileName: ['custom.md', 42, 'custom.md', './system-prompt.md'],
     });
-    fs.writeFileSync(path.join(root, 'QWEN.md'), '# Qwen context', 'utf-8');
+    fs.writeFileSync(path.join(root, 'CANOPY.md'), '# Canopy context', 'utf-8');
     fs.writeFileSync(path.join(root, 'custom.md'), '# Custom', 'utf-8');
     fs.writeFileSync(
       path.join(root, 'system-prompt.md'),
@@ -227,7 +227,7 @@ describe('convertQoderPlugin', () => {
     const result = await convertQoderPlugin(root);
 
     expect(result.config.contextFileName).toEqual([
-      'QWEN.md',
+      'CANOPY.md',
       'custom.md',
       'system-prompt.md',
     ]);
@@ -420,9 +420,9 @@ describe('convertQoderPlugin', () => {
     fs.rmSync(external, { recursive: true, force: true });
   });
 
-  it('loads QWEN.md with system-prompt.md when context is not configured', async () => {
+  it('loads CANOPY.md with system-prompt.md when context is not configured', async () => {
     writeManifest({ name: 'sample-qoder-plugin', contextFileName: [] });
-    fs.writeFileSync(path.join(root, 'QWEN.md'), '# Qwen context', 'utf-8');
+    fs.writeFileSync(path.join(root, 'CANOPY.md'), '# Canopy context', 'utf-8');
     fs.writeFileSync(
       path.join(root, 'system-prompt.md'),
       '# System context',
@@ -432,7 +432,7 @@ describe('convertQoderPlugin', () => {
     const result = await convertQoderPlugin(root);
 
     expect(result.config.contextFileName).toEqual([
-      'QWEN.md',
+      'CANOPY.md',
       'system-prompt.md',
     ]);
     fs.rmSync(result.convertedDir, { recursive: true, force: true });
@@ -511,7 +511,7 @@ describe('convertQoderPlugin', () => {
     fs.rmSync(external, { recursive: true, force: true });
   });
 
-  it.each(['QWEN.md', 'system-prompt.md'])(
+  it.each(['CANOPY.md', 'system-prompt.md'])(
     'does not load an escaping default %s symlink',
     async (contextFile) => {
       const external = fs.mkdtempSync(

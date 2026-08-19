@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { promises as fsp } from 'node:fs';
 import * as path from 'node:path';
-import { isWithinRoot } from '@qwen-code/qwen-code-core';
+import { isWithinRoot } from '@canopy-code/canopy-code-core';
 import { FsError, type FsErrorKind } from './errors.js';
 
 // `canonicalizeWorkspace` and `MAX_WORKSPACE_PATH_LENGTH` lifted to
@@ -548,9 +548,9 @@ export async function resolveWithinWorkspace(
                 // and an absolute outside-target string would leak the
                 // attacker's intended exfiltration path through audit
                 // events. Operators wanting the actual target value
-                // run with `QWEN_AUDIT_RAW_PATHS=1` and read it from
+                // run with `CANOPY_AUDIT_RAW_PATHS=1` and read it from
                 // `relPath` / `message`.
-                hint: 'symlink chain leaves the workspace; enable QWEN_AUDIT_RAW_PATHS for the resolved target',
+                hint: 'symlink chain leaves the workspace; enable CANOPY_AUDIT_RAW_PATHS for the resolved target',
               },
             );
           }

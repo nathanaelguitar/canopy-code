@@ -22,7 +22,7 @@ interface ExampleToolCall {
 }
 
 function examplesFor(style: 'qwen-coder' | 'qwen-vl'): string {
-  vi.stubEnv('QWEN_CODE_TOOL_CALL_STYLE', style);
+  vi.stubEnv('CANOPY_CODE_TOOL_CALL_STYLE', style);
   const prompt = getCoreSystemPrompt();
   return prompt.slice(prompt.lastIndexOf('# Examples (Illustrating Tone'));
 }

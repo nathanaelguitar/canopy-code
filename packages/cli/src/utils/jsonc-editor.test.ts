@@ -189,10 +189,10 @@ describe('updateJsoncContent', () => {
 
   it('preserves CRLF, tab indentation, final newline, and a UTF-8 BOM', () => {
     const original =
-      '\uFEFF{\r\n\t// Existing setting\r\n\t"model": "qwen"\r\n}\r\n';
+      '\uFEFF{\r\n\t// Existing setting\r\n\t"model": "canopy"\r\n}\r\n';
 
     const updated = updateJsoncContent(original, {
-      model: 'qwen',
+      model: 'canopy',
       approvalMode: 'default',
     });
 
@@ -207,15 +207,15 @@ describe('updateJsoncContent', () => {
   /*
     "example": true
   */
-\t"model": "qwen"
+\t"model": "canopy"
 }`;
 
     const updated = updateJsoncContent(original, {
-      model: 'qwen-3',
+      model: 'canopy-3',
       approvalMode: 'default',
     });
 
-    expect(updated).toContain('\n\t"model": "qwen-3"');
+    expect(updated).toContain('\n\t"model": "canopy-3"');
     expect(updated).toContain('\n\t"approvalMode": "default"');
   });
 
@@ -249,10 +249,10 @@ describe('updateJsoncContent', () => {
   it('leaves a semantic no-op byte-for-byte unchanged', () => {
     const original = `{
   // untouched
-  "model": "qwen",
+  "model": "canopy",
 }`;
 
-    expect(updateJsoncContent(original, { model: 'qwen' })).toBe(original);
+    expect(updateJsoncContent(original, { model: 'canopy' })).toBe(original);
   });
 
   it('does not rewrite unchanged arrays containing objects', () => {
@@ -261,10 +261,10 @@ describe('updateJsoncContent', () => {
     // Preserve the original object text.
     { "value": 1, "value": 2 },
   ],
-  "model": "qwen"
+  "model": "canopy"
 }`;
 
-    const updated = updateJsoncContent(original, { model: 'qwen-3' });
+    const updated = updateJsoncContent(original, { model: 'canopy-3' });
 
     expect(updated).toContain('// Preserve the original object text.');
     expect(updated.match(/"value"/g)).toHaveLength(2);
@@ -295,10 +295,10 @@ describe('updateJsoncContent', () => {
     expect(Object.prototype).not.toHaveProperty('polluted');
   });
 
-  it.each(['{ "model": "qwen"', '[]', '"hello"', '42', 'true', 'null'])(
+  it.each(['{ "model": "canopy"', '[]', '"hello"', '42', 'true', 'null'])(
     'rejects malformed or non-object JSONC: %s',
     (content) => {
-      expect(() => updateJsoncContent(content, { model: 'qwen' })).toThrow();
+      expect(() => updateJsoncContent(content, { model: 'canopy' })).toThrow();
     },
   );
 });

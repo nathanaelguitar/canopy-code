@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -25,7 +25,7 @@ export function quarantineCorruptFile(filePath: string): void {
   const quarantinePath = `${filePath}.corrupted`;
   try {
     fs.renameSync(filePath, quarantinePath);
-    // `debugLogger.warn` is gated behind QWEN_DEBUG_LOG_FILE (unset for almost
+    // `debugLogger.warn` is gated behind CANOPY_DEBUG_LOG_FILE (unset for almost
     // all users), so without this the user's favorites/scopes/sources would
     // appear to vanish with no trail. Surface the quarantine on stderr too.
     process.stderr.write(

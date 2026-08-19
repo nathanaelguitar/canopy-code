@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,8 +8,8 @@ import {
   createDebugLogger,
   ToolNames,
   FORK_SUBAGENT_TYPE,
-} from '@qwen-code/qwen-code-core';
-import type { AgentParams } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { AgentParams } from '@canopy-code/canopy-code-core';
 import type {
   CommandContext,
   SlashCommand,

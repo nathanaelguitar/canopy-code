@@ -8,7 +8,7 @@ import {
   ApprovalMode,
   AuthType,
   Config,
-  DEFAULT_QWEN_EMBEDDING_MODEL,
+  DEFAULT_CANOPY_EMBEDDING_MODEL,
   FileDiscoveryService,
   getAllGeminiMdFilenames,
   loadServerHierarchicalMemory,
@@ -44,7 +44,7 @@ import {
   type WebSearchSettings,
   MAX_SUBAGENT_DEPTH_LIMIT,
   addDaemonRequestAttribute,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { extensionsCommand } from '../commands/extensions.js';
 import { hooksCommand } from '../commands/hooks.js';
 import { resolveAcpChannelFallback } from './acp-channel-fallback.js';
@@ -93,7 +93,7 @@ import { resolveSkillSettings } from './skill-settings.js';
 const debugLogger = createDebugLogger('CONFIG');
 
 function resolveLocaleForExtensions(settings: Settings): string {
-  const envLang = process.env['QWEN_CODE_LANG'];
+  const envLang = process.env['CANOPY_CODE_LANG'];
   if (envLang) return envLang;
   const settingsLang = settings.general?.language as string | undefined;
   if (settingsLang && settingsLang !== 'auto') return settingsLang;
@@ -212,7 +212,7 @@ export interface CliArgs {
    * - `--worktree=#123` / `--worktree https://github.com/o/r/pull/123` → PR ref
    *
    * Consumed by `setupStartupWorktree()` before `loadCliConfig()`. When set,
-   * the CLI chdirs into `<repoRoot>/.qwen/worktrees/<slug>/` and the entire
+   * the CLI chdirs into `<repoRoot>/.canopy/worktrees/<slug>/` and the entire
    * session runs inside that worktree.
    */
   worktree?: string | undefined;
@@ -550,7 +550,7 @@ export async function parseArguments(): Promise<CliArgs> {
   // hack: if the first argument is the CLI entry point, remove it
   if (
     rawArgv.length > 0 &&
-    (rawArgv[0].endsWith('/dist/qwen-cli/cli.js') ||
+    (rawArgv[0].endsWith('/dist/canopy-cli/cli.js') ||
       rawArgv[0].endsWith('/dist/cli.js') ||
       rawArgv[0].endsWith('/dist/cli/cli.js'))
   ) {
@@ -559,9 +559,9 @@ export async function parseArguments(): Promise<CliArgs> {
 
   const yargsInstance = yargs(rawArgv)
     .locale('en')
-    .scriptName('qwen')
+    .scriptName('canopy')
     .usage(
-      'Usage: qwen [options] [command]\n\nQwen Code - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
+      'Usage: canopy [options] [command]\n\nCanopy Code - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
     )
     .option('telemetry', {
       type: 'boolean',
@@ -637,7 +637,8 @@ export async function parseArguments(): Promise<CliArgs> {
     })
     .option('proxy', {
       type: 'string',
-      description: 'Proxy for Qwen Code, like schema://user:password@host:port',
+      description:
+        'Proxy for Canopy Code, like schema://user:password@host:port',
     })
     .deprecateOption(
       'proxy',
@@ -646,7 +647,7 @@ export async function parseArguments(): Promise<CliArgs> {
     .option('insecure', {
       type: 'boolean',
       description:
-        'Skip TLS certificate verification for API connections (for self-signed certs in trusted/lab environments). Equivalent to setting QWEN_TLS_INSECURE=1. WARNING: removes protection against man-in-the-middle attacks.',
+        'Skip TLS certificate verification for API connections (for self-signed certs in trusted/lab environments). Equivalent to setting CANOPY_TLS_INSECURE=1. WARNING: removes protection against man-in-the-middle attacks.',
       default: false,
     })
     .option('chat-recording', {
@@ -654,7 +655,7 @@ export async function parseArguments(): Promise<CliArgs> {
       description:
         'Enable chat recording to disk. If false, chat history is not saved and --continue/--resume will not work.',
     })
-    .command('$0 [query..]', 'Launch Qwen Code CLI', (yargsInstance: Argv) =>
+    .command('$0 [query..]', 'Launch Canopy Code CLI', (yargsInstance: Argv) =>
       yargsInstance
         .positional('query', {
           description:
@@ -893,7 +894,7 @@ export async function parseArguments(): Promise<CliArgs> {
         .option('worktree', {
           type: 'string',
           description:
-            'Start the session inside a git worktree at <repoRoot>/.qwen/worktrees/<slug>/. ' +
+            'Start the session inside a git worktree at <repoRoot>/.canopy/worktrees/<slug>/. ' +
             'Pass a slug (`--worktree my-feature`), a PR reference (`--worktree=#123` or a full ' +
             'GitHub pull-request URL), or use bare `--worktree` to auto-generate a slug. ' +
             'On exit, the WorktreeExitDialog prompts to keep or remove the worktree.',
@@ -937,7 +938,7 @@ export async function parseArguments(): Promise<CliArgs> {
           description:
             'Slash command names to hide/disable (comma-separated or ' +
             'repeated). Merged with the `slashCommands.disabled` setting ' +
-            'and QWEN_DISABLED_SLASH_COMMANDS. Matched case-insensitively ' +
+            'and CANOPY_DISABLED_SLASH_COMMANDS. Matched case-insensitively ' +
             'against the final command name.',
           coerce: (names: string[]) =>
             names.flatMap((n) => n.split(',').map((t) => t.trim())),
@@ -954,7 +955,7 @@ export async function parseArguments(): Promise<CliArgs> {
           choices: [
             AuthType.USE_OPENAI,
             AuthType.USE_ANTHROPIC,
-            AuthType.QWEN_OAUTH,
+            AuthType.CANOPY_OAUTH,
             AuthType.USE_GEMINI,
             AuthType.USE_VERTEX_AI,
           ],
@@ -1063,7 +1064,7 @@ export async function parseArguments(): Promise<CliArgs> {
             const hasPositionalQuery = Array.isArray(query)
               ? query.length > 0
               : !!query;
-            // Allow stdin piping (`echo "..." | qwen --json-schema ...`):
+            // Allow stdin piping (`echo "..." | canopy --json-schema ...`):
             // when stdin is not a TTY, the prompt is supplied via the pipe
             // and headless mode runs normally. Only reject true interactive
             // invocations with neither flag nor positional nor pipe — the
@@ -1089,7 +1090,7 @@ export async function parseArguments(): Promise<CliArgs> {
     .command(channelCommand)
     // Register /review skill helpers (presubmit checks, cleanup)
     .command(reviewCommand)
-    // Register `qwen serve` (Stage 1 daemon)
+    // Register `canopy serve` (Stage 1 daemon)
     .command(serveCommand)
     // Register sessions subcommands
     .command(sessionsCommand)
@@ -1123,7 +1124,7 @@ export async function parseArguments(): Promise<CliArgs> {
       result._[0] === 'update')
   ) {
     // Note: `serve` is intentionally NOT in this list. Its handler blocks
-    // forever (after the listener is up); SIGINT/SIGTERM in runQwenServe
+    // forever (after the listener is up); SIGINT/SIGTERM in runCanopyServe
     // drives shutdown. Hitting `process.exit(0)` here would kill the daemon.
     // MCP/Extensions/Auth/Hooks/Channel/Review commands handle their own
     // execution and exit. Returning here would let the main interactive
@@ -1168,7 +1169,7 @@ export async function parseArguments(): Promise<CliArgs> {
 
   // Apply ACP fallback: if acp or experimental-acp is present but no explicit
   // --channel, attribute the launch — daemon-spawned children carry the serve
-  // marker, the Tauri desktop shell additionally sets QWEN_CODE_DESKTOP.
+  // marker, the Tauri desktop shell additionally sets CANOPY_CODE_DESKTOP.
   if ((result['acp'] || result['experimentalAcp']) && !result['channel']) {
     (result as Record<string, unknown>)['channel'] =
       resolveAcpChannelFallback();
@@ -1242,7 +1243,7 @@ function resolveModelFallbacks(
 
 /**
  * Resolve the built-in WebSearch tool settings, with env overrides taking
- * precedence over `tools.webSearch` (mirroring the QWEN_SANDBOX_IMAGE
+ * precedence over `tools.webSearch` (mirroring the CANOPY_SANDBOX_IMAGE
  * pattern): ENABLE_WEB_SEARCH for the flag, WEB_SEARCH_MODEL for the model
  * selector, WEB_SEARCH_EXTRACTOR for page reading.
  *
@@ -1567,8 +1568,8 @@ export async function loadCliConfig(
   },
 ): Promise<Config> {
   const debugMode = isDebugMode(argv);
-  if (debugMode && process.env['QWEN_DEBUG_LOG_FILE'] === undefined) {
-    process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+  if (debugMode && process.env['CANOPY_DEBUG_LOG_FILE'] === undefined) {
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
   }
   const bareMode = isBareMode(argv.bare);
   const safeMode =
@@ -1577,9 +1578,9 @@ export async function loadCliConfig(
   // Surface `--insecure` as an env var so it reaches the undici dispatcher
   // layer (which controls TLS verification) without threading a flag through
   // every content generator and the preconnect path. Resolution there ORs this
-  // with QWEN_TLS_INSECURE / NODE_TLS_REJECT_UNAUTHORIZED=0.
+  // with CANOPY_TLS_INSECURE / NODE_TLS_REJECT_UNAUTHORIZED=0.
   if (argv.insecure) {
-    process.env['QWEN_TLS_INSECURE'] = '1';
+    process.env['CANOPY_TLS_INSECURE'] = '1';
   }
   // When opting out of TLS verification, also set NODE_TLS_REJECT_UNAUTHORIZED
   // process-wide. The custom undici dispatcher handles the Node path, but this
@@ -1597,15 +1598,15 @@ export async function loadCliConfig(
     // inherit the env), not just model calls. Log to the debug file too, so the
     // state is discoverable after the terminal scrollback is gone.
     const tlsWarning =
-      'TLS certificate verification is disabled (--insecure / QWEN_TLS_INSECURE). All HTTPS connections in this process (API calls, OAuth, MCP servers, child processes) are vulnerable to man-in-the-middle attacks.';
+      'TLS certificate verification is disabled (--insecure / CANOPY_TLS_INSECURE). All HTTPS connections in this process (API calls, OAuth, MCP servers, child processes) are vulnerable to man-in-the-middle attacks.';
     debugLogger.warn(tlsWarning);
     // eslint-disable-next-line no-console
     console.error(`WARNING: ${tlsWarning}`);
   }
 
-  // Set runtime output directory from settings (env var QWEN_RUNTIME_DIR
+  // Set runtime output directory from settings (env var CANOPY_RUNTIME_DIR
   // is auto-detected inside getRuntimeBaseDir() at each call site).
-  // Pass cwd so that relative paths like ".qwen" resolve per-project.
+  // Pass cwd so that relative paths like ".canopy" resolve per-project.
   if (!Storage.hasRuntimeBaseDirContext()) {
     Storage.setRuntimeBaseDir(settings.advanced?.runtimeOutputDir, cwd);
   }
@@ -1629,11 +1630,11 @@ export async function loadCliConfig(
   // Automatically load output-language.md if it exists
   const projectStorage = new Storage(cwd);
   const projectOutputLanguagePath = path.join(
-    projectStorage.getQwenDir(),
+    projectStorage.getCanopyDir(),
     'output-language.md',
   );
   const globalOutputLanguagePath = path.join(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     'output-language.md',
   );
 
@@ -1817,9 +1818,9 @@ export async function loadCliConfig(
       addDisabled(name);
   }
   for (const name of argv.disabledSlashCommands ?? []) addDisabled(name);
-  for (const name of (process.env['QWEN_DISABLED_SLASH_COMMANDS'] ?? '').split(
-    ',',
-  )) {
+  for (const name of (
+    process.env['CANOPY_DISABLED_SLASH_COMMANDS'] ?? ''
+  ).split(',')) {
     addDisabled(name);
   }
 
@@ -2014,7 +2015,7 @@ export async function loadCliConfig(
       if (sessionRestoreProjectionSource) {
         if (!deferProjectionUntilWriterLease && !argv.forkSession) {
           addDaemonRequestAttribute(
-            'qwen-code.daemon.session_restore.projection_acquisition',
+            'canopy-code.daemon.session_restore.projection_acquisition',
             'preloaded',
           );
           sessionRestoreProjection =
@@ -2024,7 +2025,7 @@ export async function loadCliConfig(
         sessionData = await sessionService.loadSession(argv.resume);
       }
       if (!sessionRestoreProjectionSource && !sessionData) {
-        const message = `No saved session found with ID ${argv.resume}. Run \`qwen --resume\` without an ID to choose from existing sessions.`;
+        const message = `No saved session found with ID ${argv.resume}. Run \`canopy --resume\` without an ID to choose from existing sessions.`;
         writeStderrLine(message);
         process.exit(1);
       }
@@ -2046,7 +2047,7 @@ export async function loadCliConfig(
         sessionData = undefined;
         if (!deferProjectionUntilWriterLease) {
           addDaemonRequestAttribute(
-            'qwen-code.daemon.session_restore.projection_acquisition',
+            'canopy-code.daemon.session_restore.projection_acquisition',
             'preloaded',
           );
           sessionRestoreProjection =
@@ -2129,7 +2130,7 @@ export async function loadCliConfig(
     sessionData,
     sessionRestoreProjection,
     sessionRestoreProjectionSource: boundSessionRestoreProjectionSource,
-    embeddingModel: DEFAULT_QWEN_EMBEDDING_MODEL,
+    embeddingModel: DEFAULT_CANOPY_EMBEDDING_MODEL,
     sandbox: sandboxConfig,
     targetDir: cwd,
     includeDirectories,
@@ -2237,12 +2238,12 @@ export async function loadCliConfig(
     telemetry: telemetrySettings,
     // Ordinary interactive TUI defers telemetry until after first paint; ACP
     // defers it until after the initialize response is written. Events emitted
-    // before deferred init are an accepted startup-latency tradeoff. `qwen -i
+    // before deferred init are an accepted startup-latency tradeoff. `canopy -i
     // "prompt"` still initializes eagerly because it auto-submits after render.
     deferTelemetryInitialization: isAcpMode || (interactive && !question),
     outboundCorrelation: settings.outboundCorrelation,
     usageStatisticsEnabled:
-      parseBooleanEnvFlag(process.env['QWEN_USAGE_STATISTICS_ENABLED']) ??
+      parseBooleanEnvFlag(process.env['CANOPY_USAGE_STATISTICS_ENABLED']) ??
       settings.privacy?.usageStatisticsEnabled ??
       true,
     clearContextOnIdle: settings.context?.clearContextOnIdle,
@@ -2296,13 +2297,13 @@ export async function loadCliConfig(
     // through the CDP tunnel (far lighter than the OS-level computer-use
     // driver), so disable computer-use to keep the agent off that heavy path.
     computerUseEnabled: (() => {
-      const tunnelOn = process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'] === '1';
+      const tunnelOn = process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'] === '1';
       // Surface the override when it contradicts an explicit opt-in, so the
       // effective config isn't a silent surprise during debugging.
       if (tunnelOn && settings.tools?.computerUse?.enabled === true) {
         writeStderrLine(
-          'qwen serve: ignoring tools.computerUse.enabled=true — the CDP ' +
-            'tunnel (QWEN_SERVE_CDP_TUNNEL_OVER_WS) routes browser automation ' +
+          'canopy serve: ignoring tools.computerUse.enabled=true — the CDP ' +
+            'tunnel (CANOPY_SERVE_CDP_TUNNEL_OVER_WS) routes browser automation ' +
             'through the CDP tunnel, so computer-use stays disabled.',
         );
       }

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { SessionService } from '@qwen-code/qwen-code-core';
+import { SessionService } from '@canopy-code/canopy-code-core';
 import { access } from 'node:fs/promises';
 import {
   SessionNotFoundError,

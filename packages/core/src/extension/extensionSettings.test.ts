@@ -151,7 +151,7 @@ describe('extensionSettings', () => {
         ],
       };
       const keychain = new KeychainTokenStorage(
-        'Qwen Code Extensions test-ext 12345',
+        'Canopy Code Extensions test-ext 12345',
       );
 
       const commit = await maybePromptForSettings(
@@ -169,8 +169,8 @@ describe('extensionSettings', () => {
         await getScopedEnvContents(config, '12345', ExtensionSettingScope.USER),
       ).toEqual({});
       fs.renameSync(
-        path.join(tempWorkspaceDir, '.qwen-extension-settings.json'),
-        path.join(extensionDir, '.qwen-extension-settings.json'),
+        path.join(tempWorkspaceDir, '.canopy-extension-settings.json'),
+        path.join(extensionDir, '.canopy-extension-settings.json'),
       );
       expect(
         await getScopedEnvContents(config, '12345', ExtensionSettingScope.USER),
@@ -221,18 +221,18 @@ describe('extensionSettings', () => {
 
       const firstSelector = JSON.parse(
         fs.readFileSync(
-          path.join(firstDir, '.qwen-extension-settings.json'),
+          path.join(firstDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
       const secondSelector = JSON.parse(
         fs.readFileSync(
-          path.join(secondDir, '.qwen-extension-settings.json'),
+          path.join(secondDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
       expect(firstSelector.bundleKey).not.toBe(secondSelector.bundleKey);
-      const storage = mockKeychainData['Qwen Code Extensions test-ext 12345'];
+      const storage = mockKeychainData['Canopy Code Extensions test-ext 12345'];
       expect(JSON.parse(storage![firstSelector.bundleKey]!)).toEqual({
         API_KEY: 'first-secret',
       });
@@ -267,11 +267,12 @@ describe('extensionSettings', () => {
       );
       const selector = JSON.parse(
         fs.readFileSync(
-          path.join(stagingDir, '.qwen-extension-settings.json'),
+          path.join(stagingDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
-      const storage = mockKeychainData['Qwen Code Extensions test-ext 12345']!;
+      const storage =
+        mockKeychainData['Canopy Code Extensions test-ext 12345']!;
       expect(storage[selector.bundleKey]).toBeDefined();
 
       await prepared?.discard();
@@ -303,11 +304,12 @@ describe('extensionSettings', () => {
       );
       const oldSelector = JSON.parse(
         fs.readFileSync(
-          path.join(extensionDir, '.qwen-extension-settings.json'),
+          path.join(extensionDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
-      const storage = mockKeychainData['Qwen Code Extensions test-ext 12345']!;
+      const storage =
+        mockKeychainData['Canopy Code Extensions test-ext 12345']!;
       storage[`${oldSelector.bundleKey}:override:API_KEY`] = 'old-override';
 
       const stagingDir = path.join(tempWorkspaceDir, 'replacement');
@@ -323,13 +325,13 @@ describe('extensionSettings', () => {
       );
       const newSelector = JSON.parse(
         fs.readFileSync(
-          path.join(stagingDir, '.qwen-extension-settings.json'),
+          path.join(stagingDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
       fs.copyFileSync(
-        path.join(stagingDir, '.qwen-extension-settings.json'),
-        path.join(extensionDir, '.qwen-extension-settings.json'),
+        path.join(stagingDir, '.canopy-extension-settings.json'),
+        path.join(extensionDir, '.canopy-extension-settings.json'),
       );
 
       await prepared?.commit();
@@ -370,11 +372,12 @@ describe('extensionSettings', () => {
       );
       const selector = JSON.parse(
         fs.readFileSync(
-          path.join(extensionDir, '.qwen-extension-settings.json'),
+          path.join(extensionDir, '.canopy-extension-settings.json'),
           'utf8',
         ),
       ) as { bundleKey: string };
-      const storage = mockKeychainData['Qwen Code Extensions test-ext 12345']!;
+      const storage =
+        mockKeychainData['Canopy Code Extensions test-ext 12345']!;
       storage['API_KEY'] = 'stale-secret';
       delete storage[selector.bundleKey];
 
@@ -397,7 +400,7 @@ describe('extensionSettings', () => {
         ],
       };
       const keychain = new KeychainTokenStorage(
-        'Qwen Code Extensions test-ext 12345',
+        'Canopy Code Extensions test-ext 12345',
       );
       await keychain.setSecret('API_KEY', 'old-secret');
 
@@ -568,7 +571,7 @@ describe('extensionSettings', () => {
         SENSITIVE_VAR: 'secret',
       };
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345`,
+        `Canopy Code Extensions test-ext 12345`,
       );
       await userKeychain.setSecret('SENSITIVE_VAR', 'secret');
       const envPath = path.join(extensionDir, '.env');
@@ -614,7 +617,7 @@ describe('extensionSettings', () => {
       };
       const previousSettings = { SENSITIVE_VAR: 'secret' };
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345`,
+        `Canopy Code Extensions test-ext 12345`,
       );
       await userKeychain.setSecret('SENSITIVE_VAR', 'secret');
 
@@ -879,7 +882,7 @@ describe('extensionSettings', () => {
       const userEnvPath = path.join(extensionDir, EXTENSION_SETTINGS_FILENAME);
       await fsPromises.writeFile(userEnvPath, 'VAR1=user-value1');
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345`,
+        `Canopy Code Extensions test-ext 12345`,
       );
       await userKeychain.setSecret('SENSITIVE_VAR', 'user-secret');
 
@@ -902,7 +905,7 @@ describe('extensionSettings', () => {
       );
       await fsPromises.writeFile(workspaceEnvPath, 'VAR1=workspace-value1');
       const workspaceKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345 ${tempWorkspaceDir}`,
+        `Canopy Code Extensions test-ext 12345 ${tempWorkspaceDir}`,
       );
       await workspaceKeychain.setSecret('SENSITIVE_VAR', 'workspace-secret');
 
@@ -939,7 +942,7 @@ describe('extensionSettings', () => {
         'VAR1=user-value1\nVAR3=user-value3',
       );
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext ${extensionId}`,
+        `Canopy Code Extensions test-ext ${extensionId}`,
       );
       await userKeychain.setSecret('VAR2', 'user-secret2');
 
@@ -950,7 +953,7 @@ describe('extensionSettings', () => {
       );
       await fsPromises.writeFile(workspaceEnvPath, 'VAR1=workspace-value1');
       const workspaceKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext ${extensionId} ${tempWorkspaceDir}`,
+        `Canopy Code Extensions test-ext ${extensionId} ${tempWorkspaceDir}`,
       );
       await workspaceKeychain.setSecret('VAR2', 'workspace-secret2');
 
@@ -979,7 +982,7 @@ describe('extensionSettings', () => {
       const userEnvPath = path.join(extensionDir, '.env');
       await fsPromises.writeFile(userEnvPath, 'VAR1=value1\n');
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345`,
+        `Canopy Code Extensions test-ext 12345`,
       );
       await userKeychain.setSecret('VAR2', 'value2');
       mockRequestSetting.mockClear();
@@ -1037,15 +1040,15 @@ describe('extensionSettings', () => {
       );
 
       const userKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345`,
+        `Canopy Code Extensions test-ext 12345`,
       );
       expect(await userKeychain.getSecret('VAR2')).toBe('new-value2');
     });
 
     it('synchronizes legacy sensitive settings through the current backend', async () => {
       const previousStorageOverride =
-        process.env['QWEN_CODE_FORCE_FILE_STORAGE'];
-      process.env['QWEN_CODE_FORCE_FILE_STORAGE'] = 'true';
+        process.env['CANOPY_CODE_FORCE_FILE_STORAGE'];
+      process.env['CANOPY_CODE_FORCE_FILE_STORAGE'] = 'true';
       try {
         await maybePromptForSettings(
           config,
@@ -1057,9 +1060,10 @@ describe('extensionSettings', () => {
         );
       } finally {
         if (previousStorageOverride === undefined) {
-          delete process.env['QWEN_CODE_FORCE_FILE_STORAGE'];
+          delete process.env['CANOPY_CODE_FORCE_FILE_STORAGE'];
         } else {
-          process.env['QWEN_CODE_FORCE_FILE_STORAGE'] = previousStorageOverride;
+          process.env['CANOPY_CODE_FORCE_FILE_STORAGE'] =
+            previousStorageOverride;
         }
       }
 
@@ -1072,7 +1076,7 @@ describe('extensionSettings', () => {
       );
 
       await fsPromises.rm(
-        path.join(extensionDir, '.qwen-extension-settings.json'),
+        path.join(extensionDir, '.canopy-extension-settings.json'),
       );
       await expect(
         getScopedEnvContents(config, '12345', ExtensionSettingScope.USER),
@@ -1094,7 +1098,7 @@ describe('extensionSettings', () => {
       );
 
       const workspaceKeychain = new KeychainTokenStorage(
-        `Qwen Code Extensions test-ext 12345 ${tempWorkspaceDir}`,
+        `Canopy Code Extensions test-ext 12345 ${tempWorkspaceDir}`,
       );
       expect(await workspaceKeychain.getSecret('VAR2')).toBe(
         'new-workspace-secret',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,9 +24,9 @@ describe('SessionOrganizationService', () => {
   const sessionIdB = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
   beforeEach(async () => {
-    previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    runtimeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-org-'));
-    process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+    previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    runtimeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-org-'));
+    process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
     warnings = [];
     service = new SessionOrganizationService(cwd, (warning) => {
       warnings.push(warning);
@@ -35,9 +35,9 @@ describe('SessionOrganizationService', () => {
 
   afterEach(async () => {
     if (previousRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
     }
     await fs.rm(runtimeDir, { recursive: true, force: true });
   });

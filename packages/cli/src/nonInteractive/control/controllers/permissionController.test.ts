@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,8 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   InputFormat,
   ToolConfirmationOutcome,
-} from '@qwen-code/qwen-code-core';
-import type { WorkflowApproval } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { WorkflowApproval } from '@canopy-code/canopy-code-core';
 import { createMinimalSettings } from '../../../config/settings.js';
 import type { StreamJsonOutputAdapter } from '../../io/StreamJsonOutputAdapter.js';
 import type { IControlContext } from '../ControlContext.js';

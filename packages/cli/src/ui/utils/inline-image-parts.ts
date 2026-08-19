@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Part } from '@google/genai';
-import { MAX_TERMINAL_IMAGE_BYTES } from '@qwen-code/qwen-code-core';
+import { MAX_TERMINAL_IMAGE_BYTES } from '@canopy-code/canopy-code-core';
 import type { InlineImageData } from '../types.js';
 
 export const MAX_INLINE_IMAGES_PER_ITEM = 4;

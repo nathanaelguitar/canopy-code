@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import type { SessionStartSource } from '../hooks/types.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 import { isNodeError } from '../utils/errors.js';
 
-export const SESSION_START_PROFILE_ENV = 'QWEN_CODE_PROFILE_SESSION_START';
+export const SESSION_START_PROFILE_ENV = 'CANOPY_CODE_PROFILE_SESSION_START';
 
 const debugLogger = createDebugLogger('SESSION_START_PROFILER');
 

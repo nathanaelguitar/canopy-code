@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,7 +19,7 @@ import {
   MISSING_TOOL_RESULT_MESSAGE,
 } from './history-replayer.js';
 import type { SessionContext } from './types.js';
-import { ChatRecordingService } from '@qwen-code/qwen-code-core';
+import { ChatRecordingService } from '@canopy-code/canopy-code-core';
 import type {
   Config,
   ChatRecord,
@@ -27,7 +27,7 @@ import type {
   ToolRegistry,
   ToolResultDisplay,
   TodoResultDisplay,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 describe('HistoryReplayer', () => {
   let mockContext: SessionContext;
@@ -74,7 +74,7 @@ describe('HistoryReplayer', () => {
   ) => ({
     ...extra,
     timestamp: toEpochMs(record.timestamp),
-    qwenTranscript: { sourceRecordIds: [record.uuid] },
+    canopyTranscript: { sourceRecordIds: [record.uuid] },
   });
   const sentUpdates = () =>
     sendUpdateSpy.mock.calls.map(
@@ -210,7 +210,7 @@ describe('HistoryReplayer', () => {
         content: { type: 'text', text: 'save logs' },
         _meta: replayMeta(record, {
           source: 'mid_turn_message_injected',
-          qwenDiscreteMessage: true,
+          canopyDiscreteMessage: true,
         }),
       });
     });
@@ -317,7 +317,7 @@ describe('HistoryReplayer', () => {
       expect(sendUpdateSpy).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
-          toolCallId: 'qwen-replay-tool:assistant-uuid:0',
+          toolCallId: 'canopy-replay-tool:assistant-uuid:0',
           status: 'failed',
         }),
       );
@@ -580,7 +580,7 @@ describe('HistoryReplayer', () => {
         status: 'completed',
       });
       expect(updates[2]).toMatchObject({
-        toolCallId: 'qwen-replay-tool:assistant-uuid:0',
+        toolCallId: 'canopy-replay-tool:assistant-uuid:0',
         status: 'failed',
       });
     });
@@ -885,7 +885,7 @@ describe('HistoryReplayer', () => {
     });
 
     it('should replay structured artifacts persisted by the recorder', async () => {
-      const projectDir = mkdtempSync(join(tmpdir(), 'qwen-history-replay-'));
+      const projectDir = mkdtempSync(join(tmpdir(), 'canopy-history-replay-'));
       const sessionId = 'recorded-session';
       const artifacts = [
         {
@@ -1008,13 +1008,13 @@ describe('HistoryReplayer', () => {
             content: 'Task 1',
             priority: 'medium',
             status: 'pending',
-            _meta: { qwenTodo: { id: '1' } },
+            _meta: { canopyTodo: { id: '1' } },
           },
           {
             content: 'Task 2',
             priority: 'medium',
             status: 'completed',
-            _meta: { qwenTodo: { id: '2', blockedBy: ['1'] } },
+            _meta: { canopyTodo: { id: '2', blockedBy: ['1'] } },
           },
         ],
         _meta: {
@@ -1026,11 +1026,11 @@ describe('HistoryReplayer', () => {
               apiTimeMs: 0,
             },
           }),
-          qwenTranscript: {
+          canopyTranscript: {
             sourceRecordIds: [record.uuid],
             planToolCallId: 'call-123',
           },
-          qwenTodoPlan: { id: 'plan-1' },
+          canopyTodoPlan: { id: 'plan-1' },
         },
       });
     });
@@ -1052,7 +1052,7 @@ describe('HistoryReplayer', () => {
 
       expect(sendUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          toolCallId: 'qwen-replay-tool:fallback-uuid:result',
+          toolCallId: 'canopy-replay-tool:fallback-uuid:result',
         }),
       );
     });
@@ -1275,7 +1275,7 @@ describe('HistoryReplayer', () => {
 
     it('survives a broken stderr instead of abandoning the transcript', async () => {
       // The empty-condition card writes a diagnostic. `process.stderr.write`
-      // throws on EPIPE (`qwen … | head`, or a daemon whose stderr reader went
+      // throws on EPIPE (`canopy … | head`, or a daemon whose stderr reader went
       // away), and a raw `writeStderrLine` would take that throw out through the
       // item loop and the record loop, aborting the whole replay: the user loses
       // their transcript because we failed to *complain* about one bad card.
@@ -1412,7 +1412,7 @@ describe('HistoryReplayer', () => {
         content: { type: 'text', text: '' },
         _meta: {
           timestamp: toEpochMs(record.timestamp),
-          qwenTranscript: { sourceRecordIds: [record.uuid] },
+          canopyTranscript: { sourceRecordIds: [record.uuid] },
           usage: {
             inputTokens: 100,
             outputTokens: 50,
@@ -1467,7 +1467,7 @@ describe('HistoryReplayer', () => {
     });
   });
 
-  describe('qwen.session.recordId stamping', () => {
+  describe('canopy.session.recordId stamping', () => {
     it('should stamp persisted updates with activeRecordId for user messages', async () => {
       const userRecord = createUserRecord('Hello');
       await replayer.replay([userRecord]);

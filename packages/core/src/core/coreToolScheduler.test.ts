@@ -1420,7 +1420,7 @@ describe('CoreToolScheduler', () => {
     const bigPlan = '## Plan\n\n1. huge section\n2. code blocks\n3. tables';
     const planFile = path.join(
       os.tmpdir(),
-      `qwen-plan-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
+      `canopy-plan-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
     );
     fsSync.writeFileSync(planFile, bigPlan, 'utf-8');
     const chat = createChatWithPlanCall('plan-call-1', bigPlan);
@@ -1475,7 +1475,7 @@ describe('CoreToolScheduler', () => {
     const bigPlan = '## Plan\n\nprivate implementation details';
     const planFile = path.join(
       os.tmpdir(),
-      `qwen-plan-cancel-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
+      `canopy-plan-cancel-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
     );
     fsSync.writeFileSync(planFile, bigPlan, 'utf-8');
     const chat = createChatWithPlanCall('plan-call-cancel', bigPlan);
@@ -1541,7 +1541,7 @@ describe('CoreToolScheduler', () => {
     const bigPlan = '## Plan\n\nleader path fixture';
     const planFile = path.join(
       os.tmpdir(),
-      `qwen-plan-leader-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
+      `canopy-plan-leader-${process.pid}-${Math.random().toString(16).slice(2)}.md`,
     );
     fsSync.writeFileSync(planFile, bigPlan, 'utf-8');
     const chat = createChatWithPlanCall('plan-call-4', bigPlan);
@@ -1610,7 +1610,7 @@ describe('CoreToolScheduler', () => {
       onAllToolCallsComplete,
       getGeminiClient: () => ({ getChat: () => chat }),
       getPlanFilePath: () =>
-        path.join(os.tmpdir(), 'qwen-plan-that-does-not-exist.md'),
+        path.join(os.tmpdir(), 'canopy-plan-that-does-not-exist.md'),
     });
 
     await scheduler.schedule(
@@ -2035,8 +2035,9 @@ describe('CoreToolScheduler', () => {
   });
 
   it('aborts and fails a tool call that exceeds the execution timeout', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
     try {
       const parentController = new AbortController();
       let toolSawAbort = false;
@@ -2092,9 +2093,9 @@ describe('CoreToolScheduler', () => {
       expect(toolSawAbort).toBe(true);
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   });
@@ -2194,8 +2195,9 @@ describe('CoreToolScheduler', () => {
   });
 
   it('keeps parent cancellation when the scheduler timeout fires later', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
     try {
       const parentController = new AbortController();
       const execute = vi.fn(() => new Promise<ToolResult>(() => {}));
@@ -2225,16 +2227,17 @@ describe('CoreToolScheduler', () => {
       expect(completedCall.status).toBe('cancelled');
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   });
 
   it('forwards a parent signal abort to the timeout controller', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '10000';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '10000';
     try {
       const parentController = new AbortController();
       let toolSawAbort = false;
@@ -2285,16 +2288,17 @@ describe('CoreToolScheduler', () => {
       expect(completedCall.status).toBe('cancelled');
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   }, 15000);
 
   it('aborts immediately when the parent signal is already aborted before scheduling', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '10000';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '10000';
     try {
       const parentController = new AbortController();
       parentController.abort(); // Pre-abort
@@ -2329,16 +2333,17 @@ describe('CoreToolScheduler', () => {
       expect(completedCall.status).toBe('cancelled');
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   });
 
   it('propagates a tool rejection even when timeout is active', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '5000';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '5000';
     try {
       const execute = vi.fn().mockRejectedValue(new Error('disk full'));
       const toolsByName = new Map<string, MockTool>([
@@ -2376,9 +2381,9 @@ describe('CoreToolScheduler', () => {
       }
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   });
@@ -3411,7 +3416,7 @@ describe('CoreToolScheduler', () => {
         ToolErrorType.EXECUTION_DENIED,
       );
       expect(completedCall.response.error?.message).toBe(
-        'Qwen Code requires permission to use edit, but that permission was declined.',
+        'Canopy Code requires permission to use edit, but that permission was declined.',
       );
     }
     expect(execute).not.toHaveBeenCalled();
@@ -6450,7 +6455,7 @@ describe('CoreToolScheduler', () => {
       if (completedCall.status === 'error') {
         const errorMessage = completedCall.response.error?.message;
         expect(errorMessage).toBe(
-          'Qwen Code requires permission to use write_file, but that permission was declined.',
+          'Canopy Code requires permission to use write_file, but that permission was declined.',
         );
         // Should NOT contain "not found in registry"
         expect(errorMessage).not.toContain('not found in registry');
@@ -8229,7 +8234,7 @@ describe('CoreToolScheduler request queueing', () => {
       getPreferredEditor: () => 'vscode',
       onEditorClose: vi.fn(),
     });
-    const command = "echo '{}' > .qwen/settings.json";
+    const command = "echo '{}' > .canopy/settings.json";
     const request = {
       callId: 'pending-protected-write',
       name: ToolNames.SHELL,
@@ -8330,7 +8335,7 @@ describe('CoreToolScheduler request queueing', () => {
 
     expect(hookSystem.firePermissionDeniedEvent).toHaveBeenCalledWith(
       ToolNames.SHELL,
-      { command: "echo '{}' > .qwen/settings.json" },
+      { command: "echo '{}' > .canopy/settings.json" },
       'pending-protected-write',
       'classifier_blocked',
       expect.any(AbortSignal),
@@ -10959,7 +10964,7 @@ describe('CoreToolScheduler telemetry spans', () => {
     });
     expect(mockAcquireSleepInhibitor).toHaveBeenCalledWith(
       expect.any(Object),
-      'Qwen Code is executing tool mockTool',
+      'Canopy Code is executing tool mockTool',
     );
     expect(mockSleepInhibitorRelease).toHaveBeenCalledTimes(1);
   });
@@ -11494,8 +11499,9 @@ describe('CoreToolScheduler telemetry spans', () => {
   });
 
   it('sets timeout failure_kind on span when tool exceeds execution timeout', async () => {
-    const previousTimeout = process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
-    process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
+    const previousTimeout =
+      process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+    process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = '30';
     try {
       toolSpanRecords.length = 0;
       const { scheduler, onAllToolCallsComplete } = buildScheduler({
@@ -11526,9 +11532,9 @@ describe('CoreToolScheduler telemetry spans', () => {
       expect(spanRecord.ended).toBe(true);
     } finally {
       if (previousTimeout === undefined) {
-        delete process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
+        delete process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'];
       } else {
-        process.env['QWEN_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
+        process.env['CANOPY_CODE_TOOL_EXECUTION_TIMEOUT_MS'] = previousTimeout;
       }
     }
   });
@@ -14969,7 +14975,9 @@ describe('CoreToolScheduler telemetry spans', () => {
       (r) => r.name === 'tool.mockEditTool',
     );
     expect(
-      toolSpan?.spanAttributes['qwen-code.tool.modify_with_editor_unavailable'],
+      toolSpan?.spanAttributes[
+        'canopy-code.tool.modify_with_editor_unavailable'
+      ],
     ).toBe(true);
     // Span stays open — user can recover via Cancel/Proceed.
     expect(toolSpan?.ended).toBe(false);
@@ -15518,15 +15526,15 @@ describe('Fire hook functions integration', () => {
 
   describe('Concurrent tool execution', () => {
     // Ensure tests are deterministic regardless of environment.
-    const origEnv = process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+    const origEnv = process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
     beforeEach(() => {
-      delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+      delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
     });
     afterEach(() => {
       if (origEnv !== undefined) {
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = origEnv;
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = origEnv;
       } else {
-        delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+        delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
       }
     });
 
@@ -15661,8 +15669,8 @@ describe('Fire hook functions integration', () => {
       expect(startIndices.every((i) => i < firstEnd)).toBe(true);
     });
 
-    it('ignores malformed QWEN_CODE_MAX_TOOL_CONCURRENCY values', async () => {
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '2abc';
+    it('ignores malformed CANOPY_CODE_MAX_TOOL_CONCURRENCY values', async () => {
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '2abc';
       const executionLog: string[] = [];
       let release!: () => void;
       const gate = new Promise<void>((resolve) => {
@@ -17451,7 +17459,7 @@ describe('CoreToolScheduler activation wiring', () => {
               name: n,
               description: `Description of ${n}`,
               level: 'project' as const,
-              filePath: `/p/.qwen/skills/${n}/SKILL.md`,
+              filePath: `/p/.canopy/skills/${n}/SKILL.md`,
               body: '',
             })),
           ),
@@ -17777,7 +17785,7 @@ describe('CoreToolScheduler activation wiring', () => {
             name: 'tsx-helper',
             description: 'Helper for TSX',
             level: 'project' as const,
-            filePath: '/p/.qwen/skills/tsx-helper/SKILL.md',
+            filePath: '/p/.canopy/skills/tsx-helper/SKILL.md',
             body: '',
           },
         ]),

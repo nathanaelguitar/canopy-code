@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Centralised path constants and helpers for the `qwen review` subcommands.
+// Centralised path constants and helpers for the `canopy review` subcommands.
 // All paths are relative to the project root (the current working directory
 // when the command is invoked). Use `path.join` rather than string
 // concatenation so Windows backslashes are produced when needed.
@@ -36,9 +36,9 @@ export function assertWritableOutPath(out: string): void {
   }
 }
 
-export const REVIEW_TMP_DIR = join('.qwen', 'tmp');
-export const REVIEWS_DIR = join('.qwen', 'reviews');
-export const REVIEW_CACHE_DIR = join('.qwen', 'review-cache');
+export const REVIEW_TMP_DIR = join('.canopy', 'tmp');
+export const REVIEWS_DIR = join('.canopy', 'reviews');
+export const REVIEW_CACHE_DIR = join('.canopy', 'review-cache');
 
 /**
  * Filename prefix for review-worktree lease files under `REVIEW_TMP_DIR`.
@@ -46,17 +46,17 @@ export const REVIEW_CACHE_DIR = join('.qwen', 'review-cache');
  * workflow's cleanup sweep deletes leases by glob — the sweep pattern and
  * the lease writer must share one definition (the cleanup spec pins both).
  */
-export const LEASE_PREFIX = 'qwen-review-lease-';
+export const LEASE_PREFIX = 'canopy-review-lease-';
 
 /**
- * Where the skill tees `qwen review parse-args`'s verdict (SKILL Step 0). A fixed,
+ * Where the skill tees `canopy review parse-args`'s verdict (SKILL Step 0). A fixed,
  * conventional name so a capture command can read back the effort the parser
  * already resolved without the orchestrator threading the `--effort` value through
  * by hand — see `resolveEffort`.
  */
 export const PARSE_ARGS_REPORT = join(
   REVIEW_TMP_DIR,
-  'qwen-review-parse-args.json',
+  'canopy-review-parse-args.json',
 );
 
 /** Worktree path for a given PR review session. */
@@ -97,16 +97,16 @@ export function baseWorktreePath(worktree: string): string {
 
 /** Local branch ref name for a fetched PR head. */
 export function reviewBranch(prNumber: string | number): string {
-  return `qwen-review/pr-${prNumber}`;
+  return `canopy-review/pr-${prNumber}`;
 }
 
 /**
  * A `target` reduced to a single safe filename component.
  *
  * `target` is a file-path review's own path — `src/foo.ts` — or a PR/local
- * label. Interpolated raw, `src/foo.ts` becomes `qwen-review-src/foo.ts-diff.txt`,
+ * label. Interpolated raw, `src/foo.ts` becomes `canopy-review-src/foo.ts-diff.txt`,
  * a nested path whose parent nobody created (ENOENT), and a crafted `../../evil`
- * escapes `.qwen/tmp` and lets `writeFileSync` land anywhere. Flatten every
+ * escapes `.canopy/tmp` and lets `writeFileSync` land anywhere. Flatten every
  * separator and dot-segment to a single component so the file always sits
  * directly in the temp dir.
  */
@@ -120,16 +120,16 @@ function safeTarget(target: string): string {
 /**
  * Per-target side-file path (review JSON, PR context, presubmit report).
  *
- * Files live under `.qwen/tmp/` rather than the OS temp dir so the path is
+ * Files live under `.canopy/tmp/` rather than the OS temp dir so the path is
  * stable across platforms (macOS's `os.tmpdir()` returns `/var/folders/...`,
  * not `/tmp` — using the project-local dir avoids that mismatch entirely)
  * and so they're scoped to the project rather than the user's whole machine.
  */
 export function tmpFile(target: string, suffix: string): string {
-  return join(REVIEW_TMP_DIR, `qwen-review-${safeTarget(target)}-${suffix}`);
+  return join(REVIEW_TMP_DIR, `canopy-review-${safeTarget(target)}-${suffix}`);
 }
 
 /** Filename prefix used by `tmpFile`; useful for cleanup globbing. */
 export function tmpPrefix(target: string): string {
-  return `qwen-review-${safeTarget(target)}-`;
+  return `canopy-review-${safeTarget(target)}-`;
 }

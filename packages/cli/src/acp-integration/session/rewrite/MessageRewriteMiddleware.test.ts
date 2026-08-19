@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { SessionUpdate } from '@agentclientprotocol/sdk';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 
 // Mock core to avoid Vite https resolution issue
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -250,7 +250,7 @@ describe('MessageRewriteMiddleware', () => {
         content: { type: 'text', text: 'background response' },
         _meta: {
           source: 'background_notification_response',
-          qwenDiscreteMessage: true,
+          canopyDiscreteMessage: true,
           backgroundTask: {
             taskId: 'monitor-1',
             status: 'completed',
@@ -275,7 +275,7 @@ describe('MessageRewriteMiddleware', () => {
       expect(rewriteCall).toBeDefined();
       expect((rewriteCall![0] as Record<string, unknown>)['_meta']).toEqual({
         source: 'background_notification_response',
-        qwenDiscreteMessage: true,
+        canopyDiscreteMessage: true,
         backgroundTask: {
           taskId: 'monitor-1',
           status: 'completed',

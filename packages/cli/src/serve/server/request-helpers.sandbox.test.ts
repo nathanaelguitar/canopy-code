@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,15 +32,15 @@ describe('parseOptionalWorkspaceCwd inside a POSIX container sandbox (#7139)', (
   it.skipIf(process.platform === 'win32')(
     'accepts a Windows-shaped cwd and returns its bind-mount location',
     () => {
-      vi.stubEnv('SANDBOX', 'qwen-code-sandbox-0');
-      _setSandboxMountExistsForTest((p) => p === '/c/qwen-repro');
+      vi.stubEnv('SANDBOX', 'canopy-code-sandbox-0');
+      _setSandboxMountExistsForTest((p) => p === '/c/canopy-repro');
       const { res, status } = mockRes();
       const cwd = parseOptionalWorkspaceCwd(
-        { cwd: 'C:\\qwen-repro' },
-        '/c/qwen-repro',
+        { cwd: 'C:\\canopy-repro' },
+        '/c/canopy-repro',
         res,
       );
-      expect(cwd).toBe('/c/qwen-repro');
+      expect(cwd).toBe('/c/canopy-repro');
       expect(status).not.toHaveBeenCalled();
     },
   );
@@ -51,7 +51,7 @@ describe('parseOptionalWorkspaceCwd inside a POSIX container sandbox (#7139)', (
       vi.stubEnv('SANDBOX', '');
       const { res, status } = mockRes();
       const cwd = parseOptionalWorkspaceCwd(
-        { cwd: 'C:\\qwen-repro' },
+        { cwd: 'C:\\canopy-repro' },
         '/tmp',
         res,
       );
@@ -63,7 +63,7 @@ describe('parseOptionalWorkspaceCwd inside a POSIX container sandbox (#7139)', (
   it.skipIf(process.platform === 'win32')(
     'rejects when the translated mount does not exist (no invented paths)',
     () => {
-      vi.stubEnv('SANDBOX', 'qwen-code-sandbox-0');
+      vi.stubEnv('SANDBOX', 'canopy-code-sandbox-0');
       const { res, status } = mockRes();
       const cwd = parseOptionalWorkspaceCwd(
         { cwd: 'D:\\never-mounted' },

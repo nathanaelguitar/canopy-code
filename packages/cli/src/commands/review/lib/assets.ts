@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,8 +10,8 @@
 // GitHub's API has no endpoint for the drag-and-drop image uploads the web UI
 // enjoys, so a review that wants an image in a PR comment must host it
 // somewhere durable and reference it by URL. The designated repo (the
-// `QWEN_REVIEW_ASSETS_REPO` env var — the same user-designation pattern as
-// `QWEN_REVIEW_SCRATCH_REPO`, and deliberately a DIFFERENT variable: the
+// `CANOPY_REVIEW_ASSETS_REPO` env var — the same user-designation pattern as
+// `CANOPY_REVIEW_SCRATCH_REPO`, and deliberately a DIFFERENT variable: the
 // scratch repo's contract forbids PR-derived content, and a screenshot of the
 // PR's behaviour is exactly that) is the durable place; this file decides what
 // goes there and under what name.
@@ -222,7 +222,7 @@ export function parseAssetsRepo(
   if (v === '') {
     return {
       error:
-        'QWEN_REVIEW_ASSETS_REPO is not set. Designate an assets repository ' +
+        'CANOPY_REVIEW_ASSETS_REPO is not set. Designate an assets repository ' +
         '(owner/repo you can push to — the repo under review for maintainers, ' +
         'a fork or scratch repo otherwise) to publish review evidence images.',
     };
@@ -236,7 +236,7 @@ export function parseAssetsRepo(
   // fail as a confusing 404 three calls later.
   if (parts.length !== 2 || !parts.every(segmentOk)) {
     return {
-      error: `QWEN_REVIEW_ASSETS_REPO must be owner/repo, got ${JSON.stringify(v)}.`,
+      error: `CANOPY_REVIEW_ASSETS_REPO must be owner/repo, got ${JSON.stringify(v)}.`,
     };
   }
   return { repo: v };

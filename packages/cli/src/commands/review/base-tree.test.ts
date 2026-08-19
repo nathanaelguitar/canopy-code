@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -77,7 +77,7 @@ describe('runBaseTree', () => {
   };
 
   beforeEach(() => {
-    repo = mkdtempSync(join(tmpdir(), 'qwen-base-tree-'));
+    repo = mkdtempSync(join(tmpdir(), 'canopy-base-tree-'));
     git(repo, 'init', '-q', '-b', 'main');
     git(repo, 'config', 'user.email', 't@t.t');
     git(repo, 'config', 'user.name', 't');
@@ -89,8 +89,8 @@ describe('runBaseTree', () => {
     git(repo, 'commit', '-qam', 'head');
     headSha = git(repo, 'rev-parse', 'HEAD');
     // The review worktree the base tree is created beside.
-    worktree = join(repo, '.qwen', 'tmp', 'review-pr-1');
-    mkdirSync(join(repo, '.qwen', 'tmp'), { recursive: true });
+    worktree = join(repo, '.canopy', 'tmp', 'review-pr-1');
+    mkdirSync(join(repo, '.canopy', 'tmp'), { recursive: true });
     git(repo, 'worktree', 'add', '--detach', '-q', worktree, headSha);
   });
 
@@ -141,7 +141,7 @@ describe('runBaseTree', () => {
     expect(second.note).toContain('reusing');
     expect(builds).toHaveLength(1); // one install+build, not two
     // A marker for a DIFFERENT sha (rebase between runs) does not shortcut.
-    writeFileSync(join(first.path!, '.qwen-review-base-ok'), 'f'.repeat(40));
+    writeFileSync(join(first.path!, '.canopy-review-base-ok'), 'f'.repeat(40));
     expect(run({}, build).note).not.toContain('reusing');
   });
 
@@ -193,8 +193,8 @@ describe('runBaseTree', () => {
     expect(first.note).toContain('not built');
     expect(first.note).toContain('packages/a');
     // No success marker and no failed marker: the next shard repays the build.
-    expect(existsSync(join(first.path!, '.qwen-review-base-ok'))).toBe(false);
-    expect(existsSync(join(first.path!, '.qwen-review-base-failed'))).toBe(
+    expect(existsSync(join(first.path!, '.canopy-review-base-ok'))).toBe(false);
+    expect(existsSync(join(first.path!, '.canopy-review-base-failed'))).toBe(
       false,
     );
     const second = run({}, build);
@@ -248,7 +248,7 @@ describe('runBaseTree', () => {
     const r = run({}, () => handoff);
     expect(r.available).toBe(false);
     expect(
-      existsSync(join(baseWorktreePath(worktree), '.qwen-review-base-ok')),
+      existsSync(join(baseWorktreePath(worktree), '.canopy-review-base-ok')),
     ).toBe(false);
   });
 

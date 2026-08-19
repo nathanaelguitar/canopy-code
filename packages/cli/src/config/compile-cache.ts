@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const PENDING_COMPILE_CACHE_ENV = 'QWEN_CODE_PENDING_COMPILE_CACHE';
+const PENDING_COMPILE_CACHE_ENV = 'CANOPY_CODE_PENDING_COMPILE_CACHE';
 
 export function publishPendingCompileCache(
   env: NodeJS.ProcessEnv = process.env,

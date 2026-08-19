@@ -129,38 +129,38 @@ describe('ThemeManager', () => {
   });
 
   describe('auto theme detection', () => {
-    it('should select Qwen Dark when terminal is detected as dark', () => {
+    it('should select Canopy Dark when terminal is detected as dark', () => {
       vi.mocked(detectModule.detectTerminalTheme).mockReturnValue('dark');
       const result = themeManager.setActiveTheme(AUTO_THEME_NAME);
       expect(result).toBe(true);
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Dark');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Dark');
     });
 
-    it('should select Qwen Light when terminal is detected as light', () => {
+    it('should select Canopy Light when terminal is detected as light', () => {
       vi.mocked(detectModule.detectTerminalTheme).mockReturnValue('light');
       const result = themeManager.setActiveTheme(AUTO_THEME_NAME);
       expect(result).toBe(true);
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Light');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Light');
     });
 
     it('should always return true for auto theme', () => {
       expect(themeManager.setActiveTheme(AUTO_THEME_NAME)).toBe(true);
     });
 
-    it('should resolve async auto theme with Qwen Light for light', async () => {
+    it('should resolve async auto theme with Canopy Light for light', async () => {
       vi.mocked(detectModule.detectTerminalThemeAsync).mockResolvedValue(
         'light',
       );
       await themeManager.resolveAutoThemeAsync();
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Light');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Light');
     });
 
-    it('should resolve async auto theme with Qwen Dark for dark', async () => {
+    it('should resolve async auto theme with Canopy Dark for dark', async () => {
       vi.mocked(detectModule.detectTerminalThemeAsync).mockResolvedValue(
         'dark',
       );
       await themeManager.resolveAutoThemeAsync();
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Dark');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Dark');
     });
 
     it('should reuse the async-detected value when auto is re-selected', async () => {
@@ -169,7 +169,7 @@ describe('ThemeManager', () => {
         'light',
       );
       await themeManager.resolveAutoThemeAsync();
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Light');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Light');
 
       // User switches to another theme via /theme.
       themeManager.setActiveTheme('Ayu');
@@ -180,7 +180,7 @@ describe('ThemeManager', () => {
       // result wins so the preview stays consistent with startup.
       vi.mocked(detectModule.detectTerminalTheme).mockReturnValue('dark');
       themeManager.setActiveTheme(AUTO_THEME_NAME);
-      expect(themeManager.getActiveTheme().name).toBe('Qwen Light');
+      expect(themeManager.getActiveTheme().name).toBe('Canopy Light');
       expect(detectModule.detectTerminalTheme).not.toHaveBeenCalled();
     });
   });

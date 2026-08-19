@@ -34,6 +34,8 @@ export class ExtensionStorage {
   }
 
   static async createTmpDir(): Promise<string> {
-    return await fs.promises.mkdtemp(path.join(os.tmpdir(), 'qwen-extension'));
+    return await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'canopy-extension'),
+    );
   }
 }

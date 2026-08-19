@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ import {
  * final payload's delivery to complete before letting the turn's teardown
  * proceed anyway. Well short of `DEFAULT_HOOK_TIMEOUT` (60s, hookRunner.ts)
  * because a slow or hung MessageDisplay hook shouldn't be able to freeze
- * `qwen -p` or an ACP stream loop's `finally` for anywhere near that long.
+ * `canopy -p` or an ACP stream loop's `finally` for anywhere near that long.
  * The budget is shared across finish() calls (client.ts calls it from an
  * explicit exit site and again from a finally), so this constant is the
  * ceiling itself, not a per-call increment. The hook has already received

@@ -221,7 +221,7 @@ export function sanitizeToolCallResultForRecording<
 
 /**
  * Users who don't want the fast model silently generating titles can opt
- * out at runtime: `QWEN_DISABLE_AUTO_TITLE=1` (or any truthy-ish value)
+ * out at runtime: `CANOPY_DISABLE_AUTO_TITLE=1` (or any truthy-ish value)
  * makes {@link ChatRecordingService.maybeTriggerAutoTitle} a no-op without
  * touching the rest of the feature (so `/rename --auto` still works on
  * explicit user request). Read per-call rather than cached so tests can
@@ -229,7 +229,7 @@ export function sanitizeToolCallResultForRecording<
  * one env lookup per assistant turn is irrelevant next to an LLM call.
  */
 function autoTitleDisabledByEnv(): boolean {
-  const v = process.env['QWEN_DISABLE_AUTO_TITLE'];
+  const v = process.env['CANOPY_DISABLE_AUTO_TITLE'];
   if (!v) return false;
   // Accept "0", "false", "no", "off" (case-insensitive) as "not disabled".
   const lowered = v.trim().toLowerCase();
@@ -654,7 +654,7 @@ export interface ChatRecordingRestoreState {
  * - Linear history reconstruction
  * - Future conversation branching (fork from any historical point)
  *
- * File location: ~/.qwen/tmp/<project_id>/chats/
+ * File location: ~/.canopy/tmp/<project_id>/chats/
  *
  * For session management (list, load, remove), use SessionService.
  */
@@ -1800,7 +1800,7 @@ export class ChatRecordingService {
     // unset their fast model (which would break `/rename --auto`, recap,
     // compression, and other fast-model features).
     if (autoTitleDisabledByEnv()) return;
-    // Headless/one-shot CLI flows (`qwen -p "…"`, cron, CI scripts) run a
+    // Headless/one-shot CLI flows (`canopy -p "…"`, cron, CI scripts) run a
     // single prompt and throw the session away. Spending fast-model tokens
     // on a title no one will ever resume is pure waste; skip entirely.
     // Daemon (ACP) sessions are long-lived and user-resumable, so they

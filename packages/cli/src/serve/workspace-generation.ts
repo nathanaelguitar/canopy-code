@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -86,7 +86,7 @@ export function mountWorkspaceGenerationRoutes(
     } catch (error) {
       if (!abort.signal.aborted && !res.destroyed) {
         writeStderrLine(
-          `qwen serve: POST /workspace/generate failed: ${
+          `canopy serve: POST /workspace/generate failed: ${
             error instanceof Error
               ? (error.stack ?? error.message)
               : String(error)

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   type ArenaManager,
   AgentStatus,
   ArenaSessionStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { arenaCommand } from './arenaCommand.js';
 import type {
   CommandContext,
@@ -98,10 +98,10 @@ describe('arenaCommand start subcommand', () => {
             getAvailableModelsForAuthType: vi.fn(() => [
               {
                 id: 'qwen-image-2.0',
-                label: 'Qwen Image 2.0',
+                label: 'Canopy Image 2.0',
                 imageOnly: true,
               },
-              { id: 'qwen-plus', label: 'Qwen Plus' },
+              { id: 'qwen-plus', label: 'Canopy Plus' },
             ]),
           })),
         } as never,

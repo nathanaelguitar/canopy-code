@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ describe('RemoteInputWatcher', () => {
   let watcher: RemoteInputWatcher | null = null;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-remote-input-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-remote-input-'));
     inputFile = path.join(tmpDir, 'input.jsonl');
     fs.writeFileSync(inputFile, '');
   });

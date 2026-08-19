@@ -6,7 +6,7 @@
 
 import { theme } from '../semantic-colors.js';
 import { ICON } from '../constants.js';
-import { AgentStatus } from '@qwen-code/qwen-code-core';
+import { AgentStatus } from '@canopy-code/canopy-code-core';
 
 // --- Status Labels ---
 

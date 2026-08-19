@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * @fileoverview Discovers saved workflow scripts under `.qwen/workflows/`
- * (project) and `~/.qwen/workflows/` (user) and exposes each as a `/<name>`
+ * @fileoverview Discovers saved workflow scripts under `.canopy/workflows/`
+ * (project) and `~/.canopy/workflows/` (user) and exposes each as a `/<name>`
  * slash command that dispatches the `workflow` tool with the file's path.
  * The script is read at execution time (by the tool), so edits to a saved
  * workflow take effect on the next invocation.
@@ -17,12 +17,12 @@
  * discovered entries into `SlashCommand` objects.
  */
 
-import type { Config, SavedWorkflowEntry } from '@qwen-code/qwen-code-core';
+import type { Config, SavedWorkflowEntry } from '@canopy-code/canopy-code-core';
 import {
   listSavedWorkflows,
   ToolNames,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { ICommandLoader } from './types.js';
 import type {
   CommandContext,

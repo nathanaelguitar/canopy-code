@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -58,7 +58,7 @@ export interface BudgetContext {
    */
   operatorRoundCap?: number;
   /**
-   * Is `QWEN_REVIEW_DEADLINE_EPOCH` set to something the gates will honour?
+   * Is `CANOPY_REVIEW_DEADLINE_EPOCH` set to something the gates will honour?
    * This decides whether the huge tier's finishability reduction applies at
    * all; see `HUGE_REVERSE_AUDIT_ROUNDS`.
    */
@@ -197,7 +197,7 @@ export const LARGE_REVERSE_AUDIT_ROUNDS = 5;
  * fit a six-hour CI ceiling, and a review killed mid-flight posts nothing at
  * all, so three rounds reported beat five rounds lost (measured; DESIGN.md —
  * The six-hour timeouts). Where no wall exists — a local run with no
- * `QWEN_REVIEW_DEADLINE_EPOCH` — the premise is absent and so is the
+ * `CANOPY_REVIEW_DEADLINE_EPOCH` — the premise is absent and so is the
  * reduction: a huge diff is then just a large 3B diff and gets the 3B tier.
  * Trading recall away to fit a ceiling that is not there is a pure loss, and
  * the tier this reduction cuts from is the one where recall matters most.

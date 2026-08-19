@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -132,10 +132,10 @@ describe('daemon-tracing', () => {
     expect(trace.getSpanContext(extracted!)?.traceId).toBe(traceId);
     expect(trace.getSpanContext(extracted!)?.spanId).toBe('2222222222222222');
     expect(startActiveSpan).toHaveBeenCalledWith(
-      'qwen-code.daemon.bridge',
+      'canopy-code.daemon.bridge',
       expect.objectContaining({
         attributes: expect.objectContaining({
-          'qwen-code.daemon.operation': 'prompt.dispatch',
+          'canopy-code.daemon.operation': 'prompt.dispatch',
           'session.id': 'session-A',
         }),
       }),
@@ -265,21 +265,21 @@ describe('daemon-tracing', () => {
     } as unknown as Tracer);
 
     createDaemonBridgeTelemetry().event('channel.exited', {
-      'qwen-code.daemon.channel.session_count': 2,
+      'canopy-code.daemon.channel.session_count': 2,
     });
 
     expect(startSpan).toHaveBeenCalledWith(
-      'qwen-code.daemon.bridge',
+      'canopy-code.daemon.bridge',
       expect.objectContaining({
         attributes: expect.objectContaining({
           'event.name': 'channel.exited',
-          'qwen-code.daemon.operation': 'event.channel.exited',
-          'qwen-code.daemon.channel.session_count': 2,
+          'canopy-code.daemon.operation': 'event.channel.exited',
+          'canopy-code.daemon.channel.session_count': 2,
         }),
       }),
     );
     expect(addEvent).toHaveBeenCalledWith('channel.exited', {
-      'qwen-code.daemon.channel.session_count': 2,
+      'canopy-code.daemon.channel.session_count': 2,
     });
     expect(setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.OK });
     expect(end).toHaveBeenCalled();
@@ -322,16 +322,16 @@ describe('daemon-tracing', () => {
     );
 
     expect(startActiveSpan).toHaveBeenCalledWith(
-      'qwen-code.daemon.request',
+      'canopy-code.daemon.request',
       expect.objectContaining({
         attributes: expect.objectContaining({
           'http.request.method': 'POST',
           'http.route': 'POST /session/:id/permission/:requestId',
           'session.id': 'sess-1',
-          'qwen-code.client_id': 'client-42',
-          'qwen-code.daemon.permission.request_id': 'perm-99',
-          'qwen-code.daemon.runtime.wait_ms': 42.5,
-          'qwen-code.daemon.runtime.path': 'joined',
+          'canopy-code.client_id': 'client-42',
+          'canopy-code.daemon.permission.request_id': 'perm-99',
+          'canopy-code.daemon.runtime.wait_ms': 42.5,
+          'canopy-code.daemon.runtime.path': 'joined',
         }),
         startTime,
       }),
@@ -352,10 +352,12 @@ describe('daemon-tracing', () => {
         attributes: Record<string, unknown>;
       }
     ).attributes;
-    expect(attrs).not.toHaveProperty('qwen-code.client_id');
-    expect(attrs).not.toHaveProperty('qwen-code.daemon.permission.request_id');
-    expect(attrs).not.toHaveProperty('qwen-code.daemon.runtime.wait_ms');
-    expect(attrs).not.toHaveProperty('qwen-code.daemon.runtime.path');
+    expect(attrs).not.toHaveProperty('canopy-code.client_id');
+    expect(attrs).not.toHaveProperty(
+      'canopy-code.daemon.permission.request_id',
+    );
+    expect(attrs).not.toHaveProperty('canopy-code.daemon.runtime.wait_ms');
+    expect(attrs).not.toHaveProperty('canopy-code.daemon.runtime.path');
   });
 
   it('addDaemonRequestAttribute sets attribute on the active span', () => {
@@ -364,10 +366,10 @@ describe('daemon-tracing', () => {
       setAttribute,
     } as unknown as Span);
 
-    addDaemonRequestAttribute('qwen-code.prompt_id', 'test-prompt-id');
+    addDaemonRequestAttribute('canopy-code.prompt_id', 'test-prompt-id');
 
     expect(setAttribute).toHaveBeenCalledWith(
-      'qwen-code.prompt_id',
+      'canopy-code.prompt_id',
       'test-prompt-id',
     );
   });
@@ -375,7 +377,7 @@ describe('daemon-tracing', () => {
   it('addDaemonRequestAttribute is a no-op without an active span', () => {
     vi.spyOn(trace, 'getSpan').mockReturnValue(undefined);
     expect(() =>
-      addDaemonRequestAttribute('qwen-code.prompt_id', 'orphan'),
+      addDaemonRequestAttribute('canopy-code.prompt_id', 'orphan'),
     ).not.toThrow();
   });
 
@@ -406,11 +408,11 @@ describe('daemon-tracing', () => {
     } as unknown as Span);
 
     createDaemonBridgeTelemetry().setActiveSpanAttributes?.({
-      'qwen-code.daemon.acp_startup.profile.version': 1,
+      'canopy-code.daemon.acp_startup.profile.version': 1,
     });
 
     expect(setAttributes).toHaveBeenCalledWith({
-      'qwen-code.daemon.acp_startup.profile.version': 1,
+      'canopy-code.daemon.acp_startup.profile.version': 1,
     });
   });
 });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ describe('ExtensionStore', () => {
     `/${workspace.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')}/`;
 
   beforeEach(async () => {
-    root = await fsp.mkdtemp(path.join(os.tmpdir(), 'qwen-extension-store-'));
+    root = await fsp.mkdtemp(path.join(os.tmpdir(), 'canopy-extension-store-'));
     extensionsDir = path.join(root, 'extensions');
     storeDir = path.join(root, 'extension-store');
     enablementPath = path.join(extensionsDir, 'extension-enablement.json');
@@ -805,7 +805,7 @@ describe('ExtensionStore', () => {
     const store = makeStore();
     const identity = { id: 'f'.repeat(64), name: 'demo' };
     const staging = await store.createStagingDirectory();
-    await fsp.writeFile(path.join(staging, 'qwen-extension.json'), '{}');
+    await fsp.writeFile(path.join(staging, 'canopy-extension.json'), '{}');
 
     const snapshot = await store.commitArtifact({
       operation: 'install',
@@ -826,7 +826,7 @@ describe('ExtensionStore', () => {
     });
     await expect(
       fsp.readFile(
-        path.join(extensionsDir, 'demo', 'qwen-extension.json'),
+        path.join(extensionsDir, 'demo', 'canopy-extension.json'),
         'utf8',
       ),
     ).resolves.toBe('{}');
@@ -838,7 +838,7 @@ describe('ExtensionStore', () => {
     const identity = { id: 'fa'.repeat(32), name: 'demo' };
     await store.ensureInitialized([]);
     const staging = await store.createStagingDirectory();
-    await fsp.writeFile(path.join(staging, 'qwen-extension.json'), '{}');
+    await fsp.writeFile(path.join(staging, 'canopy-extension.json'), '{}');
     const primaryError = new Error('state write failed');
     const rollbackError = new Error('rollback failed');
     const internals = store as unknown as {

@@ -36,7 +36,7 @@ let globalSession: DebugLogSession | null = null;
 const sessionContext = new AsyncLocalStorage<DebugLogSession | false>();
 
 export function isDebugLogFileEnabled(): boolean {
-  const value = process.env['QWEN_DEBUG_LOG_FILE'];
+  const value = process.env['CANOPY_DEBUG_LOG_FILE'];
   if (!value) return false;
   const normalized = value.trim().toLowerCase();
   return !['', '0', 'false', 'off', 'no'].includes(normalized);

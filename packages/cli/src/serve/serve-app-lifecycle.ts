@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import type { Application } from 'express';
 import type { ConversationRuntimeOwnership } from './conversations/conversation-runtime-ownership.js';
 import { conversationRuntimeUnavailableError } from './conversations/conversation-runtime-errors.js';
 
-const SERVE_APP_LIFECYCLE = Symbol('qwen.serveAppLifecycle');
+const SERVE_APP_LIFECYCLE = Symbol('canopy.serveAppLifecycle');
 const DEFAULT_CLOSE_TIMEOUT_MS = 5_000;
 const SECONDARY_CLOSE_TIMEOUT_MS = 2_000;
 

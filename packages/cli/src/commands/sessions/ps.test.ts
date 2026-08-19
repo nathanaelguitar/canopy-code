@@ -1,16 +1,16 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import stringWidth from 'string-width';
-import type { SessionRegistryRecord } from '@qwen-code/qwen-code-core';
+import type { SessionRegistryRecord } from '@canopy-code/canopy-code-core';
 
 const listLiveSessions = vi.fn();
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   listLiveSessions: (...args: unknown[]) => listLiveSessions(...args),
 }));
 
@@ -38,7 +38,7 @@ function record(
     cwd: '/w/app',
     name: 'app-ab',
     startedAt: Date.now() - 90_000,
-    qwenVersion: '1.0.0',
+    canopyVersion: '1.0.0',
     ...over,
   };
 }
@@ -80,7 +80,7 @@ describe('formatAge', () => {
   });
 });
 
-describe('qwen sessions ps', () => {
+describe('canopy sessions ps', () => {
   it('prints a table of live sessions', async () => {
     listLiveSessions.mockResolvedValue([record()]);
     await run({ json: false });
@@ -124,7 +124,7 @@ describe('qwen sessions ps', () => {
     listLiveSessions.mockResolvedValue([]);
     await run({ json: false });
     expect(stdout).toEqual([
-      'No other interactive Qwen Code sessions are running.',
+      'No other interactive Canopy Code sessions are running.',
     ]);
   });
 

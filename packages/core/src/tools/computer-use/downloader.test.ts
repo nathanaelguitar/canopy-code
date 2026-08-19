@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,7 +47,7 @@ describe('findInstalled / ensureInstalled short-circuit', () => {
   let home: string;
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), 'qwen-cu-dl-'));
+    home = mkdtempSync(join(tmpdir(), 'canopy-cu-dl-'));
   });
   afterEach(() => {
     rmSync(home, { recursive: true, force: true });
@@ -88,7 +88,7 @@ describe('findInstalled / ensureInstalled short-circuit', () => {
 describe('ensureInstalled on Windows (.zip extraction)', () => {
   let home: string;
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), 'qwen-cu-win-'));
+    home = mkdtempSync(join(tmpdir(), 'canopy-cu-win-'));
   });
   afterEach(() => {
     rmSync(home, { recursive: true, force: true });

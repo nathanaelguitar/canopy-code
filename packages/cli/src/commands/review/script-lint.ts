@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review script-lint`: run the deterministic linters over the executable
+// `canopy review script-lint`: run the deterministic linters over the executable
 // code a diff adds or changes, and report what they say.
 //
 // A diff's shell — a `.sh`/`.bash` file, a Dockerfile `RUN`, a GitHub Actions
@@ -311,9 +311,9 @@ let hadolintEmptyConfigPath: string | undefined;
 function emptyHadolintConfig(): string | undefined {
   if (!hadolintEmptyConfigPath) {
     try {
-      const d = mkdtempSync(join(tmpdir(), 'qwen-review-hadolint-'));
+      const d = mkdtempSync(join(tmpdir(), 'canopy-review-hadolint-'));
       // Register cleanup RIGHT AFTER mkdtemp, before the write: `cleanup.ts` only
-      // sweeps `.qwen/tmp`, so we remove `d` ourselves at exit — and registering it
+      // sweeps `.canopy/tmp`, so we remove `d` ourselves at exit — and registering it
       // first means a `writeFileSync` that throws still leaves `d` swept, not leaked.
       process.on('exit', () => {
         try {

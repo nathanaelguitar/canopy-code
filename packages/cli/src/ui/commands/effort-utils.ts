@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config, ReasoningEffort } from '@qwen-code/qwen-code-core';
+import type { Config, ReasoningEffort } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 export function formatEffortChangeMessage(
@@ -28,7 +28,7 @@ export function formatEffortChangeMessage(
   const override = config.getReasoningEffortOverride?.();
   if (override) {
     return t(
-      'Reasoning effort: {{tier}} requested, but {{source}}.{{field}} has higher priority for the active DashScope Qwen model; that configured value will remain effective.',
+      'Reasoning effort: {{tier}} requested, but {{source}}.{{field}} has higher priority for the active DashScope Canopy model; that configured value will remain effective.',
       { tier, source: override.source, field: override.field },
     );
   }

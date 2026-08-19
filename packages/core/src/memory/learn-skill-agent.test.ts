@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,7 @@ async function writeSkillFile(
   skillName: string,
   content: string,
 ): Promise<string> {
-  const dir = path.join(projectRoot, '.qwen', 'skills', skillName);
+  const dir = path.join(projectRoot, '.canopy', 'skills', skillName);
   await fs.mkdir(dir, { recursive: true });
   const filePath = path.join(dir, 'SKILL.md');
   await fs.writeFile(filePath, content, 'utf-8');
@@ -70,7 +70,7 @@ describe('buildLearnSkillPrompt', () => {
 
   it('includes the project skills directory path', async () => {
     const prompt = await buildLearnSkillPrompt('some text', projectRoot);
-    expect(prompt).toContain(path.join(projectRoot, '.qwen', 'skills'));
+    expect(prompt).toContain(path.join(projectRoot, '.canopy', 'skills'));
   });
 
   it('lists existing skill names to prevent collisions', async () => {

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { useState, useCallback } from 'react';
-import type { Config, ReasoningEffort } from '@qwen-code/qwen-code-core';
-import { applyReasoningEffort } from '@qwen-code/qwen-code-core';
+import type { Config, ReasoningEffort } from '@canopy-code/canopy-code-core';
+import { applyReasoningEffort } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import { getPersistScopeForModelSelection } from '../../config/modelProvidersScope.js';
 import { MessageType, type HistoryItemWithoutId } from '../types.js';

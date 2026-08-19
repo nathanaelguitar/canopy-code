@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Tests for each tool's `toAutoClassifierInput` projection. The projection
@@ -224,10 +224,10 @@ describe('AgentTool.toAutoClassifierInput', () => {
         description: 'review',
         prompt: 'review the diff',
         subagent_type: 'file-search',
-        working_dir: '.qwen/tmp/review-pr-1',
+        working_dir: '.canopy/tmp/review-pr-1',
       },
     );
-    expect(result['working_dir']).toBe('.qwen/tmp/review-pr-1');
+    expect(result['working_dir']).toBe('.canopy/tmp/review-pr-1');
     expect(result['subagent_type']).toBe('file-search');
   });
 

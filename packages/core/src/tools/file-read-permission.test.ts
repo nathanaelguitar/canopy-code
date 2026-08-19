@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -68,7 +68,7 @@ function permissionFor(requestedPath: string) {
 
 beforeAll(() => {
   const base = fs.realpathSync(
-    fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-file-read-perm-')),
+    fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-file-read-perm-')),
   );
   layout = {
     base,
@@ -100,17 +100,17 @@ beforeAll(() => {
   fs.writeFileSync(layout.secretFile, 'SENTINEL-SECRET', 'utf8');
 
   // Keep the auto-memory branch hermetic: point it at an empty temp base so no
-  // candidate below can accidentally land inside a real ~/.qwen/memories.
-  originalMemoryBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
-  process.env['QWEN_CODE_MEMORY_BASE_DIR'] = layout.memoryBaseDir;
+  // candidate below can accidentally land inside a real ~/.canopy/memories.
+  originalMemoryBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
+  process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = layout.memoryBaseDir;
   clearAutoMemoryRootCache();
 });
 
 afterAll(() => {
   if (originalMemoryBaseDir === undefined) {
-    delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
   } else {
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBaseDir;
   }
   clearAutoMemoryRootCache();
   fs.rmSync(layout.base, { recursive: true, force: true });

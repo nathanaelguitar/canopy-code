@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -60,7 +60,7 @@ describe('SkillManager', () => {
 
   beforeEach(() => {
     // Mock os.homedir before makeFakeConfig, since Config constructor
-    // calls Storage.getGlobalQwenDir() which needs os.homedir()
+    // calls Storage.getGlobalCanopyDir() which needs os.homedir()
     vi.mocked(os.homedir).mockReturnValue(TEST_HOME);
     vi.mocked(os.tmpdir).mockReturnValue('/tmp');
 
@@ -165,8 +165,8 @@ describe('SkillManager', () => {
         return { name: 'regular-skill', description: 'A regular skill' };
       }
       if (yamlString.includes('name: shared-skill')) {
-        const desc = yamlString.includes('From qwen dir')
-          ? 'From qwen dir'
+        const desc = yamlString.includes('From canopy dir')
+          ? 'From canopy dir'
           : yamlString.includes('From agent dir')
             ? 'From agent dir'
             : 'A shared skill';
@@ -196,7 +196,7 @@ describe('SkillManager', () => {
     name: 'test-skill',
     description: 'A test skill',
     level: 'project',
-    filePath: '/test/project/.qwen/skills/test-skill/SKILL.md',
+    filePath: '/test/project/.canopy/skills/test-skill/SKILL.md',
     body: 'You are a helpful assistant with this skill.',
   };
 
@@ -453,8 +453,8 @@ Body.
     });
 
     it('should determine level from file path', () => {
-      const projectPath = '/test/project/.qwen/skills/test-skill/SKILL.md';
-      const userPath = '/home/user/.qwen/skills/test-skill/SKILL.md';
+      const projectPath = '/test/project/.canopy/skills/test-skill/SKILL.md';
+      const userPath = '/home/user/.canopy/skills/test-skill/SKILL.md';
 
       const projectConfig = manager.parseSkillContent(
         validMarkdown,
@@ -654,17 +654,17 @@ You are a helpful assistant.
     beforeEach(() => {
       // Mock directory listing based on path to handle multiple base dirs per level.
       // Use path.join to construct expected paths so separators match on all platforms.
-      const projectQwenSkillsDir = path.join(
+      const projectCanopySkillsDir = path.join(
         TEST_PROJECT_ROOT,
-        '.qwen',
+        '.canopy',
         'skills',
       );
-      const userQwenSkillsDir = path.join(TEST_HOME, '.qwen', 'skills');
+      const userCanopySkillsDir = path.join(TEST_HOME, '.canopy', 'skills');
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fs.readdir).mockImplementation((dirPath: any) => {
         const pathStr = String(dirPath);
-        if (pathStr === projectQwenSkillsDir) {
+        if (pathStr === projectCanopySkillsDir) {
           return Promise.resolve([
             {
               name: 'skill1',
@@ -686,7 +686,7 @@ You are a helpful assistant.
             },
           ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
         }
-        if (pathStr === userQwenSkillsDir) {
+        if (pathStr === userCanopySkillsDir) {
           return Promise.resolve([
             {
               name: 'skill3',
@@ -785,13 +785,13 @@ Skill 3 content`);
       mockParseYaml.mockImplementation((yamlString: string) =>
         yaml.parse(yamlString),
       );
-      const projectQwenSkillsDir = path.join(
+      const projectCanopySkillsDir = path.join(
         TEST_PROJECT_ROOT,
-        '.qwen',
+        '.canopy',
         'skills',
       );
       vi.mocked(fs.readdir).mockImplementation((dirPath) => {
-        if (String(dirPath) === projectQwenSkillsDir) {
+        if (String(dirPath) === projectCanopySkillsDir) {
           return Promise.resolve(
             ['high', 'unset-beta', 'unset-alpha', 'negative'].map((name) => ({
               name,
@@ -881,15 +881,19 @@ Body`);
     });
 
     it('should deduplicate same-name skills across provider dirs within a level', async () => {
-      // Override readdir to return the same skill name from both .qwen and .agents dirs
+      // Override readdir to return the same skill name from both .canopy and .agents dirs
       vi.mocked(fs.readdir).mockReset();
-      const projectQwenDir = path.join(TEST_PROJECT_ROOT, '.qwen', 'skills');
+      const projectCanopyDir = path.join(
+        TEST_PROJECT_ROOT,
+        '.canopy',
+        'skills',
+      );
       const projectAgentDir = path.join(TEST_PROJECT_ROOT, '.agents', 'skills');
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fs.readdir).mockImplementation((dirPath: any) => {
         const pathStr = String(dirPath);
-        if (pathStr === projectQwenDir) {
+        if (pathStr === projectCanopyDir) {
           return Promise.resolve([
             {
               name: 'shared-skill',
@@ -916,9 +920,9 @@ Body`);
 
       vi.mocked(fs.readFile).mockImplementation((filePath) => {
         const pathStr = String(filePath);
-        if (pathStr.includes('.qwen') && pathStr.includes('shared-skill')) {
+        if (pathStr.includes('.canopy') && pathStr.includes('shared-skill')) {
           return Promise.resolve(
-            `---\nname: shared-skill\ndescription: From qwen dir\n---\nQwen content`,
+            `---\nname: shared-skill\ndescription: From canopy dir\n---\nCanopy content`,
           );
         }
         if (pathStr.includes('.agents') && pathStr.includes('shared-skill')) {
@@ -934,10 +938,10 @@ Body`);
         force: true,
       });
 
-      // Only one instance should remain, from .qwen (first in PROVIDER_CONFIG_DIRS)
+      // Only one instance should remain, from .canopy (first in PROVIDER_CONFIG_DIRS)
       expect(skills).toHaveLength(1);
       expect(skills[0].name).toBe('shared-skill');
-      expect(skills[0].description).toBe('From qwen dir');
+      expect(skills[0].description).toBe('From canopy dir');
     });
 
     it('should handle empty directories', async () => {
@@ -967,7 +971,7 @@ Body`);
 
       expect(baseDirs).toHaveLength(2);
       expect(baseDirs).toContain(
-        path.join(TEST_PROJECT_ROOT, '.qwen', 'skills'),
+        path.join(TEST_PROJECT_ROOT, '.canopy', 'skills'),
       );
       expect(baseDirs).toContain(
         path.join(TEST_PROJECT_ROOT, '.agents', 'skills'),
@@ -978,7 +982,7 @@ Body`);
       const baseDirs = manager.getSkillsBaseDirs('user');
 
       expect(baseDirs).toHaveLength(2);
-      expect(baseDirs).toContain(path.join(TEST_HOME, '.qwen', 'skills'));
+      expect(baseDirs).toContain(path.join(TEST_HOME, '.canopy', 'skills'));
       expect(baseDirs).toContain(path.join(TEST_HOME, '.agents', 'skills'));
     });
 
@@ -1059,8 +1063,8 @@ Body`);
 
   describe('bundled skills', () => {
     const bundledDirSegment = path.join('skills', 'bundled');
-    const projectDirSegment = path.join('.qwen', 'skills');
-    const userDirSegment = path.join('.qwen', 'skills');
+    const projectDirSegment = path.join('.canopy', 'skills');
+    const userDirSegment = path.join('.canopy', 'skills');
     const projectPrefix = path.join(TEST_PROJECT_ROOT);
     const userPrefix = path.join(TEST_HOME);
 
@@ -1573,16 +1577,19 @@ Body.
       // otherwise the user copy's globs activate the visible (project)
       // skill, even when the touched file is outside the project skill's
       // declared paths.
-      const projectQwenSkillsDir = path.join(
+      const projectCanopySkillsDir = path.join(
         TEST_PROJECT_ROOT,
-        '.qwen',
+        '.canopy',
         'skills',
       );
-      const userQwenSkillsDir = path.join(TEST_HOME, '.qwen', 'skills');
+      const userCanopySkillsDir = path.join(TEST_HOME, '.canopy', 'skills');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fs.readdir).mockImplementation((dirPath: any) => {
         const pathStr = String(dirPath);
-        if (pathStr === projectQwenSkillsDir || pathStr === userQwenSkillsDir) {
+        if (
+          pathStr === projectCanopySkillsDir ||
+          pathStr === userCanopySkillsDir
+        ) {
           return Promise.resolve([
             {
               name: 'foo',
@@ -1599,7 +1606,7 @@ Body.
       vi.mocked(fs.access).mockResolvedValue(undefined);
       vi.mocked(fs.readFile).mockImplementation((filePath) => {
         const pathStr = String(filePath);
-        if (pathStr.startsWith(projectQwenSkillsDir)) {
+        if (pathStr.startsWith(projectCanopySkillsDir)) {
           return Promise.resolve(`---
 name: foo
 description: A test skill
@@ -1610,7 +1617,7 @@ paths:
 Project body.
 `);
         }
-        if (pathStr.startsWith(userQwenSkillsDir)) {
+        if (pathStr.startsWith(userCanopySkillsDir)) {
           return Promise.resolve(`---
 name: foo
 description: A test skill
@@ -1833,7 +1840,11 @@ Symlinked skill content`);
 
   describe('file watchers', () => {
     it('should pass ignored function and shallow depth to chokidar', async () => {
-      const projectSkillsDir = path.join(TEST_PROJECT_ROOT, '.qwen', 'skills');
+      const projectSkillsDir = path.join(
+        TEST_PROJECT_ROOT,
+        '.canopy',
+        'skills',
+      );
       vi.mocked(fsSync.existsSync).mockImplementation(
         (p) => String(p) === projectSkillsDir,
       );
@@ -2010,7 +2021,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: 'echo $QWEN_SKILL_ROOT'
+          command: 'echo $CANOPY_SKILL_ROOT'
 ---
 Skill content`;
 

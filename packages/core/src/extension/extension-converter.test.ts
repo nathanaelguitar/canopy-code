@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,12 +40,12 @@ describe('Agent Plugins extension conversion', () => {
     expect(fs.readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8')).toBe(
       manifest,
     );
-    expect(fs.existsSync(path.join(pluginRoot, 'qwen-extension.json'))).toBe(
+    expect(fs.existsSync(path.join(pluginRoot, 'canopy-extension.json'))).toBe(
       false,
     );
   });
 
-  it('gives an unsupported Agent Plugins schema priority over Qwen format', async () => {
+  it('gives an unsupported Agent Plugins schema priority over Canopy format', async () => {
     fs.writeFileSync(
       path.join(pluginRoot, 'plugin.json'),
       JSON.stringify({
@@ -54,8 +54,8 @@ describe('Agent Plugins extension conversion', () => {
       }),
     );
     fs.writeFileSync(
-      path.join(pluginRoot, 'qwen-extension.json'),
-      JSON.stringify({ name: 'qwen-fallback', version: '1.0.0' }),
+      path.join(pluginRoot, 'canopy-extension.json'),
+      JSON.stringify({ name: 'canopy-fallback', version: '1.0.0' }),
     );
 
     await expect(convertCompatibleExtension(pluginRoot)).rejects.toThrow(
@@ -69,8 +69,8 @@ describe('Agent Plugins extension conversion', () => {
       JSON.stringify({ $schema: 'https://example.com/plugin.schema.json' }),
     );
     fs.writeFileSync(
-      path.join(pluginRoot, 'qwen-extension.json'),
-      JSON.stringify({ name: 'qwen-extension', version: '1.0.0' }),
+      path.join(pluginRoot, 'canopy-extension.json'),
+      JSON.stringify({ name: 'canopy-extension', version: '1.0.0' }),
     );
 
     await expect(convertCompatibleExtension(pluginRoot)).resolves.toEqual({
@@ -126,7 +126,7 @@ describe('Agent Plugins extension conversion', () => {
     expect(selected.originSource).toBe('Claude');
     const selectedConfig = JSON.parse(
       fs.readFileSync(
-        path.join(selected.extensionDir, 'qwen-extension.json'),
+        path.join(selected.extensionDir, 'canopy-extension.json'),
         'utf8',
       ),
     ) as Record<string, unknown>;

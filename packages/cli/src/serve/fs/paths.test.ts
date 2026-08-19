@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,9 @@ describe('canonicalizeWorkspace', () => {
 
   beforeEach(async () => {
     const id = randomBytes(6).toString('hex');
-    scratch = await fsp.mkdtemp(path.join(os.tmpdir(), `qwen-fs-paths-${id}-`));
+    scratch = await fsp.mkdtemp(
+      path.join(os.tmpdir(), `canopy-fs-paths-${id}-`),
+    );
   });
 
   afterEach(async () => {
@@ -168,7 +170,7 @@ describe('hasSuspiciousPathPattern', () => {
   it('accepts ordinary POSIX paths', () => {
     expect(hasSuspiciousPathPattern('src/index.ts')).toBe(false);
     expect(hasSuspiciousPathPattern('packages/cli/package.json')).toBe(false);
-    expect(hasSuspiciousPathPattern('.qwenignore')).toBe(false);
+    expect(hasSuspiciousPathPattern('.canopyignore')).toBe(false);
     expect(hasSuspiciousPathPattern('a/b/c/d/e/f.txt')).toBe(false);
   });
 });
@@ -180,7 +182,7 @@ describe('resolveWithinWorkspace', () => {
   beforeEach(async () => {
     const id = randomBytes(6).toString('hex');
     scratch = await fsp.mkdtemp(
-      path.join(os.tmpdir(), `qwen-fs-resolve-${id}-`),
+      path.join(os.tmpdir(), `canopy-fs-resolve-${id}-`),
     );
     workspace = path.join(scratch, 'workspace');
     await fsp.mkdir(workspace);

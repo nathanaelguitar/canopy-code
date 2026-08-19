@@ -8,7 +8,7 @@ import type { CommandModule } from 'yargs';
 import {
   isExtensionCommittedWithWarningsError,
   type ExtensionInstallMetadata,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getErrorMessage } from '../../utils/errors.js';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
 import {

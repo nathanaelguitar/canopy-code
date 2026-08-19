@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
+import type { MCPServerConfig } from '@canopy-code/canopy-code-core';
 import {
   loadMcpApprovals,
   getPendingGatedMcpServers,
@@ -28,7 +28,7 @@ describe('mcpApprovals (hash-bound approval store)', () => {
 
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-approvals-'));
-    process.env['QWEN_CODE_MCP_APPROVALS_PATH'] = path.join(
+    process.env['CANOPY_CODE_MCP_APPROVALS_PATH'] = path.join(
       dir,
       MCP_APPROVALS_FILENAME,
     );
@@ -36,7 +36,7 @@ describe('mcpApprovals (hash-bound approval store)', () => {
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
     resetMcpApprovalsForTesting();
     fs.rmSync(dir, { recursive: true, force: true });
   });

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review match-remote`: which local git remote serves a PR's
+// `canopy review match-remote`: which local git remote serves a PR's
 // owner/repo. Step 1 of /review needs this twice — to decide whether a
 // `pr-url` target gets the worktree flow or lightweight mode, and to pick
 // the fetch remote for a bare PR number — and the rule used to live in the

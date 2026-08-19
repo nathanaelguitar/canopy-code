@@ -26,7 +26,7 @@ Use this skill before producing a chart, dashboard, map, or data visualization.
 ## Palette Validation
 
 Resolve paths relative to the skill base directory shown above this skill body.
-Do not assume `$QWEN_SKILL_ROOT` is set for normal shell commands.
+Do not assume `$CANOPY_SKILL_ROOT` is set for normal shell commands.
 
 Run:
 

@@ -19,7 +19,7 @@ type AssistantMessageWithReasoningFields =
     reasoning?: string | null;
   };
 
-function shouldMirrorReasoningContentForQwen3(model: string): boolean {
+function shouldMirrorReasoningContentForCanopy3(model: string): boolean {
   return model.toLowerCase().includes('qwen3');
 }
 
@@ -64,7 +64,7 @@ export class DefaultOpenAICompatibleProvider
 
   buildHeaders(): Record<string, string | undefined> {
     const version = this.cliConfig.getCliVersion() || 'unknown';
-    const userAgent = `QwenCode/${version} (${process.platform}; ${process.arch})`;
+    const userAgent = `CanopyCode/${version} (${process.platform}; ${process.arch})`;
     const { customHeaders } = this.contentGeneratorConfig;
     const defaultHeaders = {
       'User-Agent': userAgent,
@@ -109,7 +109,7 @@ export class DefaultOpenAICompatibleProvider
     // Apply output token limits to ensure max_tokens is set appropriately
     // This prevents occupying too much context window with output reservation
     const requestWithTokenLimits = this.applyOutputTokenLimit(request);
-    const messages = shouldMirrorReasoningContentForQwen3(request.model)
+    const messages = shouldMirrorReasoningContentForCanopy3(request.model)
       ? requestWithTokenLimits.messages.map(mirrorReasoningContentToReasoning)
       : requestWithTokenLimits.messages;
 
@@ -127,7 +127,7 @@ export class DefaultOpenAICompatibleProvider
   getResponseParsingOptions(): OpenAIResponseParsingOptions {
     // Hybrid-thinking models occasionally bypass the reasoning channel and
     // emit their thinking as literal <think>/<thinking> tags inside content
-    // (observed in production on qwen3-class models, issue #6666).
+    // (observed in production on canopy3-class models, issue #6666).
     // Honored on the streaming path only; non-streaming responses are
     // not classified.
     return { contentOnlyThinkingTagLeaks: true };
@@ -149,7 +149,7 @@ export class DefaultOpenAICompatibleProvider
    *    - For unknown models (deployment aliases, self-hosted): respect user's
    *      configured value entirely (backend may support larger limits)
    * 2. If user didn't configure max_tokens:
-   *    - Check QWEN_CODE_MAX_OUTPUT_TOKENS env var first
+   *    - Check CANOPY_CODE_MAX_OUTPUT_TOKENS env var first
    *    - Otherwise use the model's output limit, clipped to
    *      OUTPUT_TOKEN_CEILING (64K)
    * 3. If model has no specific limit (tokenLimit returns default):
@@ -161,7 +161,7 @@ export class DefaultOpenAICompatibleProvider
    * - User sets 100K, unknown model → uses 100K (respects user, backend may support it)
    * - User not set, model limit 64K → uses 64K
    * - User not set, model limit 4K → uses 4K (model limit is lower)
-   * - User not set, env QWEN_CODE_MAX_OUTPUT_TOKENS=16000 -> uses 16K
+   * - User not set, env CANOPY_CODE_MAX_OUTPUT_TOKENS=16000 -> uses 16K
    *
    * @param request - The chat completion request parameters
    * @returns The request with max_tokens adjusted according to the logic
@@ -200,7 +200,7 @@ export class DefaultOpenAICompatibleProvider
       // limits must not request the whole window; users who need more set
       // max_tokens explicitly).
       const envMaxTokens = parsePositiveIntegerEnvValue(
-        process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'],
+        process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'],
       );
       if (envMaxTokens !== undefined) {
         effectiveMaxTokens = isKnownModel

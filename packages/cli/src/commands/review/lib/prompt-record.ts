@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -168,7 +168,7 @@ export function writeFindingsFile(
     // floor fails it. Say so now: a silent miss used to leave the round
     // pointing at nothing with no notice anywhere. Safe writer: this catch
     // exists to keep the build alive, so the diagnostic must not throw out
-    // of it on EPIPE (`qwen … | head`).
+    // of it on EPIPE (`canopy … | head`).
     writeStderrLineSafe(
       `agent-prompt: failed to write findings file ${p}: ` +
         `${(err as Error).message} — inlining the list instead`,

@@ -106,9 +106,9 @@ export function getMcpOAuthDialogInstruction(
   mcpServerName: string,
 ): string {
   return [
-    `In interactive Qwen Code sessions, open the /mcp dialog to ${action}`,
+    `In interactive Canopy Code sessions, open the /mcp dialog to ${action}`,
     `with MCP server '${mcpServerName}'.`,
-    `For headless or SDK usage, configure MCP OAuth with qwen mcp add --oauth-*`,
+    `For headless or SDK usage, configure MCP OAuth with canopy mcp add --oauth-*`,
     `or settings.json, then ${action} once in an interactive session before connecting.`,
   ].join(' ');
 }
@@ -399,7 +399,7 @@ export class McpClient {
     private readonly sendSdkMcpMessage?: SendSdkMcpMessage,
   ) {
     this.client = new Client({
-      name: `qwen-cli-mcp-client-${this.serverName}`,
+      name: `canopy-cli-mcp-client-${this.serverName}`,
       version: '0.0.1',
     });
   }
@@ -1466,7 +1466,7 @@ function isMethodNotFound(error: unknown): boolean {
  * non-trivial number of real MCP servers implement `prompts/list` but
  * under-declare (or omit) the `prompts` capability in their `initialize`
  * response; gating on the declared capability made those servers' prompts
- * silently invisible in qwen-code (no `/`-menu entry) while lenient
+ * silently invisible in canopy-code (no `/`-menu entry) while lenient
  * clients still surfaced them. The underlying `mcpClient.request` is the
  * raw `Protocol.request` (the SDK only asserts capabilities for its typed
  * `listPrompts()` helper, which we don't use), so attempting the call is
@@ -1511,7 +1511,7 @@ export async function listMcpPrompts(
  * Discovers prompts AND registers them into the supplied PromptRegistry.
  * Thin wrapper over `listMcpPrompts` that preserves the historical
  * `Promise<Prompt[]>` signature (used by `connectAndDiscover`, standalone
- * qwen, and existing tests). New code should prefer `listMcpPrompts`
+ * canopy, and existing tests). New code should prefer `listMcpPrompts`
  * for testability.
  *
  * @param mcpServerName The name of the MCP server.
@@ -1672,7 +1672,7 @@ export async function connectToMcpServer(
 ): Promise<Client> {
   clearMcpOAuthRequirement(mcpServerName, mcpServerConfig);
   const mcpClient = new Client({
-    name: 'qwen-code-mcp-client',
+    name: 'canopy-code-mcp-client',
     version: '0.0.1',
   });
 

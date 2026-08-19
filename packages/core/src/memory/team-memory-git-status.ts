@@ -21,7 +21,7 @@ const GIT_TIMEOUT_MS = 5_000;
  * ignore rules against the pathname.
  *
  * We check a representative FILE we would write (the team index), not the
- * directory: a `!.qwen/team-memory/` re-include is a directory-form negation
+ * directory: a `!.canopy/team-memory/` re-include is a directory-form negation
  * that git only applies to paths it knows are directories, so checking the
  * (nonexistent) directory would spuriously report it ignored. The file path is
  * what actually governs whether our writes can be tracked.
@@ -44,7 +44,7 @@ function isTeamFileGitIgnored(gitRoot: string, filePath: string): boolean {
  * Team memory only actually reaches collaborators when its directory is
  * git-tracked. Two silent-inert cases defeat that: there is no git root (saved
  * memories land in an untracked local dir), or the directory is git-ignored —
- * e.g. a `.qwen/` directory-form ignore, which git never descends into, so a
+ * e.g. a `.canopy/` directory-form ignore, which git never descends into, so a
  * `!`-reinclude below it is a no-op. Both leave the tier looking enabled while
  * sharing nothing.
  *
@@ -66,7 +66,7 @@ export function getTeamMemoryShareabilityWarning(
   }
   // Probe BOTH the index and a representative topic file. Judging only by the
   // index lets a config that re-includes MEMORY.md but ignores the memory files
-  // (e.g. `.qwen/team-memory/*.md` + `!.qwen/team-memory/MEMORY.md`) pass while
+  // (e.g. `.canopy/team-memory/*.md` + `!.canopy/team-memory/MEMORY.md`) pass while
   // sharing nothing: the committed index would point at files no collaborator
   // can see. 'feedback.md' is a representative topic name; check-ignore matches
   // the pathname against the ignore rules whether or not the file exists.
@@ -84,9 +84,9 @@ export function getTeamMemoryShareabilityWarning(
     );
     return (
       `Team memory is enabled, but ${teamRoot} is git-ignored, so saved ` +
-      `memories are not shared. If your .gitignore excludes '.qwen/' ` +
-      `(directory form), change it to '.qwen/*' and re-include ` +
-      `'.qwen/team-memory/' (and its contents, e.g. '!.qwen/team-memory/**').`
+      `memories are not shared. If your .gitignore excludes '.canopy/' ` +
+      `(directory form), change it to '.canopy/*' and re-include ` +
+      `'.canopy/team-memory/' (and its contents, e.g. '!.canopy/team-memory/**').`
     );
   }
   return null;

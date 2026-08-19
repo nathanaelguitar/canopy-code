@@ -6,7 +6,7 @@
 
 import { type VariableSchema, VARIABLE_SCHEMA } from './variableSchema.js';
 import path from 'node:path';
-import { QWEN_DIR } from '../config/storage.js';
+import { CANOPY_DIR } from '../config/storage.js';
 import type { HookDefinition } from '../hooks/types.js';
 import type { HookEventName } from '../hooks/types.js';
 import * as fs from 'node:fs';
@@ -18,9 +18,9 @@ const debugLogger = createDebugLogger('Extension:variables');
 // Re-export types for substituteHookVariables
 export type { HookDefinition };
 
-export const EXTENSIONS_DIRECTORY_NAME = path.join(QWEN_DIR, 'extensions');
-export const EXTENSIONS_CONFIG_FILENAME = 'qwen-extension.json';
-export const INSTALL_METADATA_FILENAME = '.qwen-extension-install.json';
+export const EXTENSIONS_DIRECTORY_NAME = path.join(CANOPY_DIR, 'extensions');
+export const EXTENSIONS_CONFIG_FILENAME = 'canopy-extension.json';
+export const INSTALL_METADATA_FILENAME = '.canopy-extension-install.json';
 export const EXTENSION_SETTINGS_FILENAME = '.env';
 
 export type JsonObject = { [key: string]: JsonValue };
@@ -157,12 +157,12 @@ export function performVariableReplacement(
           '!{$1}',
         );
 
-        // Replace references to ".claude" directory with ".qwen" in markdown files
+        // Replace references to ".claude" directory with ".canopy" in markdown files
         // Only match path references (e.g., ~/.claude/, $HOME/.claude, ./.claude/)
         // Avoid matching URLs, comments, or string literals containing .claude
         const updatedMdContent = syntaxUpdatedContent.replace(
           /(\$\{?HOME\}?\/|~\/)?\.claude(\/|$)/g,
-          '$1.qwen$2',
+          '$1.canopy$2',
         );
 
         // Only write if content was actually changed
@@ -213,19 +213,19 @@ export function performVariableReplacement(
           '.message.parts | map(select(has("text")))',
         );
 
-        // Replace references to ".claude" directory with ".qwen" in shell scripts
+        // Replace references to ".claude" directory with ".canopy" in shell scripts
         // Only match path references (e.g., ~/.claude/, $HOME/.claude, ./.claude/)
         // Avoid matching URLs, comments, or string literals containing .claude
         const finalScriptContent = adaptedScriptContent.replace(
           /(\$\{?HOME\}?\/|~\/)?\.claude(\/|$)/g,
-          '$1.qwen$2',
+          '$1.canopy$2',
         );
 
         // Only write if content was actually changed
         if (finalScriptContent !== content) {
           fs.writeFileSync(filePath, finalScriptContent, 'utf8');
           debugLogger.debug(
-            `Updated transcript format and replaced .claude with .qwen in shell script: ${filePath}`,
+            `Updated transcript format and replaced .claude with .canopy in shell script: ${filePath}`,
           );
         }
       } catch (error) {

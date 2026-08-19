@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Code
+ * Copyright 2026 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,9 @@ import { mockCompromisedLock } from '../test-utils/mock-compromised-lock.js';
 const temporaryDirectories: string[] = [];
 
 function makeTemporaryDirectory(): string {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-npm-update-'));
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'canopy-npm-update-'),
+  );
   temporaryDirectories.push(directory);
   return directory;
 }
@@ -31,13 +33,13 @@ function writeInstallation(prefix: string, version: string): void {
   const packageRoot = path.join(
     prefix,
     'node_modules',
-    '@qwen-code',
-    'qwen-code',
+    '@canopy-code',
+    'canopy-code',
   );
   fs.mkdirSync(packageRoot, { recursive: true });
   fs.writeFileSync(
     path.join(packageRoot, 'package.json'),
-    JSON.stringify({ name: '@qwen-code/qwen-code', version }),
+    JSON.stringify({ name: '@canopy-code/canopy-code', version }),
   );
   fs.writeFileSync(path.join(packageRoot, 'cli.js'), '');
   fs.writeFileSync(
@@ -51,14 +53,14 @@ function writeBaseInstallation(root: string, version = '1.0.0'): string {
     root,
     'global',
     'node_modules',
-    '@qwen-code',
-    'qwen-code',
+    '@canopy-code',
+    'canopy-code',
   );
   const bootstrap = path.join(packageRoot, 'cli-entry.js');
   fs.mkdirSync(path.dirname(bootstrap), { recursive: true });
   fs.writeFileSync(
     path.join(packageRoot, 'package.json'),
-    JSON.stringify({ name: '@qwen-code/qwen-code', version }),
+    JSON.stringify({ name: '@canopy-code/canopy-code', version }),
   );
   fs.writeFileSync(bootstrap, 'global launcher');
   return bootstrap;
@@ -95,7 +97,7 @@ describe('managed npm update', () => {
       '--package-lock=false',
       '--no-audit',
       '--no-fund',
-      '@qwen-code/qwen-code@2.0.0',
+      '@canopy-code/canopy-code@2.0.0',
     ]);
     expect(update.versionDir).toBe(
       path.join(update.launcherRoot, 'versions', '2.0.0'),
@@ -201,7 +203,7 @@ describe('managed npm update', () => {
         '--package-lock=false',
         '--no-audit',
         '--no-fund',
-        '@qwen-code/qwen-code@2.0.0',
+        '@canopy-code/canopy-code@2.0.0',
       ],
       expect.objectContaining({
         env: expect.objectContaining({
@@ -246,8 +248,8 @@ describe('managed npm update', () => {
         path.join(
           update.stagingDir,
           'node_modules',
-          '@qwen-code',
-          'qwen-code',
+          '@canopy-code',
+          'canopy-code',
           'cli.js',
         ),
         'this is not valid JavaScript !!!\n',

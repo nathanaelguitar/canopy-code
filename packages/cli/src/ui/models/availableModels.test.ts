@@ -1,35 +1,35 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   getAvailableModelsForAuthType,
-  getFilteredQwenModels,
+  getFilteredCanopyModels,
   getOpenAIAvailableModelFromEnv,
 } from './availableModels.js';
-import { AuthType, type Config } from '@qwen-code/qwen-code-core';
+import { AuthType, type Config } from '@canopy-code/canopy-code-core';
 
 describe('availableModels', () => {
-  describe('Qwen models', () => {
-    const qwenModels = getFilteredQwenModels();
+  describe('Canopy models', () => {
+    const canopyModels = getFilteredCanopyModels();
 
     it('should include only coder-model', () => {
-      expect(qwenModels.length).toBe(1);
-      expect(qwenModels[0].id).toBe('coder-model');
+      expect(canopyModels.length).toBe(1);
+      expect(canopyModels[0].id).toBe('coder-model');
     });
 
     it('should have coder-model with vision capability', () => {
-      const coderModel = qwenModels[0];
+      const coderModel = canopyModels[0];
       expect(coderModel.isVision).toBe(true);
     });
   });
 
-  describe('getFilteredQwenModels', () => {
+  describe('getFilteredCanopyModels', () => {
     it('should return coder-model with vision capability', () => {
-      const models = getFilteredQwenModels();
+      const models = getFilteredCanopyModels();
       expect(models.length).toBe(1);
       expect(models[0].id).toBe('coder-model');
       expect(models[0].isVision).toBe(true);
@@ -77,34 +77,34 @@ describe('availableModels', () => {
       process.env = originalEnv;
     });
 
-    it('should return hard-coded qwen models for qwen-oauth', () => {
-      const models = getAvailableModelsForAuthType(AuthType.QWEN_OAUTH);
+    it('should return hard-coded canopy models for canopy-oauth', () => {
+      const models = getAvailableModelsForAuthType(AuthType.CANOPY_OAUTH);
       expect(models.length).toBe(1);
       expect(models[0].id).toBe('coder-model');
       expect(models[0].isVision).toBe(true);
     });
 
-    it('should use config models for qwen-oauth when config is provided', () => {
+    it('should use config models for canopy-oauth when config is provided', () => {
       const mockConfig = {
         getAvailableModelsForAuthType: vi.fn().mockReturnValue([
           {
             id: 'custom',
             label: 'Custom',
             description: 'Custom model',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
             isVision: false,
           },
           {
             id: 'image',
             label: 'Image',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
             imageOnly: true,
           },
         ]),
       } as unknown as Config;
 
       const models = getAvailableModelsForAuthType(
-        AuthType.QWEN_OAUTH,
+        AuthType.CANOPY_OAUTH,
         mockConfig,
       );
       expect(models).toEqual([

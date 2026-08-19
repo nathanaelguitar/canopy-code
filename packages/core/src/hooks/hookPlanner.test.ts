@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -90,11 +90,11 @@ describe('HookPlanner', () => {
     it('returns file path targets for instruction load events', () => {
       expect(
         getHookMatcherTarget(HookEventName.InstructionsLoaded, {
-          filePath: '/repo/.qwen/QWEN.local.md',
+          filePath: '/repo/.canopy/CANOPY.local.md',
         }),
       ).toEqual({
         kind: 'filePath',
-        target: '/repo/.qwen/QWEN.local.md',
+        target: '/repo/.canopy/CANOPY.local.md',
       });
     });
 
@@ -697,7 +697,7 @@ describe('HookPlanner', () => {
         config: { type: HookType.Command, command: 'echo test' },
         source: HooksConfigSource.Project,
         eventName: HookEventName.InstructionsLoaded,
-        matcher: '\\.qwen/QWEN\\.local\\.md$',
+        matcher: '\\.canopy/CANOPY\\.local\\.md$',
         enabled: true,
       };
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
@@ -705,7 +705,7 @@ describe('HookPlanner', () => {
       const result = planner.createExecutionPlan(
         HookEventName.InstructionsLoaded,
         {
-          filePath: '/repo/.qwen/QWEN.local.md',
+          filePath: '/repo/.canopy/CANOPY.local.md',
         },
       );
 
@@ -717,7 +717,7 @@ describe('HookPlanner', () => {
         config: { type: HookType.Command, command: 'echo test' },
         source: HooksConfigSource.Project,
         eventName: HookEventName.InstructionsLoaded,
-        matcher: '\\.qwen/QWEN\\.local\\.md$',
+        matcher: '\\.canopy/CANOPY\\.local\\.md$',
         enabled: true,
       };
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
@@ -725,7 +725,7 @@ describe('HookPlanner', () => {
       const result = planner.createExecutionPlan(
         HookEventName.InstructionsLoaded,
         {
-          filePath: '/repo/QWEN.md',
+          filePath: '/repo/CANOPY.md',
         },
       );
 
@@ -859,7 +859,7 @@ describe('HookPlanner', () => {
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
 
       const result = planner.createExecutionPlan(HookEventName.SubagentStart, {
-        agentType: 'qwen-tester',
+        agentType: 'canopy-tester',
       });
 
       expect(result).toBeNull();
@@ -935,13 +935,13 @@ describe('HookPlanner', () => {
         config: { type: HookType.Command, command: 'echo test' },
         source: HooksConfigSource.Project,
         eventName: HookEventName.SubagentStop,
-        matcher: 'qwen-tester',
+        matcher: 'canopy-tester',
         enabled: true,
       };
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
 
       const result = planner.createExecutionPlan(HookEventName.SubagentStop, {
-        agentType: 'qwen-tester',
+        agentType: 'canopy-tester',
       });
 
       expect(result).not.toBeNull();
@@ -952,7 +952,7 @@ describe('HookPlanner', () => {
         config: { type: HookType.Command, command: 'echo test' },
         source: HooksConfigSource.Project,
         eventName: HookEventName.SubagentStop,
-        matcher: 'qwen-tester',
+        matcher: 'canopy-tester',
         enabled: true,
       };
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
@@ -975,7 +975,7 @@ describe('HookPlanner', () => {
       vi.mocked(mockRegistry.getHooksForEvent).mockReturnValue([entry]);
 
       const result = planner.createExecutionPlan(HookEventName.SubagentStop, {
-        agentType: 'qwen-tester',
+        agentType: 'canopy-tester',
       });
 
       expect(result).not.toBeNull();

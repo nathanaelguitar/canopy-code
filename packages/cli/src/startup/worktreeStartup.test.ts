@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,13 +22,15 @@ import {
   Storage,
   writeRuntimeStatus,
   writeWorktreeSessionMarker,
-} from '@qwen-code/qwen-code-core';
-import type { Config } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 
 const exec = promisify(execFile);
 
 async function makeTempRepo(): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-startup-test-'));
+  const dir = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'canopy-wt-startup-test-'),
+  );
   // macOS resolves /var → /private/var; pwd -P is the cheapest way to
   // normalise. Use realpath so subsequent string comparisons against
   // process.cwd() match exactly.
@@ -79,7 +81,7 @@ describe('setupStartupWorktree', () => {
   });
 
   it('rejects when the launch cwd is not a git repo', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-nongit-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-nongit-'));
     tempRepo = dir;
     process.chdir(await fs.realpath(dir));
 
@@ -104,7 +106,7 @@ describe('setupStartupWorktree', () => {
       expect(res!.context.slug).toMatch(/^[a-z]+-[a-z]+-[0-9a-f]{6}$/);
       expect(res!.context.branch).toBe(`worktree-${res!.context.slug}`);
       expect(res!.context.worktreePath).toContain(
-        path.join('.qwen', 'worktrees', res!.context.slug),
+        path.join('.canopy', 'worktrees', res!.context.slug),
       );
       expect(res!.context.repoRoot).toBe(tempRepo);
       expect(res!.context.originalBranch).toBe('main');
@@ -132,7 +134,7 @@ describe('setupStartupWorktree', () => {
       expect(res!.context.slug).toBe('my-feature');
       expect(res!.context.branch).toBe('worktree-my-feature');
       expect(res!.context.worktreePath).toBe(
-        path.join(tempRepo, '.qwen', 'worktrees', 'my-feature'),
+        path.join(tempRepo, '.canopy', 'worktrees', 'my-feature'),
       );
     }
   });
@@ -152,7 +154,7 @@ describe('setupStartupWorktree', () => {
 
     // No worktree directory was created.
     const exists = await fs
-      .stat(path.join(tempRepo, '.qwen', 'worktrees'))
+      .stat(path.join(tempRepo, '.canopy', 'worktrees'))
       .then(() => true)
       .catch(() => false);
     expect(exists).toBe(false);
@@ -177,7 +179,7 @@ describe('setupStartupWorktree', () => {
 
     // No worktree directory was created — fail-close means no side effect.
     const exists = await fs
-      .stat(path.join(tempRepo, '.qwen', 'worktrees'))
+      .stat(path.join(tempRepo, '.canopy', 'worktrees'))
       .then(() => true)
       .catch(() => false);
     expect(exists).toBe(false);
@@ -188,7 +190,7 @@ describe('setupStartupWorktree', () => {
     process.chdir(tempRepo);
 
     const res = await setupStartupWorktree(
-      'https://github.com/QwenLM/qwen-code/pull/4174',
+      'https://github.com/QwenLM/canopy-code/pull/4174',
     );
     expect(res).not.toBeNull();
     expect(res!.ok).toBe(false);
@@ -204,7 +206,7 @@ describe('setupStartupWorktree', () => {
     // the remote is github.com. update-ref lets us materialise the ref
     // locally without an actual GitHub round-trip.
     const upstream = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-wt-pr-upstream-'),
+      path.join(os.tmpdir(), 'canopy-wt-pr-upstream-'),
     );
     const upstreamResolved = await fs.realpath(upstream);
     await exec('git', ['init', '-q', '--bare', '-b', 'main'], {
@@ -243,7 +245,7 @@ describe('setupStartupWorktree', () => {
         expect(res!.context.branch).toBe('worktree-pr-42');
         expect(res!.context.isPullRequest).toBe(true);
         expect(res!.context.worktreePath).toBe(
-          path.join(tempRepo, '.qwen', 'worktrees', 'pr-42'),
+          path.join(tempRepo, '.canopy', 'worktrees', 'pr-42'),
         );
 
         // The PR file lives inside the worktree (proving FETCH_HEAD was
@@ -292,7 +294,7 @@ describe('setupStartupWorktree', () => {
     expect(first!.context.wasReattached).toBe(false);
 
     // Restore cwd so the second call starts from launch cwd, mirroring
-    // the real `qwen --resume <sid> --worktree foo` invocation flow.
+    // the real `canopy --resume <sid> --worktree foo` invocation flow.
     process.chdir(tempRepo);
 
     // Second call with the same slug now re-attaches, doesn't create.
@@ -315,7 +317,7 @@ describe('setupStartupWorktree', () => {
     // is NOT a git worktree (just a plain dir with a file in it).
     const slotPath = path.join(
       tempRepo,
-      '.qwen',
+      '.canopy',
       'worktrees',
       'plain-dir-conflict',
     );
@@ -345,11 +347,11 @@ describe('setupStartupWorktree', () => {
     expect(survived).toBe('oops');
   });
 
-  it('refuses nested worktree creation from inside .qwen/worktrees/', async () => {
+  it('refuses nested worktree creation from inside .canopy/worktrees/', async () => {
     tempRepo = await makeTempRepo();
     // Pre-create a fake worktree path and chdir into it. We don't need a
     // real git worktree — the guard fires on path shape, not git state.
-    const nestedPath = path.join(tempRepo, '.qwen', 'worktrees', 'outer');
+    const nestedPath = path.join(tempRepo, '.canopy', 'worktrees', 'outer');
     await fs.mkdir(nestedPath, { recursive: true });
     process.chdir(nestedPath);
 
@@ -373,7 +375,7 @@ describe('persistStartupWorktreeSidecar', () => {
 
   beforeEach(async () => {
     prevCwd = process.cwd();
-    runtimeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-runtime-'));
+    runtimeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-runtime-'));
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -461,7 +463,7 @@ describe('persistStartupWorktreeSidecar', () => {
     process.chdir(tempRepo);
     const packageDir = path.join(tempRepo, 'packages', 'app');
     await fs.mkdir(packageDir, { recursive: true });
-    Storage.setRuntimeBaseDir('.qwen', packageDir);
+    Storage.setRuntimeBaseDir('.canopy', packageDir);
 
     const setup = await setupStartupWorktree('owner-subdir-runtime');
     expect(setup?.ok).toBe(true);
@@ -476,7 +478,7 @@ describe('persistStartupWorktreeSidecar', () => {
       },
     );
 
-    Storage.setRuntimeBaseDir('.qwen', setup.context.worktreePath);
+    Storage.setRuntimeBaseDir('.canopy', setup.context.worktreePath);
     await persistStartupWorktreeSidecar(
       makeConfig(setup.context.worktreePath, 'new-session'),
       { ...setup.context, wasReattached: true },
@@ -493,7 +495,7 @@ describe('buildStartupWorktreeNotice', () => {
   // signature lets us keep the fixture minimal so adding new
   // StartupWorktreeContext fields doesn't churn this file.
   const baseContext = {
-    worktreePath: '/repo/.qwen/worktrees/foo',
+    worktreePath: '/repo/.canopy/worktrees/foo',
     slug: 'foo',
     branch: 'worktree-foo',
     wasReattached: false,
@@ -504,7 +506,7 @@ describe('buildStartupWorktreeNotice', () => {
     expect(notice).toContain('[Startup]');
     expect(notice).toContain('Active worktree');
     expect(notice).toContain('"foo"');
-    expect(notice).toContain('/repo/.qwen/worktrees/foo');
+    expect(notice).toContain('/repo/.canopy/worktrees/foo');
     expect(notice).toContain('worktree-foo');
     expect(notice).not.toContain('Re-attached');
     expect(notice).not.toContain('overrode');
@@ -529,7 +531,7 @@ describe('buildStartupWorktreeNotice', () => {
     expect(notice).toContain('[Startup]');
     expect(notice).toContain('overrode');
     expect(notice).toContain('"old-slug"');
-    expect(notice).toContain('qwen --worktree old-slug');
+    expect(notice).toContain('canopy --worktree old-slug');
   });
 
   it('does NOT append the override hint when overrodeResumedWorktree is false', () => {

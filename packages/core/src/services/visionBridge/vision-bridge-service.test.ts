@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -943,10 +943,10 @@ describe('formatVisionBridgeNotice', () => {
 describe('selectVisionBridgeModel (same-provider only)', () => {
   const dashscope = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
   const idealab = 'https://idealab.example.com/v1';
-  // Primary qwen-text-max is text-only on dashscope; qwen3.7-plus shares that
+  // Primary canopy-text-max is text-only on dashscope; qwen3.7-plus shares that
   // endpoint (a real vision model), gpt-5.4 is image-capable but on idealab.
   const models: VisionModelCandidate[] = [
-    { id: 'qwen-text-max', authType: 'openai', baseUrl: dashscope },
+    { id: 'canopy-text-max', authType: 'openai', baseUrl: dashscope },
     { id: 'gpt-5.4', authType: 'openai', baseUrl: idealab },
     { id: 'qwen3.7-plus', authType: 'openai', baseUrl: dashscope },
   ];
@@ -954,9 +954,9 @@ describe('selectVisionBridgeModel (same-provider only)', () => {
   it('returns undefined when no image-capable model is registered', () => {
     expect(
       selectVisionBridgeModel(
-        'qwen-text-max',
+        'canopy-text-max',
         [
-          { id: 'qwen-text-max', baseUrl: dashscope },
+          { id: 'canopy-text-max', baseUrl: dashscope },
           { id: 'deepseek-v3', baseUrl: dashscope },
         ],
         { baseUrl: dashscope },
@@ -975,22 +975,24 @@ describe('selectVisionBridgeModel (same-provider only)', () => {
     // gpt-5.4 (idealab) appears first, but qwen3.7-plus shares the primary's
     // dashscope endpoint and must win.
     expect(
-      selectVisionBridgeModel('qwen-text-max', models, { baseUrl: dashscope }),
+      selectVisionBridgeModel('canopy-text-max', models, {
+        baseUrl: dashscope,
+      }),
     ).toEqual({ id: 'openai:qwen3.7-plus', baseUrl: dashscope });
   });
 
   it('never reaches across providers: undefined when the only vision model is on a different endpoint', () => {
     expect(
       selectVisionBridgeModel(
-        'qwen-text-max',
+        'canopy-text-max',
         [
-          { id: 'qwen-text-max', authType: 'openai', baseUrl: dashscope },
+          { id: 'canopy-text-max', authType: 'openai', baseUrl: dashscope },
           { id: 'gpt-5.4', authType: 'openai', baseUrl: idealab },
           // OAuth/runtime model on yet another endpoint must never be picked.
           {
             id: 'coder-model',
-            authType: 'qwen-oauth',
-            baseUrl: 'DYNAMIC_QWEN_OAUTH_BASE_URL',
+            authType: 'canopy-oauth',
+            baseUrl: 'DYNAMIC_CANOPY_OAUTH_BASE_URL',
             isVision: true,
           },
         ],
@@ -1146,12 +1148,14 @@ describe('selectVisionBridgeModel (same-provider only)', () => {
 
 describe('isImageCapable', () => {
   it('trusts an explicit isVision flag over a text-only name', () => {
-    expect(isImageCapable({ id: 'qwen-text-max', isVision: true })).toBe(true);
+    expect(isImageCapable({ id: 'canopy-text-max', isVision: true })).toBe(
+      true,
+    );
   });
 
   it('trusts resolved modalities over name-based detection', () => {
     expect(
-      isImageCapable({ id: 'qwen-text-max', modalities: { image: true } }),
+      isImageCapable({ id: 'canopy-text-max', modalities: { image: true } }),
     ).toBe(true);
     expect(
       isImageCapable({ id: 'qwen3-vl-plus', modalities: { image: false } }),
@@ -1160,7 +1164,7 @@ describe('isImageCapable', () => {
 
   it('falls back to name-based defaults when neither is set', () => {
     expect(isImageCapable({ id: 'qwen3-vl-plus' })).toBe(true);
-    expect(isImageCapable({ id: 'qwen-text-max' })).toBe(false);
+    expect(isImageCapable({ id: 'canopy-text-max' })).toBe(false);
   });
 });
 

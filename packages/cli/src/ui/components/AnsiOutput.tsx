@@ -10,7 +10,7 @@ import type {
   AnsiLine,
   AnsiOutput,
   AnsiToken,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { formatMemoryUsage } from '../utils/formatters.js';
 import { theme } from '../semantic-colors.js';
 import { MaxSizedBox } from './shared/MaxSizedBox.js';

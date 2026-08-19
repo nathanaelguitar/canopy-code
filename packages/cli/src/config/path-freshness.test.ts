@@ -17,49 +17,49 @@ import { getTrustedFoldersPath } from './trustedFolders.js';
 // asserts the exported path getters reflect the new value.
 
 describe('settings/trustedFolders path getters are lazy', () => {
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
   let originalTrustedPath: string | undefined;
 
   beforeEach(() => {
-    originalQwenHome = process.env['QWEN_HOME'];
-    originalTrustedPath = process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    originalCanopyHome = process.env['QWEN_HOME'];
+    originalTrustedPath = process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     delete process.env['QWEN_HOME'];
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     if (originalTrustedPath === undefined)
-      delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
-    else process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedPath;
+      delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
+    else process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedPath;
   });
 
   it('getUserSettingsPath() reflects QWEN_HOME set after module load', () => {
     const defaultPath = getUserSettingsPath();
-    expect(defaultPath).toBe(path.join(homedir(), '.qwen', 'settings.json'));
+    expect(defaultPath).toBe(path.join(homedir(), '.canopy', 'settings.json'));
 
-    process.env['QWEN_HOME'] = '/tmp/qwen-lazy-test';
+    process.env['QWEN_HOME'] = '/tmp/canopy-lazy-test';
     expect(getUserSettingsPath()).toBe(
-      path.join('/tmp/qwen-lazy-test', 'settings.json'),
+      path.join('/tmp/canopy-lazy-test', 'settings.json'),
     );
   });
 
   it('getUserSettingsDir() reflects QWEN_HOME set after module load', () => {
-    expect(getUserSettingsDir()).toBe(path.join(homedir(), '.qwen'));
+    expect(getUserSettingsDir()).toBe(path.join(homedir(), '.canopy'));
 
-    process.env['QWEN_HOME'] = '/tmp/qwen-lazy-test';
-    expect(getUserSettingsDir()).toBe(path.normalize('/tmp/qwen-lazy-test'));
+    process.env['QWEN_HOME'] = '/tmp/canopy-lazy-test';
+    expect(getUserSettingsDir()).toBe(path.normalize('/tmp/canopy-lazy-test'));
   });
 
   it('getTrustedFoldersPath() reflects QWEN_HOME set after module load', () => {
     expect(getTrustedFoldersPath()).toBe(
-      path.join(homedir(), '.qwen', 'trustedFolders.json'),
+      path.join(homedir(), '.canopy', 'trustedFolders.json'),
     );
 
-    process.env['QWEN_HOME'] = '/tmp/qwen-lazy-test';
+    process.env['QWEN_HOME'] = '/tmp/canopy-lazy-test';
     expect(getTrustedFoldersPath()).toBe(
-      path.join('/tmp/qwen-lazy-test', 'trustedFolders.json'),
+      path.join('/tmp/canopy-lazy-test', 'trustedFolders.json'),
     );
   });
 });

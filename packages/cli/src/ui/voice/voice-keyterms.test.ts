@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,7 +37,7 @@ function makeSettings(
   return {
     isTrusted,
     workspace: {
-      path: path.join(workspaceDir, '.qwen', 'settings.json'),
+      path: path.join(workspaceDir, '.canopy', 'settings.json'),
       settings: { general: workspaceVoiceSettings },
     },
     system: { settings: { general: systemVoiceSettings } },
@@ -57,18 +57,18 @@ describe('buildVoiceKeyterms', () => {
 
   it('does not include project- or branch-derived terms (no metadata sent)', () => {
     const terms = buildVoiceKeyterms();
-    expect(terms).not.toContain('qwen-code');
+    expect(terms).not.toContain('canopy-code');
     expect(terms).not.toContain('mvp');
   });
 
   describe('custom keyterms file', () => {
     let workspaceDir: string;
-    let qwenDir: string;
+    let canopyDir: string;
 
     beforeEach(() => {
       workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'voice-keyterms-'));
-      qwenDir = path.join(workspaceDir, '.qwen');
-      fs.mkdirSync(qwenDir, { recursive: true });
+      canopyDir = path.join(workspaceDir, '.canopy');
+      fs.mkdirSync(canopyDir, { recursive: true });
     });
 
     afterEach(() => {
@@ -76,9 +76,9 @@ describe('buildVoiceKeyterms', () => {
       fs.rmSync(workspaceDir, { recursive: true, force: true });
     });
 
-    it('auto-loads .qwen/voice-keyterms.txt and merges with the globals', () => {
+    it('auto-loads .canopy/voice-keyterms.txt and merges with the globals', () => {
       fs.writeFileSync(
-        path.join(qwenDir, 'voice-keyterms.txt'),
+        path.join(canopyDir, 'voice-keyterms.txt'),
         'Kubernetes\nGraphQL\n',
       );
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
@@ -89,7 +89,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('ignores blank lines and whole-line "#" comments', () => {
       fs.writeFileSync(
-        path.join(qwenDir, 'voice-keyterms.txt'),
+        path.join(canopyDir, 'voice-keyterms.txt'),
         '# project terms\n\n  Kubernetes # container orchestration  \nIssue #42\nPR #5817\nC#\nF#\n   # indented comment\n',
       );
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
@@ -109,7 +109,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('honors an explicit absolute keytermsFile over auto-discovery', () => {
       // Auto-discovery file would yield "Auto"; the explicit one wins.
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), 'Auto\n');
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), 'Auto\n');
       const explicit = path.join(workspaceDir, 'glossary.txt');
       fs.writeFileSync(explicit, 'Explicit\n');
       const terms = buildVoiceKeyterms(
@@ -136,7 +136,7 @@ describe('buildVoiceKeyterms', () => {
     });
 
     it('honors an explicit relative keytermsFile over auto-discovery', () => {
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), 'Auto\n');
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), 'Auto\n');
       fs.writeFileSync(path.join(workspaceDir, 'rel.txt'), 'RelativeWins\n');
       const terms = buildVoiceKeyterms(
         makeSettings(workspaceDir, { keytermsFile: 'rel.txt' }),
@@ -242,7 +242,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('dedupes case-insensitively and keeps the global casing', () => {
       fs.writeFileSync(
-        path.join(qwenDir, 'voice-keyterms.txt'),
+        path.join(canopyDir, 'voice-keyterms.txt'),
         'typescript\nKubernetes\n',
       );
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
@@ -265,7 +265,7 @@ describe('buildVoiceKeyterms', () => {
       const many = Array.from({ length: 1000 }, (_, i) => `term${i}`).join(
         '\n',
       );
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), many);
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), many);
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       expect(terms).toHaveLength(200);
       expect(terms.join(' ').length).toBeLessThanOrEqual(2000);
@@ -278,7 +278,7 @@ describe('buildVoiceKeyterms', () => {
         { length: 40 },
         (_, i) => `t${i}_${'x'.repeat(76)}`,
       ).join('\n');
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), long);
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), long);
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       const userTerms = terms.filter((term) => term.startsWith('t'));
       expect(terms.join(' ').length).toBeLessThanOrEqual(2000);
@@ -291,7 +291,7 @@ describe('buildVoiceKeyterms', () => {
         { length: 80 },
         (_, i) => `术语${i}_${'测'.repeat(10)}`,
       ).join('\n');
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), cjkTerms);
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), cjkTerms);
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       const joined = terms.join(' ');
       expect(Buffer.byteLength(joined, 'utf8')).toBeLessThanOrEqual(2000);
@@ -301,7 +301,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('skips over a term that exceeds the remaining byte budget', () => {
       fs.writeFileSync(
-        path.join(qwenDir, 'voice-keyterms.txt'),
+        path.join(canopyDir, 'voice-keyterms.txt'),
         `${'x'.repeat(2200)}\nShortTerm\n`,
       );
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
@@ -311,7 +311,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('does not read a keyterms file in an untrusted workspace', () => {
       fs.writeFileSync(
-        path.join(qwenDir, 'voice-keyterms.txt'),
+        path.join(canopyDir, 'voice-keyterms.txt'),
         'ShouldNotLoad\n',
       );
       const terms = buildVoiceKeyterms(
@@ -324,7 +324,7 @@ describe('buildVoiceKeyterms', () => {
     it('does not follow a symlinked keyterms file (no secret exfiltration)', () => {
       const secret = path.join(workspaceDir, 'secret.txt');
       fs.writeFileSync(secret, 'SECRETKEYMATERIAL\n');
-      fs.symlinkSync(secret, path.join(qwenDir, 'voice-keyterms.txt'));
+      fs.symlinkSync(secret, path.join(canopyDir, 'voice-keyterms.txt'));
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       expect(terms).not.toContain('SECRETKEYMATERIAL');
       expect(terms).toContain('TypeScript'); // globals only
@@ -333,7 +333,7 @@ describe('buildVoiceKeyterms', () => {
     it('does not read a hard-linked keyterms file', () => {
       const secret = path.join(workspaceDir, 'secret.txt');
       fs.writeFileSync(secret, 'HardLinkSecret\n');
-      fs.linkSync(secret, path.join(qwenDir, 'voice-keyterms.txt'));
+      fs.linkSync(secret, path.join(canopyDir, 'voice-keyterms.txt'));
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       expect(terms).not.toContain('HardLinkSecret');
       expect(terms).toContain('TypeScript'); // globals only
@@ -351,16 +351,16 @@ describe('buildVoiceKeyterms', () => {
       expect(terms).toContain('TypeScript'); // globals only
     });
 
-    it('does not load the default file through a symlinked .qwen directory', () => {
+    it('does not load the default file through a symlinked .canopy directory', () => {
       const outsideDir = fs.mkdtempSync(
         path.join(os.tmpdir(), 'voice-keyterms-outside-'),
       );
-      fs.rmSync(qwenDir, { recursive: true, force: true });
+      fs.rmSync(canopyDir, { recursive: true, force: true });
       fs.writeFileSync(
         path.join(outsideDir, 'voice-keyterms.txt'),
         'SECRETKEYMATERIAL\n',
       );
-      fs.symlinkSync(outsideDir, qwenDir);
+      fs.symlinkSync(outsideDir, canopyDir);
       try {
         const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
         expect(terms).not.toContain('SECRETKEYMATERIAL');
@@ -402,7 +402,7 @@ describe('buildVoiceKeyterms', () => {
 
     it('ignores a keyterms file larger than the size cap', () => {
       const huge = `HugeTermMarker\n${'x\n'.repeat(40 * 1024)}`; // > 64 KB
-      fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), huge);
+      fs.writeFileSync(path.join(canopyDir, 'voice-keyterms.txt'), huge);
       const terms = buildVoiceKeyterms(makeSettings(workspaceDir));
       expect(terms).not.toContain('HugeTermMarker');
       expect(terms).toContain('TypeScript'); // globals only

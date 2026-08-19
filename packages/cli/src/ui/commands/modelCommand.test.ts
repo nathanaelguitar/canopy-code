@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   AuthType,
   type ContentGeneratorConfig,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 
 // Helper function to create a mock config
@@ -55,7 +55,7 @@ describe('modelCommand', () => {
       getAvailableModels: vi.fn().mockReturnValue([
         {
           id: 'current-chat-model',
-          authType: AuthType.QWEN_OAUTH,
+          authType: AuthType.CANOPY_OAUTH,
         },
       ]),
       getAllConfiguredModels: vi.fn().mockReturnValue([
@@ -151,10 +151,10 @@ describe('modelCommand', () => {
     });
   });
 
-  it('should return dialog action for QWEN_OAUTH auth type', async () => {
+  it('should return dialog action for CANOPY_OAUTH auth type', async () => {
     const mockConfig = createMockConfig({
       model: 'test-model',
-      authType: AuthType.QWEN_OAUTH,
+      authType: AuthType.CANOPY_OAUTH,
     });
     mockContext.services.config = mockConfig as Config;
 
@@ -221,11 +221,11 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           getAvailableModelsForAuthType: vi
             .fn()
-            .mockReturnValue([{ id: 'qwen-max', label: 'Qwen Max' }]),
+            .mockReturnValue([{ id: 'qwen-max', label: 'Canopy Max' }]),
           switchModel,
         },
         settings: createMockSettings(setValue),
@@ -235,7 +235,7 @@ describe('modelCommand', () => {
     const result = await modelCommand.action!(mockContext, 'qwen-max');
 
     expect(switchModel).toHaveBeenCalledWith(
-      AuthType.QWEN_OAUTH,
+      AuthType.CANOPY_OAUTH,
       'qwen-max',
       undefined,
     );
@@ -272,11 +272,11 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           getAvailableModelsForAuthType: vi
             .fn()
-            .mockReturnValue([{ id: 'qwen-max', label: 'Qwen Max' }]),
+            .mockReturnValue([{ id: 'qwen-max', label: 'Canopy Max' }]),
           switchModel,
         },
         settings: createMockSettings(setValue),
@@ -310,7 +310,7 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           switchModel,
           getAvailableModelsForAuthType: vi.fn().mockReturnValue([]),
@@ -340,7 +340,7 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           switchModel,
           getAvailableModelsForAuthType: vi
@@ -464,12 +464,12 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           switchModel,
           getAvailableModelsForAuthType: vi
             .fn()
-            .mockReturnValue([{ id: 'qwen-max', label: 'Qwen Max' }]),
+            .mockReturnValue([{ id: 'qwen-max', label: 'Canopy Max' }]),
         },
         settings: createMockSettings(vi.fn()),
       },
@@ -497,7 +497,7 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           switchModel,
           getAvailableModelsForAuthType: vi.fn().mockReturnValue([]),
@@ -514,8 +514,8 @@ describe('modelCommand', () => {
       type: 'message',
       messageType: 'error',
       content:
-        "Model 'missing-model' is not available for auth type 'qwen-oauth'.\n" +
-        "No models are configured for auth type 'qwen-oauth'.\n" +
+        "Model 'missing-model' is not available for auth type 'canopy-oauth'.\n" +
+        "No models are configured for auth type 'canopy-oauth'.\n" +
         'Configure models in settings.modelProviders and ensure the required environment variables are set. In interactive mode, run /auth to configure or switch providers, or run /model without arguments to choose from configured models.',
     });
   });
@@ -534,12 +534,12 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
           switchModel,
           getAvailableModelsForAuthType: vi
             .fn()
-            .mockReturnValue([{ id: 'qwen-max', label: 'Qwen Max' }]),
+            .mockReturnValue([{ id: 'qwen-max', label: 'Canopy Max' }]),
         },
         settings: createMockSettings(setValue),
       },
@@ -550,7 +550,7 @@ describe('modelCommand', () => {
     );
 
     expect(switchModel).toHaveBeenCalledWith(
-      AuthType.QWEN_OAUTH,
+      AuthType.CANOPY_OAUTH,
       'qwen-max',
       undefined,
     );
@@ -650,9 +650,9 @@ describe('modelCommand', () => {
         config: {
           getContentGeneratorConfig: vi.fn().mockReturnValue({
             model: 'qwen-plus',
-            authType: AuthType.QWEN_OAUTH,
+            authType: AuthType.CANOPY_OAUTH,
           }),
-          getAuthType: vi.fn().mockReturnValue(AuthType.QWEN_OAUTH),
+          getAuthType: vi.fn().mockReturnValue(AuthType.CANOPY_OAUTH),
           getAvailableModelsForAuthType: vi
             .fn()
             .mockReturnValue([{ id: 'gpt-4', label: 'GPT-4' }]),
@@ -808,7 +808,7 @@ describe('modelCommand', () => {
           getAllConfiguredModels: vi.fn().mockReturnValue([
             {
               id: 'qwen-turbo',
-              label: 'Qwen Turbo',
+              label: 'Canopy Turbo',
               authType: AuthType.USE_OPENAI,
             },
           ]),
@@ -1423,7 +1423,7 @@ describe('modelCommand', () => {
           getAllConfiguredModels: vi.fn().mockReturnValue([
             {
               id: 'qwen-image-2.0',
-              label: 'Qwen Image 2.0',
+              label: 'Canopy Image 2.0',
               authType: AuthType.USE_OPENAI,
               baseUrl,
               registryBaseUrl: baseUrl,
@@ -1469,7 +1469,7 @@ describe('modelCommand', () => {
           getAllConfiguredModels: vi.fn().mockReturnValue([
             {
               id: 'qwen-plus',
-              label: 'Qwen Plus',
+              label: 'Canopy Plus',
               authType: AuthType.USE_OPENAI,
             },
           ]),
@@ -2071,7 +2071,7 @@ describe('modelCommand', () => {
           config: {
             getContentGeneratorConfig: vi.fn().mockReturnValue({
               model: 'qwen-max',
-              authType: AuthType.QWEN_OAUTH,
+              authType: AuthType.CANOPY_OAUTH,
             }),
             getModel: vi.fn().mockReturnValue('qwen-max'),
           },
@@ -2096,7 +2096,7 @@ describe('modelCommand', () => {
           config: {
             getContentGeneratorConfig: vi.fn().mockReturnValue({
               model: 'qwen-max',
-              authType: AuthType.QWEN_OAUTH,
+              authType: AuthType.CANOPY_OAUTH,
             }),
             getModel: vi.fn().mockReturnValue('qwen-max'),
           },

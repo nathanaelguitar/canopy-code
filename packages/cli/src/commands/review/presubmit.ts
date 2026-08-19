@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // Pre-submission checks for /review Step 7. Runs three deterministic
 // gh-API queries and emits a single JSON report describing self-PR status,
-// CI / build status, existing Qwen Code comment classification, and the
+// CI / build status, existing Canopy Code comment classification, and the
 // downgrade decisions the LLM should apply when constructing the review
 // event.
 
@@ -455,7 +455,7 @@ export function classifyCi(checkRuns: CheckRun[], statuses: CommitStatus[]) {
 }
 
 function classifyExistingComments(
-  qwenComments: RawComment[],
+  canopyComments: RawComment[],
   repliedToIds: Set<number>,
   newFindings: FindingAnchor[],
   commitSha: string,
@@ -482,7 +482,7 @@ function classifyExistingComments(
     carriedIdsByLocation.set(key, ids);
   }
 
-  // Own-account Qwen comments per location at the current SHA. A count of
+  // Own-account Canopy comments per location at the current SHA. A count of
   // exactly one makes an id-less original unambiguous as a re-post target
   // (#9212 review). Replied-to comments COUNT: a replied-to original is
   // still an original, and leaving it out of the ambiguity count handed the
@@ -498,7 +498,7 @@ function classifyExistingComments(
   // against a future move of the read site out of the gate.
   const ownOverlapCountByLocation = new Map<string, number>();
   if (currentUserLogin !== '') {
-    for (const c of qwenComments) {
+    for (const c of canopyComments) {
       if (
         c.commit_id === commitSha &&
         (c.user?.login ?? '').toLowerCase() === currentUserLogin.toLowerCase()
@@ -512,7 +512,7 @@ function classifyExistingComments(
     }
   }
 
-  for (const c of qwenComments) {
+  for (const c of canopyComments) {
     const summary: CommentSummary = {
       id: c.id,
       path: c.path ?? '',
@@ -696,7 +696,7 @@ async function runPresubmit(args: PresubmitArgs): Promise<void> {
   ) as CommitStatus[];
   const ciStatus = classifyCi(checkRuns, statuses);
 
-  // --- Existing Qwen Code comments --------------------------------------
+  // --- Existing Canopy Code comments --------------------------------------
   // Paginate: PRs can have >30 inline comments and the latest pages carry
   // the most recent (and most likely to overlap with new findings).
   const allComments = ghApiAll(
@@ -716,9 +716,9 @@ async function runPresubmit(args: PresubmitArgs): Promise<void> {
   // finding. Replies stay excluded either way. Attribution-off posts from
   // OTHER accounts still escape detection — no footer, no authorship signal
   // — and the setting's description says so.
-  const qwenComments = allComments.filter(
+  const canopyComments = allComments.filter(
     (c) =>
-      /via Qwen Code \/review/.test(c.body ?? '') ||
+      /via Canopy Code \/review/.test(c.body ?? '') ||
       (!c.in_reply_to_id &&
         me !== '' &&
         (c.user?.login ?? '').toLowerCase() === me.toLowerCase() &&
@@ -731,7 +731,7 @@ async function runPresubmit(args: PresubmitArgs): Promise<void> {
   }
 
   const buckets = classifyExistingComments(
-    qwenComments,
+    canopyComments,
     repliedToIds,
     newFindings ?? [],
     commitSha,
@@ -777,7 +777,7 @@ async function runPresubmit(args: PresubmitArgs): Promise<void> {
     isSelfPr,
     ciStatus,
     existingComments: {
-      total: qwenComments.length,
+      total: canopyComments.length,
       byBucket: {
         stale: buckets.stale.length,
         resolved: buckets.resolved.length,

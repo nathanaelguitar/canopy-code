@@ -24,9 +24,9 @@ import { DEFAULT_FILE_FILTERING_OPTIONS } from '../config/constants.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 import type { PermissionDecision } from '../permissions/types.js';
 import {
-  getQwenIgnoreFileNames,
-  QwenIgnoreParser,
-} from '../utils/qwenIgnoreParser.js';
+  getCanopyIgnoreFileNames,
+  CanopyIgnoreParser,
+} from '../utils/canopy-ignore-parser.js';
 import { recordGrepResultFileReads } from './grepReadTracking.js';
 import { logRipgrepRuntimeRecovery } from '../telemetry/loggers.js';
 import { RipgrepRuntimeRecoveryEvent } from '../telemetry/types.js';
@@ -85,17 +85,20 @@ function getRipgrepJsonPath(match: RipgrepJsonMatch): string | undefined {
  * each invocation pays 2-3 sync syscalls per searchPath. Bounded so a
  * pathologically long session can't grow without limit.
  *
- * `qwenIgnore`: dir → string[] (cached supported ignore-file paths)
+ * `canopyIgnore`: dir → string[] (cached supported ignore-file paths)
  *
  * **Known staleness window:** an ignore file created mid-session will not be
  * picked up until the entry rotates out of the FIFO (256 entries).
  */
-interface QwenIgnoreFileForRipgrep {
+interface CanopyIgnoreFileForRipgrep {
   ignoreFileName: string;
   ignoreFilePath: string;
 }
 
-const qwenIgnoreCache = new Map<string, readonly QwenIgnoreFileForRipgrep[]>();
+const canopyIgnoreCache = new Map<
+  string,
+  readonly CanopyIgnoreFileForRipgrep[]
+>();
 const RIPGREP_CACHE_MAX = 256;
 function trimCache<K, V>(m: Map<K, V>): void {
   if (m.size <= RIPGREP_CACHE_MAX) return;
@@ -131,15 +134,15 @@ function toAbsoluteResultPath(
   return absolutePath;
 }
 
-function isQwenIgnoreFileName(ignoreFileName: string): boolean {
-  return ignoreFileName === '.qwenignore';
+function isCanopyIgnoreFileName(ignoreFileName: string): boolean {
+  return ignoreFileName === '.canopyignore';
 }
 
 /**
  * Test-only: clear ripGrep's module-level discovery caches between cases.
  */
 export function _resetRipGrepCachesForTest(): void {
-  qwenIgnoreCache.clear();
+  canopyIgnoreCache.clear();
 }
 
 /**
@@ -313,8 +316,8 @@ class GrepToolInvocation extends BaseToolInvocation<
         });
 
       const filteringOptions = this.getFileFilteringOptions();
-      if (filteringOptions.respectQwenIgnore) {
-        allLines = this.filterQwenIgnoredMatches(
+      if (filteringOptions.respectCanopyIgnore) {
+        allLines = this.filterCanopyIgnoredMatches(
           allLines,
           searchPaths,
           resolvedPathCache,
@@ -452,13 +455,13 @@ class GrepToolInvocation extends BaseToolInvocation<
     }
   }
 
-  private filterQwenIgnoredMatches(
+  private filterCanopyIgnoredMatches(
     lines: RipgrepMatchLine[],
     searchPaths: string[],
     resolvedPathCache: Map<string, string>,
     customIgnoreFiles?: string[],
   ): RipgrepMatchLine[] {
-    const parsers = new Map<string, QwenIgnoreParser>();
+    const parsers = new Map<string, CanopyIgnoreParser>();
 
     return lines.filter((line) => {
       const absolutePath = toAbsoluteResultPath(
@@ -472,7 +475,7 @@ class GrepToolInvocation extends BaseToolInvocation<
       }
       let parser = parsers.get(ignoreRoot);
       if (parser === undefined) {
-        parser = new QwenIgnoreParser(ignoreRoot, customIgnoreFiles);
+        parser = new CanopyIgnoreParser(ignoreRoot, customIgnoreFiles);
         parsers.set(ignoreRoot, parser);
       }
 
@@ -504,13 +507,13 @@ class GrepToolInvocation extends BaseToolInvocation<
       rgArgs.push('--no-ignore-vcs');
     }
 
-    if (filteringOptions.respectQwenIgnore) {
+    if (filteringOptions.respectCanopyIgnore) {
       // Load ignore files from each workspace directory, not just the primary one.
       const seenIgnoreFiles = new Set<string>();
-      // Pass .qwenignore last so custom ignore negations cannot override it.
-      const nonQwenIgnorePaths: string[] = [];
-      const qwenIgnorePathsForRipgrep: string[] = [];
-      const ignoreFileNames = getQwenIgnoreFileNames(
+      // Pass .canopyignore last so custom ignore negations cannot override it.
+      const nonCanopyIgnorePaths: string[] = [];
+      const canopyIgnorePathsForRipgrep: string[] = [];
+      const ignoreFileNames = getCanopyIgnoreFileNames(
         filteringOptions.customIgnoreFiles,
       );
       for (const searchPath of paths) {
@@ -519,33 +522,33 @@ class GrepToolInvocation extends BaseToolInvocation<
           continue;
         }
         const cacheKey = [ignoreRoot, ...ignoreFileNames].join('\0');
-        let qwenIgnoreFiles = qwenIgnoreCache.get(cacheKey);
-        if (qwenIgnoreFiles === undefined) {
-          qwenIgnoreFiles = ignoreFileNames
+        let canopyIgnoreFiles = canopyIgnoreCache.get(cacheKey);
+        if (canopyIgnoreFiles === undefined) {
+          canopyIgnoreFiles = ignoreFileNames
             .map((ignoreFileName) => ({
               ignoreFileName,
               ignoreFilePath: path.join(ignoreRoot, ignoreFileName),
             }))
             .filter(({ ignoreFilePath }) => fs.existsSync(ignoreFilePath));
-          qwenIgnoreCache.set(cacheKey, qwenIgnoreFiles);
-          trimCache(qwenIgnoreCache);
+          canopyIgnoreCache.set(cacheKey, canopyIgnoreFiles);
+          trimCache(canopyIgnoreCache);
         }
-        for (const { ignoreFileName, ignoreFilePath } of qwenIgnoreFiles) {
+        for (const { ignoreFileName, ignoreFilePath } of canopyIgnoreFiles) {
           if (!seenIgnoreFiles.has(ignoreFilePath)) {
-            if (isQwenIgnoreFileName(ignoreFileName)) {
-              qwenIgnorePathsForRipgrep.push(ignoreFilePath);
+            if (isCanopyIgnoreFileName(ignoreFileName)) {
+              canopyIgnorePathsForRipgrep.push(ignoreFilePath);
             } else {
-              nonQwenIgnorePaths.push(ignoreFilePath);
+              nonCanopyIgnorePaths.push(ignoreFilePath);
             }
             seenIgnoreFiles.add(ignoreFilePath);
           }
         }
       }
-      for (const qwenIgnorePath of [
-        ...nonQwenIgnorePaths,
-        ...qwenIgnorePathsForRipgrep,
+      for (const canopyIgnorePath of [
+        ...nonCanopyIgnorePaths,
+        ...canopyIgnorePathsForRipgrep,
       ]) {
-        rgArgs.push('--ignore-file', qwenIgnorePath);
+        rgArgs.push('--ignore-file', canopyIgnorePath);
       }
     }
 
@@ -638,9 +641,9 @@ class GrepToolInvocation extends BaseToolInvocation<
       respectGitIgnore:
         options?.respectGitIgnore ??
         DEFAULT_FILE_FILTERING_OPTIONS.respectGitIgnore,
-      respectQwenIgnore:
-        options?.respectQwenIgnore ??
-        DEFAULT_FILE_FILTERING_OPTIONS.respectQwenIgnore,
+      respectCanopyIgnore:
+        options?.respectCanopyIgnore ??
+        DEFAULT_FILE_FILTERING_OPTIONS.respectCanopyIgnore,
       customIgnoreFiles:
         options?.customIgnoreFiles ??
         DEFAULT_FILE_FILTERING_OPTIONS.customIgnoreFiles,

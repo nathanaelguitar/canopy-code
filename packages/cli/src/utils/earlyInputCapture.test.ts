@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ describe('earlyInputCapture', () => {
       configurable: true,
     });
 
-    delete process.env['QWEN_CODE_DISABLE_EARLY_CAPTURE'];
+    delete process.env['CANOPY_CODE_DISABLE_EARLY_CAPTURE'];
   });
 
   afterEach(() => {
@@ -385,8 +385,8 @@ describe('earlyInputCapture', () => {
       expect(input2.length).toBe(0);
     });
 
-    it('should skip when QWEN_CODE_DISABLE_EARLY_CAPTURE is set', () => {
-      process.env['QWEN_CODE_DISABLE_EARLY_CAPTURE'] = '1';
+    it('should skip when CANOPY_CODE_DISABLE_EARLY_CAPTURE is set', () => {
+      process.env['CANOPY_CODE_DISABLE_EARLY_CAPTURE'] = '1';
       startEarlyInputCapture();
       mockStdin.write(Buffer.from('a'));
       stopEarlyInputCapture();

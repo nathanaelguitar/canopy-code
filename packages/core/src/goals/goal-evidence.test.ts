@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -751,9 +751,9 @@ describe('Goal evidence catalog', () => {
     });
     user.message?.parts?.push({
       text: [
-        '<qwen:user-prompt-submit-context>',
+        '<canopy:user-prompt-submit-context>',
         'hook-only context',
-        '</qwen:user-prompt-submit-context>',
+        '</canopy:user-prompt-submit-context>',
       ].join('\n'),
     });
     user.systemPayload = {

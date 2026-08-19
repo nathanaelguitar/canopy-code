@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { GenerateContentResponse } from '@google/genai';
-import { setToolCallPreparations } from '@qwen-code/qwen-code-core';
+import { setToolCallPreparations } from '@canopy-code/canopy-code-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolCallEmitter } from './emitters/tool-call-emitter.js';
 import { ToolCallPreparationTracker } from './tool-call-preparation-tracker.js';

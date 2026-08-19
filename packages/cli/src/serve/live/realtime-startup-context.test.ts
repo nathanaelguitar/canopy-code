@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ChatRecord } from '@qwen-code/qwen-code-core';
+import type { ChatRecord } from '@canopy-code/canopy-code-core';
 import type {
   WorkspaceRegistry,
   WorkspaceRuntime,
@@ -24,9 +24,9 @@ const sessionServiceConstructions = vi.hoisted(
   () => [] as Array<{ cwd: string; runtimeBaseDir?: string }>,
 );
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     SessionService: class {
@@ -58,7 +58,7 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
 const temporaryDirectories: string[] = [];
 
 function temporaryDirectory(): string {
-  const directory = mkdtempSync(join(tmpdir(), 'qwen-live-context-'));
+  const directory = mkdtempSync(join(tmpdir(), 'canopy-live-context-'));
   temporaryDirectories.push(directory);
   return directory;
 }

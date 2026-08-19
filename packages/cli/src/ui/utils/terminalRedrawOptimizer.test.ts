@@ -115,7 +115,7 @@ describe('installTerminalRedrawOptimizer', () => {
   });
 
   it('can be disabled for terminal compatibility fallback', () => {
-    vi.stubEnv('QWEN_CODE_LEGACY_ERASE_LINES', '1');
+    vi.stubEnv('CANOPY_CODE_LEGACY_ERASE_LINES', '1');
     const write = vi.fn(() => true);
     const stdout = { write } as unknown as NodeJS.WriteStream;
     const restore = installTerminalRedrawOptimizer(stdout);

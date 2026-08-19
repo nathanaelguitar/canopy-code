@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 
 const mocks = vi.hoisted(() => ({
@@ -57,14 +57,14 @@ function makeSettings(): LoadedSettings {
 }
 
 describe('non-interactive OpenAI log housekeeping', () => {
-  let qwenHome: string;
+  let canopyHome: string;
 
   beforeEach(async () => {
     await _resetNonInteractiveForTesting();
-    qwenHome = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-noninteractive-housekeeping-'),
+    canopyHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-noninteractive-housekeeping-'),
     );
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    vi.stubEnv('QWEN_HOME', canopyHome);
     mocks.cleanupOldOpenAILogs.mockReset();
     mocks.runThrottledOnce.mockReset();
     mocks.cleanupOldOpenAILogs.mockResolvedValue({
@@ -84,11 +84,11 @@ describe('non-interactive OpenAI log housekeeping', () => {
     vi.useRealTimers();
     await _resetNonInteractiveForTesting();
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
   });
 
   it('deduplicates the same resolved log directory', async () => {
-    const logDir = path.join(qwenHome, 'logs');
+    const logDir = path.join(canopyHome, 'logs');
 
     startNonInteractiveOpenAILogHousekeeping(
       makeConfig(logDir),
@@ -107,8 +107,8 @@ describe('non-interactive OpenAI log housekeeping', () => {
   });
 
   it('serializes different directories in FIFO order', async () => {
-    const firstDir = path.join(qwenHome, 'first');
-    const secondDir = path.join(qwenHome, 'second');
+    const firstDir = path.join(canopyHome, 'first');
+    const secondDir = path.join(canopyHome, 'second');
     let releaseFirst: ((value: unknown) => void) | undefined;
     mocks.cleanupOldOpenAILogs.mockImplementation(({ logDir, signal }) => {
       if (logDir === firstDir) {
@@ -144,8 +144,8 @@ describe('non-interactive OpenAI log housekeeping', () => {
   });
 
   it('uses ModelsConfig as the fallback for the CLI logging directory', async () => {
-    const modelLogDir = path.join(qwenHome, 'from-models-config');
-    const settingsLogDir = path.join(qwenHome, 'from-settings');
+    const modelLogDir = path.join(canopyHome, 'from-models-config');
+    const settingsLogDir = path.join(canopyHome, 'from-settings');
     const config = {
       getContentGeneratorConfig: () => undefined,
       getModelsConfig: () => ({
@@ -171,10 +171,10 @@ describe('non-interactive OpenAI log housekeeping', () => {
 
   it('prefers the initialized content-generator logging directory', async () => {
     const contentGeneratorLogDir = path.join(
-      qwenHome,
+      canopyHome,
       'from-content-generator-config',
     );
-    const modelLogDir = path.join(qwenHome, 'from-models-config');
+    const modelLogDir = path.join(canopyHome, 'from-models-config');
     const config = {
       getContentGeneratorConfig: () => ({
         openAILoggingDir: contentGeneratorLogDir,
@@ -200,7 +200,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
     mocks.runThrottledOnce.mockResolvedValue({ status: 'locked' });
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() =>
@@ -223,7 +223,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
       .mockResolvedValue({ status: 'completed' });
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() =>
@@ -248,7 +248,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
         .mockResolvedValue({ status: 'completed' });
 
       startNonInteractiveOpenAILogHousekeeping(
-        makeConfig(path.join(qwenHome, 'logs')),
+        makeConfig(path.join(canopyHome, 'logs')),
         makeSettings(),
       );
       await vi.waitFor(() =>
@@ -269,7 +269,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
       .mockResolvedValue({ status: 'completed' });
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() =>
@@ -287,7 +287,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
     mocks.runThrottledOnce.mockResolvedValue({ status: 'completed' });
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() =>
@@ -313,12 +313,12 @@ describe('non-interactive OpenAI log housekeeping', () => {
     );
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() => expect(observedSignal).toBeDefined());
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'queued')),
+      makeConfig(path.join(canopyHome, 'queued')),
       makeSettings(),
     );
 
@@ -328,7 +328,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
     expect(mocks.cleanupOldOpenAILogs).toHaveBeenCalledOnce();
     mocks.runThrottledOnce.mockClear();
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'after-stop')),
+      makeConfig(path.join(canopyHome, 'after-stop')),
       makeSettings(),
     );
     await Promise.resolve();
@@ -346,7 +346,7 @@ describe('non-interactive OpenAI log housekeeping', () => {
     );
 
     startNonInteractiveOpenAILogHousekeeping(
-      makeConfig(path.join(qwenHome, 'logs')),
+      makeConfig(path.join(canopyHome, 'logs')),
       makeSettings(),
     );
     await vi.waitFor(() => expect(releaseWorker).toBeDefined());

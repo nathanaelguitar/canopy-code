@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -232,7 +232,7 @@ describe('selectRelevantAutoMemoryDocumentsByModel', () => {
     const dualScopeDocs: ScannedAutoMemoryDocument[] = [
       {
         type: 'user',
-        filePath: '/qwen/projects/proj/memory/user/role.md',
+        filePath: '/canopy/projects/proj/memory/user/role.md',
         relativePath: 'user/role.md',
         filename: 'role.md',
         title: 'Project User',
@@ -242,7 +242,7 @@ describe('selectRelevantAutoMemoryDocumentsByModel', () => {
       },
       {
         type: 'user',
-        filePath: '/qwen/memories/user/role.md',
+        filePath: '/canopy/memories/user/role.md',
         relativePath: 'user/role.md',
         filename: 'role.md',
         title: 'Cross-Project User',
@@ -253,8 +253,8 @@ describe('selectRelevantAutoMemoryDocumentsByModel', () => {
     ];
     vi.mocked(runSideQuery).mockResolvedValue({
       selected_memories: [
-        '/qwen/projects/proj/memory/user/role.md',
-        '/qwen/memories/user/role.md',
+        '/canopy/projects/proj/memory/user/role.md',
+        '/canopy/memories/user/role.md',
       ],
     });
 
@@ -268,8 +268,8 @@ describe('selectRelevantAutoMemoryDocumentsByModel', () => {
 
     expect(result).toHaveLength(2);
     expect(result.map((d) => d.filePath)).toEqual([
-      '/qwen/projects/proj/memory/user/role.md',
-      '/qwen/memories/user/role.md',
+      '/canopy/projects/proj/memory/user/role.md',
+      '/canopy/memories/user/role.md',
     ]);
   });
 });

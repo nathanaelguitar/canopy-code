@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -71,11 +71,11 @@ describe('event loop lag metrics', () => {
     }));
 
     expect(mockCreateObservableGaugeFn).toHaveBeenCalledWith(
-      'qwen-code.daemon.event_loop.lag',
+      'canopy-code.daemon.event_loop.lag',
       expect.objectContaining({ unit: 'ms' }),
     );
     expect(mockCreateObservableGaugeFn).toHaveBeenCalledWith(
-      'qwen-code.acp.event_loop.lag',
+      'canopy-code.acp.event_loop.lag',
       expect.objectContaining({ unit: 'ms' }),
     );
   });

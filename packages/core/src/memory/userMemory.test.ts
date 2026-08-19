@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,8 +37,8 @@ describe('user-level auto-memory', () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'user-memory-'));
     projectRoot = path.join(tempDir, 'project');
     await fs.mkdir(projectRoot, { recursive: true });
-    previousBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = tempDir;
+    previousBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = tempDir;
     // Defensive: paths.ts memoizes getAutoMemoryRoot by projectRoot.
     // Each test uses a fresh mkdtemp dir so collisions are impossible
     // today, but clearing keeps the suite robust if a future test reuses
@@ -48,9 +48,9 @@ describe('user-level auto-memory', () => {
 
   afterEach(async () => {
     if (previousBaseDir === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = previousBaseDir;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = previousBaseDir;
     }
     await fs.rm(tempDir, {
       recursive: true,
@@ -61,7 +61,7 @@ describe('user-level auto-memory', () => {
   });
 
   describe('paths', () => {
-    it('places user memory at {QWEN_CODE_MEMORY_BASE_DIR}/memories', () => {
+    it('places user memory at {CANOPY_CODE_MEMORY_BASE_DIR}/memories', () => {
       expect(getUserAutoMemoryRoot()).toBe(
         path.join(tempDir, USER_AUTO_MEMORY_DIRNAME),
       );
@@ -236,7 +236,7 @@ describe('user-level auto-memory', () => {
   describe('system prompt rendering', () => {
     it('renders both index sections when a user section is provided', () => {
       const prompt = buildManagedAutoMemoryPrompt(
-        '/tmp/project/.qwen/memory',
+        '/tmp/project/.canopy/memory',
         '- [Release](project/release.md) — Release Friday.',
         {
           memoryDir: '/tmp/global/memories',
@@ -247,9 +247,9 @@ describe('user-level auto-memory', () => {
       expect(prompt).toContain('USER memory');
       expect(prompt).toContain('PROJECT memory');
       expect(prompt).toContain('/tmp/global/memories');
-      expect(prompt).toContain('/tmp/project/.qwen/memory');
+      expect(prompt).toContain('/tmp/project/.canopy/memory');
       expect(prompt).toContain('## /tmp/global/memories/MEMORY.md');
-      expect(prompt).toContain('## /tmp/project/.qwen/memory/MEMORY.md');
+      expect(prompt).toContain('## /tmp/project/.canopy/memory/MEMORY.md');
       expect(prompt).toContain(
         '- [Role](user/role.md) — User is a Go engineer.',
       );
@@ -267,7 +267,7 @@ describe('user-level auto-memory', () => {
 
     it('renders user section FIRST (background) then project section (more specific)', () => {
       const prompt = buildManagedAutoMemoryPrompt(
-        '/tmp/project/.qwen/memory',
+        '/tmp/project/.canopy/memory',
         '- [Release](project/release.md) — Release Friday.',
         {
           memoryDir: '/tmp/global/memories',
@@ -277,7 +277,7 @@ describe('user-level auto-memory', () => {
 
       const userIdx = prompt.indexOf('## /tmp/global/memories/MEMORY.md');
       const projectIdx = prompt.indexOf(
-        '## /tmp/project/.qwen/memory/MEMORY.md',
+        '## /tmp/project/.canopy/memory/MEMORY.md',
       );
       expect(userIdx).toBeGreaterThan(-1);
       expect(projectIdx).toBeGreaterThan(-1);
@@ -286,19 +286,19 @@ describe('user-level auto-memory', () => {
 
     it('falls back to single-dir wording when no user section is provided', () => {
       const prompt = buildManagedAutoMemoryPrompt(
-        '/tmp/project/.qwen/memory',
+        '/tmp/project/.canopy/memory',
         '- [Release](project/release.md) — Release Friday.',
       );
 
       expect(prompt).toContain('persistent, file-based memory system');
       expect(prompt).not.toContain('USER memory');
       expect(prompt).not.toContain('PROJECT memory');
-      expect(prompt).toContain('## /tmp/project/.qwen/memory/MEMORY.md');
+      expect(prompt).toContain('## /tmp/project/.canopy/memory/MEMORY.md');
     });
 
     it('buildManagedAutoMemoryPrompt passes the user section through', () => {
       const result = buildManagedAutoMemoryPrompt(
-        '/tmp/project/.qwen/memory',
+        '/tmp/project/.canopy/memory',
         '- [Release](project/release.md) — Release Friday.',
         {
           memoryDir: '/tmp/global/memories',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -55,7 +55,7 @@ export function isDeepSeekHostname(
  * same input-format constraint, so the model-name fallback is
  * intentional. For decisions that depend on the wire shape DeepSeek's
  * own API exposes (e.g. `reasoning_effort`, `thinking`), use
- * `isDeepSeekHostname` instead — see https://github.com/QwenLM/qwen-code/issues/3613.
+ * `isDeepSeekHostname` instead — see https://github.com/QwenLM/canopy-code/issues/3613.
  */
 export function isDeepSeekProvider(
   contentGeneratorConfig: ContentGeneratorConfig,
@@ -166,7 +166,7 @@ function flattenContentParts(
 // DeepSeek's chat-completions endpoint accepts a flat `reasoning_effort`
 // body parameter (Possible values: high, max — see
 // https://api-docs.deepseek.com/zh-cn/api/create-chat-completion). The
-// standard qwen-code config shape is `reasoning: { effort, ... }` which gets
+// standard canopy-code config shape is `reasoning: { effort, ... }` which gets
 // passed through verbatim by the OpenAI pipeline. Translate to the flat
 // shape DeepSeek expects so user-configured effort levels actually take
 // effect; otherwise the nested `reasoning` object is ignored and the server

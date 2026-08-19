@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * @fileoverview P7-trigger: the `workflow` keyword trigger. When a user's
  * prompt mentions `workflow` (as a whole word), the turn is softly steered
  * toward the Workflow tool by prepending a system reminder. This is the
- * qwen-code analogue of upstream's keyword opt-in — deliberately keyed on the
+ * canopy-code analogue of upstream's keyword opt-in — deliberately keyed on the
  * plain word `workflow` (never any other marker).
  */
 

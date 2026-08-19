@@ -9,7 +9,7 @@ import * as fs from 'node:fs';
 import * as fsPromises from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { OpenAILogger } from '@qwen-code/qwen-code-core';
+import { OpenAILogger } from '@canopy-code/canopy-code-core';
 import {
   cleanupOldFileHistoryBackups,
   cleanupOldOpenAILogs,
@@ -76,20 +76,20 @@ describe('getCutoffDate', () => {
 });
 
 describe('cleanupOldFileHistoryBackups', () => {
-  let qwenHome: string;
+  let canopyHome: string;
   let fileHistoryRoot: string;
   let cutoff: Date;
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cleanup-test-'));
-    fileHistoryRoot = path.join(qwenHome, FILE_HISTORY_DIR);
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    canopyHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-cleanup-test-'));
+    fileHistoryRoot = path.join(canopyHome, FILE_HISTORY_DIR);
+    vi.stubEnv('QWEN_HOME', canopyHome);
     cutoff = new Date(Date.now() - 30 * MS_PER_DAY);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
   });
 
   it('returns zero result when root does not exist', async () => {
@@ -215,7 +215,7 @@ describe('cleanupOldSubagentTranscripts', () => {
 
   beforeEach(() => {
     projectDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-subagent-cleanup-'),
+      path.join(os.tmpdir(), 'canopy-subagent-cleanup-'),
     );
     subagentsRoot = path.join(projectDir, 'subagents');
     cutoff = new Date(Date.now() - 30 * MS_PER_DAY);
@@ -270,7 +270,7 @@ describe('cleanupOldOpenAILogs', () => {
   let cutoff: Date;
 
   beforeEach(() => {
-    logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-openai-logs-test-'));
+    logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-openai-logs-test-'));
     cutoff = new Date(Date.now() - 7 * MS_PER_DAY);
   });
 

@@ -49,9 +49,9 @@ async function initGitRepo(dir: string): Promise<void> {
     'git',
     [
       '-c',
-      'user.name=Qwen Test',
+      'user.name=Canopy Test',
       '-c',
-      'user.email=qwen-test@example.com',
+      'user.email=canopy-test@example.com',
       'commit',
       '--no-gpg-sign',
       '-m',
@@ -72,9 +72,9 @@ describe('crawler', () => {
     vi.restoreAllMocks();
   });
 
-  it('should use .qwenignore rules', async () => {
+  it('should use .canopyignore rules', async () => {
     tmpDir = await createTmpDir({
-      '.qwenignore': 'dist/',
+      '.canopyignore': 'dist/',
       dist: ['ignored.js'],
       src: ['not-ignored.js'],
     });
@@ -82,7 +82,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
 
@@ -98,16 +98,16 @@ describe('crawler', () => {
       expect.arrayContaining([
         '.',
         'src/',
-        '.qwenignore',
+        '.canopyignore',
         'src/not-ignored.js',
       ]),
     );
   });
 
-  it('should combine .gitignore and .qwenignore rules', async () => {
+  it('should combine .gitignore and .canopyignore rules', async () => {
     tmpDir = await createTmpDir({
       '.gitignore': 'dist/',
-      '.qwenignore': 'build/',
+      '.canopyignore': 'build/',
       dist: ['ignored-by-git.js'],
       build: ['ignored-by-gemini.js'],
       src: ['not-ignored.js'],
@@ -116,7 +116,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
 
@@ -132,7 +132,7 @@ describe('crawler', () => {
       expect.arrayContaining([
         '.',
         'src/',
-        '.qwenignore',
+        '.canopyignore',
         '.gitignore',
         'src/not-ignored.js',
       ]),
@@ -148,7 +148,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: ['logs'],
     });
 
@@ -180,7 +180,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -215,7 +215,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -255,7 +255,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -289,7 +289,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -321,7 +321,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
 
@@ -346,7 +346,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -372,7 +372,7 @@ describe('crawler', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
 
@@ -404,7 +404,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -446,7 +446,7 @@ describe('crawler', () => {
         loadIgnoreRules({
           projectRoot: tmpDir,
           useGitignore: true,
-          useQwenignore: false,
+          useCanopyignore: false,
           ignoreDirs: [],
         });
       const getOptions = (ignore: Ignore) => ({
@@ -480,7 +480,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -511,7 +511,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const getOptions = (maxDepth?: number) => ({
@@ -550,7 +550,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -579,7 +579,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -621,7 +621,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       return crawl({
@@ -692,7 +692,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -730,7 +730,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -768,7 +768,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: true,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -802,7 +802,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -831,7 +831,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -859,7 +859,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -904,9 +904,9 @@ describe('crawler', () => {
         'git',
         [
           '-c',
-          'user.name=Qwen Test',
+          'user.name=Canopy Test',
           '-c',
-          'user.email=qwen-test@example.com',
+          'user.email=canopy-test@example.com',
           'commit',
           '--no-gpg-sign',
           '-m',
@@ -918,7 +918,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: parentRepo,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -963,7 +963,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1005,7 +1005,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1031,7 +1031,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1058,7 +1058,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1099,7 +1099,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1146,7 +1146,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1180,7 +1180,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1218,7 +1218,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1250,7 +1250,7 @@ describe('crawler', () => {
       const withoutGitignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const withoutGitignoreResults = await crawl({
@@ -1267,7 +1267,7 @@ describe('crawler', () => {
       const withGitignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: true,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const withGitignoreResults = await crawl({
@@ -1291,7 +1291,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1336,7 +1336,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1380,7 +1380,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: true,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1425,7 +1425,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1482,7 +1482,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1535,7 +1535,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
 
@@ -1572,7 +1572,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1599,7 +1599,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1633,7 +1633,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1681,7 +1681,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1716,7 +1716,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {
@@ -1790,7 +1790,7 @@ describe('crawler', () => {
       const ignore = loadIgnoreRules({
         projectRoot: worktreeDir,
         useGitignore: false,
-        useQwenignore: false,
+        useCanopyignore: false,
         ignoreDirs: [],
       });
       const options = {

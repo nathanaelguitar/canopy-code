@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -92,7 +92,7 @@ function isDeepSeekAnthropicHostname(
  * anthropic-compatible endpoints (sglang/vllm). For decisions where a model-
  * name false positive is dangerous (e.g. `reasoning.effort: 'max'` clamping),
  * use `isDeepSeekAnthropicHostname` instead.
- * https://github.com/QwenLM/qwen-code/issues/3786
+ * https://github.com/QwenLM/canopy-code/issues/3786
  */
 function isDeepSeekAnthropicProvider(
   contentGeneratorConfig: ContentGeneratorConfig,
@@ -238,7 +238,7 @@ function resolveEffectiveBaseUrl(
  * when no baseURL is set). Used to gate IdeaLab-style proxy workarounds —
  * `Authorization: Bearer` auth and the `claude-cli` User-Agent — so that
  * users hitting `api.anthropic.com` directly keep the SDK-default
- * `x-api-key` auth and a truthful `QwenCode` User-Agent (avoids identity
+ * `x-api-key` auth and a truthful `CanopyCode` User-Agent (avoids identity
  * misattribution in Anthropic-side logs/quotas).
  */
 function isAnthropicNativeBaseUrl(
@@ -493,13 +493,13 @@ export class AnthropicContentGenerator implements ContentGenerator {
     // For non-Anthropic-native baseURLs (IdeaLab-style proxies), present as
     // `claude-cli` + `x-app: cli` to satisfy proxy Team rules that restrict
     // usage by client identity. For api.anthropic.com itself we keep the
-    // truthful QwenCode User-Agent so usage isn't misattributed to Claude
+    // truthful CanopyCode User-Agent so usage isn't misattributed to Claude
     // CLI in Anthropic's logs/quotas, and we don't ship the proxy-specific
     // `x-app` header. Predicate is computed once at construction and shared
     // with the auth-mode decision so the bundle stays internally consistent.
     const userAgent = useProxyIdentity
       ? `claude-cli/${version} (external, cli)`
-      : `QwenCode/${version} (${process.platform}; ${process.arch})`;
+      : `CanopyCode/${version} (${process.platform}; ${process.arch})`;
     const { customHeaders } = this.contentGeneratorConfig;
 
     const headers: Record<string, string> = {
@@ -587,8 +587,8 @@ export class AnthropicContentGenerator implements ContentGenerator {
    * OR `forceGlobalCacheScope` (opt-in for proxy providers that forward
    * the `prompt-caching-scope-2026-01-05` beta; see issue #6642).
    * Computed per request: `Config.handleModelChange()` hot-updates
-   * `enableCacheControl` in-place on the qwen-oauth path (without
-   * recreating the ContentGenerator); non-qwen-oauth providers refresh
+   * `enableCacheControl` in-place on the canopy-oauth path (without
+   * recreating the ContentGenerator); non-canopy-oauth providers refresh
    * via generator recreation, which captures `baseUrl` fresh at
    * construct time (not mutated). Reading both fields each request is
    * the right defense — cheap and avoids stale-cache surprises if the
@@ -756,9 +756,9 @@ export class AnthropicContentGenerator implements ContentGenerator {
     // Sample the live cache-control flags once per request and forward
     // them to the converter (body-side `cache_control`). The converter's
     // constructor-time value would otherwise diverge from the live value
-    // on the qwen-oauth path, where `Config.handleModelChange()`
+    // on the canopy-oauth path, where `Config.handleModelChange()`
     // hot-updates `enableCacheControl` in place without recreating the
-    // ContentGenerator. (Non-qwen-oauth providers refresh via generator
+    // ContentGenerator. (Non-canopy-oauth providers refresh via generator
     // recreation, so `baseUrl` is captured fresh at construct time, not
     // mutated mid-session — defensive per-request reads on both fields
     // cover both paths.) `useGlobalCacheScope` requires
@@ -880,7 +880,7 @@ export class AnthropicContentGenerator implements ContentGenerator {
       // No explicit user config — check env var, then use the model limit
       // clipped to the flat output ceiling.
       const envMaxTokens = parsePositiveIntegerEnvValue(
-        process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'],
+        process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'],
       );
       if (envMaxTokens !== undefined) {
         maxTokens = isKnownModel

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * @fileoverview Saved-workflow resolution. Workflow scripts persisted at
- * `.qwen/workflows/<name>.js` (project) or `~/.qwen/workflows/<name>.js`
+ * `.canopy/workflows/<name>.js` (project) or `~/.canopy/workflows/<name>.js`
  * (user) are both surfaced as slash commands (CLI: `SavedWorkflowLoader`)
  * AND resolvable by name from inside a running workflow via the
  * `workflow('<name>')` global (core: `WorkflowOrchestrator`). This module
@@ -91,7 +91,7 @@ export function getSavedWorkflowDirs(config: Config): Array<{
  * True when a saved-workflow root dir is itself a symlink. `readWorkflowFileSecurely`
  * realpaths the root so it can tolerate symlinked *ancestors* (e.g. a project under
  * macOS `/tmp -> /private/tmp`); but that same laundering turns a checked-in
- * `.qwen/workflows -> /outside` link into the allowed boundary — letting discovery
+ * `.canopy/workflows -> /outside` link into the allowed boundary — letting discovery
  * list, `workflow('<name>')` read, and the save dialog write external files. The
  * per-entry symlink check in {@link listJsFiles} can't catch this because the link
  * is the dir, not the files it exposes. So we refuse a symlinked root outright for
@@ -153,7 +153,7 @@ async function readWorkflowFileSecurely(
     await Promise.all(
       getSavedWorkflowDirs(config).map(async ({ dir }) => {
         // Exclude a symlinked root: realpath(dir) would launder a
-        // `.qwen/workflows -> /outside` link into the allowed boundary, so a
+        // `.canopy/workflows -> /outside` link into the allowed boundary, so a
         // file resolving under the link's target would pass the check below.
         if (await isSymlinkedRoot(dir)) return null;
         try {
@@ -263,8 +263,8 @@ export async function resolveSavedWorkflowScript(
 }
 
 /**
- * Save a workflow script to `.qwen/workflows/<name>.js` (project) or
- * `~/.qwen/workflows/<name>.js` (user). Powers the `/workflows` save dialog.
+ * Save a workflow script to `.canopy/workflows/<name>.js` (project) or
+ * `~/.canopy/workflows/<name>.js` (user). Powers the `/workflows` save dialog.
  *
  * Validates the name and refuses to clobber an existing file unless
  * `overwrite` is set (the dialog uses the `exists` result to prompt for
@@ -295,7 +295,7 @@ export async function saveWorkflowScript(
     scope === 'project'
       ? config.storage.getProjectWorkflowsDir()
       : Storage.getUserWorkflowsDir();
-  // Refuse to write through a symlinked root (e.g. `.qwen/workflows -> /outside`):
+  // Refuse to write through a symlinked root (e.g. `.canopy/workflows -> /outside`):
   // it would persist the script outside the project/user workflow dir. The save
   // overlay's try/catch surfaces this message as a user-facing error.
   if (await isSymlinkedRoot(dir)) {

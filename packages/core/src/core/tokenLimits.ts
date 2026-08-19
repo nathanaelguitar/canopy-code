@@ -70,7 +70,7 @@ export function clampOutputTokensToWindow(
     contextWindowSize - promptTokens - outputClampMargin(contextWindowSize);
   // Floor the ROOM, then cap by the ceiling — never the other way around: an
   // explicit ceiling below MIN_CLAMPED_OUTPUT_TOKENS (e.g.
-  // QWEN_CODE_MAX_OUTPUT_TOKENS=2000 on a capacity-constrained backend) must
+  // CANOPY_CODE_MAX_OUTPUT_TOKENS=2000 on a capacity-constrained backend) must
   // be respected, not inflated to the floor.
   return Math.min(outputCeiling, Math.max(MIN_CLAMPED_OUTPUT_TOKENS, room));
 }

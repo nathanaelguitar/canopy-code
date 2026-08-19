@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -145,19 +145,19 @@ function ctx(over: Partial<PermissionCheckContext>): PermissionCheckContext {
 }
 
 describe('isAutoModeProtectedWritePath', () => {
-  it('matches Qwen self-modification files and directories', () => {
+  it('matches Canopy self-modification files and directories', () => {
     const protectedPaths = [
-      '/repo/.qwen/settings.json',
-      '/repo/.qwen/settings.local.json',
-      '/repo/QWEN.md',
+      '/repo/.canopy/settings.json',
+      '/repo/.canopy/settings.local.json',
+      '/repo/CANOPY.md',
       '/repo/AGENTS.md',
-      '/repo/.qwen/commands/review.md',
-      '/repo/.qwen/agents/reviewer.md',
-      '/repo/.qwen/skills/skill-a/SKILL.md',
-      '/repo/.qwen/hooks/pre-tool-use.json',
-      '/repo/.qwen/fork-profiles/ro-research.md',
-      '/repo/.qwen/QWEN.local.md',
-      '/repo/.qwen/rules/backend.md',
+      '/repo/.canopy/commands/review.md',
+      '/repo/.canopy/agents/reviewer.md',
+      '/repo/.canopy/skills/skill-a/SKILL.md',
+      '/repo/.canopy/hooks/pre-tool-use.json',
+      '/repo/.canopy/fork-profiles/ro-research.md',
+      '/repo/.canopy/CANOPY.local.md',
+      '/repo/.canopy/rules/backend.md',
       '/repo/.mcp.json',
       '/repo/.git',
     ];
@@ -170,8 +170,8 @@ describe('isAutoModeProtectedWritePath', () => {
   it('does not treat ordinary source files or worktree files as protected', () => {
     const ordinaryPaths = [
       '/repo/src/index.ts',
-      '/repo/.qwen/PROJECT_SUMMARY.md',
-      '/repo/.qwen/worktrees/feature/src/index.ts',
+      '/repo/.canopy/PROJECT_SUMMARY.md',
+      '/repo/.canopy/worktrees/feature/src/index.ts',
     ];
 
     for (const filePath of ordinaryPaths) {
@@ -181,11 +181,11 @@ describe('isAutoModeProtectedWritePath', () => {
 
   it('still protects config surfaces inside managed worktrees', () => {
     const protectedPaths = [
-      '/repo/.qwen/worktrees/feature/.qwen/settings.json',
-      '/repo/.qwen/worktrees/feature/AGENTS.md',
-      '/repo/.qwen/worktrees/feature/.qwen/QWEN.local.md',
-      '/repo/.qwen/worktrees/feature/.qwen/rules/backend.md',
-      '/repo/.qwen/worktrees/feature/.mcp.json',
+      '/repo/.canopy/worktrees/feature/.canopy/settings.json',
+      '/repo/.canopy/worktrees/feature/AGENTS.md',
+      '/repo/.canopy/worktrees/feature/.canopy/CANOPY.local.md',
+      '/repo/.canopy/worktrees/feature/.canopy/rules/backend.md',
+      '/repo/.canopy/worktrees/feature/.mcp.json',
     ];
 
     for (const filePath of protectedPaths) {
@@ -195,11 +195,11 @@ describe('isAutoModeProtectedWritePath', () => {
 
   it('matches protected paths case-insensitively', () => {
     const protectedPaths = [
-      '/repo/qwen.md',
+      '/repo/canopy.md',
       '/repo/agents.md',
-      '/repo/.QWEN/SETTINGS.JSON',
-      '/repo/.QWEN/QWEN.LOCAL.MD',
-      '/repo/.QWEN/RULES/backend.md',
+      '/repo/.CANOPY/SETTINGS.JSON',
+      '/repo/.CANOPY/CANOPY.LOCAL.MD',
+      '/repo/.CANOPY/RULES/backend.md',
       '/repo/.MCP.JSON',
       '/repo/GNUmakefile',
       '/repo/Taskfile.yaml',
@@ -217,50 +217,50 @@ describe('isAutoModeProtectedWritePath', () => {
       const protectedPaths = [
         '/repo/CUSTOM_AGENTS.md',
         '/repo/docs/TEAM_CONTEXT.md',
-        '/repo/.qwen/worktrees/feature/CUSTOM_AGENTS.md',
+        '/repo/.canopy/worktrees/feature/CUSTOM_AGENTS.md',
       ];
 
       for (const filePath of protectedPaths) {
         expect(isAutoModeProtectedWritePath(filePath)).toBe(true);
       }
     } finally {
-      setGeminiMdFilename(['QWEN.md', 'AGENTS.md']);
+      setGeminiMdFilename(['CANOPY.md', 'AGENTS.md']);
     }
   });
 
   it('matches self-modification surfaces in custom QWEN_HOME', () => {
-    const originalQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = '/tmp/custom-qwen-home';
+    const originalCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = '/tmp/custom-canopy-home';
 
     try {
       const protectedPaths = [
-        '/tmp/custom-qwen-home/settings.json',
-        '/tmp/custom-qwen-home/settings.local.json',
-        '/tmp/custom-qwen-home/QWEN.local.md',
-        '/tmp/custom-qwen-home/commands/review.md',
-        '/tmp/custom-qwen-home/agents/reviewer.md',
-        '/tmp/custom-qwen-home/skills/review/SKILL.md',
-        '/tmp/custom-qwen-home/hooks/pre-tool-use.json',
-        '/tmp/custom-qwen-home/fork-profiles/ro-research.md',
-        '/tmp/custom-qwen-home/rules/backend.md',
-        '/tmp/custom-qwen-home/.mcp.json',
+        '/tmp/custom-canopy-home/settings.json',
+        '/tmp/custom-canopy-home/settings.local.json',
+        '/tmp/custom-canopy-home/CANOPY.local.md',
+        '/tmp/custom-canopy-home/commands/review.md',
+        '/tmp/custom-canopy-home/agents/reviewer.md',
+        '/tmp/custom-canopy-home/skills/review/SKILL.md',
+        '/tmp/custom-canopy-home/hooks/pre-tool-use.json',
+        '/tmp/custom-canopy-home/fork-profiles/ro-research.md',
+        '/tmp/custom-canopy-home/rules/backend.md',
+        '/tmp/custom-canopy-home/.mcp.json',
       ];
 
       for (const filePath of protectedPaths) {
         expect(isAutoModeProtectedWritePath(filePath)).toBe(true);
       }
     } finally {
-      if (originalQwenHome === undefined) {
+      if (originalCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = originalQwenHome;
+        process.env['QWEN_HOME'] = originalCanopyHome;
       }
     }
   });
 
   it('matches real paths under a symlinked custom QWEN_HOME', () => {
-    const originalQwenHome = process.env['QWEN_HOME'];
-    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-home-'));
+    const originalCanopyHome = process.env['QWEN_HOME'];
+    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-home-'));
 
     try {
       const realHome = path.join(tmpRoot, 'real-home');
@@ -274,20 +274,22 @@ describe('isAutoModeProtectedWritePath', () => {
 
       expect(isAutoModeProtectedWritePath(settingsPath)).toBe(true);
     } finally {
-      if (originalQwenHome === undefined) {
+      if (originalCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = originalQwenHome;
+        process.env['QWEN_HOME'] = originalCanopyHome;
       }
       fs.rmSync(tmpRoot, { recursive: true, force: true });
     }
   });
 
   it('re-resolves write paths after symlinks are created', () => {
-    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-write-path-'));
+    const tmpRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-write-path-'),
+    );
 
     try {
-      const protectedDir = path.join(tmpRoot, '.qwen');
+      const protectedDir = path.join(tmpRoot, '.canopy');
       const settingsPath = path.join(protectedDir, 'settings.json');
       const linkPath = path.join(tmpRoot, 'scratch');
       fs.mkdirSync(protectedDir, { recursive: true });
@@ -304,8 +306,10 @@ describe('isAutoModeProtectedWritePath', () => {
   });
 
   it('caches normalized QWEN_HOME prefixes per configured home', () => {
-    const originalQwenHome = process.env['QWEN_HOME'];
-    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-home-cache-'));
+    const originalCanopyHome = process.env['QWEN_HOME'];
+    const tmpRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-home-cache-'),
+    );
     const realpathSpy = vi.spyOn(fs.realpathSync, 'native');
 
     try {
@@ -320,10 +324,10 @@ describe('isAutoModeProtectedWritePath', () => {
       ).toHaveLength(1);
     } finally {
       realpathSpy.mockRestore();
-      if (originalQwenHome === undefined) {
+      if (originalCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = originalQwenHome;
+        process.env['QWEN_HOME'] = originalCanopyHome;
       }
       fs.rmSync(tmpRoot, { recursive: true, force: true });
     }
@@ -352,19 +356,19 @@ describe('passesAcceptEditsFastPath', () => {
     ).toBe(true);
   });
 
-  it('rejects Qwen self-modification paths even inside cwd', () => {
+  it('rejects Canopy self-modification paths even inside cwd', () => {
     const protectedPaths = [
-      `${cwd}/.qwen/settings.json`,
-      `${cwd}/.qwen/settings.local.json`,
-      `${cwd}/QWEN.md`,
+      `${cwd}/.canopy/settings.json`,
+      `${cwd}/.canopy/settings.local.json`,
+      `${cwd}/CANOPY.md`,
       `${cwd}/AGENTS.md`,
-      `${cwd}/.qwen/commands/review.md`,
-      `${cwd}/.qwen/agents/reviewer.md`,
-      `${cwd}/.qwen/skills/review/SKILL.md`,
-      `${cwd}/.qwen/hooks/pre-tool-use.json`,
-      `${cwd}/.qwen/fork-profiles/ro-research.md`,
-      `${cwd}/.qwen/QWEN.local.md`,
-      `${cwd}/.qwen/rules/backend.md`,
+      `${cwd}/.canopy/commands/review.md`,
+      `${cwd}/.canopy/agents/reviewer.md`,
+      `${cwd}/.canopy/skills/review/SKILL.md`,
+      `${cwd}/.canopy/hooks/pre-tool-use.json`,
+      `${cwd}/.canopy/fork-profiles/ro-research.md`,
+      `${cwd}/.canopy/CANOPY.local.md`,
+      `${cwd}/.canopy/rules/backend.md`,
       `${cwd}/.mcp.json`,
     ];
 
@@ -377,12 +381,12 @@ describe('passesAcceptEditsFastPath', () => {
     }
   });
 
-  it('allows ordinary files under .qwen/worktrees but rejects nested config surfaces', () => {
+  it('allows ordinary files under .canopy/worktrees but rejects nested config surfaces', () => {
     expect(
       passesAcceptEditsFastPath(
         ctx({
           toolName: ToolNames.WRITE_FILE,
-          filePath: `${cwd}/.qwen/worktrees/feature/src/index.ts`,
+          filePath: `${cwd}/.canopy/worktrees/feature/src/index.ts`,
         }),
         config,
       ),
@@ -392,7 +396,7 @@ describe('passesAcceptEditsFastPath', () => {
       passesAcceptEditsFastPath(
         ctx({
           toolName: ToolNames.WRITE_FILE,
-          filePath: `${cwd}/.qwen/worktrees/feature/.qwen/settings.json`,
+          filePath: `${cwd}/.canopy/worktrees/feature/.canopy/settings.json`,
         }),
         config,
       ),
@@ -400,11 +404,11 @@ describe('passesAcceptEditsFastPath', () => {
   });
 
   it('rejects symlinks that resolve to protected self-modification paths', () => {
-    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-auto-mode-'));
+    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-auto-mode-'));
     try {
-      const qwenDir = path.join(tmpRoot, '.qwen');
-      fs.mkdirSync(qwenDir, { recursive: true });
-      const target = path.join(qwenDir, 'settings.json');
+      const canopyDir = path.join(tmpRoot, '.canopy');
+      fs.mkdirSync(canopyDir, { recursive: true });
+      const target = path.join(canopyDir, 'settings.json');
       fs.writeFileSync(target, '{}');
 
       const link = path.join(tmpRoot, 'settings-link.json');
@@ -523,7 +527,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.EDIT,
-          filePath: '/Users/test/.qwen/settings.json',
+          filePath: '/Users/test/.canopy/settings.json',
         }),
       ),
     ).toBe(true);
@@ -532,7 +536,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.WRITE_FILE,
-          filePath: '/repo/.qwen/QWEN.local.md',
+          filePath: '/repo/.canopy/CANOPY.local.md',
         }),
       ),
     ).toBe(true);
@@ -541,7 +545,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.NOTEBOOK_EDIT,
-          filePath: '/repo/.qwen/skills/review/demo.ipynb',
+          filePath: '/repo/.canopy/skills/review/demo.ipynb',
         }),
       ),
     ).toBe(true);
@@ -552,7 +556,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'echo "{}" > .qwen/settings.json',
+          command: 'echo "{}" > .canopy/settings.json',
           cwd: '/repo',
         }),
       ),
@@ -562,7 +566,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.MONITOR,
-          command: 'bash -lc \'echo "{}" > .qwen/settings.json\'',
+          command: 'bash -lc \'echo "{}" > .canopy/settings.json\'',
           cwd: '/repo',
         }),
       ),
@@ -579,7 +583,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: "cd .qwen && bash -lc 'echo {} > settings.json'",
+          command: "cd .canopy && bash -lc 'echo {} > settings.json'",
           cwd: '/repo',
         }),
       ),
@@ -622,7 +626,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'cd .qwen && echo "{}" > settings.json',
+          command: 'cd .canopy && echo "{}" > settings.json',
           cwd: '/repo',
         }),
       ),
@@ -632,7 +636,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.MONITOR,
-          command: 'bash -lc \'cd .qwen && echo "{}" > settings.json\'',
+          command: 'bash -lc \'cd .canopy && echo "{}" > settings.json\'',
           cwd: '/repo',
         }),
       ),
@@ -644,7 +648,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: "bash -lc 'echo ok' && echo hi > .qwen/settings.json",
+          command: "bash -lc 'echo ok' && echo hi > .canopy/settings.json",
           cwd: '/repo',
         }),
       ),
@@ -656,7 +660,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'cd .qwen\ncp /tmp/malicious settings.json',
+          command: 'cd .canopy\ncp /tmp/malicious settings.json',
           cwd: '/repo',
         }),
       ),
@@ -668,7 +672,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: "{ cd .qwen && echo '{}' > settings.json; }",
+          command: "{ cd .canopy && echo '{}' > settings.json; }",
           cwd: '/repo',
         }),
       ),
@@ -678,7 +682,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: '(echo > .qwen/settings.json)',
+          command: '(echo > .canopy/settings.json)',
           cwd: '/repo',
         }),
       ),
@@ -692,7 +696,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
           toolName: ToolNames.SHELL,
           command: [
             "bash <<'SCRIPT'",
-            "echo '{}' > .qwen/settings.json",
+            "echo '{}' > .canopy/settings.json",
             'SCRIPT',
           ].join('\n'),
           cwd: '/repo',
@@ -708,7 +712,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
           toolName: ToolNames.SHELL,
           command: [
             "bash <<'SCRIPT'",
-            'cp /tmp/payload .qwen/settings.json',
+            'cp /tmp/payload .canopy/settings.json',
             'SCRIPT',
           ].join('\n'),
           cwd: '/repo',
@@ -717,22 +721,22 @@ describe('shouldForceAutoModeReviewForAllow', () => {
     ).toBe(true);
 
     for (const command of [
-      ["bash <<'SCRIPT'", "tee .qwen/settings.json <<< '{}'", 'SCRIPT'].join(
+      ["bash <<'SCRIPT'", "tee .canopy/settings.json <<< '{}'", 'SCRIPT'].join(
         '\n',
       ),
       [
         "bash <<'SCRIPT'",
-        'dd if=/tmp/payload of=.qwen/settings.json',
+        'dd if=/tmp/payload of=.canopy/settings.json',
         'SCRIPT',
       ].join('\n'),
       [
         "bash <<'SCRIPT'",
-        'sort -o .qwen/settings.json /dev/null',
+        'sort -o .canopy/settings.json /dev/null',
         'SCRIPT',
       ].join('\n'),
       [
         "bash <<'SCRIPT'",
-        "node -e \"require('fs').writeFileSync('.qwen/settings.json', '{}')\"",
+        "node -e \"require('fs').writeFileSync('.canopy/settings.json', '{}')\"",
         'SCRIPT',
       ].join('\n'),
     ]) {
@@ -753,7 +757,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'D=.qwen/settings.json; cp payload "$D"',
+          command: 'D=.canopy/settings.json; cp payload "$D"',
           cwd: '/repo',
         }),
       ),
@@ -774,8 +778,8 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for awk in-place edits to protected paths', () => {
     for (const command of [
-      'awk -i inplace \'{gsub(/x/, "y")}1\' .qwen/settings.json',
-      'gawk -i inplace \'{gsub(/x/, "y")}1\' .qwen/settings.json',
+      'awk -i inplace \'{gsub(/x/, "y")}1\' .canopy/settings.json',
+      'gawk -i inplace \'{gsub(/x/, "y")}1\' .canopy/settings.json',
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -791,8 +795,8 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for sort writing protected paths via output flags', () => {
     for (const command of [
-      'sort -o .qwen/settings.json /dev/null',
-      'sort --output=.qwen/settings.json /dev/null',
+      'sort -o .canopy/settings.json /dev/null',
+      'sort --output=.canopy/settings.json /dev/null',
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -813,7 +817,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
           toolName: ToolNames.SHELL,
           command: [
             "bash <<'SCRIPT'",
-            'echo "{}" > """.qwen/settings.json"""',
+            'echo "{}" > """.canopy/settings.json"""',
             'SCRIPT',
           ].join('\n'),
           cwd: '/repo',
@@ -824,8 +828,8 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for protected clobber and fd redirects', () => {
     for (const command of [
-      "echo '{}' >| .qwen/settings.json",
-      "echo '{}' >& .qwen/settings.json",
+      "echo '{}' >| .canopy/settings.json",
+      "echo '{}' >& .canopy/settings.json",
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -844,7 +848,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: "echo '{}' > $'.qwen/settings.json'",
+          command: "echo '{}' > $'.canopy/settings.json'",
           cwd: '/repo',
         }),
       ),
@@ -856,7 +860,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'cat <> .qwen/settings.json',
+          command: 'cat <> .canopy/settings.json',
           cwd: '/repo',
         }),
       ),
@@ -868,7 +872,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'cp -t .qwen /tmp/settings.json',
+          command: 'cp -t .canopy /tmp/settings.json',
           cwd: '/repo',
         }),
       ),
@@ -877,10 +881,10 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for downloader output flags targeting protected paths', () => {
     for (const command of [
-      'curl -o .qwen/settings.json https://example.com/payload',
-      'curl -o.qwen/settings.json https://example.com/payload',
-      'wget -O .qwen/settings.json https://example.com/payload',
-      'wget -O.qwen/settings.json https://example.com/payload',
+      'curl -o .canopy/settings.json https://example.com/payload',
+      'curl -o.canopy/settings.json https://example.com/payload',
+      'wget -O .canopy/settings.json https://example.com/payload',
+      'wget -O.canopy/settings.json https://example.com/payload',
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -896,13 +900,13 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for archive extraction commands targeting protected dirs', () => {
     for (const command of [
-      'tar xf payload.tar -C .qwen/skills',
-      'tar xf payload.tar -C.qwen/skills',
-      'tar xf payload.tar --directory=.qwen/skills',
-      'unzip payload.zip -d .qwen/skills',
-      'unzip payload.zip -d.qwen/skills',
-      'cpio -i -D .qwen/skills',
-      'cpio -i -D.qwen/skills',
+      'tar xf payload.tar -C .canopy/skills',
+      'tar xf payload.tar -C.canopy/skills',
+      'tar xf payload.tar --directory=.canopy/skills',
+      'unzip payload.zip -d .canopy/skills',
+      'unzip payload.zip -d.canopy/skills',
+      'cpio -i -D .canopy/skills',
+      'cpio -i -D.canopy/skills',
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -918,8 +922,8 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for patch output flags targeting protected paths', () => {
     for (const command of [
-      'patch --output=.qwen/settings.json -i fix.patch',
-      'patch -o.qwen/settings.json -i fix.patch',
+      'patch --output=.canopy/settings.json -i fix.patch',
+      'patch -o.canopy/settings.json -i fix.patch',
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -938,7 +942,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'find . -exec cp {} .qwen/settings.json ;',
+          command: 'find . -exec cp {} .canopy/settings.json ;',
           cwd: '/repo',
         }),
       ),
@@ -950,7 +954,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'find . -execdir cp {} .qwen/settings.json ;',
+          command: 'find . -execdir cp {} .canopy/settings.json ;',
           cwd: '/repo',
         }),
       ),
@@ -959,9 +963,9 @@ describe('shouldForceAutoModeReviewForAllow', () => {
 
   it('returns true for long in-place sed/perl writes to protected paths', () => {
     for (const command of [
-      "sed --in-place 's/x/y/' .qwen/settings.json",
-      "sed --in-place=.bak 's/x/y/' .qwen/settings.json",
-      "perl --in-place -e 's/x/y/' .qwen/settings.json",
+      "sed --in-place 's/x/y/' .canopy/settings.json",
+      "sed --in-place=.bak 's/x/y/' .canopy/settings.json",
+      "perl --in-place -e 's/x/y/' .canopy/settings.json",
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -979,7 +983,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
     for (const command of [
       "sed 's/a/b/' /tmp/file",
       "perl -e 'print $_' /tmp/file",
-      "sed -n '1,10p' .qwen/settings.json",
+      "sed -n '1,10p' .canopy/settings.json",
     ]) {
       expect(
         shouldForceAutoModeReviewForAllow(
@@ -998,7 +1002,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.SHELL,
-          command: 'echo "{}" > .qwen/settings.json',
+          command: 'echo "{}" > .canopy/settings.json',
         }),
         '/repo',
       ),
@@ -1016,7 +1020,7 @@ describe('shouldForceAutoModeReviewForAllow', () => {
       shouldForceAutoModeReviewForAllow(
         ctx({
           toolName: ToolNames.READ_FILE,
-          filePath: '/repo/.qwen/settings.json',
+          filePath: '/repo/.canopy/settings.json',
         }),
       ),
     ).toBe(false);

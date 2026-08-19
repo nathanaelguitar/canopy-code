@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ vi.mock('../hooks/useKeypress.js', () => ({
 const baseProps = {
   slug: 'test-feature',
   branch: 'worktree-test-feature',
-  worktreePath: '/tmp/repo/.qwen/worktrees/test-feature',
+  worktreePath: '/tmp/repo/.canopy/worktrees/test-feature',
   originalHeadCommit: 'a'.repeat(40),
   onKeep: vi.fn(),
   onRemove: vi.fn(),

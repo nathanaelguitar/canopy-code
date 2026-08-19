@@ -7,7 +7,7 @@
 import { render } from 'ink-testing-library';
 import { describe, it, expect } from 'vitest';
 import { McpStatus } from './McpStatus.js';
-import { MCPServerStatus } from '@qwen-code/qwen-code-core';
+import { MCPServerStatus } from '@canopy-code/canopy-code-core';
 import { MessageType } from '../../types.js';
 
 describe('McpStatus', () => {

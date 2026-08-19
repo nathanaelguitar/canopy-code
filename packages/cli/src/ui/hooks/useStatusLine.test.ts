@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -98,9 +98,9 @@ vi.mock('./useTerminalSize.js', () => ({
   useTerminalSize: () => ({ columns: 110, rows: 24 }),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...original,
     createDebugLogger: () => debugLogMock,
@@ -388,9 +388,9 @@ describe('useStatusLine', () => {
 
     it('keeps an automatic indicator when the rendered footer column clips it', () => {
       mockConfig.getTargetDir.mockReturnValue(
-        '/home/runner/actions-runner-19/_work/qwen-code/qwen-code',
+        '/home/runner/actions-runner-19/_work/canopy-code/canopy-code',
       );
-      mockConfig.getModelDisplayName.mockReturnValue('Qwen3 Code Plus');
+      mockConfig.getModelDisplayName.mockReturnValue('Canopy3 Code Plus');
       mockConfig.getContentGeneratorConfig.mockReturnValue({
         contextWindowSize: 131072,
         reasoning: { effort: 'high' },

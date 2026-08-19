@@ -117,7 +117,7 @@ import { resolveContainedExistingPath } from './agent-plugins-v1/paths.js';
 
 const debugLogger = createDebugLogger('EXTENSIONS');
 
-export type ExtensionPackageFormat = 'qwen' | 'agent-plugins-v1';
+export type ExtensionPackageFormat = 'canopy' | 'agent-plugins-v1';
 
 interface LoadedExtensionManifest {
   format: ExtensionPackageFormat;
@@ -391,7 +391,7 @@ function filterMcpConfig(original: MCPServerConfig): MCPServerConfig {
 
 function getContextFileNames(config: ExtensionConfig): string[] {
   if (!config.contextFileName || config.contextFileName.length === 0) {
-    return ['QWEN.md'];
+    return ['CANOPY.md'];
   } else if (!Array.isArray(config.contextFileName)) {
     return [config.contextFileName];
   }
@@ -1259,7 +1259,7 @@ export class ExtensionManager {
    *
    * Extension sources have no watcher (skills do — see
    * `SkillManager.startWatching`), so read-only consumers that must not scan on
-   * every call use this to stay eventually consistent with `qwen extensions
+   * every call use this to stay eventually consistent with `canopy extensions
    * install` / `enable` / `disable` run outside the process.
    *
    * Concurrent callers share one refresh, so a caller can join a refresh that
@@ -1392,7 +1392,7 @@ export class ExtensionManager {
         workspaceDir,
       });
       let config = loadedManifest.config;
-      if (loadedManifest.format === 'qwen') {
+      if (loadedManifest.format === 'canopy') {
         config = resolveEnvVarsInObject(config);
       }
       const extensionId = getExtensionId(config, installMetadata);
@@ -1433,7 +1433,7 @@ export class ExtensionManager {
         );
       }
 
-      if (loadedManifest.format === 'qwen' && config.channels) {
+      if (loadedManifest.format === 'canopy' && config.channels) {
         extension.channels = config.channels;
       }
 
@@ -1459,7 +1459,7 @@ export class ExtensionManager {
       }
 
       if (
-        loadedManifest.format === 'qwen' &&
+        loadedManifest.format === 'canopy' &&
         config.hooks &&
         typeof config.hooks !== 'string'
       ) {
@@ -1471,7 +1471,7 @@ export class ExtensionManager {
       }
 
       // Also load hooks from hooks directory or from config.hooks string path if available and not already set
-      if (loadedManifest.format === 'qwen' && !extension.hooks) {
+      if (loadedManifest.format === 'canopy' && !extension.hooks) {
         const hooksDir = path.join(effectiveExtensionPath, 'hooks');
         const hooksJsonPath = path.join(hooksDir, 'hooks.json');
 
@@ -1600,7 +1600,7 @@ export class ExtensionManager {
       }
       validateName(config.name);
       validateExtensionSettingEnvVars(config.settings);
-      return { format: 'qwen', config };
+      return { format: 'canopy', config };
     } catch (e) {
       throw new Error(
         `Failed to load extension config from ${configFilePath}: ${getErrorMessage(

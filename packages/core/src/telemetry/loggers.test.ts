@@ -76,7 +76,7 @@ import {
 } from './loggers.js';
 import * as metrics from './metrics.js';
 import { apiActivityTracker } from './api-activity-tracker.js';
-import { QwenLogger } from './qwen-logger/qwen-logger.js';
+import { CanopyLogger } from './canopy-logger/canopy-logger.js';
 import * as sdk from './sdk.js';
 import * as tokenUsageService from '../services/tokenUsageService.js';
 import { ToolCallDecision } from './tool-call-decision.js';
@@ -143,10 +143,10 @@ describe('loggers', () => {
   describe('logChatCompression', () => {
     beforeEach(() => {
       vi.spyOn(metrics, 'recordChatCompressionMetrics');
-      vi.spyOn(QwenLogger.prototype, 'logChatCompressionEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logChatCompressionEvent');
     });
 
-    it('logs the chat compression event to QwenLogger', () => {
+    it('logs the chat compression event to CanopyLogger', () => {
       const mockConfig = makeFakeConfig({ sessionId: 'test-session-id' });
 
       const event = makeChatCompressionEvent({
@@ -158,9 +158,9 @@ describe('loggers', () => {
 
       logChatCompression(mockConfig, event);
 
-      expect(QwenLogger.prototype.logChatCompressionEvent).toHaveBeenCalledWith(
-        event,
-      );
+      expect(
+        CanopyLogger.prototype.logChatCompressionEvent,
+      ).toHaveBeenCalledWith(event);
     });
 
     it('records the chat compression event to OTEL', () => {
@@ -182,9 +182,9 @@ describe('loggers', () => {
   });
 
   describe('logProtocolTagSanitized', () => {
-    it('emits a privacy-safe handled event to QwenLogger and OpenTelemetry', () => {
+    it('emits a privacy-safe handled event to CanopyLogger and OpenTelemetry', () => {
       const config = makeFakeConfig({ sessionId: 'test-session-id' });
-      vi.spyOn(QwenLogger.prototype, 'logProtocolTagSanitizedEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logProtocolTagSanitizedEvent');
       const event = new ProtocolTagSanitizedEvent({
         model: 'test-model',
         promptId: 'prompt-id',
@@ -196,7 +196,7 @@ describe('loggers', () => {
       logProtocolTagSanitized(config, event);
 
       expect(
-        QwenLogger.prototype.logProtocolTagSanitizedEvent,
+        CanopyLogger.prototype.logProtocolTagSanitizedEvent,
       ).toHaveBeenCalledWith(event);
       expect(mockLogger.emit).toHaveBeenCalledWith({
         body: 'Suppressed a standalone closing think tag and preserved 2 tool call(s).',
@@ -512,10 +512,10 @@ describe('loggers', () => {
       const config = makeFakeConfig({ sessionId: 'test-session-id' });
       const logLoopDetectedEvent = vi.fn();
       const getInstanceSpy = vi
-        .spyOn(QwenLogger, 'getInstance')
+        .spyOn(CanopyLogger, 'getInstance')
         .mockReturnValue({
           logLoopDetectedEvent,
-        } as unknown as QwenLogger);
+        } as unknown as CanopyLogger);
       const event = new LoopDetectedEvent(
         LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
         'prompt-id',
@@ -530,21 +530,21 @@ describe('loggers', () => {
       }
     });
 
-    it('supports explicitly keeping a loop event out of QwenLogger', () => {
+    it('supports explicitly keeping a loop event out of CanopyLogger', () => {
       const config = makeFakeConfig({ sessionId: 'test-session-id' });
       const logLoopDetectedEvent = vi.fn();
       const getInstanceSpy = vi
-        .spyOn(QwenLogger, 'getInstance')
+        .spyOn(CanopyLogger, 'getInstance')
         .mockReturnValue({
           logLoopDetectedEvent,
-        } as unknown as QwenLogger);
+        } as unknown as CanopyLogger);
       const event = new LoopDetectedEvent(
         LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
         'prompt-id',
       );
 
       try {
-        logLoopDetected(config, event, { recordToQwenLogger: false });
+        logLoopDetected(config, event, { recordToCanopyLogger: false });
 
         expect(logLoopDetectedEvent).not.toHaveBeenCalled();
         expect(mockLogger.emit).toHaveBeenCalledWith({
@@ -1079,7 +1079,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logRipgrepFallbackEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logRipgrepFallbackEvent');
     });
 
     it('should log ripgrep fallback event', () => {
@@ -1091,7 +1091,7 @@ describe('loggers', () => {
 
       logRipgrepFallback(mockConfig, event);
 
-      expect(QwenLogger.prototype.logRipgrepFallbackEvent).toHaveBeenCalled();
+      expect(CanopyLogger.prototype.logRipgrepFallbackEvent).toHaveBeenCalled();
 
       const emittedEvent = mockLogger.emit.mock.calls[0][0];
       expect(emittedEvent.body).toBe('Switching to grep as fallback.');
@@ -1109,7 +1109,7 @@ describe('loggers', () => {
 
       logRipgrepFallback(mockConfig, event);
 
-      expect(QwenLogger.prototype.logRipgrepFallbackEvent).toHaveBeenCalled();
+      expect(CanopyLogger.prototype.logRipgrepFallbackEvent).toHaveBeenCalled();
 
       const emittedEvent = mockLogger.emit.mock.calls[0][0];
       expect(emittedEvent.body).toBe('Switching to grep as fallback.');
@@ -1130,7 +1130,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logRipgrepRuntimeRecoveryEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logRipgrepRuntimeRecoveryEvent');
     });
 
     it('logs privacy-safe runtime recovery fields', () => {
@@ -1144,7 +1144,7 @@ describe('loggers', () => {
       logRipgrepRuntimeRecovery(mockConfig, event);
 
       expect(
-        QwenLogger.prototype.logRipgrepRuntimeRecoveryEvent,
+        CanopyLogger.prototype.logRipgrepRuntimeRecoveryEvent,
       ).toHaveBeenCalledWith(event);
       const emittedEvent = mockLogger.emit.mock.calls[0][0];
       expect(emittedEvent.body).toBe('Ripgrep runtime recovery: eagain.');
@@ -1171,15 +1171,15 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logSkillLaunchEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logSkillLaunchEvent');
     });
 
-    it('forwards the event to QwenLogger and emits an OTLP record', () => {
+    it('forwards the event to CanopyLogger and emits an OTLP record', () => {
       const event = new SkillLaunchEvent('test-skill', true, 'prompt-id-42');
 
       logSkillLaunch(mockConfig, event);
 
-      expect(QwenLogger.prototype.logSkillLaunchEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logSkillLaunchEvent).toHaveBeenCalledWith(
         event,
       );
 
@@ -1198,13 +1198,13 @@ describe('loggers', () => {
       );
     });
 
-    it('forwards to QwenLogger even when OTLP SDK is not initialized', () => {
+    it('forwards to CanopyLogger even when OTLP SDK is not initialized', () => {
       vi.spyOn(sdk, 'isTelemetrySdkInitialized').mockReturnValue(false);
       const event = new SkillLaunchEvent('another-skill', false, 'prompt-id-7');
 
       logSkillLaunch(mockConfig, event);
 
-      expect(QwenLogger.prototype.logSkillLaunchEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logSkillLaunchEvent).toHaveBeenCalledWith(
         event,
       );
       expect(mockLogger.emit).not.toHaveBeenCalled();
@@ -1268,7 +1268,7 @@ describe('loggers', () => {
       vi.spyOn(metrics, 'recordToolExecutionMetrics').mockImplementation(
         mockMetrics.recordToolExecutionMetrics,
       );
-      vi.spyOn(QwenLogger.prototype, 'logToolCallEvent').mockImplementation(
+      vi.spyOn(CanopyLogger.prototype, 'logToolCallEvent').mockImplementation(
         () => undefined,
       );
       mockLogger.emit.mockReset();
@@ -1304,7 +1304,7 @@ describe('loggers', () => {
         error: 'failed',
         error_type: ToolErrorType.UNKNOWN,
       });
-      expect(QwenLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
         normalized,
       );
       expect(mockUiEvent.addEvent).toHaveBeenCalledWith(
@@ -1409,7 +1409,7 @@ describe('loggers', () => {
 
       logToolCall(mockConfig, event);
 
-      expect(QwenLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           error_type: ToolErrorType.EXECUTION_FAILED,
           execution_status: 'unknown',
@@ -1449,7 +1449,7 @@ describe('loggers', () => {
           tool_type: 'native',
         },
       );
-      expect(QwenLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           execution_status: 'unknown',
         }),
@@ -1478,8 +1478,9 @@ describe('loggers', () => {
 
         logToolCall(mockConfig, event);
 
-        const normalizedEvent = vi.mocked(QwenLogger.prototype.logToolCallEvent)
-          .mock.calls[0][0];
+        const normalizedEvent = vi.mocked(
+          CanopyLogger.prototype.logToolCallEvent,
+        ).mock.calls[0][0];
         expect(normalizedEvent).toMatchObject({
           status,
           success: expectedSuccess,
@@ -1521,7 +1522,7 @@ describe('loggers', () => {
         execution_status: 'unknown',
         error_type: ToolErrorType.UNKNOWN,
       });
-      expect(QwenLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
+      expect(CanopyLogger.prototype.logToolCallEvent).toHaveBeenCalledWith(
         normalized,
       );
       expect(mockUiEvent.addEvent).toHaveBeenCalledWith(
@@ -1537,14 +1538,14 @@ describe('loggers', () => {
       const chatSink = vi.fn(() => {
         throw new Error('chat sink failed');
       });
-      const qwenSink = vi.fn(() => {
-        throw new Error('qwen sink failed');
+      const canopySink = vi.fn(() => {
+        throw new Error('canopy sink failed');
       });
-      const qwenLoggerSpy = vi
-        .spyOn(QwenLogger, 'getInstance')
+      const canopyLoggerSpy = vi
+        .spyOn(CanopyLogger, 'getInstance')
         .mockReturnValue({
-          logToolCallEvent: qwenSink,
-        } as unknown as QwenLogger);
+          logToolCallEvent: canopySink,
+        } as unknown as CanopyLogger);
       mockUiEvent.addEvent.mockImplementationOnce(() => {
         throw new Error('ui sink failed');
       });
@@ -1580,7 +1581,7 @@ describe('loggers', () => {
       expect(() => logToolCall(config, event)).not.toThrow();
       expect(mockUiEvent.addEvent).toHaveBeenCalled();
       expect(chatSink).toHaveBeenCalled();
-      expect(qwenSink).toHaveBeenCalled();
+      expect(canopySink).toHaveBeenCalled();
       expect(mockLogger.emit).toHaveBeenCalled();
       expect(mockMetrics.recordToolCallMetrics).toHaveBeenCalled();
       expect(mockMetrics.recordToolExecutionMetrics).toHaveBeenCalledWith(
@@ -1590,7 +1591,7 @@ describe('loggers', () => {
           tool_type: 'native',
         },
       );
-      qwenLoggerSpy.mockRestore();
+      canopyLoggerSpy.mockRestore();
     });
 
     it('should log a tool call with all fields', () => {
@@ -2157,7 +2158,7 @@ describe('loggers', () => {
 
   describe('logMalformedJsonResponse', () => {
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logMalformedJsonResponseEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logMalformedJsonResponseEvent');
     });
 
     it('logs the event to Clearcut and OTEL', () => {
@@ -2167,7 +2168,7 @@ describe('loggers', () => {
       logMalformedJsonResponse(mockConfig, event);
 
       expect(
-        QwenLogger.prototype.logMalformedJsonResponseEvent,
+        CanopyLogger.prototype.logMalformedJsonResponseEvent,
       ).toHaveBeenCalledWith(event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
@@ -2283,7 +2284,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logExtensionInstallEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logExtensionInstallEvent');
     });
 
     afterEach(() => {
@@ -2301,7 +2302,7 @@ describe('loggers', () => {
       logExtensionInstallEvent(mockConfig, event);
 
       expect(
-        QwenLogger.prototype.logExtensionInstallEvent,
+        CanopyLogger.prototype.logExtensionInstallEvent,
       ).toHaveBeenCalledWith(event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
@@ -2326,7 +2327,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logExtensionUninstallEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logExtensionUninstallEvent');
     });
 
     afterEach(() => {
@@ -2339,7 +2340,7 @@ describe('loggers', () => {
       logExtensionUninstall(mockConfig, event);
 
       expect(
-        QwenLogger.prototype.logExtensionUninstallEvent,
+        CanopyLogger.prototype.logExtensionUninstallEvent,
       ).toHaveBeenCalledWith(event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
@@ -2362,7 +2363,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logExtensionEnableEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logExtensionEnableEvent');
     });
 
     afterEach(() => {
@@ -2374,9 +2375,9 @@ describe('loggers', () => {
 
       logExtensionEnable(mockConfig, event);
 
-      expect(QwenLogger.prototype.logExtensionEnableEvent).toHaveBeenCalledWith(
-        event,
-      );
+      expect(
+        CanopyLogger.prototype.logExtensionEnableEvent,
+      ).toHaveBeenCalledWith(event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
         body: 'Enabled extension vscode',
@@ -2398,7 +2399,7 @@ describe('loggers', () => {
     } as unknown as Config;
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger.prototype, 'logExtensionDisableEvent');
+      vi.spyOn(CanopyLogger.prototype, 'logExtensionDisableEvent');
     });
 
     afterEach(() => {
@@ -2411,7 +2412,7 @@ describe('loggers', () => {
       logExtensionDisable(mockConfig, event);
 
       expect(
-        QwenLogger.prototype.logExtensionDisableEvent,
+        CanopyLogger.prototype.logExtensionDisableEvent,
       ).toHaveBeenCalledWith(event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
@@ -2436,18 +2437,18 @@ describe('loggers', () => {
       getTelemetryLogPromptsEnabled: () => true,
     } as unknown as Config;
 
-    const mockQwenLogger = {
+    const mockCanopyLogger = {
       logHookCallEvent: vi.fn(),
     };
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger, 'getInstance').mockReturnValue(
-        mockQwenLogger as unknown as QwenLogger,
+      vi.spyOn(CanopyLogger, 'getInstance').mockReturnValue(
+        mockCanopyLogger as unknown as CanopyLogger,
       );
-      mockQwenLogger.logHookCallEvent.mockClear();
+      mockCanopyLogger.logHookCallEvent.mockClear();
     });
 
-    it('should log a successful hook call to QwenLogger', () => {
+    it('should log a successful hook call to CanopyLogger', () => {
       const event = new HookCallEvent(
         'UserPromptSubmit',
         'command',
@@ -2464,8 +2465,8 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      // Should call QwenLogger
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      // Should call CanopyLogger
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log a failed hook call with error', () => {
@@ -2485,12 +2486,12 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      // Should call QwenLogger
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      // Should call CanopyLogger
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
-    it('should handle when QwenLogger is not available', () => {
-      vi.spyOn(QwenLogger, 'getInstance').mockReturnValue(undefined);
+    it('should handle when CanopyLogger is not available', () => {
+      vi.spyOn(CanopyLogger, 'getInstance').mockReturnValue(undefined);
 
       const event = new HookCallEvent(
         'UserPromptSubmit',
@@ -2501,7 +2502,7 @@ describe('loggers', () => {
         true,
       );
 
-      // Should not throw when QwenLogger is not available
+      // Should not throw when CanopyLogger is not available
       expect(() => logHookCall(mockConfig, event)).not.toThrow();
     });
 
@@ -2522,7 +2523,7 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log hook call with minimal fields', () => {
@@ -2537,7 +2538,7 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log hook call with exit code', () => {
@@ -2557,7 +2558,7 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log hook call with zero exit code on success', () => {
@@ -2577,7 +2578,7 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log hook call with non-zero exit code on failure', () => {
@@ -2597,7 +2598,7 @@ describe('loggers', () => {
 
       logHookCall(mockConfig, event);
 
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
     });
 
     it('should log all hook event types', () => {
@@ -2617,7 +2618,7 @@ describe('loggers', () => {
       ];
 
       for (const eventType of eventTypes) {
-        mockQwenLogger.logHookCallEvent.mockClear();
+        mockCanopyLogger.logHookCallEvent.mockClear();
 
         const event = new HookCallEvent(
           eventType,
@@ -2630,11 +2631,11 @@ describe('loggers', () => {
 
         logHookCall(mockConfig, event);
 
-        expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledWith(event);
+        expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledWith(event);
       }
     });
 
-    it('should pass the exact event object to QwenLogger', () => {
+    it('should pass the exact event object to CanopyLogger', () => {
       const event = new HookCallEvent(
         'PreToolUse',
         'command',
@@ -2647,23 +2648,23 @@ describe('loggers', () => {
       logHookCall(mockConfig, event);
 
       // Verify the exact event object is passed
-      expect(mockQwenLogger.logHookCallEvent).toHaveBeenCalledTimes(1);
-      const passedEvent = mockQwenLogger.logHookCallEvent.mock.calls[0][0];
+      expect(mockCanopyLogger.logHookCallEvent).toHaveBeenCalledTimes(1);
+      const passedEvent = mockCanopyLogger.logHookCallEvent.mock.calls[0][0];
       expect(passedEvent).toBe(event);
     });
   });
 
   // Phase 4b — logApiRetry: HTTP-status retry telemetry from retryWithBackoff.
   describe('logApiRetry (Phase 4b)', () => {
-    const mockQwenLogger = {
+    const mockCanopyLogger = {
       logApiRetryEvent: vi.fn(),
     };
 
     beforeEach(() => {
-      vi.spyOn(QwenLogger, 'getInstance').mockReturnValue(
-        mockQwenLogger as unknown as QwenLogger,
+      vi.spyOn(CanopyLogger, 'getInstance').mockReturnValue(
+        mockCanopyLogger as unknown as CanopyLogger,
       );
-      mockQwenLogger.logApiRetryEvent.mockClear();
+      mockCanopyLogger.logApiRetryEvent.mockClear();
       vi.spyOn(metrics, 'recordApiRetry');
     });
 
@@ -2680,7 +2681,7 @@ describe('loggers', () => {
     ): ApiRetryEvent {
       const err = new Error(overrides.errorMsg ?? 'rate limited');
       return new ApiRetryEvent({
-        model: overrides.model ?? 'qwen3',
+        model: overrides.model ?? 'canopy3',
         promptId: overrides.promptId ?? 'p-1',
         attemptNumber: overrides.attemptNumber ?? 2,
         error: err,
@@ -2690,27 +2691,27 @@ describe('loggers', () => {
       });
     }
 
-    it('fans out to all 3 sinks: QwenLogger, OTel log, and metric counter', () => {
+    it('fans out to all 3 sinks: CanopyLogger, OTel log, and metric counter', () => {
       const mockConfig = makeFakeConfig({ sessionId: 'test-session-id' });
       const event = buildEvent();
       logApiRetry(mockConfig, event);
 
-      // 1. QwenLogger RUM
-      expect(mockQwenLogger.logApiRetryEvent).toHaveBeenCalledWith(event);
+      // 1. CanopyLogger RUM
+      expect(mockCanopyLogger.logApiRetryEvent).toHaveBeenCalledWith(event);
       // 2. OTel log signal — picked up by LogToSpanProcessor to bridge as span
       expect(mockLogger.emit).toHaveBeenCalledTimes(1);
       const logRecord = mockLogger.emit.mock.calls[0][0];
       expect(logRecord.body).toContain('API retry attempt 2');
-      expect(logRecord.body).toContain('qwen3');
+      expect(logRecord.body).toContain('canopy3');
       expect(logRecord.body).toContain('status 429');
-      expect(logRecord.attributes['event.name']).toBe('qwen-code.api_retry');
+      expect(logRecord.attributes['event.name']).toBe('canopy-code.api_retry');
       expect(logRecord.attributes['attempt_number']).toBe(2);
       expect(logRecord.attributes['retry_delay_ms']).toBe(1500);
       expect(logRecord.attributes['status_code']).toBe(429);
-      expect(logRecord.attributes['model']).toBe('qwen3');
+      expect(logRecord.attributes['model']).toBe('canopy3');
       // 3. Metric counter — tagged with {model}
       expect(metrics.recordApiRetry).toHaveBeenCalledWith(mockConfig, {
-        model: 'qwen3',
+        model: 'canopy3',
       });
     });
 
@@ -2723,13 +2724,13 @@ describe('loggers', () => {
       expect(logRecord.attributes['subagent_name']).toBe('explore-agent');
     });
 
-    it('skips logger.emit and metric counter when SDK is not initialized (QwenLogger still called)', () => {
+    it('skips logger.emit and metric counter when SDK is not initialized (CanopyLogger still called)', () => {
       vi.spyOn(sdk, 'isTelemetrySdkInitialized').mockReturnValue(false);
       const mockConfig = makeFakeConfig({ sessionId: 'test-session-id' });
       const event = buildEvent();
       logApiRetry(mockConfig, event);
 
-      expect(mockQwenLogger.logApiRetryEvent).toHaveBeenCalledWith(event);
+      expect(mockCanopyLogger.logApiRetryEvent).toHaveBeenCalledWith(event);
       expect(mockLogger.emit).not.toHaveBeenCalled();
       expect(metrics.recordApiRetry).not.toHaveBeenCalled();
     });

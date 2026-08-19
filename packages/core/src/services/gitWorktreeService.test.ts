@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,10 +32,10 @@ vi.mock('../utils/shell-utils.js', () => ({
   isCommandAvailable: vi.fn(),
 }));
 
-const hoistedMockGetGlobalQwenDir = vi.hoisted(() => vi.fn());
+const hoistedMockGetGlobalCanopyDir = vi.hoisted(() => vi.fn());
 vi.mock('../config/storage.js', () => ({
   Storage: {
-    getGlobalQwenDir: hoistedMockGetGlobalQwenDir,
+    getGlobalCanopyDir: hoistedMockGetGlobalCanopyDir,
   },
 }));
 
@@ -65,7 +65,7 @@ describe('GitWorktreeService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    hoistedMockGetGlobalQwenDir.mockReturnValue('/mock-qwen');
+    hoistedMockGetGlobalCanopyDir.mockReturnValue('/mock-canopy');
     (isCommandAvailable as Mock).mockReturnValue({ available: true });
 
     hoistedMockSimpleGit.mockImplementation(() => ({
@@ -178,7 +178,7 @@ describe('GitWorktreeService', () => {
     const result = await service.createWorktree('s1', 'Model A');
 
     const expectedPath = path.join(
-      '/mock-qwen',
+      '/mock-canopy',
       'worktrees',
       's1',
       'worktrees',
@@ -427,7 +427,7 @@ describe('GitWorktreeService', () => {
       return {
         id: `${sessionId}/${name}`,
         name,
-        path: `/mock-qwen/worktrees/${sessionId}/worktrees/${name}`,
+        path: `/mock-canopy/worktrees/${sessionId}/worktrees/${name}`,
         branch: `worktrees/${sessionId}/${name}`,
         isActive: true,
         createdAt: 1,
@@ -557,7 +557,7 @@ describe('GitWorktreeService', () => {
     it('recognises full GitHub PR URLs (any host)', () => {
       expect(
         GitWorktreeService.parsePRReference(
-          'https://github.com/QwenLM/qwen-code/pull/4174',
+          'https://github.com/QwenLM/canopy-code/pull/4174',
         ),
       ).toBe(4174);
       expect(
@@ -615,7 +615,7 @@ describe('GitWorktreeService', () => {
           'HEAD abc123\n' +
           'branch refs/heads/main\n' +
           '\n' +
-          'worktree /repo/.qwen/worktrees/wt\n' +
+          'worktree /repo/.canopy/worktrees/wt\n' +
           'HEAD abc123\n' +
           'branch refs/heads/wt\n',
       );
@@ -624,7 +624,7 @@ describe('GitWorktreeService', () => {
       // same common dir.
       hoistedMockRaw.mockResolvedValueOnce('/repo/.git');
       hoistedMockRaw.mockResolvedValueOnce('.git');
-      const service = new GitWorktreeService('/repo/.qwen/worktrees/wt');
+      const service = new GitWorktreeService('/repo/.canopy/worktrees/wt');
 
       await expect(service.getMainWorktreePath()).resolves.toBe('/repo');
       expect(hoistedMockRaw).toHaveBeenCalledWith([

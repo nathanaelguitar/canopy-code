@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
-import type { ChatRecord, Config } from '@qwen-code/qwen-code-core';
+import type { ChatRecord, Config } from '@canopy-code/canopy-code-core';
 import { collectSessionData } from './collect.js';
 import type { ExportConfig } from './types.js';
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,7 +27,7 @@ const debugLogger = createDebugLogger('WORKTREE_CLEANUP');
  * here.
  *
  * Mirrors claude-code's `EPHEMERAL_WORKTREE_PATTERNS` in
- * `utils/worktree.ts`, restricted to the patterns qwen-code actually emits.
+ * `utils/worktree.ts`, restricted to the patterns canopy-code actually emits.
  */
 const EPHEMERAL_WORKTREE_PATTERNS: readonly RegExp[] = [
   AGENT_WORKTREE_SLUG_PATTERN,
@@ -44,7 +44,7 @@ function isEphemeralSlug(slug: string): boolean {
 }
 
 /**
- * Removes stale ephemeral worktrees under `<projectRoot>/.qwen/worktrees/`.
+ * Removes stale ephemeral worktrees under `<projectRoot>/.canopy/worktrees/`.
  *
  * Safety guarantees (fail-closed):
  * - Only touches slugs matching {@link EPHEMERAL_WORKTREE_PATTERNS}.

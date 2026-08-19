@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Parent command for 'qwen review'. Hosts the internal helpers used by
+// Parent command for 'canopy review'. Hosts the internal helpers used by
 // the /review skill (presubmit checks, post-review cleanup) so the prompt
 // can stay short and the logic stays testable.
 

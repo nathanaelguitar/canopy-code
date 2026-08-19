@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -2991,7 +2991,7 @@ export class GeminiClient {
       }
 
       // Prevent context updates from being sent while a tool call is
-      // waiting for a response. The Qwen API requires that a functionResponse
+      // waiting for a response. The Canopy API requires that a functionResponse
       // part from the user immediately follows a functionCall part from the model
       // in the conversation history. The IDE context is not discarded; it will
       // be included in the next regular message sent to the model.
@@ -3186,7 +3186,7 @@ export class GeminiClient {
         if (toolResultMemory?.prompt) {
           // Append (not prepend): on a ToolResult turn, requestToSend leads
           // with functionResponse parts that must immediately follow the
-          // model's functionCall (Qwen API constraint — same reason the
+          // model's functionCall (Canopy API constraint — same reason the
           // IDE-context block above is skipped while a tool call is pending,
           // see the `hasPendingToolCall` guard). Putting the memory text
           // after the functionResponse parts keeps the call/response pairing
@@ -4090,7 +4090,7 @@ export class GeminiClient {
       // model's own ContentGeneratorConfig so that per-model settings like
       // extra_body, samplingParams, and reasoning are not inherited from the
       // main model's config. The retry authType is resolved alongside so that
-      // provider-specific checks (e.g. QWEN_OAUTH quota detection) reference
+      // provider-specific checks (e.g. CANOPY_OAUTH quota detection) reference
       // the target model's provider.
       const {
         contentGenerator,
@@ -4123,7 +4123,7 @@ export class GeminiClient {
         signal: abortSignal,
         heartbeatFn: (info) => {
           process.stderr.write(
-            `[qwen-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
+            `[canopy-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
           );
         },
         // Phase 4b — emit ApiRetryEvent telemetry for HTTP-status retries.

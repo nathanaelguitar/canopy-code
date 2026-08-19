@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -114,7 +114,7 @@ describe('useAttentionNotifications', () => {
 
     expect(mockedSendNotification).toHaveBeenCalledTimes(1);
     expect(mockedSendNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Qwen Code' }),
+      expect.objectContaining({ title: 'Canopy Code' }),
       mockTerminal,
       true,
     );
@@ -236,7 +236,7 @@ describe('useAttentionNotifications', () => {
     expect(mockedSendNotification).toHaveBeenCalledTimes(1);
     expect(mockedSendNotification).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Qwen Code needs your permission to use Bash',
+        message: 'Canopy Code needs your permission to use Bash',
       }),
       mockTerminal,
       true,
@@ -259,7 +259,7 @@ describe('useAttentionNotifications', () => {
 
     expect(mockedSendNotification).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Qwen Code is waiting for your input',
+        message: 'Canopy Code is waiting for your input',
       }),
       mockTerminal,
       true,
@@ -291,7 +291,7 @@ describe('useAttentionNotifications', () => {
 
     expect(mockedSendNotification).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Qwen Code is waiting for your input',
+        message: 'Canopy Code is waiting for your input',
       }),
       mockTerminal,
       true,
@@ -365,8 +365,8 @@ describe('useAttentionNotifications', () => {
       expect(mockedSendNotification).toHaveBeenCalledTimes(1);
       expect(mockedSendNotification).toHaveBeenCalledWith(
         {
-          message: 'Qwen Code is waiting for your input',
-          title: 'Qwen Code',
+          message: 'Canopy Code is waiting for your input',
+          title: 'Canopy Code',
         },
         mockTerminal,
         true,

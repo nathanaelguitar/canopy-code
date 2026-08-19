@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   shouldShowStep,
   providerMatchesCredentials,
   type ProviderConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   TOKEN_PLAN_CHINA_BASE_URL,
   TOKEN_PLAN_ENV_KEY,
@@ -726,7 +726,7 @@ describe('providerMatchesCredentials with function envKey (custom provider)', ()
   // to findProviderByCredentials → /doctor and system-info diagnostics.
   it('matches a custom-style provider whose envKey is a function deriving from baseUrl', () => {
     const derivedFor = (_protocol: AuthType, baseUrl: string) =>
-      `QWEN_CUSTOM_${Buffer.from(baseUrl).toString('hex').slice(0, 8)}`;
+      `CANOPY_CUSTOM_${Buffer.from(baseUrl).toString('hex').slice(0, 8)}`;
     const config = makeConfig({
       id: 'custom-like',
       envKey: derivedFor,
@@ -741,7 +741,7 @@ describe('providerMatchesCredentials with function envKey (custom provider)', ()
 
   it('does not match when the derived key differs from the supplied envKey', () => {
     const derivedFor = (_protocol: AuthType, baseUrl: string) =>
-      `QWEN_CUSTOM_${baseUrl.length}`;
+      `CANOPY_CUSTOM_${baseUrl.length}`;
     const config = makeConfig({
       id: 'custom-like',
       envKey: derivedFor,
@@ -781,7 +781,7 @@ describe('providerMatchesCredentials with function envKey (custom provider)', ()
     // custom provider configured under Anthropic/Gemini still gets matched
     // back from the on-disk envKey.
     const derivedFor = (protocol: AuthType, baseUrl: string) =>
-      `QWEN_CUSTOM_${protocol.toUpperCase()}_${baseUrl.length}`;
+      `CANOPY_CUSTOM_${protocol.toUpperCase()}_${baseUrl.length}`;
     const config = makeConfig({
       id: 'custom-like',
       envKey: derivedFor,
@@ -810,8 +810,8 @@ describe('customHeaders in ProviderConfig', () => {
   it('merges customHeaders into generationConfig for fixed models', () => {
     const config = makeConfig({
       customHeaders: {
-        'HTTP-Referer': 'https://github.com/QwenLM/qwen-code.git',
-        'X-Title': 'Qwen Code',
+        'HTTP-Referer': 'https://github.com/QwenLM/canopy-code.git',
+        'X-Title': 'Canopy Code',
       },
     });
     const plan = buildInstallPlan(config, {
@@ -822,8 +822,8 @@ describe('customHeaders in ProviderConfig', () => {
 
     const gc = plan.modelProviders?.[0]?.models[0]?.generationConfig;
     expect(gc?.customHeaders).toEqual({
-      'HTTP-Referer': 'https://github.com/QwenLM/qwen-code.git',
-      'X-Title': 'Qwen Code',
+      'HTTP-Referer': 'https://github.com/QwenLM/canopy-code.git',
+      'X-Title': 'Canopy Code',
     });
     // existing fields preserved
     expect(gc?.extra_body).toEqual({ enable_thinking: true });

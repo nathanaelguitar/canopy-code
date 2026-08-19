@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import {
   SessionTranscriptTooLargeError,
   SessionWriterError,
   TrustGateError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Response } from 'express';
 import { restoreRetryAfterSeconds } from '@qwen-code/acp-bridge/sessionRestoreTimeout';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
@@ -72,7 +72,7 @@ export type SendBridgeError = (
 
 const SESSION_WRITER_ERROR_MESSAGES = {
   session_writer_conflict:
-    'This session is already open in another Qwen process.',
+    'This session is already open in another Canopy process.',
   session_writer_lost: 'Write ownership for this session was lost.',
   session_transcript_changed:
     'The session transcript changed outside its active writer.',
@@ -493,7 +493,7 @@ export function sendBridgeError(
     // (`req.workspaceCwd` → `canonicalizeWorkspace` → here). `path.resolve`
     // + `realpathSync.native` both preserve control characters inside
     // path segments — they only normalize separators / `..` / `.` and
-    // walk symlinks. A body like `{"cwd": "/legit/path\nqwen serve:
+    // walk symlinks. A body like `{"cwd": "/legit/path\ncanopy serve:
     // FAKE LOG LINE"}` would otherwise emit two valid-looking daemon
     // log lines, weaponizing line-based log shippers (Splunk / Loki /
     // journald → SIEM). `JSON.stringify` escapes control chars and
@@ -503,7 +503,7 @@ export function sendBridgeError(
     // `--workspace` / `process.cwd()`) but quoted symmetrically for
     // readability.
     writeStderrLine(
-      `qwen serve: workspace_mismatch (POST /session): ` +
+      `canopy serve: workspace_mismatch (POST /session): ` +
         `runtime bound to ${JSON.stringify(err.bound)}, ` +
         `rejected ${JSON.stringify(err.requested)}`,
     );
@@ -830,7 +830,7 @@ export function sendBridgeError(
     ].filter(Boolean);
     const ctxStr = ctxParts.length > 0 ? ` (${ctxParts.join(' ')})` : '';
     writeStderrLine(
-      `qwen serve: bridge error${ctxStr}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`,
+      `canopy serve: bridge error${ctxStr}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`,
     );
   }
   res.status(500).json(errorPayload(err));

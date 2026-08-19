@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -165,7 +165,7 @@ function validatePrepareResponse(
 
 /**
  * Small direct HTTP(S) client. It intentionally does not use global fetch:
- * Qwen's model proxy may install a process-global dispatcher, while this
+ * Canopy's model proxy may install a process-global dispatcher, while this
  * security boundary must stay on the validated loopback origin and must not
  * inherit proxy routing or redirect behavior.
  */
@@ -186,7 +186,7 @@ export class RequiredExternalToolGuard {
     const response = await this.request('/v1/handshake', {
       protocolVersion: EXTERNAL_TOOL_GUARD_PROTOCOL_VERSION,
       nonce,
-      client: 'qwen-code',
+      client: 'canopy-code',
     });
     validateHandshakeResponse(response, nonce);
     this.initialized = true;

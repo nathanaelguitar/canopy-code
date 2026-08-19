@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -212,11 +212,11 @@ describe('pathRulesFor — the shell/CI-lane rule', () => {
   // reviewer running the suite on a Mac found it in one round.
   it('attaches to shell, CI scripts, and the tests that drive them', () => {
     const out = pathRulesFor([
-      'scripts/tests/qwen-pr-review-workflow.test.js',
+      'scripts/tests/canopy-pr-review-workflow.test.js',
       'src/pay.ts',
     ]);
     expect(out).toContain('Shell and CI scripts — the lanes that run them');
-    expect(out).toContain('scripts/tests/qwen-pr-review-workflow.test.js');
+    expect(out).toContain('scripts/tests/canopy-pr-review-workflow.test.js');
     expect(out).not.toContain('src/pay.ts');
   });
 

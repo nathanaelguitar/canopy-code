@@ -47,8 +47,8 @@ function mockRealpath(
 }
 
 describe('Storage – getGlobalSettingsPath', () => {
-  it('returns path to ~/.qwen/settings.json', () => {
-    const expected = path.join(os.homedir(), '.qwen', 'settings.json');
+  it('returns path to ~/.canopy/settings.json', () => {
+    const expected = path.join(os.homedir(), '.canopy', 'settings.json');
     expect(Storage.getGlobalSettingsPath()).toBe(expected);
   });
 });
@@ -57,48 +57,52 @@ describe('Storage – additional helpers', () => {
   const projectRoot = '/tmp/project';
   const storage = new Storage(projectRoot);
 
-  it('getWorkspaceSettingsPath returns project/.qwen/settings.json', () => {
-    const expected = path.join(projectRoot, '.qwen', 'settings.json');
+  it('getWorkspaceSettingsPath returns project/.canopy/settings.json', () => {
+    const expected = path.join(projectRoot, '.canopy', 'settings.json');
     expect(storage.getWorkspaceSettingsPath()).toBe(expected);
   });
 
-  it('getUserCommandsDir returns ~/.qwen/commands', () => {
-    const expected = path.join(os.homedir(), '.qwen', 'commands');
+  it('getUserCommandsDir returns ~/.canopy/commands', () => {
+    const expected = path.join(os.homedir(), '.canopy', 'commands');
     expect(Storage.getUserCommandsDir()).toBe(expected);
   });
 
-  it('getProjectCommandsDir returns project/.qwen/commands', () => {
-    const expected = path.join(projectRoot, '.qwen', 'commands');
+  it('getProjectCommandsDir returns project/.canopy/commands', () => {
+    const expected = path.join(projectRoot, '.canopy', 'commands');
     expect(storage.getProjectCommandsDir()).toBe(expected);
   });
 
-  it('getMcpOAuthTokensPath returns ~/.qwen/mcp-oauth-tokens.json', () => {
-    const expected = path.join(os.homedir(), '.qwen', 'mcp-oauth-tokens.json');
+  it('getMcpOAuthTokensPath returns ~/.canopy/mcp-oauth-tokens.json', () => {
+    const expected = path.join(
+      os.homedir(),
+      '.canopy',
+      'mcp-oauth-tokens.json',
+    );
     expect(Storage.getMcpOAuthTokensPath()).toBe(expected);
   });
 });
 
 describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
-  const originalEnv = process.env['QWEN_RUNTIME_DIR'];
+  const originalEnv = process.env['CANOPY_RUNTIME_DIR'];
 
   beforeEach(() => {
     // Reset state before each test
     Storage.setRuntimeBaseDir(null);
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   });
 
   afterEach(() => {
     // Restore original env
     Storage.setRuntimeBaseDir(null);
     if (originalEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
   });
 
-  it('defaults to getGlobalQwenDir() when nothing is configured', () => {
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+  it('defaults to getGlobalCanopyDir() when nothing is configured', () => {
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 
   it('uses setRuntimeBaseDir value when set with absolute path', () => {
@@ -107,11 +111,11 @@ describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
     expect(Storage.getRuntimeBaseDir()).toBe(runtimeDir);
   });
 
-  it('env var QWEN_RUNTIME_DIR takes priority over setRuntimeBaseDir', () => {
+  it('env var CANOPY_RUNTIME_DIR takes priority over setRuntimeBaseDir', () => {
     const settingsDir = path.resolve('from-settings');
     const envDir = path.resolve('from-env');
     Storage.setRuntimeBaseDir(settingsDir);
-    process.env['QWEN_RUNTIME_DIR'] = envDir;
+    process.env['CANOPY_RUNTIME_DIR'] = envDir;
     expect(Storage.getRuntimeBaseDir()).toBe(envDir);
   });
 
@@ -127,8 +131,8 @@ describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
     expect(Storage.getRuntimeBaseDir()).toBe(expected);
   });
 
-  it('expands tilde (~) in QWEN_RUNTIME_DIR env var', () => {
-    process.env['QWEN_RUNTIME_DIR'] = '~/env-runtime';
+  it('expands tilde (~) in CANOPY_RUNTIME_DIR env var', () => {
+    process.env['CANOPY_RUNTIME_DIR'] = '~/env-runtime';
     const expected = path.join(os.homedir(), 'env-runtime');
     expect(Storage.getRuntimeBaseDir()).toBe(expected);
   });
@@ -141,8 +145,8 @@ describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
 
   it('resolves relative paths in setRuntimeBaseDir using explicit cwd', () => {
     const cwd = path.resolve('workspace', 'projectA');
-    Storage.setRuntimeBaseDir('.qwen', cwd);
-    expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.qwen'));
+    Storage.setRuntimeBaseDir('.canopy', cwd);
+    expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.canopy'));
   });
 
   it('ignores cwd when path is absolute', () => {
@@ -161,8 +165,8 @@ describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
     expect(Storage.getRuntimeBaseDir()).toBe(expected);
   });
 
-  it('resolves relative paths in QWEN_RUNTIME_DIR env var', () => {
-    process.env['QWEN_RUNTIME_DIR'] = 'relative/env-path';
+  it('resolves relative paths in CANOPY_RUNTIME_DIR env var', () => {
+    process.env['CANOPY_RUNTIME_DIR'] = 'relative/env-path';
     const expected = path.resolve('relative/env-path');
     expect(Storage.getRuntimeBaseDir()).toBe(expected);
   });
@@ -173,19 +177,19 @@ describe('Storage – getRuntimeBaseDir / setRuntimeBaseDir', () => {
     expect(Storage.getRuntimeBaseDir()).toBe(customDir);
 
     Storage.setRuntimeBaseDir(null);
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 
   it('resets to default when setRuntimeBaseDir is called with undefined', () => {
     Storage.setRuntimeBaseDir(path.resolve('custom'));
     Storage.setRuntimeBaseDir(undefined);
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 
   it('resets to default when setRuntimeBaseDir is called with empty string', () => {
     Storage.setRuntimeBaseDir(path.resolve('custom'));
     Storage.setRuntimeBaseDir('');
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 
   it('handles bare tilde (~) as home directory', () => {
@@ -207,9 +211,9 @@ describe('Storage – getPlansDir', () => {
     mockRealpathSync.mockReset();
   });
 
-  it('defaults to ~/.qwen/plans when plansDirectory is not configured', () => {
+  it('defaults to ~/.canopy/plans when plansDirectory is not configured', () => {
     expect(Storage.getPlansDir(projectRoot)).toBe(
-      path.join(Storage.getGlobalQwenDir(), 'plans'),
+      path.join(Storage.getGlobalCanopyDir(), 'plans'),
     );
   });
 
@@ -347,19 +351,19 @@ describe('Storage – getPlansDir', () => {
 });
 
 describe('Storage – runtime path methods use getRuntimeBaseDir', () => {
-  const originalEnv = process.env['QWEN_RUNTIME_DIR'];
+  const originalEnv = process.env['CANOPY_RUNTIME_DIR'];
 
   beforeEach(() => {
     Storage.setRuntimeBaseDir(null);
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   });
 
   afterEach(() => {
     Storage.setRuntimeBaseDir(null);
     if (originalEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
   });
 
@@ -383,14 +387,14 @@ describe('Storage – runtime path methods use getRuntimeBaseDir', () => {
     );
   });
 
-  it('getGlobalIdeDir is anchored to the global Qwen dir, not runtime base dir', () => {
+  it('getGlobalIdeDir is anchored to the global Canopy dir, not runtime base dir', () => {
     const customDir = path.resolve('custom');
     Storage.setRuntimeBaseDir(customDir);
     // IDE lock files are discovery anchors shared with the VS Code companion,
     // which can only see env vars (not settings-based runtimeOutputDir), so
-    // getGlobalIdeDir must follow getGlobalQwenDir to keep both sides aligned.
+    // getGlobalIdeDir must follow getGlobalCanopyDir to keep both sides aligned.
     expect(Storage.getGlobalIdeDir()).toBe(
-      path.join(Storage.getGlobalQwenDir(), 'ide'),
+      path.join(Storage.getGlobalCanopyDir(), 'ide'),
     );
   });
 
@@ -427,75 +431,75 @@ describe('Storage – runtime path methods use getRuntimeBaseDir', () => {
   });
 });
 
-describe('Storage – config paths remain at ~/.qwen regardless of runtime dir', () => {
-  const originalEnv = process.env['QWEN_RUNTIME_DIR'];
-  const globalQwenDir = Storage.getGlobalQwenDir();
+describe('Storage – config paths remain at ~/.canopy regardless of runtime dir', () => {
+  const originalEnv = process.env['CANOPY_RUNTIME_DIR'];
+  const globalCanopyDir = Storage.getGlobalCanopyDir();
 
   beforeEach(() => {
     Storage.setRuntimeBaseDir(path.resolve('custom-runtime'));
-    process.env['QWEN_RUNTIME_DIR'] = path.resolve('env-runtime');
+    process.env['CANOPY_RUNTIME_DIR'] = path.resolve('env-runtime');
   });
 
   afterEach(() => {
     Storage.setRuntimeBaseDir(null);
     if (originalEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
   });
 
-  it('getGlobalSettingsPath still uses ~/.qwen', () => {
+  it('getGlobalSettingsPath still uses ~/.canopy', () => {
     expect(Storage.getGlobalSettingsPath()).toBe(
-      path.join(globalQwenDir, 'settings.json'),
+      path.join(globalCanopyDir, 'settings.json'),
     );
   });
 
-  it('getInstallationIdPath still uses ~/.qwen', () => {
+  it('getInstallationIdPath still uses ~/.canopy', () => {
     expect(Storage.getInstallationIdPath()).toBe(
-      path.join(globalQwenDir, 'installation_id'),
+      path.join(globalCanopyDir, 'installation_id'),
     );
   });
 
-  it('getGoogleAccountsPath still uses ~/.qwen', () => {
+  it('getGoogleAccountsPath still uses ~/.canopy', () => {
     expect(Storage.getGoogleAccountsPath()).toBe(
-      path.join(globalQwenDir, 'google_accounts.json'),
+      path.join(globalCanopyDir, 'google_accounts.json'),
     );
   });
 
-  it('getMcpOAuthTokensPath still uses ~/.qwen', () => {
+  it('getMcpOAuthTokensPath still uses ~/.canopy', () => {
     expect(Storage.getMcpOAuthTokensPath()).toBe(
-      path.join(globalQwenDir, 'mcp-oauth-tokens.json'),
+      path.join(globalCanopyDir, 'mcp-oauth-tokens.json'),
     );
   });
 
-  it('getOAuthCredsPath still uses ~/.qwen', () => {
+  it('getOAuthCredsPath still uses ~/.canopy', () => {
     expect(Storage.getOAuthCredsPath()).toBe(
-      path.join(globalQwenDir, 'oauth_creds.json'),
+      path.join(globalCanopyDir, 'oauth_creds.json'),
     );
   });
 
-  it('getUserCommandsDir still uses ~/.qwen', () => {
+  it('getUserCommandsDir still uses ~/.canopy', () => {
     expect(Storage.getUserCommandsDir()).toBe(
-      path.join(globalQwenDir, 'commands'),
+      path.join(globalCanopyDir, 'commands'),
     );
   });
 
-  it('getGlobalMemoryFilePath still uses ~/.qwen', () => {
+  it('getGlobalMemoryFilePath still uses ~/.canopy', () => {
     expect(Storage.getGlobalMemoryFilePath()).toBe(
-      path.join(globalQwenDir, 'memory.md'),
+      path.join(globalCanopyDir, 'memory.md'),
     );
   });
 
-  it('getGlobalBinDir still uses ~/.qwen', () => {
-    expect(Storage.getGlobalBinDir()).toBe(path.join(globalQwenDir, 'bin'));
+  it('getGlobalBinDir still uses ~/.canopy', () => {
+    expect(Storage.getGlobalBinDir()).toBe(path.join(globalCanopyDir, 'bin'));
   });
 
-  it('getUserSkillsDirs still includes ~/.qwen/skills', () => {
+  it('getUserSkillsDirs still includes ~/.canopy/skills', () => {
     const storage = new Storage('/tmp/project');
     const skillsDirs = storage.getUserSkillsDirs();
     expect(
-      skillsDirs.some((dir) => dir === path.join(globalQwenDir, 'skills')),
+      skillsDirs.some((dir) => dir === path.join(globalCanopyDir, 'skills')),
     ).toBe(true);
   });
 });
@@ -511,26 +515,26 @@ describe('Storage – QWEN_HOME env var', () => {
     }
   });
 
-  it('defaults to ~/.qwen when QWEN_HOME is not set', () => {
+  it('defaults to ~/.canopy when QWEN_HOME is not set', () => {
     delete process.env['QWEN_HOME'];
-    const expected = path.join(os.homedir(), '.qwen');
-    expect(Storage.getGlobalQwenDir()).toBe(expected);
+    const expected = path.join(os.homedir(), '.canopy');
+    expect(Storage.getGlobalCanopyDir()).toBe(expected);
   });
 
   it('uses QWEN_HOME when set to absolute path', () => {
-    const configDir = path.resolve('/tmp/custom-qwen');
+    const configDir = path.resolve('/tmp/custom-canopy');
     process.env['QWEN_HOME'] = configDir;
-    expect(Storage.getGlobalQwenDir()).toBe(configDir);
+    expect(Storage.getGlobalCanopyDir()).toBe(configDir);
   });
 
   it('resolves relative QWEN_HOME to absolute path', () => {
     process.env['QWEN_HOME'] = 'relative/config';
     const expected = path.resolve('relative/config');
-    expect(Storage.getGlobalQwenDir()).toBe(expected);
+    expect(Storage.getGlobalCanopyDir()).toBe(expected);
   });
 
   it('config paths follow QWEN_HOME', () => {
-    const configDir = path.resolve('/tmp/custom-qwen');
+    const configDir = path.resolve('/tmp/custom-canopy');
     process.env['QWEN_HOME'] = configDir;
     expect(Storage.getGlobalSettingsPath()).toBe(
       path.join(configDir, 'settings.json'),
@@ -552,65 +556,65 @@ describe('Storage – QWEN_HOME env var', () => {
   });
 
   it('project-level paths are NOT affected by QWEN_HOME', () => {
-    const configDir = path.resolve('/tmp/custom-qwen');
+    const configDir = path.resolve('/tmp/custom-canopy');
     const projectDir = path.resolve('/tmp/project');
     process.env['QWEN_HOME'] = configDir;
     const storage = new Storage(projectDir);
     expect(storage.getWorkspaceSettingsPath()).toBe(
-      path.join(projectDir, '.qwen', 'settings.json'),
+      path.join(projectDir, '.canopy', 'settings.json'),
     );
     expect(storage.getProjectCommandsDir()).toBe(
-      path.join(projectDir, '.qwen', 'commands'),
+      path.join(projectDir, '.canopy', 'commands'),
     );
   });
 
   it('expands tilde (~) in QWEN_HOME', () => {
-    process.env['QWEN_HOME'] = '~/custom-qwen';
-    const expected = path.join(os.homedir(), 'custom-qwen');
-    expect(Storage.getGlobalQwenDir()).toBe(expected);
+    process.env['QWEN_HOME'] = '~/custom-canopy';
+    const expected = path.join(os.homedir(), 'custom-canopy');
+    expect(Storage.getGlobalCanopyDir()).toBe(expected);
   });
 
   it('expands Windows-style tilde in QWEN_HOME', () => {
-    process.env['QWEN_HOME'] = '~\\custom-qwen';
-    const expected = path.join(os.homedir(), 'custom-qwen');
-    expect(Storage.getGlobalQwenDir()).toBe(expected);
+    process.env['QWEN_HOME'] = '~\\custom-canopy';
+    const expected = path.join(os.homedir(), 'custom-canopy');
+    expect(Storage.getGlobalCanopyDir()).toBe(expected);
   });
 
   it('handles bare tilde (~) as home directory in QWEN_HOME', () => {
     process.env['QWEN_HOME'] = '~';
-    expect(Storage.getGlobalQwenDir()).toBe(path.normalize(os.homedir()));
+    expect(Storage.getGlobalCanopyDir()).toBe(path.normalize(os.homedir()));
   });
 
-  it('QWEN_HOME and QWEN_RUNTIME_DIR are independent', () => {
+  it('QWEN_HOME and CANOPY_RUNTIME_DIR are independent', () => {
     const configDir = path.resolve('/tmp/config');
     const runtimeDir = path.resolve('/tmp/runtime');
     process.env['QWEN_HOME'] = configDir;
-    process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
-    expect(Storage.getGlobalQwenDir()).toBe(configDir);
+    process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
+    expect(Storage.getGlobalCanopyDir()).toBe(configDir);
     expect(Storage.getRuntimeBaseDir()).toBe(runtimeDir);
     expect(Storage.getGlobalSettingsPath()).toBe(
       path.join(configDir, 'settings.json'),
     );
     expect(Storage.getGlobalTempDir()).toBe(path.join(runtimeDir, 'tmp'));
     expect(Storage.getGlobalDebugDir()).toBe(path.join(runtimeDir, 'debug'));
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   });
 });
 
 describe('Storage – runtime base dir async context isolation', () => {
-  const originalEnv = process.env['QWEN_RUNTIME_DIR'];
+  const originalEnv = process.env['CANOPY_RUNTIME_DIR'];
 
   beforeEach(() => {
     Storage.setRuntimeBaseDir(null);
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   });
 
   afterEach(() => {
     Storage.setRuntimeBaseDir(null);
     if (originalEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
   });
 
@@ -618,8 +622,8 @@ describe('Storage – runtime base dir async context isolation', () => {
     Storage.setRuntimeBaseDir(path.resolve('global-runtime'));
     const cwd = path.resolve('workspace', 'project-a');
 
-    await Storage.runWithRuntimeBaseDir('.qwen', cwd, async () => {
-      expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.qwen'));
+    await Storage.runWithRuntimeBaseDir('.canopy', cwd, async () => {
+      expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.canopy'));
     });
   });
 
@@ -627,24 +631,24 @@ describe('Storage – runtime base dir async context isolation', () => {
     const cwdA = path.resolve('workspace', 'a');
     const cwdB = path.resolve('workspace', 'b');
 
-    const runA = Storage.runWithRuntimeBaseDir('.qwen-a', cwdA, async () => {
+    const runA = Storage.runWithRuntimeBaseDir('.canopy-a', cwdA, async () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
       return Storage.getRuntimeBaseDir();
     });
 
-    const runB = Storage.runWithRuntimeBaseDir('.qwen-b', cwdB, async () => {
+    const runB = Storage.runWithRuntimeBaseDir('.canopy-b', cwdB, async () => {
       await new Promise((resolve) => setTimeout(resolve, 1));
       return Storage.getRuntimeBaseDir();
     });
 
     const [a, b] = await Promise.all([runA, runB]);
-    expect(a).toBe(path.join(cwdA, '.qwen-a'));
-    expect(b).toBe(path.join(cwdB, '.qwen-b'));
+    expect(a).toBe(path.join(cwdA, '.canopy-a'));
+    expect(b).toBe(path.join(cwdB, '.canopy-b'));
   });
 
   it('lets a resolved runtime pin override later process env changes', async () => {
     const pinned = path.resolve('workspace', 'pinned-runtime');
-    process.env['QWEN_RUNTIME_DIR'] = path.resolve(
+    process.env['CANOPY_RUNTIME_DIR'] = path.resolve(
       'workspace',
       'ambient-runtime',
     );
@@ -673,14 +677,14 @@ describe('Storage – runtime base dir async context isolation', () => {
 
   it('pins an instance to the runtime dir where it was created', () => {
     const cwd = path.resolve('workspace', 'pinned');
-    const runtimeDir = path.join(cwd, '.qwen-a');
+    const runtimeDir = path.join(cwd, '.canopy-a');
     const storage = Storage.runWithRuntimeBaseDir(
-      '.qwen-a',
+      '.canopy-a',
       cwd,
       () => new Storage(cwd),
     );
 
-    Storage.runWithRuntimeBaseDir('.qwen-b', cwd, () => {
+    Storage.runWithRuntimeBaseDir('.canopy-b', cwd, () => {
       expect(storage.getRuntimeBaseDir()).toBe(runtimeDir);
       expect(storage.getProjectDir()).toContain(
         path.join(runtimeDir, 'projects'),

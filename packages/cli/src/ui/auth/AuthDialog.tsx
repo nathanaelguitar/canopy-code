@@ -25,7 +25,7 @@ import {
   ALIBABA_PROVIDERS,
   THIRD_PARTY_PROVIDERS,
   type ProviderConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useProviderSetupFlow } from './useProviderSetupFlow.js';
 import { ProviderSetupSteps } from './ProviderSetupSteps.js';
 

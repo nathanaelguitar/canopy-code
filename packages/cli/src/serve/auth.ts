@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,7 +47,7 @@ export interface ParsedAllowOriginPatterns {
 /**
  * Thrown by `parseAllowOriginPatterns` when an entry
  * is neither the `*` literal nor a value that round-trips through
- * `new URL(...).origin`. Caught at boot in `runQwenServe` and converted
+ * `new URL(...).origin`. Caught at boot in `runCanopyServe` and converted
  * to a structured stderr message identifying the malformed entry.
  *
  * Rejection is strict by intent: trailing slashes, paths, userinfo, and
@@ -204,14 +204,14 @@ export function allowOriginCors(
 ): RequestHandler {
   const matcher = toMatcher(patterns);
   const allowedMethods = 'GET, POST, PATCH, DELETE, OPTIONS';
-  // `X-Qwen-Event-Epoch` pairs with `Last-Event-ID` on SSE reconnects
+  // `X-Canopy-Event-Epoch` pairs with `Last-Event-ID` on SSE reconnects
   // (DAEMON-001): it must survive preflight AND be readable from the
   // response, or cross-origin clients silently lose stale-cursor detection.
   const allowedHeaders =
-    'Authorization, Content-Type, X-Qwen-Client-Id, Last-Event-ID, X-Qwen-Event-Epoch';
+    'Authorization, Content-Type, X-Canopy-Client-Id, Last-Event-ID, X-Canopy-Event-Epoch';
   const maxAgeSeconds = '86400';
   const exposedHeaders =
-    'Retry-After, X-Qwen-Event-Epoch, X-Qwen-SSE-Stream-Id';
+    'Retry-After, X-Canopy-Event-Epoch, X-Canopy-SSE-Stream-Id';
   return (req: Request, res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     if (!origin) {
@@ -367,7 +367,7 @@ function buildPrimaryHostGate(
 /**
  * Bearer token middleware. Primary loopback requests may be open when the
  * configured source has no token; Local Control always requires its pairing
- * credential. `runQwenServe` still enforces that any non-loopback primary bind
+ * credential. `runCanopyServe` still enforces that any non-loopback primary bind
  * has a token, and that `--require-auth` boots only with a token configured.
  */
 export function bearerAuth(
@@ -444,7 +444,9 @@ export function bearerAuth(
   };
 }
 
-export const AUTHENTICATED_REQUEST = Symbol('qwen.serve.authenticatedRequest');
+export const AUTHENTICATED_REQUEST = Symbol(
+  'canopy.serve.authenticatedRequest',
+);
 
 /**
  * Whether the request presented credentials that `bearerAuth` verified.
@@ -591,7 +593,7 @@ export function createMutationGate(
       return;
     }
     // Only list remediations that work standalone. `--require-auth` is
-    // paired-required-with-a-token at boot (`run-qwen-serve.ts` refuses
+    // paired-required-with-a-token at boot (`run-canopy-serve.ts` refuses
     // to start with the flag set but no token), so naming it as a
     // third standalone option here would loop the operator into a
     // different boot error. Configuring a token via `QWEN_SERVER_TOKEN`

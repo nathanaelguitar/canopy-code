@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,10 +12,10 @@ import {
 } from './gen-ai-provider.js';
 
 describe('GenAI provider resolution', () => {
-  it('always identifies Qwen OAuth as DashScope', () => {
+  it('always identifies Canopy OAuth as DashScope', () => {
     expect(
       resolveGenAiProviderName({
-        authType: 'qwen-oauth',
+        authType: 'canopy-oauth',
         baseUrl: 'https://proxy.example.com/v1',
         apiKeyEnvKey: 'OPENAI_API_KEY',
       }),
@@ -159,7 +159,7 @@ describe('GenAI operation and output type resolution', () => {
   it.each([
     ['openai', 'chat'],
     ['anthropic', 'chat'],
-    ['qwen-oauth', 'chat'],
+    ['canopy-oauth', 'chat'],
     ['gemini', 'generate_content'],
     ['vertex-ai', 'generate_content'],
   ] as const)('maps %s to %s', (authType, operation) => {

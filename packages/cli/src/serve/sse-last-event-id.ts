@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -44,7 +44,7 @@ export function parseLastEventId(
   if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
     if (typeof raw === 'string' && raw.length > 0) {
       writeStderrLine(
-        `qwen serve: ${logPrefix}rejected Last-Event-ID ${safeLogValue(raw)} ` +
+        `canopy serve: ${logPrefix}rejected Last-Event-ID ${safeLogValue(raw)} ` +
           `(not a decimal integer)`,
       );
     }
@@ -53,7 +53,7 @@ export function parseLastEventId(
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n > Number.MAX_SAFE_INTEGER) {
     writeStderrLine(
-      `qwen serve: ${logPrefix}rejected Last-Event-ID ${safeLogValue(raw)} ` +
+      `canopy serve: ${logPrefix}rejected Last-Event-ID ${safeLogValue(raw)} ` +
         `(exceeds Number.MAX_SAFE_INTEGER)`,
     );
     return undefined;
@@ -62,7 +62,7 @@ export function parseLastEventId(
 }
 
 /**
- * Parse an `X-Qwen-Event-Epoch` request header into an epoch token for the
+ * Parse an `X-Canopy-Event-Epoch` request header into an epoch token for the
  * EventBus stale-cursor detection (DAEMON-001). Shared by the REST
  * `GET /session/:id/events` surface and the ACP `GET /acp` surface — a
  * single implementation on purpose, to avoid re-growing the
@@ -82,7 +82,7 @@ export function parseEventEpochHeader(
   if (typeof raw !== 'string' || raw.length === 0) return undefined;
   if (raw.length > 64 || !/^[\w-]+$/.test(raw)) {
     writeStderrLine(
-      `qwen serve: ${logPrefix}rejected X-Qwen-Event-Epoch ` +
+      `canopy serve: ${logPrefix}rejected X-Canopy-Event-Epoch ` +
         `${safeLogValue(raw)} (expected [A-Za-z0-9_-]{1,64})`,
     );
     return undefined;

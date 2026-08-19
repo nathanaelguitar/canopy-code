@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@
 
 import { AuthType } from '../core/contentGenerator.js';
 import type { ContentGeneratorConfig } from '../core/contentGenerator.js';
-import { DEFAULT_QWEN_MODEL } from '../config/models.js';
+import { DEFAULT_CANOPY_MODEL } from '../config/models.js';
 import { defaultModalities } from '../core/modalityDefaults.js';
 import { knownTokenLimit } from '../core/tokenLimits.js';
 import {
@@ -40,7 +40,7 @@ import {
 import {
   AUTH_ENV_MAPPINGS,
   DEFAULT_MODELS,
-  QWEN_OAUTH_ALLOWED_MODELS,
+  CANOPY_OAUTH_ALLOWED_MODELS,
   MODEL_GENERATION_CONFIG_FIELDS,
 } from './constants.js';
 import type { ModelConfig as ModelProviderConfig } from './types.js';
@@ -108,7 +108,7 @@ export interface ModelConfigResolutionResult {
 }
 
 /**
- * Applies QWEN_CODE_API_TIMEOUT_MS env override if modelProvider has not set a timeout.
+ * Applies CANOPY_CODE_API_TIMEOUT_MS env override if modelProvider has not set a timeout.
  * Precedence: modelProvider > env > settings > default
  * Mutates generationConfig and sources in-place.
  */
@@ -120,7 +120,7 @@ function applyTimeoutEnvOverride(
 ): void {
   if (modelProvider?.generationConfig?.timeout !== undefined) return;
 
-  const raw = env['QWEN_CODE_API_TIMEOUT_MS'];
+  const raw = env['CANOPY_CODE_API_TIMEOUT_MS'];
   if (raw === undefined) return;
 
   const trimmed = raw.trim();
@@ -132,7 +132,7 @@ function applyTimeoutEnvOverride(
   generationConfig.timeout = parsed;
   sources['timeout'] = {
     kind: 'env',
-    envKey: 'QWEN_CODE_API_TIMEOUT_MS',
+    envKey: 'CANOPY_CODE_API_TIMEOUT_MS',
   };
 }
 
@@ -154,9 +154,9 @@ export function resolveModelConfig(
   const warnings: string[] = [];
   const sources: ConfigSources = {};
 
-  // Special handling for Qwen OAuth
-  if (authType === AuthType.QWEN_OAUTH) {
-    return resolveQwenOAuthConfig(input, warnings);
+  // Special handling for Canopy OAuth
+  if (authType === AuthType.CANOPY_OAUTH) {
+    return resolveCanopyOAuthConfig(input, warnings);
   }
 
   // Get auth-specific env var mappings.
@@ -277,7 +277,7 @@ export function resolveModelConfig(
     sources,
   );
 
-  // ---- Env override: QWEN_CODE_API_TIMEOUT_MS ----
+  // ---- Env override: CANOPY_CODE_API_TIMEOUT_MS ----
   applyTimeoutEnvOverride(env, generationConfig, sources, modelProvider);
 
   // Build final config
@@ -303,18 +303,18 @@ export function resolveModelConfig(
 }
 
 /**
- * Special resolver for Qwen OAuth authentication.
- * Qwen OAuth has fixed model options and uses dynamic tokens.
+ * Special resolver for Canopy OAuth authentication.
+ * Canopy OAuth has fixed model options and uses dynamic tokens.
  */
-function resolveQwenOAuthConfig(
+function resolveCanopyOAuthConfig(
   input: ModelConfigSourcesInput,
   warnings: string[],
 ): ModelConfigResolutionResult {
   const { cli, settings, proxy, modelProvider } = input;
   const sources: ConfigSources = {};
 
-  // Qwen OAuth only allows specific models
-  const allowedModels = new Set<string>(QWEN_OAUTH_ALLOWED_MODELS);
+  // Canopy OAuth only allows specific models
+  const allowedModels = new Set<string>(CANOPY_OAUTH_ALLOWED_MODELS);
 
   // Determine requested model
   const requestedModel = cli?.model || settings?.model;
@@ -334,15 +334,15 @@ function resolveQwenOAuthConfig(
         ? ` Note: vision-model has been removed since coder-model now supports vision capabilities.`
         : '';
       warnings.push(
-        `Warning: Unsupported Qwen OAuth model '${requestedModel}', falling back to '${DEFAULT_QWEN_MODEL}'.${extraMessage}`,
+        `Warning: Unsupported Canopy OAuth model '${requestedModel}', falling back to '${DEFAULT_CANOPY_MODEL}'.${extraMessage}`,
       );
     }
-    resolvedModel = DEFAULT_QWEN_MODEL;
-    modelSource = defaultSource(`fallback to '${DEFAULT_QWEN_MODEL}'`);
+    resolvedModel = DEFAULT_CANOPY_MODEL;
+    modelSource = defaultSource(`fallback to '${DEFAULT_CANOPY_MODEL}'`);
   }
 
   sources['model'] = modelSource;
-  sources['apiKey'] = computedSource('Qwen OAuth dynamic token');
+  sources['apiKey'] = computedSource('Canopy OAuth dynamic token');
   sources['authType'] = computedSource('provided by caller');
 
   if (proxy) {
@@ -353,18 +353,18 @@ function resolveQwenOAuthConfig(
   const generationConfig = resolveGenerationConfig(
     settings?.generationConfig,
     modelProvider?.generationConfig,
-    AuthType.QWEN_OAUTH,
+    AuthType.CANOPY_OAUTH,
     resolvedModel,
     sources,
   );
 
-  // ---- Env override: QWEN_CODE_API_TIMEOUT_MS ----
+  // ---- Env override: CANOPY_CODE_API_TIMEOUT_MS ----
   applyTimeoutEnvOverride(input.env, generationConfig, sources, modelProvider);
 
   const config: ContentGeneratorConfig = {
-    authType: AuthType.QWEN_OAUTH,
+    authType: AuthType.CANOPY_OAUTH,
     model: resolvedModel,
-    apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN',
+    apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
     proxy,
     ...generationConfig,
   };

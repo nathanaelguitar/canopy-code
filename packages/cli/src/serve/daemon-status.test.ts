@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1676,7 +1676,7 @@ describe('buildDaemonStatusResponse', () => {
         processStartedAt: string;
         listenerReadyAt?: string;
         processToListenMs?: number;
-        runQwenServeToListenMs?: number;
+        runCanopyServeToListenMs?: number;
         preheat: { status: string; durationMs?: number; error?: string };
       };
     };
@@ -1684,7 +1684,7 @@ describe('buildDaemonStatusResponse', () => {
       processStartedAt: '2026-06-23T08:00:00.000Z',
       listenerReadyAt: '2026-06-23T08:00:01.250Z',
       processToListenMs: 1250,
-      runQwenServeToListenMs: 500,
+      runCanopyServeToListenMs: 500,
       preheat: { status: 'succeeded', durationMs: 300 },
     };
 
@@ -1697,7 +1697,7 @@ describe('buildDaemonStatusResponse', () => {
           processStartedAt: '2026-06-23T08:00:00.000Z',
           listenerReadyAt: '2026-06-23T08:00:01.250Z',
           processToListenMs: 1250,
-          runQwenServeToListenMs: 500,
+          runCanopyServeToListenMs: 500,
           preheat: { status: 'succeeded', durationMs: 300 },
         },
       },
@@ -2068,7 +2068,7 @@ function makeOptions(input: MakeOptionsInput = {}): BuildDaemonStatusOptions {
     boundWorkspace: BASE_WORKSPACE,
     bridge,
     workspace,
-    qwenCodeVersion: 'test',
+    canopyCodeVersion: 'test',
     daemonLog: input.daemonLog,
     ...(input.acpSnapshot
       ? {
@@ -2116,7 +2116,7 @@ function makeOptions(input: MakeOptionsInput = {}): BuildDaemonStatusOptions {
     getRestSseActive: () => 0,
     features: ['health', 'daemon_status'],
     protocolVersions: { current: 'v1', supported: ['v1'] },
-    supportedDeviceFlowProviders: ['qwen-oauth'],
+    supportedDeviceFlowProviders: ['canopy-oauth'],
     deviceFlowRegistry: registry,
     sessionShellCommandEnabled: false,
     ...(input.channelWorkerSnapshot

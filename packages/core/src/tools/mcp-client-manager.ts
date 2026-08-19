@@ -44,7 +44,7 @@ import { listDescendantPids, sigtermPids } from './pid-descendants.js';
 import { mcpSessionMetadataKey } from './mcp-session-config.js';
 
 const debugLogger = createDebugLogger('MCP');
-export const RUNTIME_MCP_IF_ABSENT_CONFIG_FLAG = '__qwenRuntimeMcpIfAbsent';
+export const RUNTIME_MCP_IF_ABSENT_CONFIG_FLAG = '__canopyRuntimeMcpIfAbsent';
 
 /**
  * Configuration for MCP health monitoring
@@ -187,7 +187,7 @@ export type McpTransportKind =
 /**
  * Snapshot of the manager's live + reserved MCP state. The daemon's
  * read-only `GET /workspace/mcp` route fans this out via the ACP
- * `qwen/status/workspace/mcp` ext-method. `subprocessCount` is the
+ * `canopy/status/workspace/mcp` ext-method. `subprocessCount` is the
  * value `pgrep -P` baseline harness can validate against.
  */
 export interface McpClientAccounting {
@@ -268,20 +268,20 @@ export function mcpTransportOf(config: MCPServerConfig): McpTransportKind {
 
 /**
  * Resolve budget config from env vars when the constructor caller
- * doesn't pass one. Daemon-mode (`qwen serve`) sets these when
- * spawning the `qwen --acp` child; standalone `qwen` invocations
+ * doesn't pass one. Daemon-mode (`canopy serve`) sets these when
+ * spawning the `canopy --acp` child; standalone `canopy` invocations
  * leave them unset and get `{ budgetMode: 'off' }` — the historical
  * behavior, no enforcement.
  *
- * `QWEN_SERVE_MCP_CLIENT_BUDGET` — positive integer; non-numeric /
+ * `CANOPY_SERVE_MCP_CLIENT_BUDGET` — positive integer; non-numeric /
  *   zero / negative / NaN are rejected (treated as unset) and a
  *   stderr breadcrumb is written so the misconfiguration is visible.
- * `QWEN_SERVE_MCP_BUDGET_MODE` — `enforce|warn|off`. Defaults to
+ * `CANOPY_SERVE_MCP_BUDGET_MODE` — `enforce|warn|off`. Defaults to
  *   `warn` when a budget is set, `off` otherwise.
  */
 function readBudgetFromEnv(): McpBudgetConfig {
-  const rawBudget = process.env['QWEN_SERVE_MCP_CLIENT_BUDGET'];
-  const rawMode = process.env['QWEN_SERVE_MCP_BUDGET_MODE'];
+  const rawBudget = process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET'];
+  const rawMode = process.env['CANOPY_SERVE_MCP_BUDGET_MODE'];
   let clientBudget: number | undefined;
   if (rawBudget !== undefined && rawBudget !== '') {
     // Parse strictly as a decimal integer: Number('0x10')=16, Number('1e2')=100
@@ -293,15 +293,15 @@ function readBudgetFromEnv(): McpBudgetConfig {
       clientBudget = parsed;
     } else {
       // operator typos
-      // like `QWEN_SERVE_MCP_CLIENT_BUDGET=abc` previously fell
+      // like `CANOPY_SERVE_MCP_CLIENT_BUDGET=abc` previously fell
       // through silently to "no budget" with zero indication. The
-      // CLI parent (`commands/serve.ts` + `run-qwen-serve.ts`)
+      // CLI parent (`commands/serve.ts` + `run-canopy-serve.ts`)
       // validates and throws, but the ACP child process — where
       // this function runs — has no such validation. Surface a
       // boot breadcrumb so operators see the misconfiguration in
       // journald / docker logs.
       process.stderr.write(
-        `qwen serve: ignoring invalid QWEN_SERVE_MCP_CLIENT_BUDGET=` +
+        `canopy serve: ignoring invalid CANOPY_SERVE_MCP_CLIENT_BUDGET=` +
           `'${rawBudget}' (expected positive integer); ` +
           `MCP budget enforcement disabled for this child.\n`,
       );
@@ -317,7 +317,7 @@ function readBudgetFromEnv(): McpBudgetConfig {
       // budget-driven default; now it gets a stderr line so the
       // typo is visible.
       process.stderr.write(
-        `qwen serve: ignoring invalid QWEN_SERVE_MCP_BUDGET_MODE=` +
+        `canopy serve: ignoring invalid CANOPY_SERVE_MCP_BUDGET_MODE=` +
           `'${rawMode}' (expected enforce|warn|off); falling back to ` +
           `${clientBudget === undefined ? 'off' : 'warn'}.\n`,
       );
@@ -336,10 +336,10 @@ function readBudgetFromEnv(): McpBudgetConfig {
   //
   // R9 #7: emit a stderr breadcrumb when the downgrade fires.
   // Pre-fix the downgrade was silent — operator sets
-  // `QWEN_SERVE_MCP_BUDGET_MODE=enforce` in a Docker Compose / k8s
+  // `CANOPY_SERVE_MCP_BUDGET_MODE=enforce` in a Docker Compose / k8s
   // env without the matching budget, daemon boots happy, snapshot
   // shows `budgetMode: 'off'`, and enforcement is silently
-  // disabled. The CLI handler + `runQwenServe` path both throw on
+  // disabled. The CLI handler + `runCanopyServe` path both throw on
   // this combination; the env-var fallback path (used by the ACP
   // child) was the laggard. Now mirrors the R7 #6 invalid-value
   // breadcrumb pattern.
@@ -348,8 +348,8 @@ function readBudgetFromEnv(): McpBudgetConfig {
     clientBudget === undefined
   ) {
     process.stderr.write(
-      `qwen serve: QWEN_SERVE_MCP_BUDGET_MODE=${budgetMode} requires ` +
-        `QWEN_SERVE_MCP_CLIENT_BUDGET=N; downgrading to off. ` +
+      `canopy serve: CANOPY_SERVE_MCP_BUDGET_MODE=${budgetMode} requires ` +
+        `CANOPY_SERVE_MCP_CLIENT_BUDGET=N; downgrading to off. ` +
         `Set both env vars to enable MCP guardrail enforcement.\n`,
     );
     budgetMode = 'off';
@@ -573,15 +573,15 @@ export class McpClientManager {
     const budgetConfig = options.budgetConfig;
 
     // Tests inject `budgetConfig` directly; production reads env vars
-    // set by `qwen serve --mcp-client-budget=N --mcp-budget-mode=X`
-    // when spawning the ACP child. Standalone `qwen` invocations
+    // set by `canopy serve --mcp-client-budget=N --mcp-budget-mode=X`
+    // when spawning the ACP child. Standalone `canopy` invocations
     // leave both unset and get `mode: 'off'` — the pre-PR-14 default.
     const resolved = budgetConfig ?? readBudgetFromEnv();
     let resolvedMode = resolved.budgetMode;
     // mirror
     // `readBudgetFromEnv`'s `(enforce|warn)`-without-budget
     // downgrade for the direct-`budgetConfig` path too. All
-    // production callers (CLI handler, `runQwenServe`, env-var
+    // production callers (CLI handler, `runCanopyServe`, env-var
     // fallback) validate upfront, but a future code path that
     // injects `budgetConfig` without running the validation
     // would re-introduce the silent fail-open. Defense in depth.
@@ -600,7 +600,7 @@ export class McpClientManager {
       resolved.clientBudget === undefined
     ) {
       process.stderr.write(
-        `qwen serve: McpClientManager constructed with budgetMode=${resolvedMode} ` +
+        `canopy serve: McpClientManager constructed with budgetMode=${resolvedMode} ` +
           `but no clientBudget; downgrading to off.\n`,
       );
       resolvedMode = 'off';
@@ -819,7 +819,7 @@ export class McpClientManager {
     // `lastRefusedServerNames.includes` guard above).
     this.pendingRefusalNames.add(serverName);
     process.stderr.write(
-      `qwen serve: MCP server '${serverName}' refused (budget exhausted, ` +
+      `canopy serve: MCP server '${serverName}' refused (budget exhausted, ` +
         `budget=${this.clientBudget}, mode=enforce)\n`,
     );
   }
@@ -1638,7 +1638,7 @@ export class McpClientManager {
           // stay on the legacy McpClientManager path because their
           // `sendSdkMcpMessage` callback is bound per-session in this
           // manager's ctor, but the workspace-shared pool was
-          // constructed in `QwenAgent` ctor without it. Routing SDK
+          // constructed in `CanopyAgent` ctor without it. Routing SDK
           // MCP through `pool.acquire` would yield an McpClient with
           // `sendSdkMcpMessage: undefined`, breaking SDK MCP server
           // tool calls. The legacy path below preserves the

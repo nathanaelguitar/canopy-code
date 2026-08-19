@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   readWorktreeSession,
   type SessionArchiveState,
   type SessionGroupPresetColor,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   AcpSessionBridge,
   BridgeSessionSummary,
@@ -451,7 +451,7 @@ async function loadAllPersistedSummaries(
       (sessions.length >= MAX_ORGANIZED_SESSIONS && cursor !== undefined)
     ) {
       writeStderrLine(
-        `qwen serve: organized session list truncated at ${MAX_ORGANIZED_SESSIONS} sessions`,
+        `canopy serve: organized session list truncated at ${MAX_ORGANIZED_SESSIONS} sessions`,
       );
       truncated = true;
       break;
@@ -490,20 +490,20 @@ async function listAllPersistedSummaries(
     { signal },
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.cache_status',
+    'canopy-code.daemon.session_list.cache_status',
     lookup.status,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.archive_state',
+    'canopy-code.daemon.session_list.archive_state',
     archiveState,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.query_kind',
+    'canopy-code.daemon.session_list.query_kind',
     queryKind,
   );
   if (lookup.cacheAgeMs !== undefined) {
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_list.cache_age_ms',
+      'canopy-code.daemon.session_list.cache_age_ms',
       lookup.cacheAgeMs,
     );
   }
@@ -511,20 +511,20 @@ async function listAllPersistedSummaries(
   const snapshot = await lookup.promise;
   signal?.throwIfAborted();
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.persisted_sessions',
+    'canopy-code.daemon.session_list.persisted_sessions',
     snapshot.sessions.length,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.scan_pages',
+    'canopy-code.daemon.session_list.scan_pages',
     snapshot.scanPages,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_list.truncated',
+    'canopy-code.daemon.session_list.truncated',
     snapshot.truncated,
   );
   if (lookup.status !== 'cache_hit') {
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_list.scan_duration_ms',
+      'canopy-code.daemon.session_list.scan_duration_ms',
       snapshot.scanDurationMs,
     );
   }
@@ -721,7 +721,7 @@ async function listOrganizedWorkspaceSessionsForResponse(
       readOptions.signal?.throwIfAborted();
       liveMergeFailed = true;
       writeStderrLine(
-        `qwen serve: organized session list live merge failed; using persisted sessions only: ${
+        `canopy serve: organized session list live merge failed; using persisted sessions only: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -841,7 +841,7 @@ async function listWorkspaceSessionsByMetadataForResponse(
       readOptions.signal?.throwIfAborted();
       liveMergeFailed = true;
       writeStderrLine(
-        `qwen serve: session metadata filter live merge failed; using persisted sessions only: ${
+        `canopy serve: session metadata filter live merge failed; using persisted sessions only: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );

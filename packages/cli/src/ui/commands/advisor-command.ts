@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import {
   BTW_MAX_INPUT_LENGTH,
   buildBtwCacheSafeParams,
   runForkedAgent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const ADVISOR_SCHEMA = {
   type: 'object',

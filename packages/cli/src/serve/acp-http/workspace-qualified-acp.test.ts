@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import WebSocket from 'ws';
 import type { HttpAcpBridge } from '@qwen-code/acp-bridge/bridgeTypes';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import { type AcpHttpHandle, mountAcpHttp } from './index.js';
 import { DeviceFlowRegistry } from '../auth/device-flow.js';
 import { CdpTunnelRegistry } from '../cdp-tunnel/cdp-tunnel-registry.js';
@@ -192,11 +192,11 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
   let previousRuntimeDir: string | undefined;
 
   beforeEach(async () => {
-    previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     runtimeDir = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-workspace-qualified-acp-'),
+      path.join(os.tmpdir(), 'canopy-workspace-qualified-acp-'),
     );
-    process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
     setupGithubMock.mockReset();
     setupGithubMock.mockImplementation(async ({ cwd }: { cwd: string }) => ({
       kind: 'github_setup',
@@ -323,9 +323,9 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     server.closeAllConnections?.();
     await new Promise<void>((r) => server.close(() => r()));
     if (previousRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
     }
     await fsp.rm(runtimeDir, { recursive: true, force: true });
   });
@@ -431,7 +431,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     result?: {
       protocolVersion?: number;
       agentCapabilities?: {
-        _meta?: { qwen?: { workspaceCwd?: string } };
+        _meta?: { canopy?: { workspaceCwd?: string } };
       };
     };
     error?: {
@@ -472,7 +472,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const secondary = await sendWsRequest('/workspaces/secondary-id/acp', {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
     expect(secondary['result']).toMatchObject({ workspaceCwd: '/ws-b' });
@@ -486,7 +486,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const primary = await sendWsRequest('/acp', {
       jsonrpc: '2.0',
       id: 3,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
     expect(primary['result']).toMatchObject({ workspaceCwd: '/ws' });
@@ -513,7 +513,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const response = await sendWsRequest('/workspaces/empty-overlay-id/acp', {
       jsonrpc: '2.0',
       id: 4,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
 
@@ -614,7 +614,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       {
         jsonrpc: '2.0',
         id: 3,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'secondary-session', command: 'pwd' },
       },
     ]);
@@ -633,7 +633,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const primary = await sendWsRequest('/acp', {
       jsonrpc: '2.0',
       id: 4,
-      method: '_qwen/session/shell',
+      method: '_canopy/session/shell',
       params: { sessionId: 'secondary-session', command: 'pwd' },
     });
     expect(primary['error']).toMatchObject({ code: -32602 });
@@ -664,7 +664,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       method: 'session/new',
       params: {
         workspaceCwd: '/ws',
-        _meta: { 'qwen-code/sessionId': sessionId },
+        _meta: { 'canopy-code/sessionId': sessionId },
       },
     });
     await vi.waitFor(() =>
@@ -677,7 +677,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       method: 'session/new',
       params: {
         workspaceCwd: '/ws-b',
-        _meta: { 'qwen-code/sessionId': sessionId },
+        _meta: { 'canopy-code/sessionId': sessionId },
       },
     });
     expect(secondary['error']).toMatchObject({
@@ -798,7 +798,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       method: 'session/new',
       params: {
         workspaceCwd: '/ws',
-        _meta: { 'qwen-code/sessionId': sessionId },
+        _meta: { 'canopy-code/sessionId': sessionId },
       },
     });
     await vi.waitFor(() =>
@@ -921,7 +921,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       method: 'session/new',
       params: {
         workspaceCwd: '/ws-b',
-        _meta: { 'qwen-code/sessionId': sessionId },
+        _meta: { 'canopy-code/sessionId': sessionId },
       },
     });
     await vi.waitFor(() =>
@@ -965,7 +965,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const response = await sendWsRequest('/workspaces/secondary-id/acp', {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/session/update_organization',
+      method: '_canopy/session/update_organization',
       params: { sessionId, isPinned: true },
     });
 
@@ -983,7 +983,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const legacy = await sendWsRequest('/acp', {
       jsonrpc: '2.0',
       id: 4,
-      method: '_qwen/session/update_organization',
+      method: '_canopy/session/update_organization',
       params: { sessionId, isPinned: false },
     });
     expect(legacy['error']).toMatchObject({ code: -32602 });
@@ -1250,7 +1250,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
   it('routes a WS upgrade + initialize to a trusted secondary workspace', async () => {
     const result = await initializeWs('/workspaces/secondary-id/acp');
     expect(result.result?.protocolVersion).toBeGreaterThanOrEqual(1);
-    expect(result.result?.agentCapabilities?._meta?.qwen?.workspaceCwd).toBe(
+    expect(result.result?.agentCapabilities?._meta?.canopy?.workspaceCwd).toBe(
       '/ws-b',
     );
   });
@@ -1259,7 +1259,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     const result = await initializeWs(
       `/workspaces/${encodeURIComponent('/ws-b')}/acp`,
     );
-    expect(result.result?.agentCapabilities?._meta?.qwen?.workspaceCwd).toBe(
+    expect(result.result?.agentCapabilities?._meta?.canopy?.workspaceCwd).toBe(
       '/ws-b',
     );
   });
@@ -1461,7 +1461,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     expect(handle!.getWorkspaceActivity('secondary-id').acpConnections).toBe(0);
     await expect(initializeWs('/acp')).resolves.toMatchObject({
       result: {
-        agentCapabilities: { _meta: { qwen: { workspaceCwd: '/ws' } } },
+        agentCapabilities: { _meta: { canopy: { workspaceCwd: '/ws' } } },
       },
     });
   });
@@ -1522,7 +1522,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
       initializeWs('/workspaces/secondary-id/acp'),
     ).resolves.toMatchObject({
       result: {
-        agentCapabilities: { _meta: { qwen: { workspaceCwd: '/ws-b' } } },
+        agentCapabilities: { _meta: { canopy: { workspaceCwd: '/ws-b' } } },
       },
     });
   });
@@ -1857,8 +1857,8 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
               JSON.stringify({
                 jsonrpc: '2.0',
                 id: 2,
-                method: '_qwen/workspace/auth/device_flow/start',
-                params: { providerId: 'qwen' },
+                method: '_canopy/workspace/auth/device_flow/start',
+                params: { providerId: 'canopy' },
               }),
             );
             return;
@@ -1885,7 +1885,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
     await sendWsRequest('/workspaces/secondary-id/acp', {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/memory/remember',
+      method: '_canopy/workspace/memory/remember',
       params: { content: 'secondary-only memory' },
     });
 
@@ -1959,7 +1959,7 @@ describe('workspace-qualified ACP (/workspaces/:workspace/acp)', () => {
             jsonrpc: '2.0',
             id: 1,
             method: 'initialize',
-            params: { clientInfo: { name: 'qwen-cdp-bridge' } },
+            params: { clientInfo: { name: 'canopy-cdp-bridge' } },
           }),
         ),
       );

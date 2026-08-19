@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -114,15 +114,15 @@ export function defaultModalities(model: string): InputModalities {
 }
 
 /**
- * True for wire model ids in the qwen family: any `qwen*` id plus
- * `coder-model`, the QWEN_OAUTH default (DEFAULT_QWEN_MODEL in
- * config/models.ts, aliased to a Qwen 3.6 Plus hybrid), which doesn't
- * start with `qwen` but is the most common hybrid-thinking model for
+ * True for wire model ids in the canopy family: any `canopy*` id plus
+ * `coder-model`, the CANOPY_OAUTH default (DEFAULT_CANOPY_MODEL in
+ * config/models.ts, aliased to a Canopy 3.6 Plus hybrid), which doesn't
+ * start with `canopy` but is the most common hybrid-thinking model for
  * first-time users. Shared by the pipeline's disable/tool-choice gates
  * and the DashScope provider's effort mapping so the family fact lives
  * in one place.
  */
-export function isQwenFamilyWireModel(model: string | undefined): boolean {
+export function isCanopyFamilyWireModel(model: string | undefined): boolean {
   if (!model) {
     return false;
   }
@@ -134,7 +134,7 @@ export function isQwenFamilyWireModel(model: string | undefined): boolean {
  * True for the qwen3.8-max wire model family — the only family that
  * reads the tiered `reasoning_effort` field directly. Prefix-matched so
  * dated snapshots and `-latest` aliases are covered, consistent with the
- * family pattern in MODALITY_PATTERNS above. Older qwen hybrids expose
+ * family pattern in MODALITY_PATTERNS above. Older canopy hybrids expose
  * only the on/off `enable_thinking` switch instead.
  */
 export function isTieredEffortWireModel(model: string | undefined): boolean {

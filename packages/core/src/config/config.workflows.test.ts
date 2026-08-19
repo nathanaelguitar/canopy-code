@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import type { Mock } from 'vitest';
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 vi.mock('../telemetry/index.js', () => ({
-  QwenLogger: vi.fn().mockImplementation(() => ({
+  CanopyLogger: vi.fn().mockImplementation(() => ({
     logStartSessionEvent: vi.fn().mockResolvedValue(undefined),
     logEndSessionEvent: vi.fn().mockResolvedValue(undefined),
     shutdown: vi.fn().mockResolvedValue(undefined),
@@ -114,8 +114,8 @@ describe('Config workflows feature gate', () => {
   afterEach(() => {
     // Restore env vars touched by tests
     for (const key of [
-      'QWEN_CODE_ENABLE_WORKFLOWS',
-      'QWEN_CODE_DISABLE_WORKFLOWS',
+      'CANOPY_CODE_ENABLE_WORKFLOWS',
+      'CANOPY_CODE_DISABLE_WORKFLOWS',
     ]) {
       if (originalEnv[key] === undefined) {
         delete process.env[key];
@@ -126,15 +126,15 @@ describe('Config workflows feature gate', () => {
   });
 
   it('defaults to disabled', () => {
-    delete process.env['QWEN_CODE_ENABLE_WORKFLOWS'];
-    delete process.env['QWEN_CODE_DISABLE_WORKFLOWS'];
+    delete process.env['CANOPY_CODE_ENABLE_WORKFLOWS'];
+    delete process.env['CANOPY_CODE_DISABLE_WORKFLOWS'];
     const cfg = new Config({ ...baseParams });
     expect(cfg.isWorkflowsEnabled()).toBe(false);
   });
 
-  it('respects QWEN_CODE_ENABLE_WORKFLOWS=1', () => {
-    delete process.env['QWEN_CODE_DISABLE_WORKFLOWS'];
-    process.env['QWEN_CODE_ENABLE_WORKFLOWS'] = '1';
+  it('respects CANOPY_CODE_ENABLE_WORKFLOWS=1', () => {
+    delete process.env['CANOPY_CODE_DISABLE_WORKFLOWS'];
+    process.env['CANOPY_CODE_ENABLE_WORKFLOWS'] = '1';
     const cfg = new Config({ ...baseParams });
     expect(cfg.isWorkflowsEnabled()).toBe(true);
   });
@@ -142,9 +142,9 @@ describe('Config workflows feature gate', () => {
   // TST-I1: "respects setWorkflowsEnabled(true)" was deleted — it is a
   // getter/setter tautology that tests no logic.
 
-  it('QWEN_CODE_DISABLE_WORKFLOWS=1 overrides everything', () => {
-    process.env['QWEN_CODE_DISABLE_WORKFLOWS'] = '1';
-    process.env['QWEN_CODE_ENABLE_WORKFLOWS'] = '1';
+  it('CANOPY_CODE_DISABLE_WORKFLOWS=1 overrides everything', () => {
+    process.env['CANOPY_CODE_DISABLE_WORKFLOWS'] = '1';
+    process.env['CANOPY_CODE_ENABLE_WORKFLOWS'] = '1';
     const cfg = new Config({ ...baseParams });
     cfg.setWorkflowsEnabled(true);
     expect(cfg.isWorkflowsEnabled()).toBe(false);

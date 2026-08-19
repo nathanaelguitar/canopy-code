@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,14 +47,14 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
   }
 
   it('returns false for the repository primary working tree', async () => {
-    const repo = initRepo('qwen-linked-main-');
+    const repo = initRepo('canopy-linked-main-');
     const svc = new GitWorktreeService(repo);
     expect(await svc.isRegisteredLinkedWorktree(repo)).toBe(false);
   });
 
   it('returns true for a linked worktree created via `git worktree add`', async () => {
-    const repo = initRepo('qwen-linked-wt-');
-    const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-linked-wt-');
+    const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(wt), { recursive: true });
     execFileSync('git', ['worktree', 'add', '-b', 'review-pr-1', wt, 'HEAD'], {
       cwd: repo,
@@ -69,7 +69,7 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // file ⟹ linked worktree" heuristic would misclassify. Its --git-dir and
     // --git-common-dir still coincide, so it is correctly the main tree.
     const base = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-linked-sep-')),
+      fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-linked-sep-')),
     );
     tmpDirs.push(base);
     const tree = path.join(base, 'tree');
@@ -96,7 +96,7 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // fail-closed contract: an unverifiable path is treated as "not linked"
     // so callers reject rather than mis-isolate.
     const plain = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-linked-plain-')),
+      fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-linked-plain-')),
     );
     tmpDirs.push(plain);
     const svc = new GitWorktreeService(plain);
@@ -109,14 +109,14 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // the macOS `/var → /private/var` case, reproduced with an explicit
     // symlink so it runs everywhere. Without the realpath the symlink path
     // would not match the registry's canonical entry and this would be false.
-    const repo = initRepo('qwen-linked-symlink-');
-    const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-linked-symlink-');
+    const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(wt), { recursive: true });
     execFileSync('git', ['worktree', 'add', '-b', 'review-pr-1', wt, 'HEAD'], {
       cwd: repo,
     });
     const linkParent = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-linked-symlink-lnk-')),
+      fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-linked-symlink-lnk-')),
     );
     tmpDirs.push(linkParent);
     const link = path.join(linkParent, 'wt-link');
@@ -131,8 +131,8 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // a bare --git-dir vs --git-common-dir heuristic: it reports a per-worktree
     // git dir. But that entry's `gitdir` pointer names the REAL worktree, not
     // this copy, so verifying the pointer rejects it.
-    const repo = initRepo('qwen-linked-fake-');
-    const realWt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-linked-fake-');
+    const realWt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(realWt), { recursive: true });
     execFileSync(
       'git',
@@ -152,8 +152,8 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // `<target>/.git` names a git dir the attacker also owns, whose `commondir`
     // can point at the real repo and whose `gitdir` can point back at itself.
     // Only reading `<commonDir>/worktrees/*` on the REPO side defeats this.
-    const repo = initRepo('qwen-linked-fabricated-');
-    const realWt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-linked-fabricated-');
+    const realWt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(realWt), { recursive: true });
     execFileSync(
       'git',
@@ -190,8 +190,8 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
     // checkout, so the pinned agent's git commands would hit the user's tree.
     // Probing the path itself catches this: with no `.git` of its own, git
     // resolves it into the main repo, where --git-dir == --git-common-dir.
-    const repo = initRepo('qwen-linked-stale-');
-    const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-linked-stale-');
+    const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(wt), { recursive: true });
     execFileSync('git', ['worktree', 'add', '-b', 'review-pr-1', wt, 'HEAD'], {
       cwd: repo,
@@ -213,7 +213,7 @@ describe('GitWorktreeService.isRegisteredLinkedWorktree() (real git)', () => {
       // record into any newline-split parse of `git worktree list --porcelain`.
       // Verifying the registry pointer for the one probed path sidesteps that
       // class of bug entirely — no list is parsed, on any git version.
-      const repo = initRepo('qwen-linked-nl-');
+      const repo = initRepo('canopy-linked-nl-');
       const fake = path.join(repo, 'fake');
       fs.mkdirSync(fake);
       const evil = `${path.join(repo, 'evil')}\nworktree ${fake}`;
@@ -267,8 +267,8 @@ describe('GitWorktreeService.getMainWorktreePath() (real git)', () => {
     // worktree names the worktree's OWN root, which spuriously refused
     // sibling pins. The porcelain listing names the main tree regardless of
     // the calling worktree.
-    const repo = initRepo('qwen-mainpath-wt-');
-    const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+    const repo = initRepo('canopy-mainpath-wt-');
+    const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
     fs.mkdirSync(path.dirname(wt), { recursive: true });
     execFileSync('git', ['worktree', 'add', '-b', 'review-pr-1', wt, 'HEAD'], {
       cwd: repo,
@@ -296,7 +296,7 @@ describe('GitWorktreeService.getMainWorktreePath() (real git)', () => {
   it.skipIf(process.platform === 'win32')(
     'refuses the truncated anchor when the main-tree path contains a newline',
     async () => {
-      const outer = initRepo('qwen-mainpath-outer-');
+      const outer = initRepo('canopy-mainpath-outer-');
       const nlRepo = path.join(outer, 'sub', '\nR1');
       fs.mkdirSync(path.dirname(nlRepo), { recursive: true });
       execFileSync('git', ['clone', '-q', outer, nlRepo], { cwd: outer });
@@ -318,7 +318,7 @@ describe('GitWorktreeService.getMainWorktreePath() (real git)', () => {
   it.skipIf(process.platform === 'win32')(
     'refuses a truncated anchor whose remainder is attribute-shaped',
     async () => {
-      const outer = initRepo('qwen-mainpath-attr-');
+      const outer = initRepo('canopy-mainpath-attr-');
       const nlRepo = path.join(outer, 'sub', '\ndetached');
       fs.mkdirSync(path.dirname(nlRepo), { recursive: true });
       execFileSync('git', ['clone', '-q', outer, nlRepo], { cwd: outer });
@@ -332,7 +332,7 @@ describe('GitWorktreeService.getMainWorktreePath() (real git)', () => {
   it.skipIf(process.platform === 'win32')(
     'refuses a truncated anchor when the main-tree path ends with a newline',
     async () => {
-      const outer = initRepo('qwen-mainpath-trailnl-');
+      const outer = initRepo('canopy-mainpath-trailnl-');
       const nlRepo = path.join(outer, 'sub', 'tree\n');
       fs.mkdirSync(path.dirname(nlRepo), { recursive: true });
       execFileSync('git', ['clone', '-q', outer, nlRepo], { cwd: outer });
@@ -353,7 +353,7 @@ describe('GitWorktreeService.getMainWorktreePath() (real git)', () => {
     'preserves a trailing CR in the repository directory name',
     async () => {
       const base = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mainpath-cr-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mainpath-cr-')),
       );
       tmpDirs.push(base);
       const crRepo = path.join(base, 'repo\r');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   recordDaemonHttpRequest,
   recordDaemonHttpResponse,
   withDaemonRequestSpan,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { NextFunction, Request, Response } from 'express';
 import {
   CLIENT_ID_HEADER,
@@ -779,7 +779,7 @@ export function daemonTelemetryMiddleware(
               delete telemetryRes[daemonTelemetryResponseContext];
               if (context?.workspaceCwd !== undefined) {
                 span?.setAttribute(
-                  'qwen-code.workspace.hash',
+                  'canopy-code.workspace.hash',
                   resolveWorkspaceHash(context.workspaceCwd),
                 );
               }

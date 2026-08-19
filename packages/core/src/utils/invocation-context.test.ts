@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ const context: InvocationContextV1 = {
 
 describe('invocation context wire contract', () => {
   it('exports the reserved metadata keys', () => {
-    expect(INVOCATION_CONTEXT_META_KEY).toBe('qwen-code/invocation');
+    expect(INVOCATION_CONTEXT_META_KEY).toBe('canopy-code/invocation');
     expect(PRIVATE_PARENT_CAPABILITY_META_KEY).toBe(
       'qwen-code/private-parent-capability',
     );

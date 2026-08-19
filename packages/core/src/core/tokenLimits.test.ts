@@ -559,7 +559,7 @@ describe('clampOutputTokensToWindow', () => {
   });
 
   it('never inflates an explicit ceiling below the floor (review finding)', () => {
-    // QWEN_CODE_MAX_OUTPUT_TOKENS=2000 on a capacity-constrained backend:
+    // CANOPY_CODE_MAX_OUTPUT_TOKENS=2000 on a capacity-constrained backend:
     // the floor applies to the ROOM, not to the user's explicit ceiling.
     expect(clampOutputTokensToWindow(2_000, 200_000, 50_000)).toBe(2_000);
     // Even with no room left, a tiny explicit ceiling is preserved.

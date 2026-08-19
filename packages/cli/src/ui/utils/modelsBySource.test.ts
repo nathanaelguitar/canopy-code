@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   MAIN_SOURCE,
   type ModelMetrics,
   type ModelMetricsCore,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { flattenModelsBySource } from './modelsBySource.js';
 
 const emptyCore = (): ModelMetricsCore => ({

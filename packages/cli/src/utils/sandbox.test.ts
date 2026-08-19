@@ -11,8 +11,8 @@ import { pathToFileURL } from 'node:url';
 import {
   FatalSandboxError,
   PRIVATE_ACP_CAPABILITY_ENV,
-  QWEN_DIR,
-} from '@qwen-code/qwen-code-core';
+  CANOPY_DIR,
+} from '@canopy-code/canopy-code-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const spawnMock = vi.hoisted(() => vi.fn());
@@ -71,7 +71,7 @@ describe('start_sandbox', () => {
 
     const capability = 'private-capability';
     const result = start_sandbox(
-      { command: 'docker', image: 'example.com/qwen-code:latest' },
+      { command: 'docker', image: 'example.com/canopy-code:latest' },
       [],
       undefined,
       [process.execPath, '/path/to/cli.js', '--acp'],
@@ -101,7 +101,7 @@ describe('start_sandbox', () => {
 
 describe('resolveSeatbeltProfileFile', () => {
   it('strips the chunks segment from bundled seatbelt profile paths', () => {
-    const bundleDir = path.resolve(path.sep, 'tmp', 'qwen', 'lib');
+    const bundleDir = path.resolve(path.sep, 'tmp', 'canopy', 'lib');
     const chunkUrl = pathToFileURL(
       path.join(bundleDir, 'chunks', 'sandbox-AAAA.js'),
     ).toString();
@@ -130,13 +130,13 @@ describe('resolveSeatbeltProfileFile', () => {
   });
 
   it('keeps custom seatbelt profiles under project settings', () => {
-    const bundleDir = path.resolve(path.sep, 'tmp', 'qwen', 'lib');
+    const bundleDir = path.resolve(path.sep, 'tmp', 'canopy', 'lib');
     const chunkUrl = pathToFileURL(
       path.join(bundleDir, 'chunks', 'sandbox-AAAA.js'),
     ).toString();
 
     expect(resolveSeatbeltProfileFile('project-profile', chunkUrl)).toBe(
-      path.join(QWEN_DIR, 'sandbox-macos-project-profile.sb'),
+      path.join(CANOPY_DIR, 'sandbox-macos-project-profile.sb'),
     );
   });
 
@@ -161,7 +161,7 @@ describe('resolveSeatbeltProfileFile', () => {
   ])(
     'handles Electron Node mode for a %s seatbelt re-exec',
     async (_name, marker, expected) => {
-      vi.stubEnv('QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE', marker ?? '');
+      vi.stubEnv('CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE', marker ?? '');
       vi.spyOn(fs, 'existsSync').mockReturnValue(true);
       vi.spyOn(fs, 'mkdirSync').mockReturnValue(undefined);
       vi.spyOn(fs, 'realpathSync').mockImplementation(
@@ -191,23 +191,23 @@ describe('getSandboxPassthroughEnvArgs', () => {
   it('passes update relaunch state into container sandboxes', () => {
     expect(
       getSandboxPassthroughEnvArgs({
-        QWEN_CODE_SKIP_UPDATE_CHECK_ONCE: 'true',
-        QWEN_CODE_CUSTOM_SANDBOX_IMAGE: 'example.com/qwen:1.0.0',
-        QWEN_CODE_HOST_UPDATE_RELAUNCH: 'false',
+        CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE: 'true',
+        CANOPY_CODE_CUSTOM_SANDBOX_IMAGE: 'example.com/canopy:1.0.0',
+        CANOPY_CODE_HOST_UPDATE_RELAUNCH: 'false',
         QWEN_CODE_SERVE: '1',
-        QWEN_CODE_DESKTOP: '1',
+        CANOPY_CODE_DESKTOP: '1',
       }),
     ).toEqual([
       '--env',
-      'QWEN_CODE_SKIP_UPDATE_CHECK_ONCE=true',
+      'CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE=true',
       '--env',
-      'QWEN_CODE_CUSTOM_SANDBOX_IMAGE=example.com/qwen:1.0.0',
+      'CANOPY_CODE_CUSTOM_SANDBOX_IMAGE=example.com/canopy:1.0.0',
       '--env',
-      'QWEN_CODE_HOST_UPDATE_RELAUNCH=false',
+      'CANOPY_CODE_HOST_UPDATE_RELAUNCH=false',
       '--env',
       'QWEN_CODE_SERVE=1',
       '--env',
-      'QWEN_CODE_DESKTOP=1',
+      'CANOPY_CODE_DESKTOP=1',
     ]);
   });
 });
@@ -247,37 +247,37 @@ describe('isContainerPathWithinWorkdir', () => {
 
 describe('parseSandboxImageName', () => {
   it('uses the image basename and tag for container names', () => {
-    expect(parseSandboxImageName('ghcr.io/qwenlm/qwen-code:0.18.3')).toBe(
-      'qwen-code-0.18.3',
+    expect(parseSandboxImageName('ghcr.io/qwenlm/canopy-code:0.18.3')).toBe(
+      'canopy-code-0.18.3',
     );
   });
 
   it('handles registry ports without treating them as tags', () => {
     expect(
-      parseSandboxImageName('localhost:5000/team/qwen-code-sandbox:dev'),
-    ).toBe('qwen-code-sandbox-dev');
+      parseSandboxImageName('localhost:5000/team/canopy-code-sandbox:dev'),
+    ).toBe('canopy-code-sandbox-dev');
   });
 
   it('handles registry ports when the image is untagged', () => {
-    expect(parseSandboxImageName('localhost:5000/team/qwen-code-sandbox')).toBe(
-      'qwen-code-sandbox',
-    );
+    expect(
+      parseSandboxImageName('localhost:5000/team/canopy-code-sandbox'),
+    ).toBe('canopy-code-sandbox');
   });
 
   it('drops digests from generated container names', () => {
     expect(
       parseSandboxImageName(
-        'registry.example.com/team/qwen-code-sandbox@sha256:abcdef',
+        'registry.example.com/team/canopy-code-sandbox@sha256:abcdef',
       ),
-    ).toBe('qwen-code-sandbox');
+    ).toBe('canopy-code-sandbox');
   });
 
   it('keeps tags when dropping digests from generated container names', () => {
     expect(
       parseSandboxImageName(
-        'registry.example.com/team/qwen-code-sandbox:dev@sha256:abcdef',
+        'registry.example.com/team/canopy-code-sandbox:dev@sha256:abcdef',
       ),
-    ).toBe('qwen-code-sandbox-dev');
+    ).toBe('canopy-code-sandbox-dev');
   });
 });
 

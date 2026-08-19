@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ vi.mock('../utils/stdioHelpers.js', () => ({
   writeStderrLine: mockWriteStderrLine,
 }));
 
-import { SkillManager } from '@qwen-code/qwen-code-core';
+import { SkillManager } from '@canopy-code/canopy-code-core';
 import {
   ENV_CORRUPTED_PATH,
   ENV_WAS_RECOVERED,
@@ -89,11 +89,11 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       },
     ]);
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-disabled-'),
+      path.join(os.tmpdir(), 'canopy-skills-disabled-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({
         skills: {
           defaultDisabled: ['disabled', 'enabled'],
@@ -138,11 +138,11 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       },
     ]);
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-hard-disabled-'),
+      path.join(os.tmpdir(), 'canopy-skills-hard-disabled-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({
         skills: {
           disabled: ['disabled'],
@@ -189,19 +189,19 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       },
     ]);
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-safe-mode-'),
+      path.join(os.tmpdir(), 'canopy-skills-safe-mode-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({
         skills: {
           disabled: ['blocked'],
         },
       }),
     );
-    const saved = process.env['QWEN_CODE_SAFE_MODE'];
-    process.env['QWEN_CODE_SAFE_MODE'] = '1';
+    const saved = process.env['CANOPY_CODE_SAFE_MODE'];
+    process.env['CANOPY_CODE_SAFE_MODE'] = '1';
     try {
       const provider = createWorkspaceSkillsStatusProvider();
 
@@ -213,9 +213,9 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       ]);
     } finally {
       if (saved === undefined) {
-        delete process.env['QWEN_CODE_SAFE_MODE'];
+        delete process.env['CANOPY_CODE_SAFE_MODE'];
       } else {
-        process.env['QWEN_CODE_SAFE_MODE'] = saved;
+        process.env['CANOPY_CODE_SAFE_MODE'] = saved;
       }
     }
   });
@@ -231,11 +231,11 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       },
     ]);
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-untrusted-'),
+      path.join(os.tmpdir(), 'canopy-skills-untrusted-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({ skills: { disabled: ['project-skill'] } }),
     );
     const provider = createWorkspaceSkillsStatusProvider({
@@ -253,14 +253,14 @@ describe('createWorkspaceSkillsStatusProvider', () => {
 
   it('does not consume corruption recovery state while reading disabled skills', async () => {
     vi.spyOn(SkillManager.prototype, 'listSkills').mockResolvedValueOnce([]);
-    const qwenHome = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-settings-'),
+    const canopyHome = await fsp.mkdtemp(
+      path.join(os.tmpdir(), 'canopy-skills-settings-'),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
+    const previousCanopyHome = process.env['QWEN_HOME'];
     const previousCorruptedPath = process.env[ENV_CORRUPTED_PATH];
     const previousWasRecovered = process.env[ENV_WAS_RECOVERED];
     try {
-      process.env['QWEN_HOME'] = qwenHome;
+      process.env['QWEN_HOME'] = canopyHome;
       const userSettingsPath = getUserSettingsPath();
       await fsp.writeFile(userSettingsPath, '{}');
       process.env[ENV_CORRUPTED_PATH] = `${userSettingsPath}.corrupted`;
@@ -273,8 +273,8 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       );
       expect(process.env[ENV_WAS_RECOVERED]).toBe('1');
     } finally {
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
       if (previousCorruptedPath === undefined) {
         delete process.env[ENV_CORRUPTED_PATH];
       } else {
@@ -285,7 +285,7 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       } else {
         process.env[ENV_WAS_RECOVERED] = previousWasRecovered;
       }
-      await fsp.rm(qwenHome, { recursive: true, force: true });
+      await fsp.rm(canopyHome, { recursive: true, force: true });
     }
   });
 
@@ -295,11 +295,11 @@ describe('createWorkspaceSkillsStatusProvider', () => {
     // filtering, and the getDisabledSkillLevels shim method that the prior
     // daemon regression broke.
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-disabled-levels-'),
+      path.join(os.tmpdir(), 'canopy-skills-disabled-levels-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({ skills: { disabledLevels: ['bundled'] } }),
     );
     try {
@@ -317,15 +317,15 @@ describe('createWorkspaceSkillsStatusProvider', () => {
 
   it('ignores disabledLevels in safe mode (matches CLI child session)', async () => {
     const workspace = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skills-safe-levels-'),
+      path.join(os.tmpdir(), 'canopy-skills-safe-levels-'),
     );
-    await fsp.mkdir(path.join(workspace, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(workspace, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({ skills: { disabledLevels: ['bundled'] } }),
     );
-    const saved = process.env['QWEN_CODE_SAFE_MODE'];
-    process.env['QWEN_CODE_SAFE_MODE'] = '1';
+    const saved = process.env['CANOPY_CODE_SAFE_MODE'];
+    process.env['CANOPY_CODE_SAFE_MODE'] = '1';
     try {
       const provider = createWorkspaceSkillsStatusProvider();
 
@@ -335,9 +335,9 @@ describe('createWorkspaceSkillsStatusProvider', () => {
       expect(status.skills.find((s) => s.name === 'review')).toBeDefined();
     } finally {
       if (saved === undefined) {
-        delete process.env['QWEN_CODE_SAFE_MODE'];
+        delete process.env['CANOPY_CODE_SAFE_MODE'];
       } else {
-        process.env['QWEN_CODE_SAFE_MODE'] = saved;
+        process.env['CANOPY_CODE_SAFE_MODE'] = saved;
       }
       await fsp.rm(workspace, { recursive: true, force: true });
     }

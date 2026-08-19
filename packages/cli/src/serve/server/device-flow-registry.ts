@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import {
   type DeviceFlowProvider,
   type DeviceFlowProviderId,
 } from '../auth/device-flow.js';
-import { QwenOAuthDeviceFlowProvider } from '../auth/qwen-device-flow-provider.js';
+import { CanopyOAuthDeviceFlowProvider } from '../auth/canopy-device-flow-provider.js';
 
 interface SetupDeviceFlowRegistryDeps {
   app: Application;
@@ -47,8 +47,11 @@ export function createDeviceFlowRegistry(deps: {
   for (const provider of deps.providers ?? []) {
     deviceFlowProviderMap.set(provider.providerId, provider);
   }
-  if (!deviceFlowProviderMap.has('qwen-oauth')) {
-    deviceFlowProviderMap.set('qwen-oauth', new QwenOAuthDeviceFlowProvider());
+  if (!deviceFlowProviderMap.has('canopy-oauth')) {
+    deviceFlowProviderMap.set(
+      'canopy-oauth',
+      new CanopyOAuthDeviceFlowProvider(),
+    );
   }
 
   const deviceFlowEventSink: DeviceFlowEventSink = {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -132,7 +132,7 @@ export interface AggregatedReport {
 }
 
 function getUsageHistoryPath(): string {
-  return path.join(Storage.getGlobalQwenDir(), 'usage_record.jsonl');
+  return path.join(Storage.getGlobalCanopyDir(), 'usage_record.jsonl');
 }
 
 export function persistSessionUsage(params: {
@@ -346,7 +346,7 @@ async function rebuildFromSessionJsonl(
     sinceMs,
     skipSessionIds,
   } = options;
-  const projectsDir = path.join(Storage.getGlobalQwenDir(), 'projects');
+  const projectsDir = path.join(Storage.getGlobalCanopyDir(), 'projects');
   try {
     if (!fs.existsSync(projectsDir)) return [];
   } catch (e) {
@@ -424,7 +424,7 @@ async function rebuildFromSessionJsonl(
 
   // Persist rebuilt records as a one-time migration so later reads are fast.
   // Read-only callers (e.g. the daemon dashboard, which serves a GET) pass
-  // `persist: false` so opening the dashboard never writes to `~/.qwen`.
+  // `persist: false` so opening the dashboard never writes to `~/.canopy`.
   if (persist && results.length > 0) {
     const usagePath = getUsageHistoryPath();
     for (const record of results) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ export type StructuredOutputParams = Record<string, unknown>;
  *
  * Two on-device surfaces redact via this constant:
  *   1. `ToolCallEvent` in `telemetry/types.ts` — keeps the payload out
- *      of OTLP exports / QwenLogger / ui-telemetry stream / chat-recording
+ *      of OTLP exports / CanopyLogger / ui-telemetry stream / chat-recording
  *      UI event mirror.
  *   2. `redactStructuredOutputArgsForRecording` in `core/geminiChat.ts`
  *      — keeps the payload out of the on-disk chat-recording JSONL

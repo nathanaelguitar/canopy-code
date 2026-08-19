@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import type { CommandContext } from '../ui/commands/types.js';
 import { createMockCommandContext } from '../test-utils/mockCommandContext.js';
 import type * as child_process from 'node:child_process';
 import os from 'node:os';
-import { IdeClient } from '@qwen-code/qwen-code-core';
+import { IdeClient } from '@canopy-code/canopy-code-core';
 import * as versionUtils from './version.js';
 
 // `getNpmVersion` / `getGitVersion` use `execFile` callback-style. Mock
@@ -77,9 +77,9 @@ vi.mock('./version.js', () => ({
   getCliVersion: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     IdeClient: {
@@ -178,17 +178,17 @@ describe('systemInfo', () => {
     });
 
     it('should return sandbox name without prefix when stripPrefix is true', () => {
-      process.env['SANDBOX'] = 'qwen-code-test-sandbox';
+      process.env['SANDBOX'] = 'canopy-code-test-sandbox';
       expect(getSandboxEnv(true)).toBe('test-sandbox');
     });
 
     it('should return sandbox name with prefix when stripPrefix is false', () => {
-      process.env['SANDBOX'] = 'qwen-code-test-sandbox';
-      expect(getSandboxEnv(false)).toBe('qwen-code-test-sandbox');
+      process.env['SANDBOX'] = 'canopy-code-test-sandbox';
+      expect(getSandboxEnv(false)).toBe('canopy-code-test-sandbox');
     });
 
-    it('should handle qwen- prefix removal', () => {
-      process.env['SANDBOX'] = 'qwen-custom-sandbox';
+    it('should handle canopy- prefix removal', () => {
+      process.env['SANDBOX'] = 'canopy-custom-sandbox';
       expect(getSandboxEnv(true)).toBe('custom-sandbox');
     });
   });
@@ -267,7 +267,7 @@ describe('systemInfo', () => {
       } as unknown as IdeClient);
       setExecFileStdout('10.0.0');
 
-      const { AuthType } = await import('@qwen-code/qwen-code-core');
+      const { AuthType } = await import('@canopy-code/canopy-code-core');
       // Update the mock context to use OpenAI auth
       mockContext.services.settings.merged.security!.auth!.selectedType =
         AuthType.USE_OPENAI;
@@ -283,7 +283,7 @@ describe('systemInfo', () => {
     });
 
     it('should use sandbox env without prefix for bug reports', async () => {
-      process.env['SANDBOX'] = 'qwen-code-test-sandbox';
+      process.env['SANDBOX'] = 'canopy-code-test-sandbox';
       vi.mocked(IdeClient.getInstance).mockResolvedValue({
         getDetectedIdeDisplayName: vi.fn().mockReturnValue(''),
       } as unknown as IdeClient);

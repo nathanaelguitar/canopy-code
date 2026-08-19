@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review resolve-anchors`: turn each finding's quoted code snippet into
+// `canopy review resolve-anchors`: turn each finding's quoted code snippet into
 // the line number GitHub needs, by matching it against the captured diff.
 //
 // Step 7 used to post the line number the review agent reported. GitHub rejects
@@ -148,7 +148,7 @@ function runResolveAnchors(args: ResolveAnchorsArgs): void {
   };
 
   // The directory of the path the CALLER chose, which is not necessarily
-  // `.qwen/tmp` — `--out reports/anchors.json` is a legal request, and creating
+  // `.canopy/tmp` — `--out reports/anchors.json` is a legal request, and creating
   // the temp dir instead answered it with ENOENT.
   mkdirSync(dirname(resolve(args.out)), { recursive: true });
   writeFileSync(args.out, JSON.stringify(report, null, 2), 'utf8');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 import type { ChildProcess } from 'child_process';
@@ -60,9 +60,9 @@ export enum HookEventName {
   PermissionDenied = 'PermissionDenied',
   // StopFailure - When the turn ends due to an API error (instead of Stop)
   StopFailure = 'StopFailure',
-  // TodoCreated - When a new todo item is added to the list (Qwen Code specific)
+  // TodoCreated - When a new todo item is added to the list (Canopy Code specific)
   TodoCreated = 'TodoCreated',
-  // TodoCompleted - When a todo item's status changes to 'completed' (Qwen Code specific)
+  // TodoCompleted - When a todo item's status changes to 'completed' (Canopy Code specific)
   TodoCompleted = 'TodoCompleted',
   // InstructionsLoaded - When an instruction or context file is loaded
   InstructionsLoaded = 'InstructionsLoaded',
@@ -667,7 +667,7 @@ export interface PermissionDeniedInput extends HookInput {
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_use_id: string;
-  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
   reason: PermissionDeniedReason;
 }
 
@@ -752,7 +752,7 @@ export interface PreToolUseInput extends HookInput {
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_use_id: string; // Unique identifier for this tool use instance (internal format, e.g., toolu_xxx)
-  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
 }
 
 /**
@@ -775,7 +775,7 @@ export interface PostToolUseInput extends HookInput {
   tool_input: Record<string, unknown>;
   tool_response: Record<string, unknown>;
   tool_use_id: string; // Unique identifier for this tool use instance (internal format, e.g., toolu_xxx)
-  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
 }
 
 /**
@@ -798,7 +798,7 @@ export interface PostToolUseOutput extends HookOutput {
 export interface PostToolUseFailureInput extends HookInput {
   permission_mode: PermissionMode;
   tool_use_id: string; // Unique identifier for the tool use (internal format, e.g., toolu_xxx)
-  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
   tool_name: string;
   tool_input: Record<string, unknown>;
   error: string; // Error message describing the failure
@@ -824,7 +824,7 @@ export interface PostToolBatchToolCall {
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_use_id: string;
-  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Qwen)
+  tool_call_id?: string; // Original API call ID from the LLM provider (e.g., call_xxx for OpenAI/Canopy)
   status: 'success' | 'error' | 'cancelled';
   /**
    * Serialized ToolCallResponseInfo fields for the resolved call:

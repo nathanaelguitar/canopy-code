@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,11 +22,11 @@ const repoRoot = resolve(
   '..',
 );
 
-const MANIFEST_RELATIVE_PATH = '.qwen/review-context.json';
+const MANIFEST_RELATIVE_PATH = '.canopy/review-context.json';
 
 const expectedManifest = {
   version: 1,
-  label: 'Qwen Code',
+  label: 'Canopy Code',
   rules: [
     {
       paths: ['packages/cli/src/commands/review/**'],
@@ -185,7 +185,7 @@ describe('committed review context manifest', () => {
   });
 
   it.skipIf(!inGitWorktree())(
-    'keeps the manifest un-ignored and tracked despite the .qwen/* ignore',
+    'keeps the manifest un-ignored and tracked despite the .canopy/* ignore',
     () => {
       expect(
         exitsZero(['check-ignore', '--no-index', '--', MANIFEST_RELATIVE_PATH]),

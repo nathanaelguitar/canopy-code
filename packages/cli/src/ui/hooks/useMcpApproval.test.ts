@@ -13,7 +13,7 @@ import {
   ApprovalMode,
   type Config,
   type MCPServerConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useMcpApproval } from './useMcpApproval.js';
 import { McpApprovalChoice } from '../components/mcp/MCPServerApprovalDialog.js';
 import { appEvents, AppEvent } from '../../utils/events.js';
@@ -56,7 +56,7 @@ describe('useMcpApproval', () => {
 
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'use-mcp-approval-'));
-    process.env['QWEN_CODE_MCP_APPROVALS_PATH'] = path.join(
+    process.env['CANOPY_CODE_MCP_APPROVALS_PATH'] = path.join(
       dir,
       MCP_APPROVALS_FILENAME,
     );
@@ -64,7 +64,7 @@ describe('useMcpApproval', () => {
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
     resetMcpApprovalsForTesting();
     fs.rmSync(dir, { recursive: true, force: true });
   });

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review publish-assets`: host evidence images for a PR review in the
+// `canopy review publish-assets`: host evidence images for a PR review in the
 // user-designated assets repository, and hand back commit-pinned URLs.
 //
 // GitHub's API cannot attach images to review comments — the web UI's
@@ -13,10 +13,10 @@
 // way a review gets it there, and it inherits the shape of the skill's other
 // public write (`submit`) deliberately:
 //
-//   - **Designated destination.** It writes only to `QWEN_REVIEW_ASSETS_REPO`,
+//   - **Designated destination.** It writes only to `CANOPY_REVIEW_ASSETS_REPO`,
 //     an owner/repo the user set by hand — never to a repo the model chose. No
 //     designation, no publish, exit 3. (A separate variable from
-//     `QWEN_REVIEW_SCRATCH_REPO` on purpose: the scratch repo's contract
+//     `CANOPY_REVIEW_SCRATCH_REPO` on purpose: the scratch repo's contract
 //     forbids PR-derived content, and evidence screenshots are exactly that.)
 //   - **Authorised run.** It publishes only when the run is authorised to post
 //     the review itself — the same args-file re-parse and target binding as
@@ -229,7 +229,7 @@ export function runPublishAssets(args: PublishAssetsArgs): void {
   }
 
   // ── Gate 1: a designated destination ──────────────────────────────────────
-  const repoResult = parseAssetsRepo(process.env['QWEN_REVIEW_ASSETS_REPO']);
+  const repoResult = parseAssetsRepo(process.env['CANOPY_REVIEW_ASSETS_REPO']);
   if ('error' in repoResult) {
     refuse(repoResult.error);
     return;
@@ -501,7 +501,7 @@ export function runPublishAssets(args: PublishAssetsArgs): void {
 export const publishAssetsCommand: CommandModule = {
   command: 'publish-assets',
   describe:
-    'Publish review evidence images to the user-designated assets repository (QWEN_REVIEW_ASSETS_REPO) and emit commit-pinned URLs — gated on the same authorisation as submit',
+    'Publish review evidence images to the user-designated assets repository (CANOPY_REVIEW_ASSETS_REPO) and emit commit-pinned URLs — gated on the same authorisation as submit',
   builder: (yargs) =>
     yargs
       .option('pr', {

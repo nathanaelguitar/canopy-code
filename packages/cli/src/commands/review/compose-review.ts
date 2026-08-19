@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review compose-review`: deterministic event selection and body
+// `canopy review compose-review`: deterministic event selection and body
 // composition for the /review skill's Step 7 submission.
 //
 // This logic used to be prose — a C/S table, three event-capping overrides,
@@ -892,7 +892,7 @@ function prevRoundFor(planPath: string | undefined): number {
     if (!isPr) return 0;
     const prev = JSON.parse(
       readFileSync(
-        join(dirname(planPath), `qwen-review-pr-${pr}-prev-ledger.json`),
+        join(dirname(planPath), `canopy-review-pr-${pr}-prev-ledger.json`),
         'utf8',
       ),
     ) as Ledger;
@@ -1229,7 +1229,7 @@ function composeReviewBody(
   let coveredChunks: number[] = [];
 
   // The deterministic script-lint gate. `compose-review` is the authority here:
-  // it reads the report the orchestrator's `qwen review script-lint` step wrote
+  // it reads the report the orchestrator's `canopy review script-lint` step wrote
   // and turns it into the verdict itself, so neither the existence of a blocker
   // nor its severity depends on a model. A finding on a changed line (above
   // cosmetic `style`) is a pre-confirmed `[lint]` Critical; an uninstalled or
@@ -1359,7 +1359,7 @@ function composeReviewBody(
       // have read it — and relaunching it would produce another agent that
       // cannot either. Do not call this a whiff; the prompt is the bug.
       // The rebuild command goes to stderr with the other remediation, not into
-      // this line: the line lands in the posted body, and `qwen review
+      // this line: the line lands in the posted body, and `canopy review
       // agent-prompt` is not something a PR author can run.
       for (const label of cov.blindAgents) {
         coverageEntries.push({
@@ -1373,7 +1373,7 @@ function composeReviewBody(
       }
       if (cov.blindAgents.length > 0) {
         remediation.push(
-          'blind agents: rebuild each prompt with `"${QWEN_CODE_CLI:-qwen}" ' +
+          'blind agents: rebuild each prompt with `"${CANOPY_CODE_CLI:-canopy}" ' +
             `review agent-prompt --plan ${planRef} --chunk <id>\` (or \`--role <r>\`) ` +
             '`[--rules <rules file>]` and launch an agent with it verbatim — ' +
             'do not relaunch the old prompt; a second blind agent reads no ' +
@@ -1417,7 +1417,7 @@ function composeReviewBody(
       coverageEntries.push(...cov.disclosures);
       if (cov.rewrittenPrompts.length > 0) {
         remediation.push(
-          'rewritten launches: re-run `"${QWEN_CODE_CLI:-qwen}" review ' +
+          'rewritten launches: re-run `"${CANOPY_CODE_CLI:-canopy}" review ' +
             `agent-prompt --plan ${planRef} --chunk <id>\` (or \`--role <r>\`, with ` +
             '`--file <path>` for an invariant agent) `[--rules <rules file>]` ' +
             'for each named agent and pass its output unedited — copy it, do ' +
@@ -1432,7 +1432,7 @@ function composeReviewBody(
       if (cov.missingRoles.length > 0) {
         remediation.push(
           'missing briefs: build every required prompt in one call — ' +
-            `\`"\${QWEN_CODE_CLI:-qwen}" review agent-prompt --plan ${planRef} ` +
+            `\`"\${CANOPY_CODE_CLI:-canopy}" review agent-prompt --plan ${planRef} ` +
             '--roster [--rules <rules file>]` — and launch one agent per block ' +
             'it prints, verbatim; `--role <n>` or `--chunk <id>` rebuilds a ' +
             'single one. Pass --rules whenever the review loaded any',
@@ -1877,7 +1877,7 @@ function composeReviewBody(
     // miss its repair (or vice versa) — the drift the rest of this file exists
     // to prevent.
     remediation.push(
-      'chunks nobody read: build each with `"${QWEN_CODE_CLI:-qwen}" review ' +
+      'chunks nobody read: build each with `"${CANOPY_CODE_CLI:-canopy}" review ' +
         `agent-prompt --plan ${planRef} --chunk <id> [--rules <rules file>]\` — or ` +
         'the whole fan-out with `--roster` — and launch one agent per block, ' +
         'verbatim',
@@ -2767,7 +2767,7 @@ export function scriptLintGate(planPath: string): {
     // The one gap this leaves — a SHEBANG-only script (`hasExecutableScript` is
     // path-only, so `owed` is false for it) whose command was skipped — is closed by
     // a CONTRACT, not by this predicate: SKILL.md has the orchestrator run
-    // `qwen review script-lint` on EVERY same-repo review, unconditionally. So a
+    // `canopy review script-lint` on EVERY same-repo review, unconditionally. So a
     // compliant run always writes a report (even "nothing to lint"), the shebang
     // script is linted and appears in it, and it is handled below on its own
     // findings regardless of `owed`. "No report" therefore means the command did not
@@ -2775,7 +2775,7 @@ export function scriptLintGate(planPath: string): {
     // on the always-run contract above, which is why it is stated there in prose.
     if (owed) {
       unreviewed.push(
-        'the executable-script lint — `qwen review script-lint` produced no report',
+        'the executable-script lint — `canopy review script-lint` produced no report',
       );
     }
     return { criticals, unreviewed, disclosed };
@@ -2792,7 +2792,7 @@ export function scriptLintGate(planPath: string): {
   const planDiffHash = diffHashOf(plan.diffPathAbsolute);
   if (!planDiffHash || report.diffHash !== planDiffHash) {
     unreviewed.push(
-      'the executable-script lint — the report is stale or its diff could not be verified; re-run `qwen review script-lint`',
+      'the executable-script lint — the report is stale or its diff could not be verified; re-run `canopy review script-lint`',
     );
     return { criticals, unreviewed, disclosed };
   }
@@ -2861,8 +2861,8 @@ function scriptLintReportName(pr: unknown): string {
     (typeof pr === 'number' && Number.isInteger(pr) && pr > 0) ||
     (typeof pr === 'string' && /^\d+$/.test(pr) && Number(pr) > 0);
   return positive
-    ? `qwen-review-pr-${pr}-script-lint.json`
-    : 'qwen-review-script-lint.json';
+    ? `canopy-review-pr-${pr}-script-lint.json`
+    : 'canopy-review-script-lint.json';
 }
 
 /**
@@ -2906,7 +2906,7 @@ export function testPlanGate(planPath: string): { notes: string[] } {
   try {
     report = JSON.parse(
       readFileSync(
-        join(dirname(planPath), `qwen-review-pr-${pr}-test-plan.json`),
+        join(dirname(planPath), `canopy-review-pr-${pr}-test-plan.json`),
         'utf8',
       ),
     ) as TestPlanReport;
@@ -3139,7 +3139,7 @@ export const composeReviewCommand: CommandModule = {
       },
       // Same pin as `submit`: the startup stamp, not a version resolved at
       // compose time — a shared runner can rewrite the install mid-session.
-      footerVersion(process.env['QWEN_CODE_STARTUP_VERSION']) ??
+      footerVersion(process.env['CANOPY_CODE_STARTUP_VERSION']) ??
         (await getCliVersion()),
       operatorReviewSettings().attribution,
     );

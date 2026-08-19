@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -585,7 +585,7 @@ class NotebookEditInvocation extends BaseToolInvocation<
     }
 
     // Scan the serialized notebook that will hit disk: a notebook under
-    // .qwen/team-memory/ could otherwise carry credentials past the guard
+    // .canopy/team-memory/ could otherwise carry credentials past the guard
     // that write-file.ts/edit.ts enforce. Block before any disk side effects.
     const teamMemoryError = checkTeamMemorySecrets(
       this.params.notebook_path,
@@ -820,8 +820,8 @@ export class NotebookEditTool
     }
 
     const fileService = this.config.getFileService();
-    if (fileService.shouldQwenIgnoreFile(params.notebook_path)) {
-      return `File path '${params.notebook_path}' is ignored by ${fileService.getQwenIgnoreFileDisplayForPath(params.notebook_path)} pattern(s).`;
+    if (fileService.shouldCanopyIgnoreFile(params.notebook_path)) {
+      return `File path '${params.notebook_path}' is ignored by ${fileService.getCanopyIgnoreFileDisplayForPath(params.notebook_path)} pattern(s).`;
     }
 
     // Scan the cell source at validate time too — for parity with edit/write-file

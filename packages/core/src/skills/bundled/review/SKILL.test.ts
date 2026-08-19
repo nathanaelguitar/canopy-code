@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -103,7 +103,7 @@ describe('bundled review skill', () => {
     // pre-PR ordering — cache read beside the fetch report, after `fetch-pr` —
     // silently degrades every cached-anchor round to a full review.
     expect(body).toContain(
-      'read `.qwen/review-cache/pr-<n>.json` **before** `fetch-pr`',
+      'read `.canopy/review-cache/pr-<n>.json` **before** `fetch-pr`',
     );
     expect(body).toContain('pass it to the fetch as `--since <lastCommitSha>`');
     expect(body).toContain(
@@ -373,7 +373,7 @@ describe('bundled review skill', () => {
     // hunk to the old model-prose rule must fail a test, not slip through.
     const body = skillBody();
     const invocations =
-      body.match(/"\$\{QWEN_CODE_CLI:-qwen\}" review match-remote/g) ?? [];
+      body.match(/"\$\{CANOPY_CODE_CLI:-canopy\}" review match-remote/g) ?? [];
     expect(invocations).toHaveLength(2);
     // The bare-number path threads the host `review meta` resolved at —
     // dropping it rematches auth-config-only GHE clones against github.com.
@@ -391,7 +391,7 @@ describe('bundled review skill', () => {
     // produces a false "head advanced mid-review" ruling.
     const body = skillBody();
     expect(body).toContain(
-      '"${QWEN_CODE_CLI:-qwen}" review meta <n> --repo <owner>/<repo>',
+      '"${CANOPY_CODE_CLI:-canopy}" review meta <n> --repo <owner>/<repo>',
     );
     expect(body).toMatch(
       /meta <n> --repo <owner>\/<repo>` \(add `--host <host>` for Enterprise\)/,
@@ -417,7 +417,7 @@ describe('bundled review skill', () => {
     // same-named repo. Both lines must stay subcommand-shaped.
     const body = skillBody();
     expect(body).toContain(
-      'run `"${QWEN_CODE_CLI:-qwen}" review meta` (add `--host <host>` for Enterprise) and read its `ownerRepo`',
+      'run `"${CANOPY_CODE_CLI:-canopy}" review meta` (add `--host <host>` for Enterprise) and read its `ownerRepo`',
     );
     expect(body).toContain(
       'review meta {pr_number} --repo {owner}/{repo}` (add `--host <host>` for Enterprise) and read its `headSha`',
@@ -431,7 +431,7 @@ describe('bundled review skill', () => {
     // a hand-restored gh call silently routes at github.com.
     const body = skillBody();
     expect(body).toContain(
-      'review fetch-diff <number> --repo <owner>/<repo> --out .qwen/tmp/qwen-review-pr-<number>-diff.txt` (add `--host <host>` for Enterprise)',
+      'review fetch-diff <number> --repo <owner>/<repo> --out .canopy/tmp/canopy-review-pr-<number>-diff.txt` (add `--host <host>` for Enterprise)',
     );
     expect(body).toContain(
       '# GitHub Enterprise: add --host <host> — plan-diff records it',
@@ -461,7 +461,7 @@ describe('bundled review skill', () => {
     // Posted: fallback must stay grounded on Step 1's meta output / the pr-url.
     const body = skillBody();
     expect(body).toContain(
-      'add `--out .qwen/tmp/qwen-review-{target}-body-<id>.md` to the command the note names',
+      'add `--out .canopy/tmp/canopy-review-{target}-body-<id>.md` to the command the note names',
     );
     expect(body).toContain(
       'the URL a `pr-url` target carried, or else assemble',

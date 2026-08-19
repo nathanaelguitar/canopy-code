@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -92,8 +92,8 @@ const allowedProcessEnvAccesses = normalizeAllowances([
     {
       reason: 'Daemon log and runtime locations are process-scoped.',
       accesses: {
-        'key:QWEN_DAEMON_LOG_FILE': 1,
-        'key:QWEN_RUNTIME_DIR': 1,
+        'key:CANOPY_DAEMON_LOG_FILE': 1,
+        'key:CANOPY_RUNTIME_DIR': 1,
       },
     },
   ],
@@ -121,7 +121,7 @@ const allowedProcessEnvAccesses = normalizeAllowances([
         'computed:key': 4,
         'key:CLOUD_SHELL': 1,
         'key:GOOGLE_CLOUD_PROJECT': 2,
-        'key:QWEN_CODE_TRUSTED_FOLDERS_PATH': 1,
+        'key:CANOPY_CODE_TRUSTED_FOLDERS_PATH': 1,
         'key:QWEN_HOME': 3,
         whole: 4,
       },
@@ -139,26 +139,26 @@ const allowedProcessEnvAccesses = normalizeAllowances([
     'packages/cli/src/serve/fs/audit.ts',
     {
       reason: 'Filesystem audit redaction is a daemon-wide logging policy.',
-      accesses: { 'key:QWEN_AUDIT_RAW_PATHS': 1 },
+      accesses: { 'key:CANOPY_AUDIT_RAW_PATHS': 1 },
     },
   ],
   [
-    'packages/cli/src/serve/run-qwen-serve.ts',
+    'packages/cli/src/serve/run-canopy-serve.ts',
     {
       reason:
         'The serve entry point owns daemon bootstrap, feature flags, child-process defaults, and the launch-env loader scrub.',
       accesses: {
         'computed:EXTERNAL_TOOL_GUARD_TOKEN_ENV': 1,
-        'computed:QWEN_SERVER_TOKEN_ENV': 1,
-        'computed:QWEN_SERVE_CDP_TUNNEL_OVER_WS_ENV': 1,
-        'computed:QWEN_SERVE_CLIENT_MCP_OVER_WS_ENV': 1,
-        'computed:QWEN_SERVE_PROMPT_DEADLINE_MS_ENV': 1,
-        'computed:QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV': 1,
+        'computed:CANOPY_SERVER_TOKEN_ENV': 1,
+        'computed:CANOPY_SERVE_CDP_TUNNEL_OVER_WS_ENV': 1,
+        'computed:CANOPY_SERVE_CLIENT_MCP_OVER_WS_ENV': 1,
+        'computed:CANOPY_SERVE_PROMPT_DEADLINE_MS_ENV': 1,
+        'computed:CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS_ENV': 1,
         'computed:RUNTIME_STARTUP_TIMEOUT_ENV': 1,
         'key:DEV': 1,
-        'key:QWEN_CODE_IDE_WORKSPACE_PATH': 1,
-        'key:QWEN_SERVE_NO_MCP_POOL': 1,
-        'key:QWEN_SERVE_NO_PERSISTENT_REGISTRATION': 1,
+        'key:CANOPY_CODE_IDE_WORKSPACE_PATH': 1,
+        'key:CANOPY_SERVE_NO_MCP_POOL': 1,
+        'key:CANOPY_SERVE_NO_PERSISTENT_REGISTRATION': 1,
         'key:VITEST_WORKER_ID': 1,
         whole: 5,
       },
@@ -192,7 +192,7 @@ const allowedProcessEnvAccesses = normalizeAllowances([
     'packages/cli/src/serve/live/live-host-coordinator.ts',
     {
       reason: 'Live Host diagnostics are enabled for the whole daemon process.',
-      accesses: { 'key:QWEN_LIVE_DIAGNOSTICS': 1 },
+      accesses: { 'key:CANOPY_LIVE_DIAGNOSTICS': 1 },
     },
   ],
   [
@@ -201,8 +201,8 @@ const allowedProcessEnvAccesses = normalizeAllowances([
       reason:
         'Live audio diagnostics are enabled and located for the whole daemon process.',
       accesses: {
-        'key:QWEN_LIVE_DIAGNOSTICS': 2,
-        'key:QWEN_LIVE_DIAGNOSTICS_DIR': 1,
+        'key:CANOPY_LIVE_DIAGNOSTICS': 2,
+        'key:CANOPY_LIVE_DIAGNOSTICS_DIR': 1,
       },
     },
   ],

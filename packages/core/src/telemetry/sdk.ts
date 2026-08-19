@@ -73,7 +73,7 @@ function startSdkWithExplicitExporters(currentSdk: NodeSDK): void {
   }
 
   try {
-    // qwen-code supplies explicit exporters for every enabled signal. Prevent
+    // canopy-code supplies explicit exporters for every enabled signal. Prevent
     // sdk-node's OTEL_*_EXPORTER auto-configuration from constructing a second
     // exporter (the bundled CLI intentionally omits those packages).
     currentSdk.start();

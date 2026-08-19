@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -106,7 +106,7 @@ function mount(secondaryTrusted = true) {
     mutate,
     safeBody: (req) => (req.body ?? {}) as Record<string, unknown>,
     parseAndValidateClientId: (req, res) => {
-      const id = req.header('x-qwen-client-id') ?? undefined;
+      const id = req.header('x-canopy-client-id') ?? undefined;
       if (id === 'invalid') {
         res.status(400).json({ code: 'invalid_client_id' });
         return null;
@@ -120,7 +120,7 @@ function mount(secondaryTrusted = true) {
 const auth = (test: request.Test) =>
   test
     .set('Authorization', 'Bearer secret')
-    .set('X-Qwen-Client-Id', 'client-1');
+    .set('X-Canopy-Client-Id', 'client-1');
 
 describe('workspace Channel management routes', () => {
   it('lists catalog and sanitized instances without mutation auth', async () => {
@@ -493,7 +493,7 @@ describe('workspace Channel management routes', () => {
     const invalidClient = (test: request.Test) =>
       test
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'invalid');
+        .set('X-Canopy-Client-Id', 'invalid');
 
     const list = await invalidClient(request(app).get('/workspace/channels'));
     const upsert = await invalidClient(

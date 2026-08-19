@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   stripAnsiAndControl,
   type ClaudeMarketplaceConfig,
   type ExtensionSetting,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Request, Response } from 'express';
 import { loadSettings } from '../../config/settings.js';
 import { getWorkspaceTrustStatus } from '../../config/trustedFolders.js';
@@ -330,7 +330,7 @@ export function createExtensionsController(
     if (clientId === null) return false;
     if (clientId === undefined && opts.requireClientId !== false) {
       res.status(400).json({
-        error: 'Missing X-Qwen-Client-Id header',
+        error: 'Missing X-Canopy-Client-Id header',
         code: 'missing_client_id',
       });
       return false;
@@ -812,7 +812,7 @@ export function createExtensionsController(
               ...(warnings.length > 0 ? { warnings } : {}),
             });
             writeStderrLine(
-              `qwen serve: [${boundWorkspace}] extensions ${operation}: refreshed ${result.refreshed} session(s), ${result.failed} failed`,
+              `canopy serve: [${boundWorkspace}] extensions ${operation}: refreshed ${result.refreshed} session(s), ${result.failed} failed`,
             );
           } catch (refreshErr) {
             const message = sanitizeDaemonMessage(
@@ -846,7 +846,7 @@ export function createExtensionsController(
               });
             } catch (broadcastErr) {
               writeStderrLine(
-                `qwen serve: [${boundWorkspace}] extensions ${operation}: failed to broadcast refresh failure: ${sanitizeDaemonMessage(
+                `canopy serve: [${boundWorkspace}] extensions ${operation}: failed to broadcast refresh failure: ${sanitizeDaemonMessage(
                   broadcastErr instanceof Error
                     ? broadcastErr.message
                     : String(broadcastErr),
@@ -854,7 +854,7 @@ export function createExtensionsController(
               );
             }
             writeStderrLine(
-              `qwen serve: [${boundWorkspace}] extensions ${operation}: mutation succeeded but refresh failed: ${message}`,
+              `canopy serve: [${boundWorkspace}] extensions ${operation}: mutation succeeded but refresh failed: ${message}`,
             );
           }
         }
@@ -929,7 +929,7 @@ export function createExtensionsController(
           }
           try {
             writeStderrLine(
-              `qwen serve: [${boundWorkspace}] extensions ${operation}: ${error}`,
+              `canopy serve: [${boundWorkspace}] extensions ${operation}: ${error}`,
             );
           } catch {
             // Keep queued background work from surfacing as unhandledRejection.
@@ -956,7 +956,7 @@ export function createExtensionsController(
           });
         } catch (broadcastErr) {
           writeStderrLine(
-            `qwen serve: [${boundWorkspace}] extensions ${operation}: failed to broadcast failure: ${sanitizeDaemonMessage(
+            `canopy serve: [${boundWorkspace}] extensions ${operation}: failed to broadcast failure: ${sanitizeDaemonMessage(
               broadcastErr instanceof Error
                 ? broadcastErr.message
                 : String(broadcastErr),
@@ -965,7 +965,7 @@ export function createExtensionsController(
         }
         try {
           writeStderrLine(
-            `qwen serve: [${boundWorkspace}] extensions ${operation}: background task failed: ${message}`,
+            `canopy serve: [${boundWorkspace}] extensions ${operation}: background task failed: ${message}`,
           );
         } catch {
           // Keep queued background work from surfacing as unhandledRejection.

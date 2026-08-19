@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -69,7 +69,7 @@ describe('runFetchDiff', () => {
     ghRawMock.mockReturnValue('diff --git a/x b/x\n+one\n+two\n');
     const result = runFetchDiff({
       prNumber: 8981,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(ghRawMock).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe('runFetchDiff', () => {
       'diff',
       '8981',
       '--repo',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
     );
     expect(mkdirSyncMock).toHaveBeenCalledWith(dirname(resolve(OUT)), {
       recursive: true,
@@ -98,7 +98,7 @@ describe('runFetchDiff', () => {
 
   it('keeps a trailing whitespace-only context line (no trim)', () => {
     ghRawMock.mockReturnValue('diff --git a/x b/x\n@@ -1 +1 @@\n ctx\n   \n');
-    runFetchDiff({ prNumber: 1, repo: 'QwenLM/qwen-code', out: OUT });
+    runFetchDiff({ prNumber: 1, repo: 'CanopyLM/canopy-code', out: OUT });
     expect(writeFileSyncMock).toHaveBeenCalledWith(
       resolve(OUT),
       'diff --git a/x b/x\n@@ -1 +1 @@\n ctx\n   \n',
@@ -110,7 +110,7 @@ describe('runFetchDiff', () => {
     ghRawMock.mockReturnValue('');
     const result = runFetchDiff({
       prNumber: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(result.lines).toBe(0);
@@ -132,9 +132,9 @@ describe('fetchDiffCommand handler', () => {
     ghRawMock.mockReturnValue('d');
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(process.exitCode).toBeUndefined();
@@ -152,9 +152,9 @@ describe('fetchDiffCommand handler', () => {
     ghRawMock.mockReturnValue('d');
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
       host: 'ghe.example.com',
     });
@@ -178,9 +178,9 @@ describe('fetchDiffCommand handler', () => {
     });
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(process.exitCode).toBe(1);
@@ -189,7 +189,7 @@ describe('fetchDiffCommand handler', () => {
   it('exits 2 on a usage error (malformed --repo)', () => {
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
       repo: '../escape',
       out: OUT,
@@ -204,9 +204,9 @@ describe('fetchDiffCommand handler', () => {
   it('exits 2 on a non-positive or non-integer pr_number, without calling gh or auth', () => {
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 0,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(process.exitCode).toBe(2);
@@ -215,9 +215,9 @@ describe('fetchDiffCommand handler', () => {
     process.exitCode = undefined;
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1.5,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
     });
     expect(process.exitCode).toBe(2);
@@ -228,9 +228,9 @@ describe('fetchDiffCommand handler', () => {
   it('exits 2 on an empty --out (classified before any fetch)', () => {
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: '',
     });
     expect(process.exitCode).toBe(2);
@@ -241,9 +241,9 @@ describe('fetchDiffCommand handler', () => {
   it('exits 2 on a whitespace-only --out', () => {
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: ' ',
     });
     expect(process.exitCode).toBe(2);
@@ -257,9 +257,9 @@ describe('fetchDiffCommand handler', () => {
     });
     (fetchDiffCommand.handler as (a: unknown) => void)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: 1,
-      repo: 'QwenLM/qwen-code',
+      repo: 'CanopyLM/canopy-code',
       out: OUT,
       host: 'bad host; rm -rf /',
     });

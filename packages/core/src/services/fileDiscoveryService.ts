@@ -5,29 +5,29 @@
  */
 
 import type { GitIgnoreFilter } from '../utils/gitIgnoreParser.js';
-import type { QwenIgnoreFilter } from '../utils/qwenIgnoreParser.js';
+import type { CanopyIgnoreFilter } from '../utils/canopy-ignore-parser.js';
 import { GitIgnoreParser } from '../utils/gitIgnoreParser.js';
 import {
-  formatQwenIgnoreFileNames,
-  QwenIgnoreParser,
-} from '../utils/qwenIgnoreParser.js';
+  formatCanopyIgnoreFileNames,
+  CanopyIgnoreParser,
+} from '../utils/canopy-ignore-parser.js';
 import { isGitRepository } from '../utils/gitUtils.js';
 import * as path from 'node:path';
 
 export interface FilterFilesOptions {
   respectGitIgnore?: boolean;
-  respectQwenIgnore?: boolean;
+  respectCanopyIgnore?: boolean;
 }
 
 export interface FilterReport {
   filteredPaths: string[];
   gitIgnoredCount: number;
-  qwenIgnoredCount: number;
+  canopyIgnoredCount: number;
 }
 
 export class FileDiscoveryService {
   private gitIgnoreFilter: GitIgnoreFilter | null = null;
-  private qwenIgnoreFilter: QwenIgnoreFilter | null = null;
+  private canopyIgnoreFilter: CanopyIgnoreFilter | null = null;
   private projectRoot: string;
 
   constructor(
@@ -38,7 +38,7 @@ export class FileDiscoveryService {
     if (isGitRepository(this.projectRoot)) {
       this.gitIgnoreFilter = new GitIgnoreParser(this.projectRoot);
     }
-    this.qwenIgnoreFilter = new QwenIgnoreParser(
+    this.canopyIgnoreFilter = new CanopyIgnoreParser(
       this.projectRoot,
       customIgnoreFiles,
     );
@@ -51,14 +51,17 @@ export class FileDiscoveryService {
     filePaths: string[],
     options: FilterFilesOptions = {
       respectGitIgnore: true,
-      respectQwenIgnore: true,
+      respectCanopyIgnore: true,
     },
   ): string[] {
     return filePaths.filter((filePath) => {
       if (options.respectGitIgnore && this.shouldGitIgnoreFile(filePath)) {
         return false;
       }
-      if (options.respectQwenIgnore && this.shouldQwenIgnoreFile(filePath)) {
+      if (
+        options.respectCanopyIgnore &&
+        this.shouldCanopyIgnoreFile(filePath)
+      ) {
         return false;
       }
       return true;
@@ -73,12 +76,12 @@ export class FileDiscoveryService {
     filePaths: string[],
     opts: FilterFilesOptions = {
       respectGitIgnore: true,
-      respectQwenIgnore: true,
+      respectCanopyIgnore: true,
     },
   ): FilterReport {
     const filteredPaths: string[] = [];
     let gitIgnoredCount = 0;
-    let qwenIgnoredCount = 0;
+    let canopyIgnoredCount = 0;
 
     for (const filePath of filePaths) {
       if (opts.respectGitIgnore && this.shouldGitIgnoreFile(filePath)) {
@@ -86,8 +89,8 @@ export class FileDiscoveryService {
         continue;
       }
 
-      if (opts.respectQwenIgnore && this.shouldQwenIgnoreFile(filePath)) {
-        qwenIgnoredCount++;
+      if (opts.respectCanopyIgnore && this.shouldCanopyIgnoreFile(filePath)) {
+        canopyIgnoredCount++;
         continue;
       }
 
@@ -97,7 +100,7 @@ export class FileDiscoveryService {
     return {
       filteredPaths,
       gitIgnoredCount,
-      qwenIgnoredCount,
+      canopyIgnoredCount,
     };
   }
 
@@ -112,11 +115,11 @@ export class FileDiscoveryService {
   }
 
   /**
-   * Checks if a single file should be ignored by Qwen/agent ignore files.
+   * Checks if a single file should be ignored by Canopy/agent ignore files.
    */
-  shouldQwenIgnoreFile(filePath: string): boolean {
-    if (this.qwenIgnoreFilter) {
-      return this.qwenIgnoreFilter.isIgnored(filePath);
+  shouldCanopyIgnoreFile(filePath: string): boolean {
+    if (this.canopyIgnoreFilter) {
+      return this.canopyIgnoreFilter.isIgnored(filePath);
     }
     return false;
   }
@@ -127,7 +130,7 @@ export class FileDiscoveryService {
    * Convention: append a trailing `/` to `filePath` to signal that the path
    * refers to a directory. This allows directory-only ignore patterns (e.g.
    * `node_modules/`) to match correctly during traversal pruning. Both the
-   * GitIgnoreParser and QwenIgnoreParser preserve the trailing slash through
+   * GitIgnoreParser and CanopyIgnoreParser preserve the trailing slash through
    * their internal path normalization.
    */
   shouldIgnoreFile(
@@ -136,33 +139,33 @@ export class FileDiscoveryService {
   ): boolean {
     const {
       respectGitIgnore = true,
-      respectQwenIgnore: respectQwenIgnore = true,
+      respectCanopyIgnore: respectCanopyIgnore = true,
     } = options;
 
     if (respectGitIgnore && this.shouldGitIgnoreFile(filePath)) {
       return true;
     }
-    if (respectQwenIgnore && this.shouldQwenIgnoreFile(filePath)) {
+    if (respectCanopyIgnore && this.shouldCanopyIgnoreFile(filePath)) {
       return true;
     }
     return false;
   }
 
   /**
-   * Returns loaded patterns from Qwen/agent ignore files.
+   * Returns loaded patterns from Canopy/agent ignore files.
    */
-  getQwenIgnorePatterns(): string[] {
-    return this.qwenIgnoreFilter?.getPatterns() ?? [];
+  getCanopyIgnorePatterns(): string[] {
+    return this.canopyIgnoreFilter?.getPatterns() ?? [];
   }
 
-  getQwenIgnoreFileDisplayForPath(filePath: string): string {
+  getCanopyIgnoreFileDisplayForPath(filePath: string): string {
     return (
-      this.qwenIgnoreFilter?.getIgnoreFileNameForPath(filePath) ??
-      this.getQwenIgnoreFileNamesDisplay()
+      this.canopyIgnoreFilter?.getIgnoreFileNameForPath(filePath) ??
+      this.getCanopyIgnoreFileNamesDisplay()
     );
   }
 
-  getQwenIgnoreFileNamesDisplay(): string {
-    return formatQwenIgnoreFileNames(this.customIgnoreFiles);
+  getCanopyIgnoreFileNamesDisplay(): string {
+    return formatCanopyIgnoreFileNames(this.customIgnoreFiles);
   }
 }

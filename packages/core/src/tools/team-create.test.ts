@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,9 +14,9 @@ import { TeamCreateTool } from './team-create.js';
 vi.mock('../config/storage.js', () => {
   let mockDir = '/tmp/test';
   return {
-    QWEN_DIR: '.qwen',
+    CANOPY_DIR: '.canopy',
     Storage: {
-      getGlobalQwenDir: () => mockDir,
+      getGlobalCanopyDir: () => mockDir,
     },
     __setMockGlobalDir: (d: string) => {
       mockDir = d;

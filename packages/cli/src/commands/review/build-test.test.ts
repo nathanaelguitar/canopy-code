@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -91,11 +91,11 @@ describe('unresolvedWorkspaceDeps', () => {
 
 describe('buildRunEnv', () => {
   it("skips this repo's full-build `prepare` hook on npm ci", () => {
-    // Without QWEN_SKIP_PREPARE=1, `npm ci` runs `npm run build` + `npm run
+    // Without CANOPY_SKIP_PREPARE=1, `npm ci` runs `npm run build` + `npm run
     // bundle` over every workspace (~190s) — wasted, because build-test does its
     // own scoped build next. Pinned here so a future env edit cannot silently
     // drop it and reintroduce the install-time full build.
-    expect(buildRunEnv({})['QWEN_SKIP_PREPARE']).toBe('1');
+    expect(buildRunEnv({})['CANOPY_SKIP_PREPARE']).toBe('1');
     expect(buildRunEnv({})['CI']).toBe('1');
   });
 
@@ -2778,7 +2778,7 @@ describe('runBuildTest', () => {
     // Every other test injects a fake exec, so the production default path
     // (args.exec undefined -> the real `run`) had zero coverage. Dropping the
     // `?? run` fallback would hand the adapter exec: undefined and crash the first
-    // real `qwen review build-test`. Mock the adapter to capture the args it
+    // real `canopy review build-test`. Mock the adapter to capture the args it
     // receives (so no real npm spawns) and pin that exec is a function.
     writeFileSync(
       join(root, 'package.json'),

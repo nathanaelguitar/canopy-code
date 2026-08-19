@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,10 +35,10 @@ describe('canonicalizeAgentOpts', () => {
   // directory replay the previous tree's answers as if they were this one's.
   it('keeps workingDir, so a resume cannot hit across directories', () => {
     const a = deriveAgentKey('', 'review it', {
-      workingDir: '.qwen/tmp/review-pr-1',
+      workingDir: '.canopy/tmp/review-pr-1',
     });
     const b = deriveAgentKey('', 'review it', {
-      workingDir: '.qwen/tmp/review-pr-2',
+      workingDir: '.canopy/tmp/review-pr-2',
     });
     expect(canonicalizeAgentOpts({ workingDir: 'wt' })).toBe(
       JSON.stringify({ workingDir: 'wt' }),
@@ -49,11 +49,11 @@ describe('canonicalizeAgentOpts', () => {
     // dispatch of a workingDir-using workflow.
     expect(
       deriveAgentKey('', 'review it', {
-        workingDir: '.qwen/tmp/review-pr-1',
+        workingDir: '.canopy/tmp/review-pr-1',
       }),
     ).toBe(
       deriveAgentKey('', 'review it', {
-        workingDir: '.qwen/tmp/review-pr-1',
+        workingDir: '.canopy/tmp/review-pr-1',
       }),
     );
   });

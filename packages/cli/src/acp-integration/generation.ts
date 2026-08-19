@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@
  * It deliberately bypasses GeminiChat so neither history nor recording is
  * read or mutated.
  */
-import { getResponseText, type Config } from '@qwen-code/qwen-code-core';
+import { getResponseText, type Config } from '@canopy-code/canopy-code-core';
 import type { GenerateContentResponseUsageMetadata } from '@google/genai';
 
 export const GENERATION_MAX_PROMPT_BYTES = 32 * 1024;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -65,15 +65,15 @@ describe('LoopTickResolver', () => {
   let homeDir: string;
   let resolver: LoopTickResolver;
 
-  const projectFile = () => path.join(projectRoot, '.qwen', 'loop.md');
-  const homeFile = () => path.join(homeDir, '.qwen', 'loop.md');
+  const projectFile = () => path.join(projectRoot, '.canopy', 'loop.md');
+  const homeFile = () => path.join(homeDir, '.canopy', 'loop.md');
   const writeProject = (content: string) =>
     fs
-      .mkdir(path.join(projectRoot, '.qwen'), { recursive: true })
+      .mkdir(path.join(projectRoot, '.canopy'), { recursive: true })
       .then(() => fs.writeFile(projectFile(), content));
   const writeHome = (content: string) =>
     fs
-      .mkdir(path.join(homeDir, '.qwen'), { recursive: true })
+      .mkdir(path.join(homeDir, '.canopy'), { recursive: true })
       .then(() => fs.writeFile(homeFile(), content));
 
   beforeEach(async () => {
@@ -453,20 +453,20 @@ describe('LoopTickResolver', () => {
     expect(absent.modelText).toContain('loop.md is not currently present');
   });
 
-  it('names the real home loop.md in the absent reminder (QWEN_HOME-aware, not a hardcoded ~/.qwen)', async () => {
-    // Regression: the absent body hardcoded `~/.qwen/loop.md (home)`, which is
+  it('names the real home loop.md in the absent reminder (QWEN_HOME-aware, not a hardcoded ~/.canopy)', async () => {
+    // Regression: the absent body hardcoded `~/.canopy/loop.md (home)`, which is
     // wrong once the global dir is relocated (QWEN_HOME). The resolver checks
-    // `<homeQwenDir>/loop.md`, but the label is MODEL-FACING, so a $QWEN_HOME
+    // `<homeCanopyDir>/loop.md`, but the label is MODEL-FACING, so a $QWEN_HOME
     // outside $HOME (tildeifyPath no-op there) must read as the literal
     // `$QWEN_HOME/loop.md`, never the raw absolute path it would otherwise leak.
-    const relocated = path.join(tempDir, 'relocated-qwen');
-    const prevQwenHome = process.env['QWEN_HOME'];
+    const relocated = path.join(tempDir, 'relocated-canopy');
+    const prevCanopyHome = process.env['QWEN_HOME'];
     process.env['QWEN_HOME'] = relocated;
     try {
       const relocatedTick = await new LoopTickResolver({
         projectRoot,
         homeDir: relocated,
-        homeQwenDir: relocated,
+        homeCanopyDir: relocated,
         allowProjectFile: () => true,
       }).resolve('cron');
 
@@ -477,25 +477,25 @@ describe('LoopTickResolver', () => {
       );
       expect(relocatedTick.modelText).toContain('$QWEN_HOME/loop.md (home)');
       // The old hardcoded home location is gone; the project label stays relative.
-      expect(relocatedTick.modelText).not.toContain('~/.qwen/loop.md');
-      expect(relocatedTick.modelText).toContain('.qwen/loop.md (project)');
+      expect(relocatedTick.modelText).not.toContain('~/.canopy/loop.md');
+      expect(relocatedTick.modelText).toContain('.canopy/loop.md (project)');
       // Privacy: the raw absolute global dir never reaches the model text.
       expect(relocatedTick.modelText).not.toContain(relocated);
     } finally {
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
 
     // Under the real OS home (the QWEN_HOME-unset case) the home prefix tilde-
     // abbreviates, so the message reads `~/…/loop.md`, never the absolute $HOME.
     const underHome = path.join(
       os.homedir(),
-      `.qwen-loop-absent-${process.pid}`,
+      `.canopy-loop-absent-${process.pid}`,
     );
     const homeTick = await new LoopTickResolver({
       projectRoot,
       homeDir: os.homedir(),
-      homeQwenDir: underHome,
+      homeCanopyDir: underHome,
       allowProjectFile: () => true,
     }).resolve('dynamic');
 
@@ -510,16 +510,16 @@ describe('LoopTickResolver', () => {
     // (supported relocation; common in containers/CI), where tildeifyPath is a
     // no-op — so the resolved absolute dir must be swapped for the literal
     // `$QWEN_HOME`. Mutation guard: revert homeLoopLabel to
-    // `tildeifyPath(join(homeQwenDir,'loop.md'))` and `outside` (the absolute
+    // `tildeifyPath(join(homeCanopyDir,'loop.md'))` and `outside` (the absolute
     // path) reappears in BOTH assertions below, failing this test.
-    const outside = path.join(tempDir, 'srv-qwen-home');
-    const prevQwenHome = process.env['QWEN_HOME'];
+    const outside = path.join(tempDir, 'srv-canopy-home');
+    const prevCanopyHome = process.env['QWEN_HOME'];
     process.env['QWEN_HOME'] = outside;
     try {
       const relocated = new LoopTickResolver({
         projectRoot,
         homeDir: outside,
-        homeQwenDir: outside,
+        homeCanopyDir: outside,
         allowProjectFile: () => true,
       });
       expect(relocated.homeLoopLabel()).toBe('$QWEN_HOME/loop.md');
@@ -533,97 +533,98 @@ describe('LoopTickResolver', () => {
       const generic = new LoopTickResolver({
         projectRoot,
         homeDir: outside,
-        homeQwenDir: outside,
+        homeCanopyDir: outside,
         allowProjectFile: () => true,
       });
       expect(generic.homeLoopLabel()).toBe('the configured global loop.md');
       expect(generic.homeLoopLabel()).not.toContain(outside);
     } finally {
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
   });
 
   it('homeLoopLabel keeps the separator when $QWEN_HOME has a trailing slash', async () => {
-    // Storage.getGlobalQwenDir() does NOT strip a trailing slash, so a
-    // `QWEN_HOME=/srv/qwen/` reaches homeQwenDir as `/srv/qwen/`. Slicing the
-    // joined loop.md path by the raw homeQwenDir length over-counts the trailing
-    // separator and garbles the label into `$QWEN_HOMEloop.md`. Mutation guard:
-    // revert the slice base to `homeQwenDir.length` and the first assertion below
-    // fails with the separator-less `$QWEN_HOMEloop.md`.
-    const outsideTrailing = path.join(tempDir, 'srv-qwen-home') + path.sep;
-    const prevQwenHome = process.env['QWEN_HOME'];
+    // Storage.getGlobalCanopyDir() does NOT strip a trailing slash, so a
+    // `QWEN_HOME=/srv/canopy/` reaches homeCanopyDir as `/srv/canopy/`. Slicing the
+    // joined loop.md path by the raw homeCanopyDir length over-counts the trailing
+    // separator and garbles the label into `$CANOPY_HOMEloop.md`. Mutation guard:
+    // revert the slice base to `homeCanopyDir.length` and the first assertion below
+    // fails with the separator-less `$CANOPY_HOMEloop.md`.
+    const outsideTrailing = path.join(tempDir, 'srv-canopy-home') + path.sep;
+    const prevCanopyHome = process.env['QWEN_HOME'];
     process.env['QWEN_HOME'] = outsideTrailing;
     try {
       const trailing = new LoopTickResolver({
         projectRoot,
         homeDir: outsideTrailing,
-        homeQwenDir: outsideTrailing,
+        homeCanopyDir: outsideTrailing,
         allowProjectFile: () => true,
       });
       expect(trailing.homeLoopLabel()).toBe('$QWEN_HOME/loop.md');
       // Never the raw absolute dir, and never the garbled separator-less form.
       expect(trailing.homeLoopLabel()).not.toContain(outsideTrailing);
-      expect(trailing.homeLoopLabel()).not.toContain('$QWEN_HOMEloop.md');
+      expect(trailing.homeLoopLabel()).not.toContain('$CANOPY_HOMEloop.md');
 
       // out-of-$HOME branch still behaves with QWEN_HOME UNSET: generic placeholder.
       delete process.env['QWEN_HOME'];
       const generic = new LoopTickResolver({
         projectRoot,
         homeDir: outsideTrailing,
-        homeQwenDir: outsideTrailing,
+        homeCanopyDir: outsideTrailing,
         allowProjectFile: () => true,
       });
       expect(generic.homeLoopLabel()).toBe('the configured global loop.md');
     } finally {
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
 
     // under-$HOME branch still behaves with a trailing slash: tilde-abbreviated.
     const underHomeTrailing =
-      path.join(os.homedir(), `.qwen-loop-trailing-${process.pid}`) + path.sep;
+      path.join(os.homedir(), `.canopy-loop-trailing-${process.pid}`) +
+      path.sep;
     const underHome = new LoopTickResolver({
       projectRoot,
       homeDir: os.homedir(),
-      homeQwenDir: underHomeTrailing,
+      homeCanopyDir: underHomeTrailing,
       allowProjectFile: () => true,
     });
     expect(underHome.homeLoopLabel()).toBe(
-      `~/.qwen-loop-trailing-${process.pid}/loop.md`,
+      `~/.canopy-loop-trailing-${process.pid}/loop.md`,
     );
     expect(underHome.homeLoopLabel()).not.toContain(os.homedir());
   });
 
   it('homeLoopLabel keeps the separator when $QWEN_HOME is the filesystem root', async () => {
-    // `QWEN_HOME=/` makes homeQwenDir the root, so homeLoopPath is
+    // `QWEN_HOME=/` makes homeCanopyDir the root, so homeLoopPath is
     // path.join('/', 'loop.md') = '/loop.md', whose path.dirname is '/' (length 1).
     // Slicing the joined path past that length drops the leading separator,
-    // garbling the label into the separator-less `$QWEN_HOMEloop.md`. Mutation
+    // garbling the label into the separator-less `$CANOPY_HOMEloop.md`. Mutation
     // guard: revert homeLoopLabel to the slice-by-dirname-length approach and the
-    // first assertion below fails with `$QWEN_HOMEloop.md`.
+    // first assertion below fails with `$CANOPY_HOMEloop.md`.
     const root = path.sep; // the filesystem root ('/' on POSIX)
-    const prevQwenHome = process.env['QWEN_HOME'];
+    const prevCanopyHome = process.env['QWEN_HOME'];
     process.env['QWEN_HOME'] = root;
     try {
       const atRoot = new LoopTickResolver({
         projectRoot,
         homeDir: root,
-        homeQwenDir: root,
+        homeCanopyDir: root,
         allowProjectFile: () => true,
       });
       expect(atRoot.homeLoopLabel()).toBe('$QWEN_HOME/loop.md');
       // The garbled, separator-less form must never appear.
-      expect(atRoot.homeLoopLabel()).not.toContain('$QWEN_HOMEloop.md');
+      expect(atRoot.homeLoopLabel()).not.toContain('$CANOPY_HOMEloop.md');
     } finally {
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
   });
 
   it('homeLoopLabel uses a forward slash in the $QWEN_HOME label even with Windows separators', async () => {
-    const prevQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = 'C:\\qwen';
+    const prevCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = 'C:\\canopy';
     vi.resetModules();
     vi.doMock('node:path', async (importActual) => {
       const actual = await importActual<typeof import('node:path')>();
@@ -635,8 +636,8 @@ describe('LoopTickResolver', () => {
       );
       const windowsPathResolver = new WindowsPathResolver({
         projectRoot: 'C:\\project',
-        homeDir: 'C:\\qwen',
-        homeQwenDir: 'C:\\qwen',
+        homeDir: 'C:\\canopy',
+        homeCanopyDir: 'C:\\canopy',
         allowProjectFile: () => true,
       });
 
@@ -644,13 +645,13 @@ describe('LoopTickResolver', () => {
     } finally {
       vi.doUnmock('node:path');
       vi.resetModules();
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
   });
 
   it('homeLoopLabel uses forward slashes for Windows tilde labels under the real home', async () => {
-    const prevQwenHome = process.env['QWEN_HOME'];
+    const prevCanopyHome = process.env['QWEN_HOME'];
     delete process.env['QWEN_HOME'];
     vi.resetModules();
     vi.doMock('node:path', async (importActual) => {
@@ -677,17 +678,19 @@ describe('LoopTickResolver', () => {
       const windowsPathResolver = new WindowsPathResolver({
         projectRoot: 'C:\\project',
         homeDir: 'C:\\Users\\runneradmin',
-        homeQwenDir: 'C:\\Users\\runneradmin\\.qwen-loop',
+        homeCanopyDir: 'C:\\Users\\runneradmin\\.canopy-loop',
         allowProjectFile: () => true,
       });
 
-      expect(windowsPathResolver.homeLoopLabel()).toBe('~/.qwen-loop/loop.md');
+      expect(windowsPathResolver.homeLoopLabel()).toBe(
+        '~/.canopy-loop/loop.md',
+      );
     } finally {
       vi.doUnmock('node:path');
       vi.doUnmock('node:os');
       vi.resetModules();
-      if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = prevQwenHome;
+      if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = prevCanopyHome;
     }
   });
 

@@ -11,27 +11,30 @@ import path from 'node:path';
 export default defineConfig({
   resolve: {
     alias: {
-      '@qwen-code/qwen-code-core/goalWire': path.resolve(
+      '@canopy-code/canopy-code-core/goalWire': path.resolve(
         __dirname,
         '../core/src/goals/goal-wire.ts',
       ),
-      '@qwen-code/qwen-code-core/transcriptRecords': path.resolve(
+      '@canopy-code/canopy-code-core/transcriptRecords': path.resolve(
         __dirname,
         '../core/src/utils/transcript-records.ts',
       ),
-      '@qwen-code/qwen-code-core/userPromptSubmitContext': path.resolve(
+      '@canopy-code/canopy-code-core/userPromptSubmitContext': path.resolve(
         __dirname,
         '../core/src/hooks/user-prompt-submit-context.ts',
       ),
-      '@qwen-code/qwen-code-core/memoryScopes': path.resolve(
+      '@canopy-code/canopy-code-core/memoryScopes': path.resolve(
         __dirname,
         '../core/src/memory/scopes.ts',
       ),
-      '@qwen-code/qwen-code-core/toolWriteOrigin': path.resolve(
+      '@canopy-code/canopy-code-core/toolWriteOrigin': path.resolve(
         __dirname,
         '../core/src/services/tool-write-origin.ts',
       ),
-      '@qwen-code/qwen-code-core': path.resolve(__dirname, '../core/index.ts'),
+      '@canopy-code/canopy-code-core': path.resolve(
+        __dirname,
+        '../core/index.ts',
+      ),
       // cli's daemon-status-provider.test.ts imports `FakeAgent` /
       // `makeChannel` from acp-bridge's package-private
       // `internal/testUtils` module. This alias overrides the runtime
@@ -145,7 +148,7 @@ export default defineConfig({
     // store's tempdir round-trip) don't blow it purely under CI contention.
     testTimeout: 15000,
     // ECS hosts run several jobs at once; leave capacity for neighboring jobs.
-    maxWorkers: process.env['RUNNER_NAME']?.startsWith('ecs-qwen-')
+    maxWorkers: process.env['RUNNER_NAME']?.startsWith('ecs-canopy-')
       ? '25%'
       : undefined,
     include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)', 'config.test.ts'],
@@ -174,7 +177,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: [/@qwen-code\/qwen-code-core/],
+        inline: [/@canopy-code\/canopy-code-core/],
       },
     },
   },

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs/promises';
-import { ideContextStore } from '@qwen-code/qwen-code-core';
+import { ideContextStore } from '@canopy-code/canopy-code-core';
 import stripJsonComments from 'strip-json-comments';
 import {
   getSystemDefaultsPath,

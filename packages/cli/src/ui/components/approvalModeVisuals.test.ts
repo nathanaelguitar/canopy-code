@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { theme } from '../semantic-colors.js';
 import {
   getApprovalModeIndicatorColor,

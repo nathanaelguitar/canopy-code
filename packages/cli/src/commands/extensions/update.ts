@@ -11,7 +11,7 @@ import {
   checkForExtensionUpdate,
   ExtensionUpdateState,
   type ExtensionUpdateInfo,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getExtensionManager } from './utils.js';
 import { t } from '../../i18n/index.js';
 

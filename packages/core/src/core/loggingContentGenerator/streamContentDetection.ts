@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,13 +18,13 @@ import type { GenerateContentResponse } from '@google/genai';
  *   - functionCall (tool use — even tool-call-only responses count)
  *   - inlineData (image, binary blob)
  *   - executableCode (sandbox / code-execution responses)
- *   - thought / reasoning content (provider-dependent; o1, qwen thinking, Anthropic <thinking>)
+ *   - thought / reasoning content (provider-dependent; o1, canopy thinking, Anthropic <thinking>)
  *
  * Chunks containing only role metadata, only usageMetadata (final summary
  * chunk), or empty parts are NOT user-visible — TTFT should not fire on these.
  *
  * Centralised here (single predicate over the normalized GenerateContentResponse
- * shape) so the four provider generators (Anthropic / OpenAI / Gemini / Qwen)
+ * shape) so the four provider generators (Anthropic / OpenAI / Gemini / Canopy)
  * don't each need their own first-token logic. Each provider already normalizes
  * its native chunk shape to GenerateContentResponse before LoggingContentGenerator
  * sees it (see loggingContentGenerator.ts generateContentStream).

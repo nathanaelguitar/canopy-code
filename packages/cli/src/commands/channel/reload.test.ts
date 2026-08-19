@@ -22,7 +22,7 @@ type ReloadHandler = NonNullable<typeof reloadCommand.handler>;
 async function runHandler(argv: Record<string, unknown>): Promise<void> {
   await (reloadCommand.handler as ReloadHandler)({
     _: [],
-    $0: 'qwen',
+    $0: 'canopy',
     ...argv,
   } as never);
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -42,14 +42,14 @@
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parsePositiveIntegerEnv } from '@qwen-code/qwen-code-core';
+import { parsePositiveIntegerEnv } from '@canopy-code/canopy-code-core';
 import { promptRecordDir, runEpochMs } from './prompt-record.js';
 
 /** Unix seconds at which the review process will be killed. Set by CI. */
-export const DEADLINE_ENV = 'QWEN_REVIEW_DEADLINE_EPOCH';
+export const DEADLINE_ENV = 'CANOPY_REVIEW_DEADLINE_EPOCH';
 
 /** Override for the tail reserve, in seconds. */
-export const RESERVE_ENV = 'QWEN_REVIEW_DEADLINE_RESERVE_SECONDS';
+export const RESERVE_ENV = 'CANOPY_REVIEW_DEADLINE_RESERVE_SECONDS';
 
 /**
  * What must still fit after the last reverse-audit round completes: the
@@ -88,7 +88,7 @@ export const RESERVE_ENV = 'QWEN_REVIEW_DEADLINE_RESERVE_SECONDS';
  * `/review --timeout=N` comment), so the review workflow passes a reserve
  * scaled to the budget it resolved rather than trusting this constant to fit
  * an arbitrary one. The workflow caps that scaled reserve at this same
- * number (`.github/workflows/qwen-code-pr-review.yml`) — keep the two in
+ * number (`.github/workflows/canopy-code-pr-review.yml`) — keep the two in
  * sync. A local run has no deadline and no reserve at all.
  */
 export const DEFAULT_RESERVE_SECONDS = 4800;
@@ -120,7 +120,7 @@ export const DEFAULT_RESERVE_SECONDS = 4800;
 export const DEFAULT_COMPOSE_FLOOR_SECONDS = 1200;
 
 /** Override for the compose floor, in seconds. */
-export const COMPOSE_FLOOR_ENV = 'QWEN_REVIEW_DEADLINE_COMPOSE_FLOOR_SECONDS';
+export const COMPOSE_FLOOR_ENV = 'CANOPY_REVIEW_DEADLINE_COMPOSE_FLOOR_SECONDS';
 
 /**
  * The admission estimate for a round nothing has measured yet — round 1, or
@@ -141,7 +141,7 @@ const MIN_OBSERVED_ROUND_SECONDS = 600;
  * it, and an `agent-prompt` subprocess inherits the orchestrator's
  * environment — so the gate and the launches it gates read the same pool.
  */
-export const TOOL_CONCURRENCY_ENV = 'QWEN_CODE_MAX_TOOL_CONCURRENCY';
+export const TOOL_CONCURRENCY_ENV = 'CANOPY_CODE_MAX_TOOL_CONCURRENCY';
 export const DEFAULT_TOOL_CONCURRENCY = 10;
 
 interface RoundStamp {
@@ -329,7 +329,7 @@ export interface BudgetExhausted {
 /**
  * The deadline epoch both gates read, or null when unset/malformed — the
  * fail-open contract in one place so the two gates cannot drift on it. A
- * missing, empty, non-finite or non-positive `QWEN_REVIEW_DEADLINE_EPOCH`
+ * missing, empty, non-finite or non-positive `CANOPY_REVIEW_DEADLINE_EPOCH`
  * leaves the review ungated (the outer timeout still bounds it).
  */
 function readDeadlineSeconds(env: NodeJS.ProcessEnv): number | null {

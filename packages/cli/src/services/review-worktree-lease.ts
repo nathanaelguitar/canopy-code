@@ -1,4 +1,4 @@
-// Copyright 2026 Qwen Team
+// Copyright 2026 Canopy Team
 // SPDX-License-Identifier: Apache-2.0
 
 import { execFileSync } from 'node:child_process';
@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, isAbsolute, join, relative, resolve } from 'node:path';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import {
   LEASE_PREFIX,
   REVIEW_TMP_DIR,
@@ -200,7 +200,7 @@ export function reviewLeaseHeldByAnotherSession(
   lease: ReviewWorktreeLease | null,
 ): lease is ReviewWorktreeLease {
   if (!lease) return false;
-  const sessionId = process.env['QWEN_CODE_SESSION_ID']?.trim();
+  const sessionId = process.env['CANOPY_CODE_SESSION_ID']?.trim();
   return !sessionId || lease.sessionId !== sessionId;
 }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@
 import type React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Box, Text } from 'ink';
-import { type AgentResultDisplay } from '@qwen-code/qwen-code-core';
+import { type AgentResultDisplay } from '@canopy-code/canopy-code-core';
 import type { IndividualToolCallDisplay } from '../../types.js';
 import { ConfigContext } from '../../contexts/ConfigContext.js';
 import { theme } from '../../semantic-colors.js';

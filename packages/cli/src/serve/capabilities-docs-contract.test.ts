@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ const END = '<!-- conditional-serve-features:end -->';
 describe('conditional serve capability documentation', () => {
   it('documents exactly the conditional feature registry keys', async () => {
     const protocol = await readFile(
-      resolve(process.cwd(), '../../docs/developers/qwen-serve-protocol.md'),
+      resolve(process.cwd(), '../../docs/developers/canopy-serve-protocol.md'),
       'utf8',
     );
     const starts = protocol.split(START).length - 1;

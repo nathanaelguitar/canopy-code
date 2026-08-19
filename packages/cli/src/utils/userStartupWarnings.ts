@@ -6,7 +6,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { canUseRipgrep } from '@qwen-code/qwen-code-core';
+import { canUseRipgrep } from '@canopy-code/canopy-code-core';
 
 type WarningCheckOptions = {
   workspaceRoot: string;
@@ -26,7 +26,7 @@ const rootDirectoryCheck: WarningCheck = {
     try {
       const workspaceRealPath = await fs.realpath(options.workspaceRoot);
       const errorMessage =
-        'Warning: You are running Qwen Code in the root directory. Your entire folder structure will be used for context. It is strongly recommended to run in a project-specific directory.';
+        'Warning: You are running Canopy Code in the root directory. Your entire folder structure will be used for context. It is strongly recommended to run in a project-specific directory.';
 
       // Check for Unix root directory
       if (path.dirname(workspaceRealPath) === workspaceRealPath) {

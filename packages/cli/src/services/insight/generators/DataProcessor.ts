@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import path from 'path';
 import {
   read as readJsonlFile,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import pLimit from 'p-limit';
 import type {
   InsightData,
@@ -35,7 +35,7 @@ import {
   projectUserTranscriptForDisplay,
   type Config,
   type ChatRecord,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { dayKey, hourOfDay, parseDayKey, todayKey } from '../dates.js';
 
 const logger = createDebugLogger('DataProcessor');
@@ -49,7 +49,7 @@ const SESSION_OUTCOMES = [
   'unclear_from_transcript',
 ] as const;
 const OUTCOME_FALLBACK = 'unclear_from_transcript';
-const QWEN_HELPFULNESS_LEVELS = [
+const CANOPY_HELPFULNESS_LEVELS = [
   'unhelpful',
   'slightly_helpful',
   'moderately_helpful',
@@ -163,9 +163,9 @@ function normalizeSessionFacet(
     user_satisfaction_counts: normalizeInsightCountRecord(
       rawFacet['user_satisfaction_counts'],
     ),
-    Qwen_helpfulness: normalizeInsightEnum(
-      rawFacet['Qwen_helpfulness'],
-      QWEN_HELPFULNESS_LEVELS,
+    Canopy_helpfulness: normalizeInsightEnum(
+      rawFacet['Canopy_helpfulness'],
+      CANOPY_HELPFULNESS_LEVELS,
       'moderately_helpful',
     ),
     session_type: normalizeInsightEnum(
@@ -301,7 +301,7 @@ export class DataProcessor {
           type: 'object',
           additionalProperties: { type: 'number' },
         },
-        Qwen_helpfulness: {
+        Canopy_helpfulness: {
           type: 'string',
           enum: [
             'unhelpful',
@@ -351,7 +351,7 @@ export class DataProcessor {
         'goal_categories',
         'outcome',
         'user_satisfaction_counts',
-        'Qwen_helpfulness',
+        'Canopy_helpfulness',
         'session_type',
         'friction_counts',
         'friction_detail',
@@ -711,7 +711,7 @@ export class DataProcessor {
     const schemaImprovements = {
       type: 'object',
       properties: {
-        Qwen_md_additions: {
+        Canopy_md_additions: {
           type: 'array',
           items: {
             type: 'object',
@@ -750,7 +750,7 @@ export class DataProcessor {
           },
         },
       },
-      required: ['Qwen_md_additions', 'features_to_try', 'usage_patterns'],
+      required: ['Canopy_md_additions', 'features_to_try', 'usage_patterns'],
     };
 
     // 7. Interaction Style
@@ -971,7 +971,7 @@ ${sessionSummaries}
 FRICTION DETAILS:
 ${frictionDetails}
 
-USER INSTRUCTIONS TO Qwen:
+USER INSTRUCTIONS TO Canopy:
 None captured`;
   }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import type {
   ProviderModelConfig,
   Config,
   ProviderConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   ALL_PROVIDERS,
   applyProviderInstallPlan,
@@ -22,7 +22,7 @@ import {
   resolveBaseUrl,
   resolveMetadataKey,
   resolveOwnsModel,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import { t } from '../../i18n/index.js';
 import { createLoadedSettingsAdapter } from '../../config/loadedSettingsAdapter.js';

@@ -138,7 +138,7 @@ describe('Help Component', () => {
     const { lastFrame } = render(<Help commands={mockCommands} width={100} />);
     const output = lastFrame();
 
-    expect(output).toContain('Qwen Code');
+    expect(output).toContain('Canopy Code');
     expect(output).toContain('general');
     expect(output).toContain('commands');
     expect(output).toContain('custom-commands');

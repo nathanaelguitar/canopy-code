@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -416,7 +416,7 @@ export interface WorkflowAgentOpts {
    * P-stall: per-call stall-watchdog timeout in milliseconds. The dispatch
    * is aborted + retried (up to 3 attempts) after this many ms of no
    * subagent progress (with no tool in flight). Defaults to 60_000 (env
-   * override `QWEN_CODE_WORKFLOW_STALL_SECONDS`). `0` disables the watchdog
+   * override `CANOPY_CODE_WORKFLOW_STALL_SECONDS`). `0` disables the watchdog
    * for this call.
    */
   stallMs?: number;
@@ -473,7 +473,7 @@ export interface WorkflowOrchestratorEmitter {
   /**
    * P5: cumulative `spent` re-snapshot after each successful agent
    * completion. `total` is `null` when no per-run cap is set
-   * (`QWEN_CODE_MAX_TOKENS_PER_WORKFLOW` unset). Caller (the
+   * (`CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW` unset). Caller (the
    * `WorkflowTool`) mirrors this into the `WorkflowRunRegistry` so the
    * pill / dialog / detail body surface the live token usage. The
    * orchestrator only fires this when a `budget` was passed to
@@ -515,7 +515,7 @@ export interface SandboxOptions {
   /**
    * Host-side `workflow(nameOrRef, args)` implementation. When provided, the
    * sandbox exposes the `workflow` global that resolves a saved workflow
-   * (by name from `.qwen/workflows/<name>.js`, or by `{scriptPath}`) and runs
+   * (by name from `.canopy/workflows/<name>.js`, or by `{scriptPath}`) and runs
    * it as a nested orchestration sharing this run's agent-count cap and token
    * budget. When omitted the sandbox falls back to a throwing stub — this is
    * also how single-level nesting is enforced: the orchestrator injects
@@ -533,7 +533,7 @@ export interface SandboxOptions {
    * portion; once the IIFE yields its first `await`, the watchdog is
    * disarmed and `return new Promise(() => {})` would hang forever.
    *
-   * Defaults to 30 minutes, override via `QWEN_CODE_MAX_WORKFLOW_SECONDS`
+   * Defaults to 30 minutes, override via `CANOPY_CODE_MAX_WORKFLOW_SECONDS`
    * env var, or pass an explicit value here (tests use small values for
    * fast verification).
    *
@@ -590,10 +590,10 @@ export interface SandboxOptions {
  * 0-token-hang backstop, NOT a precise cost cap: it bounds patterns like an
  * in-script `await new Promise(() => {})` that the vm timeout cannot reach.
  * For genuine cost control, use the env-overridable per-run cap
- * (`QWEN_CODE_MAX_WORKFLOW_AGENTS`) and concurrency window
- * (`QWEN_CODE_MAX_WORKFLOW_CONCURRENCY`). 30 minutes is set generously
+ * (`CANOPY_CODE_MAX_WORKFLOW_AGENTS`) and concurrency window
+ * (`CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY`). 30 minutes is set generously
  * enough that typical workflows never see it but a hang doesn't waste
- * operator hours; raise via `QWEN_CODE_MAX_WORKFLOW_SECONDS` for long
+ * operator hours; raise via `CANOPY_CODE_MAX_WORKFLOW_SECONDS` for long
  * legitimate fan-outs (1000 agents × 10-min subagent cap ÷ default
  * concurrency would already exceed 30 min).
  */
@@ -603,7 +603,7 @@ function resolveMaxWallClockMs(opts: SandboxOptions): number {
   if (typeof opts.maxWallClockMs === 'number' && opts.maxWallClockMs > 0) {
     return opts.maxWallClockMs;
   }
-  const envSec = Number(process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS']);
+  const envSec = Number(process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS']);
   if (Number.isFinite(envSec) && envSec > 0) return envSec * 1000;
   return DEFAULT_MAX_WALL_CLOCK_MS;
 }
@@ -876,7 +876,7 @@ export function createWorkflowSandbox(opts: SandboxOptions): WorkflowSandbox {
     pushLog: safeLog,
     lastPhase: () => phases[phases.length - 1],
     hostAgent: opts.dispatch,
-    // PR #4947 R2 T7 (qwen-code-ci-bot): host-side log hook for reviveInRealm's
+    // PR #4947 R2 T7 (canopy-code-ci-bot): host-side log hook for reviveInRealm's
     // catch path. Mirrors the rejection-logging in settleToNullArray so an
     // operator running with debug logging can distinguish "thunk rejected"
     // (settleToNullArray.warn) from "thunk resolved to a non-JSON-serializable
@@ -1810,7 +1810,7 @@ export function createWorkflowSandbox(opts: SandboxOptions): WorkflowSandbox {
             reject(
               new Error(
                 `Workflow execution exceeded ${maxWallClockMs} ms of active time (paused time is not counted). ` +
-                  'Override via SandboxOptions.maxWallClockMs or QWEN_CODE_MAX_WORKFLOW_SECONDS env var.',
+                  'Override via SandboxOptions.maxWallClockMs or CANOPY_CODE_MAX_WORKFLOW_SECONDS env var.',
               ),
             );
           });

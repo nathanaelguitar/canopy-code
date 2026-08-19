@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ export class WsStream implements TransportStream {
     ws.on('error', (err) => {
       this.close();
       writeStderrLineSafe(
-        `qwen serve: /acp WS error: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: /acp WS error: ${err instanceof Error ? err.message : String(err)}`,
       );
     });
     let alive = true;
@@ -110,7 +110,7 @@ export class WsStream implements TransportStream {
     this.writeChain = next.then((result) => {
       if (result === 'failed' && !this._closed) {
         this.close();
-        writeStderrLineSafe('qwen serve: /acp WS write failed');
+        writeStderrLineSafe('canopy serve: /acp WS write failed');
       }
     });
     return next;
@@ -136,7 +136,7 @@ export class WsStream implements TransportStream {
       this.onClose?.();
     } catch (err) {
       writeStderrLineSafe(
-        `qwen serve: /acp WS onClose threw: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: /acp WS onClose threw: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-export const INVOCATION_CONTEXT_META_KEY = 'qwen-code/invocation';
+export const INVOCATION_CONTEXT_META_KEY = 'canopy-code/invocation';
 export const PRIVATE_PARENT_CAPABILITY_META_KEY =
   'qwen-code/private-parent-capability';
 export const PRIVATE_ACP_CAPABILITY_ENV = 'QWEN_CODE_PRIVATE_ACP_CAPABILITY';

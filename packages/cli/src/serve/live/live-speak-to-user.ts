@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   type PermissionDecision,
   type ToolInvocation,
   type ToolResult,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 export const SPEAK_TO_USER_TOOL_NAME = 'speak_to_user' as const;
 export const MAX_SPEAK_TO_USER_MESSAGE_CHARS = 32_000;
@@ -61,7 +61,7 @@ export class SpeakToUserTool extends BaseDeclarativeTool<
       SPEAK_TO_USER_TOOL_NAME,
       'SpeakToUser',
       'Speak an important voice chat update to the user. Use this sparingly ' +
-        'and only during an active voice chat. Automatic backend Qwen Code ' +
+        'and only during an active voice chat. Automatic backend Canopy Code ' +
         'text is silent context and is not automatically spoken. The message ' +
         'is spoken verbatim by the voice model, so write it for speech. Final ' +
         'assistant text is not automatically spoken; call this tool if the ' +

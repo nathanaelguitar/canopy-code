@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -116,11 +116,11 @@ export function osc(...parts: Array<string | number>): string {
 
 /**
  * Wrap an OSC sequence for tmux / screen passthrough (DCS-passthrough, with
- * ESC doubling under tmux). Re-exported from `@qwen-code/qwen-code-core`, the
+ * ESC doubling under tmux). Re-exported from `@canopy-code/canopy-code-core`, the
  * single source of truth for this helper — core-side emitters need it too —
  * so this package's existing importers keep resolving unchanged.
  */
-export { wrapForMultiplexer } from '@qwen-code/qwen-code-core';
+export { wrapForMultiplexer } from '@canopy-code/canopy-code-core';
 
 // ── Encoding helpers ───────────────────────────────────────────────
 

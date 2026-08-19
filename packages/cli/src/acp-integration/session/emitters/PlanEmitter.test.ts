@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlanEmitter } from './PlanEmitter.js';
 import type { SessionContext, TodoItem } from '../types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 
 describe('PlanEmitter', () => {
   let mockContext: SessionContext;
@@ -42,24 +42,24 @@ describe('PlanEmitter', () => {
             content: 'First task',
             priority: 'medium',
             status: 'pending',
-            _meta: { qwenTodo: { id: '1' } },
+            _meta: { canopyTodo: { id: '1' } },
           },
           {
             content: 'Second task',
             priority: 'medium',
             status: 'in_progress',
-            _meta: { qwenTodo: { id: '2' } },
+            _meta: { canopyTodo: { id: '2' } },
           },
           {
             content: 'Third task',
             priority: 'medium',
             status: 'completed',
-            _meta: { qwenTodo: { id: '3' } },
+            _meta: { canopyTodo: { id: '3' } },
           },
         ],
         _meta: {
-          qwenTodoPlan: { id: 'plan-1' },
-          qwenTranscript: { planToolCallId: 'call-1' },
+          canopyTodoPlan: { id: 'plan-1' },
+          canopyTranscript: { planToolCallId: 'call-1' },
         },
       });
     });

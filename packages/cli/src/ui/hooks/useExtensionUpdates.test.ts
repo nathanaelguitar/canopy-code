@@ -16,12 +16,12 @@ import {
   usePluginChoiceRequests,
 } from './useExtensionUpdates.js';
 import {
-  QWEN_DIR,
+  CANOPY_DIR,
   type ExtensionManager,
   type Extension,
   type ExtensionUpdateInfo,
   ExtensionUpdateState,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { MessageType } from '../types.js';
 
@@ -277,9 +277,11 @@ describe('useExtensionUpdates', () => {
   let userExtensionsDir: string;
 
   beforeEach(() => {
-    tempHomeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cli-test-home-'));
+    tempHomeDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-cli-test-home-'),
+    );
     vi.mocked(os.homedir).mockReturnValue(tempHomeDir);
-    userExtensionsDir = path.join(tempHomeDir, QWEN_DIR, 'extensions');
+    userExtensionsDir = path.join(tempHomeDir, CANOPY_DIR, 'extensions');
     fs.mkdirSync(userExtensionsDir, { recursive: true });
   });
 

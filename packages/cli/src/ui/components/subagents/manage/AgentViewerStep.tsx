@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { Box, Text } from 'ink';
 import { theme } from '../../../semantic-colors.js';
 import { shouldShowColor, getColorForDisplay } from '../utils.js';
-import { type SubagentConfig } from '@qwen-code/qwen-code-core';
+import { type SubagentConfig } from '@canopy-code/canopy-code-core';
 import { t } from '../../../../i18n/index.js';
 
 interface AgentViewerStepProps {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ export class TeamCoordinationHarness {
   readonly teamName: string;
 
   /**
-   * Temp dir used as the global qwen dir for this harness.
+   * Temp dir used as the global canopy dir for this harness.
    * Team files, task files, and mailboxes live under here.
    */
   readonly tmpDir: string;

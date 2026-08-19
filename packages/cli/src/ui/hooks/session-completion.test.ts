@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockListSessions = vi.fn();
 
-vi.mock('@qwen-code/qwen-code-core', async (orig) => {
+vi.mock('@canopy-code/canopy-code-core', async (orig) => {
   const actual = (await orig()) as Record<string, unknown>;
   return {
     ...actual,

@@ -10,12 +10,12 @@ import path from 'node:path';
 import toml from '@iarna/toml';
 import { glob } from 'glob';
 import { z } from 'zod';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   createDebugLogger,
   EXTENSIONS_CONFIG_FILENAME,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { ICommandLoader } from './types.js';
 import {
   parseMarkdownCommand,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import type {
   HookRegistryEntry,
   SessionHookEntry,
   HookEventName,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { supportsMatchers } from '../components/hooks/constants.js';
 import { normalizeMatcher } from '../components/hooks/matcherGrouping.js';
 
@@ -193,7 +193,7 @@ const listCommand: SlashCommand = {
 export const hooksCommand: SlashCommand = {
   name: 'hooks',
   get description() {
-    return t('Manage Qwen Code hooks');
+    return t('Manage Canopy Code hooks');
   },
   kind: CommandKind.BUILT_IN,
   supportedModes: ['interactive', 'non_interactive', 'acp'] as const,

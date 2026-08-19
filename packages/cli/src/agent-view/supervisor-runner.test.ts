@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -390,7 +390,7 @@ async function makeSupervisorPath(): Promise<{
   socketPath: string;
 }> {
   const globalDir = await fs.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-agent-view-runner-'),
+    path.join(os.tmpdir(), 'canopy-agent-view-runner-'),
   );
   cleanupDirs.push(globalDir);
   return {

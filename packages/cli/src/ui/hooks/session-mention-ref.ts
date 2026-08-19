@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { unescapeShellSpecials } from '@qwen-code/qwen-code-core';
+import { unescapeShellSpecials } from '@canopy-code/canopy-code-core';
 
 export const SESSION_MENTION_PREFIX = 'session:';
 

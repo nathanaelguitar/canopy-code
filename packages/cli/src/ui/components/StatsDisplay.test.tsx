@@ -13,7 +13,7 @@ import type {
   ModelMetricsCore,
   SessionMetrics,
 } from '../contexts/SessionContext.js';
-import { MAIN_SOURCE } from '@qwen-code/qwen-code-core';
+import { MAIN_SOURCE } from '@canopy-code/canopy-code-core';
 import { DEFAULT_THEME, themeManager } from '../themes/theme-manager.js';
 
 // Wraps a core metrics object as a ModelMetrics with a single `main` source

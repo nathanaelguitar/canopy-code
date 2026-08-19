@@ -24,7 +24,7 @@ import {
   type RecentSlashCommands,
   useSlashCompletion,
 } from './useSlashCompletion.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { useCompletion } from './useCompletion.js';
 import {
   isStackedSkillCompletableCommand,

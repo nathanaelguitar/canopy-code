@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SessionUpdate } from '@agentclientprotocol/sdk';
 import { LOAD_REPLAY_META_KEY } from '@qwen-code/acp-bridge/bridgeTypes';
-import type { ToolResultBoundaryObservation } from '@qwen-code/qwen-code-core';
+import type { ToolResultBoundaryObservation } from '@canopy-code/canopy-code-core';
 import type { CLIUserMessage } from '../nonInteractive/types.js';
 
 const { mockObserveBoundary } = vi.hoisted(() => ({
@@ -16,8 +16,8 @@ const { mockObserveBoundary } = vi.hoisted(() => ({
   ),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   observeToolResultBoundary: mockObserveBoundary,
 }));
 
@@ -143,7 +143,7 @@ describe('CLI tool-result boundary diagnostics', () => {
     const projected = acpUpdate('projected');
     const delivered = {
       ...projected,
-      _meta: { 'qwen.session.recordId': 'record-secret' },
+      _meta: { 'canopy.session.recordId': 'record-secret' },
     } as SessionUpdate;
     associateAcpToolResultArtifact(input, {
       state: 'none',

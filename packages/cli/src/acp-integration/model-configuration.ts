@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ReasoningEffort } from '@qwen-code/qwen-code-core';
+import type { ReasoningEffort } from '@canopy-code/canopy-code-core';
 
 export interface ModelReasoningConfiguration {
   readonly thinking: true;

@@ -7,7 +7,7 @@
 import { type ColorsTheme, Theme } from './theme.js';
 import { lightSemanticColors } from './semantic-tokens.js';
 
-const qwenLightColors: ColorsTheme = {
+const canopyLightColors: ColorsTheme = {
   type: 'light',
   Background: '#f8f9fa',
   Foreground: '#5c6166',
@@ -27,92 +27,92 @@ const qwenLightColors: ColorsTheme = {
   GradientColors: ['#399ee6', '#86b300'],
 };
 
-export const QwenLight: Theme = new Theme(
-  'Qwen Light',
+export const CanopyLight: Theme = new Theme(
+  'Canopy Light',
   'light',
   {
     hljs: {
       display: 'block',
       overflowX: 'auto',
       padding: '0.5em',
-      background: qwenLightColors.Background,
-      color: qwenLightColors.Foreground,
+      background: canopyLightColors.Background,
+      color: canopyLightColors.Foreground,
     },
     'hljs-comment': {
-      color: qwenLightColors.Comment,
+      color: canopyLightColors.Comment,
       fontStyle: 'italic',
     },
     'hljs-quote': {
-      color: qwenLightColors.AccentCyan,
+      color: canopyLightColors.AccentCyan,
       fontStyle: 'italic',
     },
     'hljs-string': {
-      color: qwenLightColors.AccentGreen,
+      color: canopyLightColors.AccentGreen,
     },
     'hljs-constant': {
-      color: qwenLightColors.AccentCyan,
+      color: canopyLightColors.AccentCyan,
     },
     'hljs-number': {
-      color: qwenLightColors.AccentPurple,
+      color: canopyLightColors.AccentPurple,
     },
     'hljs-keyword': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-selector-tag': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-attribute': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-variable': {
-      color: qwenLightColors.Foreground,
+      color: canopyLightColors.Foreground,
     },
     'hljs-variable.language': {
-      color: qwenLightColors.LightBlue,
+      color: canopyLightColors.LightBlue,
       fontStyle: 'italic',
     },
     'hljs-title': {
-      color: qwenLightColors.AccentBlue,
+      color: canopyLightColors.AccentBlue,
     },
     'hljs-section': {
-      color: qwenLightColors.AccentGreen,
+      color: canopyLightColors.AccentGreen,
       fontWeight: 'bold',
     },
     'hljs-type': {
-      color: qwenLightColors.LightBlue,
+      color: canopyLightColors.LightBlue,
     },
     'hljs-class .hljs-title': {
-      color: qwenLightColors.AccentBlue,
+      color: canopyLightColors.AccentBlue,
     },
     'hljs-tag': {
-      color: qwenLightColors.LightBlue,
+      color: canopyLightColors.LightBlue,
     },
     'hljs-name': {
-      color: qwenLightColors.AccentBlue,
+      color: canopyLightColors.AccentBlue,
     },
     'hljs-builtin-name': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-meta': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-symbol': {
-      color: qwenLightColors.AccentRed,
+      color: canopyLightColors.AccentRed,
     },
     'hljs-bullet': {
-      color: qwenLightColors.AccentYellow,
+      color: canopyLightColors.AccentYellow,
     },
     'hljs-regexp': {
-      color: qwenLightColors.AccentCyan,
+      color: canopyLightColors.AccentCyan,
     },
     'hljs-link': {
-      color: qwenLightColors.LightBlue,
+      color: canopyLightColors.LightBlue,
     },
     'hljs-deletion': {
-      color: qwenLightColors.AccentRed,
+      color: canopyLightColors.AccentRed,
     },
     'hljs-addition': {
-      color: qwenLightColors.AccentGreen,
+      color: canopyLightColors.AccentGreen,
     },
     'hljs-emphasis': {
       fontStyle: 'italic',
@@ -121,21 +121,21 @@ export const QwenLight: Theme = new Theme(
       fontWeight: 'bold',
     },
     'hljs-literal': {
-      color: qwenLightColors.AccentCyan,
+      color: canopyLightColors.AccentCyan,
     },
     'hljs-built_in': {
-      color: qwenLightColors.AccentRed,
+      color: canopyLightColors.AccentRed,
     },
     'hljs-doctag': {
-      color: qwenLightColors.AccentRed,
+      color: canopyLightColors.AccentRed,
     },
     'hljs-template-variable': {
-      color: qwenLightColors.AccentCyan,
+      color: canopyLightColors.AccentCyan,
     },
     'hljs-selector-id': {
-      color: qwenLightColors.AccentRed,
+      color: canopyLightColors.AccentRed,
     },
   },
-  qwenLightColors,
+  canopyLightColors,
   lightSemanticColors,
 );

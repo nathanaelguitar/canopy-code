@@ -111,7 +111,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -119,14 +119,14 @@ describe('loadIgnoreRules', () => {
     expect(fileFilter('test.txt')).toBe(false);
   });
 
-  it('should load rules from .qwenignore', async () => {
+  it('should load rules from .canopyignore', async () => {
     tmpDir = await createTmpDir({
-      '.qwenignore': '*.log',
+      '.canopyignore': '*.log',
     });
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -134,7 +134,7 @@ describe('loadIgnoreRules', () => {
     expect(fileFilter('test.txt')).toBe(false);
   });
 
-  it('should load rules from .agentignore and .aiignore with qwenignore enabled', async () => {
+  it('should load rules from .agentignore and .aiignore with canopyignore enabled', async () => {
     tmpDir = await createTmpDir({
       '.agentignore': 'agent-secret.txt',
       '.aiignore': 'ai-secret.txt',
@@ -142,7 +142,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -158,7 +158,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const dirFilter = ignore.getDirectoryFilter();
@@ -166,15 +166,15 @@ describe('loadIgnoreRules', () => {
     expect(dirFilter('src/')).toBe(false);
   });
 
-  it('should not let custom ignore negations unignore .qwenignore matches', async () => {
+  it('should not let custom ignore negations unignore .canopyignore matches', async () => {
     tmpDir = await createTmpDir({
-      '.qwenignore': 'secrets/**',
+      '.canopyignore': 'secrets/**',
       '.agentignore': '!secrets/**',
     });
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -183,12 +183,12 @@ describe('loadIgnoreRules', () => {
 
   it('should keep negations scoped to the same ignore file', async () => {
     tmpDir = await createTmpDir({
-      '.qwenignore': 'secrets/**\n!secrets/public.txt',
+      '.canopyignore': 'secrets/**\n!secrets/public.txt',
     });
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -196,7 +196,7 @@ describe('loadIgnoreRules', () => {
     expect(fileFilter('secrets/public.txt')).toBe(false);
   });
 
-  it('should load rules from configured custom ignore files with qwenignore enabled', async () => {
+  it('should load rules from configured custom ignore files with canopyignore enabled', async () => {
     tmpDir = await createTmpDir({
       '.cursorignore': 'cursor-secret.txt',
       '.agentignore': 'agent-secret.txt',
@@ -204,7 +204,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: true,
+      useCanopyignore: true,
       customIgnoreFiles: ['.cursorignore'],
       ignoreDirs: [],
     });
@@ -214,15 +214,15 @@ describe('loadIgnoreRules', () => {
     expect(fileFilter('visible.txt')).toBe(false);
   });
 
-  it('should combine rules from .gitignore and .qwenignore', async () => {
+  it('should combine rules from .gitignore and .canopyignore', async () => {
     tmpDir = await createTmpDir({
       '.gitignore': '*.log',
-      '.qwenignore': '*.txt',
+      '.canopyignore': '*.txt',
     });
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -236,7 +236,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: ['logs/'],
     });
     const dirFilter = ignore.getDirectoryFilter();
@@ -249,7 +249,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: true,
-      useQwenignore: true,
+      useCanopyignore: true,
       ignoreDirs: [],
     });
     const fileFilter = ignore.getFileFilter();
@@ -258,14 +258,14 @@ describe('loadIgnoreRules', () => {
 
   it('should handle ignore files that cannot be read gracefully', async () => {
     tmpDir = await createTmpDir({
-      '.qwenignore': '*.log',
+      '.canopyignore': '*.log',
     });
     const originalReadFileSync = fs.readFileSync;
     vi.spyOn(fs, 'readFileSync').mockImplementation(((
       filePath: fs.PathOrFileDescriptor,
       options?: BufferEncoding | null,
     ) => {
-      if (String(filePath).endsWith('.qwenignore')) {
+      if (String(filePath).endsWith('.canopyignore')) {
         throw new Error('ignore file disappeared');
       }
       return originalReadFileSync(filePath, options);
@@ -275,7 +275,7 @@ describe('loadIgnoreRules', () => {
       loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: true,
+        useCanopyignore: true,
         ignoreDirs: [],
       }),
     ).not.toThrow();
@@ -302,7 +302,7 @@ describe('loadIgnoreRules', () => {
       loadIgnoreRules({
         projectRoot: tmpDir,
         useGitignore: false,
-        useQwenignore: true,
+        useCanopyignore: true,
         ignoreDirs: [],
       }),
     ).not.toThrow();
@@ -316,7 +316,7 @@ describe('loadIgnoreRules', () => {
     const ignore = loadIgnoreRules({
       projectRoot: tmpDir,
       useGitignore: false,
-      useQwenignore: false,
+      useCanopyignore: false,
       ignoreDirs: [],
     });
     const dirFilter = ignore.getDirectoryFilter();

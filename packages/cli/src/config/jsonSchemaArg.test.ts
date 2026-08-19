@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -26,7 +26,7 @@ describe('resolveJsonSchemaArg', () => {
   });
 
   it('reads schema from disk via @path syntax', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-schema-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-schema-'));
     const file = path.join(tmp, 'schema.json');
     fs.writeFileSync(file, '{"type":"object"}');
     try {
@@ -63,7 +63,7 @@ describe('resolveJsonSchemaArg', () => {
     // pointing at a directory would surface a less-specific Node EISDIR
     // error from the readFileSync call (or worse, on systems where
     // readFileSync on a directory does not error).
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-schema-dir-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-schema-dir-'));
     try {
       expect(() => resolveJsonSchemaArg(`@${tmp}`)).toThrow(
         /must be a regular file/,
@@ -75,10 +75,10 @@ describe('resolveJsonSchemaArg', () => {
 
   it('rejects @path schema files that exceed the size cap', () => {
     // Defence against a wrapper that forwards a user-supplied path into
-    // `qwen --json-schema "$X"` where X is e.g. `@/dev/zero` or any
+    // `canopy --json-schema "$X"` where X is e.g. `@/dev/zero` or any
     // pathologically large file. We pre-check size via fs.statSync so the
     // huge buffer never gets allocated.
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-schema-big-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-schema-big-'));
     const file = path.join(tmp, 'huge.json');
     // Cap is 4 MiB; write 4 MiB + 1 byte to trip it.
     fs.writeFileSync(file, Buffer.alloc(4 * 1024 * 1024 + 1, 0x20));
@@ -96,9 +96,9 @@ describe('resolveJsonSchemaArg', () => {
     // embeds a ~10-char prefix of the input. For inline JSON that's
     // fine — the user typed it themselves — but for @path it would leak
     // a prefix of the referenced file through stderr to any wrapper
-    // that surfaces qwen's error output. Sanitise by emitting a generic
+    // that surfaces canopy's error output. Sanitise by emitting a generic
     // "content of <path> is not valid JSON" instead.
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-schema-bad-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-schema-bad-'));
     const file = path.join(tmp, 'leaky.txt');
     const secretContent = 'SECRET_TOKEN_PREFIX hello world';
     fs.writeFileSync(file, secretContent);

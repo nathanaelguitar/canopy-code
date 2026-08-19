@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { act } from 'react';
 import { render } from 'ink-testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waitFor } from '@testing-library/react';
-import type { Config, Extension } from '@qwen-code/qwen-code-core';
+import type { Config, Extension } from '@canopy-code/canopy-code-core';
 import { InstalledTab } from './InstalledTab.js';
 import type { StatusMessage } from '../ExtensionsManagerDialog.js';
 

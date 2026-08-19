@@ -8,7 +8,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Storage } from '../config/storage.js';
 import {
-  QWEN_DIR,
+  CANOPY_DIR,
   realpathNearestExisting,
   resolvePath,
   sanitizeCwd,
@@ -31,7 +31,7 @@ export const AUTO_MEMORY_CONSOLIDATION_LOCK_FILENAME = 'consolidation.lock';
 export const USER_AUTO_MEMORY_DIRNAME = 'memories';
 
 /**
- * Directory name (under the repo's `.qwen/`) for the team auto-memory layer —
+ * Directory name (under the repo's `.canopy/`) for the team auto-memory layer —
  * project memory shared with every collaborator. Unlike the private layers it
  * lives INSIDE the repository and is tracked by git, which is the sync transport.
  */
@@ -61,13 +61,13 @@ function findGitRoot(startPath: string): string | null {
 
 /**
  * Returns the base directory for all auto-memory storage.
- * Defaults to the runtime output dir (`runtimeOutputDir`, `QWEN_RUNTIME_DIR`,
- * or the global qwen dir);
- * overridable via QWEN_CODE_MEMORY_BASE_DIR for tests.
+ * Defaults to the runtime output dir (`runtimeOutputDir`, `CANOPY_RUNTIME_DIR`,
+ * or the global canopy dir);
+ * overridable via CANOPY_CODE_MEMORY_BASE_DIR for tests.
  */
 export function getMemoryBaseDir(): string {
-  if (process.env['QWEN_CODE_MEMORY_BASE_DIR']) {
-    return resolvePath(undefined, process.env['QWEN_CODE_MEMORY_BASE_DIR']);
+  if (process.env['CANOPY_CODE_MEMORY_BASE_DIR']) {
+    return resolvePath(undefined, process.env['CANOPY_CODE_MEMORY_BASE_DIR']);
   }
   return Storage.getRuntimeBaseDir();
 }
@@ -84,14 +84,14 @@ const _teamAutoMemoryRootCache = new Map<string, string>();
 let warnedUnknownMemoryProjectScope = false;
 
 /**
- * Resolve QWEN_CODE_MEMORY_PROJECT_SCOPE. Only "workspace" (after trimming and
+ * Resolve CANOPY_CODE_MEMORY_PROJECT_SCOPE. Only "workspace" (after trimming and
  * lowercasing) opts into per-workspace partitioning; anything else keeps the
  * git-root scope. An unrecognized non-empty value warns once so a typo surfaces
  * instead of silently falling back to the shared scope this flag exists to
  * prevent.
  */
 function resolveWorkspaceProjectScope(): boolean {
-  const raw = process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+  const raw = process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
   if (raw === undefined) return false;
   const normalized = raw.trim().toLowerCase();
   if (normalized === 'workspace') return true;
@@ -103,7 +103,7 @@ function resolveWorkspaceProjectScope(): boolean {
     warnedUnknownMemoryProjectScope = true;
     // eslint-disable-next-line no-console
     console.warn(
-      `[qwen-code] Ignoring unrecognized QWEN_CODE_MEMORY_PROJECT_SCOPE="${raw}"; ` +
+      `[canopy-code] Ignoring unrecognized CANOPY_CODE_MEMORY_PROJECT_SCOPE="${raw}"; ` +
         'falling back to "git-root". Expected "git-root" or "workspace".',
     );
   }
@@ -111,7 +111,7 @@ function resolveWorkspaceProjectScope(): boolean {
 }
 
 export function getAutoMemoryRoot(projectRoot: string): string {
-  const useLocalMemory = process.env['QWEN_CODE_MEMORY_LOCAL'] === '1';
+  const useLocalMemory = process.env['CANOPY_CODE_MEMORY_LOCAL'] === '1';
   const useWorkspaceRoot = resolveWorkspaceProjectScope();
   const memoryBaseDir = useLocalMemory ? '' : getMemoryBaseDir();
   const cacheKey = `${useLocalMemory ? 'local' : memoryBaseDir}\0${
@@ -122,7 +122,7 @@ export function getAutoMemoryRoot(projectRoot: string): string {
 
   let result: string;
   if (useLocalMemory) {
-    result = path.join(projectRoot, QWEN_DIR, AUTO_MEMORY_DIRNAME);
+    result = path.join(projectRoot, CANOPY_DIR, AUTO_MEMORY_DIRNAME);
   } else {
     // In git-root scope, anchor at the nearest git root WITHOUT resolving
     // linked worktrees back to their canonical repository root: each worktree
@@ -156,16 +156,16 @@ export function clearAutoMemoryRootCache(): void {
  * of getAutoMemoryRoot() that is derived from the user's environment rather than
  * repo-tracked contents, and is therefore safe to canonicalize through symlinks.
  *
- * In local-memory mode (`QWEN_CODE_MEMORY_LOCAL=1`) the root is
- * `<projectRoot>/.qwen/memory`, so the anchor is the project root; otherwise the
+ * In local-memory mode (`CANOPY_CODE_MEMORY_LOCAL=1`) the root is
+ * `<projectRoot>/.canopy/memory`, so the anchor is the project root; otherwise the
  * root lives under the shared memory base dir, which is the anchor. The write
  * boundary (isAllowedMemoryPath) canonicalizes this anchor but appends the
  * managed suffix literally, so a symlink planted INSIDE the suffix (e.g. a
- * repo-tracked `.qwen -> /outside`) can't silently relocate the allowed root
+ * repo-tracked `.canopy -> /outside`) can't silently relocate the allowed root
  * out of the trusted anchor.
  */
 export function getAutoMemoryTrustedAnchor(projectRoot: string): string {
-  return process.env['QWEN_CODE_MEMORY_LOCAL'] === '1'
+  return process.env['CANOPY_CODE_MEMORY_LOCAL'] === '1'
     ? projectRoot
     : getMemoryBaseDir();
 }
@@ -250,7 +250,7 @@ export function getAutoMemoryFilePath(
 
 /**
  * Returns the user-level (cross-project) auto-memory root.
- * Lives at `${getMemoryBaseDir()}/memories/` — typically `~/.qwen/memories/`.
+ * Lives at `${getMemoryBaseDir()}/memories/` — typically `~/.canopy/memories/`.
  * Unlike project memory, this is NOT scoped to a git root; it is shared
  * across every project the user works in.
  */
@@ -279,7 +279,7 @@ export function isUserAutoMemPath(absolutePath: string): boolean {
 }
 
 /**
- * Returns the team auto-memory root: `<gitRoot>/.qwen/team-memory/`.
+ * Returns the team auto-memory root: `<gitRoot>/.canopy/team-memory/`.
  * Anchored at the current worktree root so tracked writes appear in the active
  * branch diff. Falls back to projectRoot when there is no git root.
  */
@@ -287,7 +287,7 @@ export function getTeamAutoMemoryRoot(projectRoot: string): string {
   const cached = _teamAutoMemoryRootCache.get(projectRoot);
   if (cached !== undefined) return cached;
   const root = findGitRoot(projectRoot) ?? path.resolve(projectRoot);
-  const result = path.join(root, QWEN_DIR, TEAM_AUTO_MEMORY_DIRNAME);
+  const result = path.join(root, CANOPY_DIR, TEAM_AUTO_MEMORY_DIRNAME);
   _teamAutoMemoryRootCache.set(projectRoot, result);
   return result;
 }

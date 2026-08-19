@@ -31,7 +31,7 @@ describe('managed auto-memory dream', () => {
     vi.mocked(planManagedAutoMemoryDreamByAgent).mockReset();
     mockConfig = {
       getSessionId: vi.fn().mockReturnValue('session-1'),
-      getModel: vi.fn().mockReturnValue('qwen-test'),
+      getModel: vi.fn().mockReturnValue('canopy-test'),
       getApprovalMode: vi.fn(),
     } as unknown as Config;
   });
@@ -56,8 +56,8 @@ describe('managed auto-memory dream', () => {
       status: 'completed',
       finalText: 'Merged duplicate user memories.',
       filesTouched: [
-        path.join(projectRoot, '.qwen', 'memory', 'user', 'prefs.md'),
-        path.join(projectRoot, '.qwen', 'memory', 'reference', 'dash.md'),
+        path.join(projectRoot, '.canopy', 'memory', 'user', 'prefs.md'),
+        path.join(projectRoot, '.canopy', 'memory', 'reference', 'dash.md'),
       ],
     });
 

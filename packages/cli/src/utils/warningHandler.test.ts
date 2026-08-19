@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   resetWarningHandlerForTests,
 } from './warningHandler.js';
 
-const ENV_KEYS = ['NODE_ENV', 'DEBUG', 'QWEN_DEBUG'] as const;
+const ENV_KEYS = ['NODE_ENV', 'DEBUG', 'CANOPY_DEBUG'] as const;
 
 describe('initializeWarningHandler', () => {
   const originalEnv: Partial<Record<(typeof ENV_KEYS)[number], string>> = {};
@@ -143,8 +143,8 @@ describe('initializeWarningHandler', () => {
     expect(priorListener).not.toHaveBeenCalled();
   });
 
-  it('keeps warnings visible when QWEN_DEBUG is set', () => {
-    process.env['QWEN_DEBUG'] = '1';
+  it('keeps warnings visible when CANOPY_DEBUG is set', () => {
+    process.env['CANOPY_DEBUG'] = '1';
     initializeWarningHandler();
     emit(
       makeWarning(
@@ -222,7 +222,7 @@ describe('initializeWarningHandler — end-to-end stderr behavior', () => {
     try {
       const script = `
         import { initializeWarningHandler } from ${JSON.stringify(helperImportSpecifier)};
-        delete process.env.DEBUG; delete process.env.QWEN_DEBUG;
+        delete process.env.DEBUG; delete process.env.CANOPY_DEBUG;
         process.env.NODE_ENV = 'production';
         initializeWarningHandler();
         process.emitWarning(

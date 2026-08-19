@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@ describe('createInstructionsLoadedCallback', () => {
     );
 
     await callback({
-      filePath: '/repo/QWEN.md',
+      filePath: '/repo/CANOPY.md',
       memoryType: 'project',
       loadReason: 'include',
       triggerFilePath: '/repo/src/app.ts',
@@ -28,7 +28,7 @@ describe('createInstructionsLoadedCallback', () => {
     });
 
     expect(fireInstructionsLoadedEvent).toHaveBeenCalledWith(
-      '/repo/QWEN.md',
+      '/repo/CANOPY.md',
       'project',
       'include',
       {
@@ -49,7 +49,7 @@ describe('createInstructionsLoadedCallback', () => {
     );
 
     await callback({
-      filePath: '/repo/QWEN.md',
+      filePath: '/repo/CANOPY.md',
       memoryType: 'project',
       loadReason: 'session_start',
     });
@@ -62,7 +62,7 @@ describe('createInstructionsLoadedCallback', () => {
 
     await expect(
       callback({
-        filePath: '/repo/QWEN.md',
+        filePath: '/repo/CANOPY.md',
         memoryType: 'project',
         loadReason: 'session_start',
       }),
@@ -81,7 +81,7 @@ describe('createInstructionsLoadedCallback', () => {
 
     await expect(
       callback({
-        filePath: '/repo/QWEN.md',
+        filePath: '/repo/CANOPY.md',
         memoryType: 'project',
         loadReason: 'session_start',
       }),

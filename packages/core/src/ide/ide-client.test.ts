@@ -101,10 +101,10 @@ describe('IdeClient', () => {
     _resetCachedIdeServerHost();
 
     // Mock environment variables
-    process.env['QWEN_CODE_IDE_WORKSPACE_PATH'] = '/test/workspace';
-    delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
-    delete process.env['QWEN_CODE_IDE_SERVER_STDIO_COMMAND'];
-    delete process.env['QWEN_CODE_IDE_SERVER_STDIO_ARGS'];
+    process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'] = '/test/workspace';
+    delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
+    delete process.env['CANOPY_CODE_IDE_SERVER_STDIO_COMMAND'];
+    delete process.env['CANOPY_CODE_IDE_SERVER_STDIO_ARGS'];
 
     // Mock dependencies
     vi.spyOn(process, 'cwd').mockReturnValue('/test/workspace/sub-dir');
@@ -188,7 +188,7 @@ describe('IdeClient', () => {
 
   describe('connect', () => {
     it('should connect using HTTP when port is provided in config file', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '8080';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '8080';
       const config = { port: '8080' };
       vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(config));
 
@@ -196,7 +196,7 @@ describe('IdeClient', () => {
       await ideClient.connect();
 
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide', '8080.lock'),
+        path.join('/home/test', '.canopy', 'ide', '8080.lock'),
         'utf8',
       );
       expect(StreamableHTTPClientTransport).toHaveBeenCalledWith(
@@ -207,11 +207,11 @@ describe('IdeClient', () => {
       expect(ideClient.getConnectionStatus().status).toBe(
         IDEConnectionStatus.Connected,
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should connect using stdio when stdio config is provided in file', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '8080';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '8080';
       const config = { stdio: { command: 'test-cmd', args: ['--foo'] } };
       vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(config));
 
@@ -226,11 +226,11 @@ describe('IdeClient', () => {
       expect(ideClient.getConnectionStatus().status).toBe(
         IDEConnectionStatus.Connected,
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should prioritize port over stdio when both are in config file', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '8080';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '8080';
       const config = {
         port: '8080',
         stdio: { command: 'test-cmd', args: ['--foo'] },
@@ -245,7 +245,7 @@ describe('IdeClient', () => {
       expect(ideClient.getConnectionStatus().status).toBe(
         IDEConnectionStatus.Connected,
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should connect using HTTP when port is provided in environment variables', async () => {
@@ -257,7 +257,7 @@ describe('IdeClient', () => {
           (path: fs.PathLike) => Promise<string[]>
         >
       ).mockResolvedValue([]);
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '9090';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '9090';
 
       const ideClient = await IdeClient.getInstance();
       await ideClient.connect();
@@ -273,7 +273,7 @@ describe('IdeClient', () => {
     });
 
     it('should fall back to host.docker.internal when localhost fails in container', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '9090';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '9090';
       vi.mocked(fs.promises.readFile).mockRejectedValue(
         new Error('File not found'),
       );
@@ -320,11 +320,11 @@ describe('IdeClient', () => {
         IDEConnectionStatus.Connected,
       );
 
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should try a newer lock-file port when the configured port is stale', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1111';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1111';
       const primaryConfig = {
         port: '1111',
         authToken: 'stale-token',
@@ -338,10 +338,10 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/home/test', '.qwen', 'ide', '1111.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1111.lock')) {
             return JSON.stringify(primaryConfig);
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2222.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2222.lock')) {
             return JSON.stringify(fallbackConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -399,11 +399,11 @@ describe('IdeClient', () => {
       expect(ideClient.getConnectionStatus().status).toBe(
         IDEConnectionStatus.Connected,
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should not retry raw env port when its lock belongs to another workspace', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const envConfig = {
         port: '1234',
         workspacePath: '/other/workspace',
@@ -411,13 +411,13 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/home/test', '.qwen', 'ide', '1234.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1234.lock')) {
             return JSON.stringify(envConfig);
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-1234.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-1234.json')) {
             throw new Error('not found');
           }
           throw new Error(`unexpected path: ${file}`);
@@ -440,7 +440,7 @@ describe('IdeClient', () => {
       expect(ideClient.getConnectionStatus().details).toContain(
         'workspace does not match',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should skip explicit workspace mismatches when trying fallback ports', async () => {
@@ -459,13 +459,13 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             return JSON.stringify(primaryConfig);
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2222.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2222.lock')) {
             return JSON.stringify(otherWorkspaceConfig);
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '3333.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '3333.lock')) {
             return JSON.stringify(legacyConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -524,8 +524,8 @@ describe('IdeClient', () => {
           (path: fs.PathLike) => Promise<string[]>
         >
       ).mockResolvedValue([]);
-      process.env['QWEN_CODE_IDE_SERVER_STDIO_COMMAND'] = 'env-cmd';
-      process.env['QWEN_CODE_IDE_SERVER_STDIO_ARGS'] = '["--bar"]';
+      process.env['CANOPY_CODE_IDE_SERVER_STDIO_COMMAND'] = 'env-cmd';
+      process.env['CANOPY_CODE_IDE_SERVER_STDIO_ARGS'] = '["--bar"]';
 
       const ideClient = await IdeClient.getInstance();
       await ideClient.connect();
@@ -548,7 +548,7 @@ describe('IdeClient', () => {
           (path: fs.PathLike) => Promise<string[]>
         >
       ).mockResolvedValue([]);
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '9090';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '9090';
 
       const ideClient = await IdeClient.getInstance();
       await ideClient.connect();
@@ -589,10 +589,10 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2222.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2222.lock')) {
             return JSON.stringify({
               port: '2222',
               workspacePath: '/other/workspace',
@@ -671,7 +671,7 @@ describe('IdeClient', () => {
     it.each(['1', '12345', '65535'])(
       'should return valid env port %s',
       async (port) => {
-        process.env['QWEN_CODE_IDE_SERVER_PORT'] = port;
+        process.env['CANOPY_CODE_IDE_SERVER_PORT'] = port;
 
         const ideClient = await IdeClient.getInstance();
         const result = (
@@ -686,9 +686,9 @@ describe('IdeClient', () => {
 
     it.each(invalidPorts)('should ignore invalid env port %s', async (port) => {
       if (port === undefined) {
-        delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+        delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
       } else {
-        process.env['QWEN_CODE_IDE_SERVER_PORT'] = port;
+        process.env['CANOPY_CODE_IDE_SERVER_PORT'] = port;
       }
 
       const ideClient = await IdeClient.getInstance();
@@ -704,7 +704,7 @@ describe('IdeClient', () => {
 
   describe('getConnectionConfigFromFile', () => {
     it('should return config from the env port lock file if it exists', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '12345';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '12345';
       const config = { port: '12345', workspacePath: '/test/workspace' };
       vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(config));
 
@@ -718,14 +718,14 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config);
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide', '12345.lock'),
+        path.join('/home/test', '.canopy', 'ide', '12345.lock'),
         'utf8',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should not scan the lock directory when the env port lock file exists', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const config = { port: '1234', workspacePath: '/test/workspace' };
       vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(config));
 
@@ -739,11 +739,11 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config);
       expect(fs.promises.readdir).not.toHaveBeenCalled();
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should fall back to scanned locks when the env port lock belongs to another workspace', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const envConfig = {
         port: '1234',
         workspacePath: '/other/workspace',
@@ -755,16 +755,16 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/home/test', '.qwen', 'ide', '1234.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1234.lock')) {
             return JSON.stringify(envConfig);
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-1234.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-1234.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '5678.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '5678.lock')) {
             return JSON.stringify(matchingConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -796,20 +796,20 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(matchingConfig);
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide', '1234.lock'),
+        path.join('/home/test', '.canopy', 'ide', '1234.lock'),
         'utf8',
       );
       expect(fs.promises.readdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide'),
+        path.join('/home/test', '.canopy', 'ide'),
       );
       expect(mockDebugLogger.debug).toHaveBeenCalledWith(
         'Ignoring IDE env lock file: workspace "/other/workspace" does not match cwd "/test/workspace/sub-dir".',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should accept env lock config when workspacePath is undefined', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const config = { port: '1234' };
       vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(config));
       vi.mocked(fs.promises.readdir).mockClear();
@@ -823,7 +823,7 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config);
       expect(fs.promises.readdir).not.toHaveBeenCalled();
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should return legacy config when workspacePath is undefined', async () => {
@@ -842,14 +842,14 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config);
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/tmp', 'qwen-code-ide-server-12345.json'),
+        path.join('/tmp', 'canopy-code-ide-server-12345.json'),
         'utf8',
       );
       expect(fs.promises.readdir).not.toHaveBeenCalled();
     });
 
     it('should return legacy config when env lock belongs to another workspace', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const envConfig = {
         port: '1234',
         workspacePath: '/other/workspace',
@@ -862,10 +862,10 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/home/test', '.qwen', 'ide', '1234.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1234.lock')) {
             return JSON.stringify(envConfig);
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             return JSON.stringify(legacyConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -885,11 +885,11 @@ describe('IdeClient', () => {
       expect(mockDebugLogger.debug).toHaveBeenCalledWith(
         'Ignoring IDE env lock file: workspace "/other/workspace" does not match cwd "/test/workspace/sub-dir".',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should reject env-port legacy config from another workspace', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '1234';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '1234';
       const legacyConfig = {
         port: '9999',
         workspacePath: '/other/workspace',
@@ -897,13 +897,13 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/home/test', '.qwen', 'ide', '1234.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1234.lock')) {
             throw new Error('not found');
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/tmp', 'qwen-code-ide-server-1234.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-1234.json')) {
             return JSON.stringify(legacyConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -931,24 +931,26 @@ describe('IdeClient', () => {
       expect(rejectedPorts.has('9999')).toBe(true);
       expect(rejectedPorts.has('1234')).toBe(true);
       expect(fs.promises.readdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide'),
+        path.join('/home/test', '.canopy', 'ide'),
       );
       expect(mockDebugLogger.debug).toHaveBeenCalledWith(
         'Ignoring legacy IDE connection config: workspace "/other/workspace" does not match cwd "/test/workspace/sub-dir".',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it.each(['../evil', '12345/../../etc', 'abc', ' 8080 ', '8080.0'])(
       'should scan the lock directory when env port is invalid: %s',
       async (port) => {
-        process.env['QWEN_CODE_IDE_SERVER_PORT'] = port;
-        const ideDir = path.join('/home/test', '.qwen', 'ide');
+        process.env['CANOPY_CODE_IDE_SERVER_PORT'] = port;
+        const ideDir = path.join('/home/test', '.canopy', 'ide');
         const config = { port: '2345', workspacePath: '/test/workspace' };
         vi.mocked(fs.promises.readFile).mockImplementation(
           async (filePath: fs.PathLike | FileHandle) => {
             const file = String(filePath);
-            if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+            if (
+              file === path.join('/tmp', 'canopy-code-ide-server-12345.json')
+            ) {
               throw new Error('not found');
             }
             if (file === path.join(ideDir, '2345.lock')) {
@@ -982,7 +984,7 @@ describe('IdeClient', () => {
           'utf8',
         );
         expect(fs.promises.readFile).not.toHaveBeenCalledWith(
-          path.join('/tmp', `qwen-code-ide-server-${port}.json`),
+          path.join('/tmp', `canopy-code-ide-server-${port}.json`),
           'utf8',
         );
         expect(fs.promises.readdir).toHaveBeenCalledWith(ideDir);
@@ -1021,7 +1023,7 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config);
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/tmp', 'qwen-code-ide-server-12345.json'),
+        path.join('/tmp', 'canopy-code-ide-server-12345.json'),
         'utf8',
       );
     });
@@ -1039,10 +1041,10 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             return JSON.stringify(legacyConfig);
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '5678.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '5678.lock')) {
             return JSON.stringify(matchingConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -1070,7 +1072,7 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(matchingConfig);
       expect(fs.promises.readdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide'),
+        path.join('/home/test', '.canopy', 'ide'),
       );
       expect(mockDebugLogger.debug).toHaveBeenCalledWith(
         'Ignoring legacy IDE connection config: workspace "/other/workspace" does not match cwd "/test/workspace/sub-dir".',
@@ -1078,10 +1080,10 @@ describe('IdeClient', () => {
     });
 
     it('should fall back to legacy port file when pid file is missing', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '2222';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '2222';
       const config2 = { port: '2222', workspacePath: '/test/workspace' };
       vi.mocked(fs.promises.readFile)
-        .mockRejectedValueOnce(new Error('not found')) // ~/.qwen/ide/<port>.lock
+        .mockRejectedValueOnce(new Error('not found')) // ~/.canopy/ide/<port>.lock
         .mockRejectedValueOnce(new Error('not found')) // legacy pid file
         .mockResolvedValueOnce(JSON.stringify(config2));
 
@@ -1094,18 +1096,18 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(config2);
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/tmp', 'qwen-code-ide-server-12345.json'),
+        path.join('/tmp', 'canopy-code-ide-server-12345.json'),
         'utf8',
       );
       expect(fs.promises.readFile).toHaveBeenCalledWith(
-        path.join('/tmp', 'qwen-code-ide-server-2222.json'),
+        path.join('/tmp', 'canopy-code-ide-server-2222.json'),
         'utf8',
       );
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should fall back to legacy config when env lock file has invalid JSON', async () => {
-      process.env['QWEN_CODE_IDE_SERVER_PORT'] = '3333';
+      process.env['CANOPY_CODE_IDE_SERVER_PORT'] = '3333';
       const config = { port: '1111', workspacePath: '/test/workspace' };
       vi.mocked(fs.promises.readFile)
         .mockResolvedValueOnce('invalid json')
@@ -1119,7 +1121,7 @@ describe('IdeClient', () => {
       ).getConnectionConfigFromFile();
 
       expect(result).toEqual(config);
-      delete process.env['QWEN_CODE_IDE_SERVER_PORT'];
+      delete process.env['CANOPY_CODE_IDE_SERVER_PORT'];
     });
 
     it('should keep a live lock file even when it is older than 7 days', async () => {
@@ -1133,10 +1135,10 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '1000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1000.lock')) {
             return JSON.stringify(liveConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -1176,13 +1178,13 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '1000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1000.lock')) {
             return JSON.stringify({ port: '1000' });
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2000.lock')) {
             return JSON.stringify(latestConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -1227,16 +1229,16 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '1000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1000.lock')) {
             return JSON.stringify({
               port: '1000',
               workspacePath: '/older/workspace',
             });
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2000.lock')) {
             return JSON.stringify(latestConfig);
           }
           throw new Error(`unexpected path: ${file}`);
@@ -1268,7 +1270,7 @@ describe('IdeClient', () => {
 
       expect(result).toEqual(latestConfig);
       expect(fs.promises.readdir).toHaveBeenCalledWith(
-        path.join('/home/test', '.qwen', 'ide'),
+        path.join('/home/test', '.canopy', 'ide'),
       );
     });
 
@@ -1276,16 +1278,16 @@ describe('IdeClient', () => {
       vi.mocked(fs.promises.readFile).mockImplementation(
         async (filePath: fs.PathLike | FileHandle) => {
           const file = String(filePath);
-          if (file === path.join('/tmp', 'qwen-code-ide-server-12345.json')) {
+          if (file === path.join('/tmp', 'canopy-code-ide-server-12345.json')) {
             throw new Error('not found');
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '1000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '1000.lock')) {
             return JSON.stringify({
               port: '1000',
               workspacePath: '/another/workspace',
             });
           }
-          if (file === path.join('/home/test', '.qwen', 'ide', '2000.lock')) {
+          if (file === path.join('/home/test', '.canopy', 'ide', '2000.lock')) {
             return JSON.stringify({
               port: '2000',
               workspacePath: '/yet/another/workspace',

@@ -9,11 +9,11 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import {
   ToolNames,
-  DEFAULT_QWEN_MODEL,
+  DEFAULT_CANOPY_MODEL,
   OutputFormat,
   NativeLspService,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   isValidSessionId,
   loadCliConfig,
@@ -22,7 +22,7 @@ import {
   type CliArgs,
 } from './config.js';
 import type { Settings } from './settings.js';
-import * as ServerConfig from '@qwen-code/qwen-code-core';
+import * as ServerConfig from '@canopy-code/canopy-code-core';
 import { isWorkspaceTrusted } from './trustedFolders.js';
 import { resetMcpApprovalsForTesting } from './mcpApprovals.js';
 
@@ -201,7 +201,7 @@ vi.mock('node:child_process', async (importOriginal) => {
   return { ...actual, default: { ...actual, spawnSync }, spawnSync };
 });
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actualServer = await importOriginal<typeof ServerConfig>();
   const SkillManagerMock = vi.fn();
   SkillManagerMock.prototype.startWatching = vi
@@ -245,11 +245,11 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
     ),
     DEFAULT_MEMORY_FILE_FILTERING_OPTIONS: {
       respectGitIgnore: false,
-      respectQwenIgnore: true,
+      respectCanopyIgnore: true,
     },
     DEFAULT_FILE_FILTERING_OPTIONS: {
       respectGitIgnore: true,
-      respectQwenIgnore: true,
+      respectCanopyIgnore: true,
     },
   };
 });
@@ -259,7 +259,7 @@ describe('isValidSessionId', () => {
     ['a canonical UUID', 'b2a1c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'],
     [
       'an agent-suffixed UUID',
-      'b2a1c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d-agent-qwen',
+      'b2a1c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d-agent-canopy',
     ],
   ])('accepts %s', (_, value) => {
     expect(isValidSessionId(value)).toBe(true);
@@ -838,7 +838,7 @@ describe('parseArguments', () => {
   });
 
   it('should accept --json-schema with no -p / positional when stdin is piped', async () => {
-    // `echo "..." | qwen --json-schema ...` — input arrives via the
+    // `echo "..." | canopy --json-schema ...` — input arrives via the
     // pipe, so the prompt-presence check must not block the run.
     process.argv = ['node', 'script.js', '--json-schema', '{"type":"object"}'];
 
@@ -933,7 +933,7 @@ describe('parseArguments', () => {
 
   it('should default ACP mode to the ACP channel when no channel is provided', async () => {
     vi.stubEnv('QWEN_CODE_SERVE', '');
-    vi.stubEnv('QWEN_CODE_DESKTOP', '');
+    vi.stubEnv('CANOPY_CODE_DESKTOP', '');
     try {
       process.argv = ['node', 'script.js', '--acp'];
       const argv = await parseArguments();
@@ -954,7 +954,7 @@ describe('parseArguments', () => {
 
   it('reports the daemon channel for daemon-spawned ACP children', async () => {
     vi.stubEnv('QWEN_CODE_SERVE', '1');
-    vi.stubEnv('QWEN_CODE_DESKTOP', '');
+    vi.stubEnv('CANOPY_CODE_DESKTOP', '');
     try {
       process.argv = ['node', 'script.js', '--acp'];
       const argv = await parseArguments();
@@ -966,7 +966,7 @@ describe('parseArguments', () => {
 
   it('reports the desktop channel for the Tauri desktop shell', async () => {
     vi.stubEnv('QWEN_CODE_SERVE', '1');
-    vi.stubEnv('QWEN_CODE_DESKTOP', '1');
+    vi.stubEnv('CANOPY_CODE_DESKTOP', '1');
     try {
       process.argv = ['node', 'script.js', '--acp'];
       const argv = await parseArguments();
@@ -1135,7 +1135,7 @@ describe('loadCliConfig', () => {
     vi.restoreAllMocks();
   });
 
-  it('should reset context file names to QWEN.md and AGENTS.md by default', async () => {
+  it('should reset context file names to CANOPY.md and AGENTS.md by default', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -1153,34 +1153,34 @@ describe('loadCliConfig', () => {
     ]);
   });
 
-  it('enables debug file logging for --debug when QWEN_DEBUG_LOG_FILE is unset', async () => {
-    delete process.env['QWEN_DEBUG_LOG_FILE'];
+  it('enables debug file logging for --debug when CANOPY_DEBUG_LOG_FILE is unset', async () => {
+    delete process.env['CANOPY_DEBUG_LOG_FILE'];
     process.argv = ['node', 'script.js', '--debug'];
     const argv = await parseArguments();
 
     await loadCliConfig({}, argv);
 
-    expect(process.env['QWEN_DEBUG_LOG_FILE']).toBe('1');
+    expect(process.env['CANOPY_DEBUG_LOG_FILE']).toBe('1');
   });
 
   it('preserves explicit opt-out when --debug is used', async () => {
-    process.env['QWEN_DEBUG_LOG_FILE'] = '0';
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '0';
     process.argv = ['node', 'script.js', '--debug'];
     const argv = await parseArguments();
 
     await loadCliConfig({}, argv);
 
-    expect(process.env['QWEN_DEBUG_LOG_FILE']).toBe('0');
+    expect(process.env['CANOPY_DEBUG_LOG_FILE']).toBe('0');
   });
 
   it('leaves debug file logging unset outside --debug mode', async () => {
-    delete process.env['QWEN_DEBUG_LOG_FILE'];
+    delete process.env['CANOPY_DEBUG_LOG_FILE'];
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
 
     await loadCliConfig({}, argv);
 
-    expect(process.env['QWEN_DEBUG_LOG_FILE']).toBeUndefined();
+    expect(process.env['CANOPY_DEBUG_LOG_FILE']).toBeUndefined();
   });
 
   describe('usage statistics', () => {
@@ -1192,7 +1192,7 @@ describe('loadCliConfig', () => {
       ['lets false override an enabled setting', 'false', true, false],
       ['lets 0 override an enabled setting', '0', true, false],
     ])('%s', async (_name, envValue, settingValue, expected) => {
-      vi.stubEnv('QWEN_USAGE_STATISTICS_ENABLED', envValue);
+      vi.stubEnv('CANOPY_USAGE_STATISTICS_ENABLED', envValue);
       process.argv = ['node', 'script.js'];
       const argv = await parseArguments();
       const settings: Settings =
@@ -1350,7 +1350,10 @@ describe('loadCliConfig', () => {
     let errorSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      for (const key of ['QWEN_TLS_INSECURE', 'NODE_TLS_REJECT_UNAUTHORIZED']) {
+      for (const key of [
+        'CANOPY_TLS_INSECURE',
+        'NODE_TLS_REJECT_UNAUTHORIZED',
+      ]) {
         savedEnv[key] = process.env[key];
         delete process.env[key];
       }
@@ -1366,11 +1369,11 @@ describe('loadCliConfig', () => {
       }
     });
 
-    it('sets QWEN_TLS_INSECURE=1 and NODE_TLS_REJECT_UNAUTHORIZED=0 when --insecure is passed', async () => {
+    it('sets CANOPY_TLS_INSECURE=1 and NODE_TLS_REJECT_UNAUTHORIZED=0 when --insecure is passed', async () => {
       process.argv = ['node', 'script.js', '--insecure'];
       const argv = await parseArguments();
       await loadCliConfig({}, argv);
-      expect(process.env['QWEN_TLS_INSECURE']).toBe('1');
+      expect(process.env['CANOPY_TLS_INSECURE']).toBe('1');
       expect(process.env['NODE_TLS_REJECT_UNAUTHORIZED']).toBe('0');
       expect(errorSpy).toHaveBeenCalled();
     });
@@ -1379,13 +1382,13 @@ describe('loadCliConfig', () => {
       process.argv = ['node', 'script.js'];
       const argv = await parseArguments();
       await loadCliConfig({}, argv);
-      expect(process.env['QWEN_TLS_INSECURE']).toBeUndefined();
+      expect(process.env['CANOPY_TLS_INSECURE']).toBeUndefined();
       expect(process.env['NODE_TLS_REJECT_UNAUTHORIZED']).toBeUndefined();
       expect(errorSpy).not.toHaveBeenCalled();
     });
 
-    it('propagates a pre-set QWEN_TLS_INSECURE to NODE_TLS_REJECT_UNAUTHORIZED=0', async () => {
-      process.env['QWEN_TLS_INSECURE'] = '1';
+    it('propagates a pre-set CANOPY_TLS_INSECURE to NODE_TLS_REJECT_UNAUTHORIZED=0', async () => {
+      process.env['CANOPY_TLS_INSECURE'] = '1';
       process.argv = ['node', 'script.js'];
       const argv = await parseArguments();
       await loadCliConfig({}, argv);
@@ -1981,7 +1984,7 @@ describe('loadCliConfig', () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {};
-    const defaultContextFiles = ['QWEN.md', 'AGENTS.md'];
+    const defaultContextFiles = ['CANOPY.md', 'AGENTS.md'];
     const getAllSpy = vi
       .spyOn(ServerConfig, 'getAllGeminiMdFilenames')
       .mockReturnValue(defaultContextFiles);
@@ -3303,11 +3306,11 @@ describe('loadCliConfig with --mcp-config', () => {
 describe('loadCliConfig model selection', () => {
   const originalArgv = process.argv;
   const authEnvKeys = [
-    'QWEN_OAUTH',
+    'CANOPY_OAUTH',
     'OPENAI_API_KEY',
     'OPENAI_MODEL',
     'OPENAI_BASE_URL',
-    'QWEN_MODEL',
+    'CANOPY_MODEL',
     'GEMINI_API_KEY',
     'GEMINI_MODEL',
     'GOOGLE_API_KEY',
@@ -3347,7 +3350,7 @@ describe('loadCliConfig model selection', () => {
     expect(config.getModel()).toBe('qwen3-coder-plus');
   });
 
-  it('uses the default Qwen model if nothing is set', async () => {
+  it('uses the default Canopy model if nothing is set', async () => {
     process.argv = ['node', 'script.js']; // No model set.
     const argv = await parseArguments();
     const config = await loadCliConfig(
@@ -3359,7 +3362,7 @@ describe('loadCliConfig model selection', () => {
       [],
     );
 
-    expect(config.getModel()).toBe(DEFAULT_QWEN_MODEL);
+    expect(config.getModel()).toBe(DEFAULT_CANOPY_MODEL);
   });
 
   it('always prefers model from argvs', async () => {
@@ -3886,8 +3889,8 @@ describe('loadCliConfig safe mode', () => {
     expect(config.getVisibleTools()).toEqual(new Set(['web_fetch', 'monitor']));
   });
 
-  it('should respect safe mode via QWEN_CODE_SAFE_MODE env var', async () => {
-    vi.stubEnv('QWEN_CODE_SAFE_MODE', 'true');
+  it('should respect safe mode via CANOPY_CODE_SAFE_MODE env var', async () => {
+    vi.stubEnv('CANOPY_CODE_SAFE_MODE', 'true');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4442,13 +4445,13 @@ describe('loadCliConfig fileFiltering', () => {
       value: false,
     },
     {
-      property: 'respectQwenIgnore',
-      getter: (c) => c.getFileFilteringRespectQwenIgnore(),
+      property: 'respectCanopyIgnore',
+      getter: (c) => c.getFileFilteringRespectCanopyIgnore(),
       value: true,
     },
     {
-      property: 'respectQwenIgnore',
-      getter: (c) => c.getFileFilteringRespectQwenIgnore(),
+      property: 'respectCanopyIgnore',
+      getter: (c) => c.getFileFilteringRespectCanopyIgnore(),
       value: false,
     },
     {
@@ -4489,8 +4492,8 @@ describe('loadCliConfig fileFiltering', () => {
     expect(config.getFileFilteringOptions().customIgnoreFiles).toEqual([
       '.cursorignore',
     ]);
-    expect(config.getFileService().getQwenIgnoreFileNamesDisplay()).toBe(
-      '.qwenignore, .cursorignore',
+    expect(config.getFileService().getCanopyIgnoreFileNamesDisplay()).toBe(
+      '.canopyignore, .cursorignore',
     );
   });
 });
@@ -4591,8 +4594,8 @@ describe('parseArguments with positional prompt', () => {
 });
 
 describe('Telemetry configuration via environment variables', () => {
-  it('should prioritize QWEN_TELEMETRY_ENABLED over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_ENABLED', 'true');
+  it('should prioritize CANOPY_TELEMETRY_ENABLED over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_ENABLED', 'true');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: false } };
@@ -4600,8 +4603,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('should prioritize QWEN_TELEMETRY_TARGET over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_TARGET', 'gcp');
+  it('should prioritize CANOPY_TELEMETRY_TARGET over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_TARGET', 'gcp');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4611,8 +4614,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryTarget()).toBe('gcp');
   });
 
-  it('should throw when QWEN_TELEMETRY_TARGET is invalid', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_TARGET', 'bogus');
+  it('should throw when CANOPY_TELEMETRY_TARGET is invalid', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_TARGET', 'bogus');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4624,9 +4627,9 @@ describe('Telemetry configuration via environment variables', () => {
     vi.unstubAllEnvs();
   });
 
-  it('should prioritize QWEN_TELEMETRY_OTLP_ENDPOINT over settings and default env var', async () => {
+  it('should prioritize CANOPY_TELEMETRY_OTLP_ENDPOINT over settings and default env var', async () => {
     vi.stubEnv('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://default.env.com');
-    vi.stubEnv('QWEN_TELEMETRY_OTLP_ENDPOINT', 'http://gemini.env.com');
+    vi.stubEnv('CANOPY_TELEMETRY_OTLP_ENDPOINT', 'http://gemini.env.com');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4636,8 +4639,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryOtlpEndpoint()).toBe('http://gemini.env.com');
   });
 
-  it('should prioritize QWEN_TELEMETRY_OTLP_PROTOCOL over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_OTLP_PROTOCOL', 'http');
+  it('should prioritize CANOPY_TELEMETRY_OTLP_PROTOCOL over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_OTLP_PROTOCOL', 'http');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { otlpProtocol: 'grpc' } };
@@ -4645,8 +4648,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryOtlpProtocol()).toBe('http');
   });
 
-  it('should prioritize QWEN_TELEMETRY_LOG_PROMPTS over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_LOG_PROMPTS', 'false');
+  it('should prioritize CANOPY_TELEMETRY_LOG_PROMPTS over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_LOG_PROMPTS', 'false');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { logPrompts: true } };
@@ -4654,8 +4657,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
   });
 
-  it('should prioritize QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', 'true');
+  it('should prioritize CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', 'true');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4665,8 +4668,11 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryIncludeSensitiveSpanAttributes()).toBe(true);
   });
 
-  it('should prioritize QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH', '131072');
+  it('should prioritize CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH over settings', async () => {
+    vi.stubEnv(
+      'CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH',
+      '131072',
+    );
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4676,8 +4682,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetrySensitiveSpanAttributeMaxLength()).toBe(131_072);
   });
 
-  it('should prioritize QWEN_TELEMETRY_OUTFILE over settings', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_OUTFILE', '/gemini/env/telemetry.log');
+  it('should prioritize CANOPY_TELEMETRY_OUTFILE over settings', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_OUTFILE', '/gemini/env/telemetry.log');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4687,8 +4693,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryOutfile()).toBe('/gemini/env/telemetry.log');
   });
 
-  it('should use settings value when QWEN_TELEMETRY_ENABLED is not set', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_ENABLED', undefined);
+  it('should use settings value when CANOPY_TELEMETRY_ENABLED is not set', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_ENABLED', undefined);
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -4696,8 +4702,8 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('should use settings value when QWEN_TELEMETRY_TARGET is not set', async () => {
-    vi.stubEnv('QWEN_TELEMETRY_TARGET', undefined);
+  it('should use settings value when CANOPY_TELEMETRY_TARGET is not set', async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_TARGET', undefined);
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4707,16 +4713,16 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryTarget()).toBe('local');
   });
 
-  it("should treat QWEN_TELEMETRY_ENABLED='1' as true", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_ENABLED', '1');
+  it("should treat CANOPY_TELEMETRY_ENABLED='1' as true", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_ENABLED', '1');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig({}, argv, undefined, []);
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it("should treat QWEN_TELEMETRY_ENABLED='0' as false", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_ENABLED', '0');
+  it("should treat CANOPY_TELEMETRY_ENABLED='0' as false", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_ENABLED', '0');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig(
@@ -4728,16 +4734,16 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it("should treat QWEN_TELEMETRY_LOG_PROMPTS='1' as true", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_LOG_PROMPTS', '1');
+  it("should treat CANOPY_TELEMETRY_LOG_PROMPTS='1' as true", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_LOG_PROMPTS', '1');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig({}, argv, undefined, []);
     expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
   });
 
-  it("should treat QWEN_TELEMETRY_LOG_PROMPTS='false' as false", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_LOG_PROMPTS', 'false');
+  it("should treat CANOPY_TELEMETRY_LOG_PROMPTS='false' as false", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_LOG_PROMPTS', 'false');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig(
@@ -4749,16 +4755,16 @@ describe('Telemetry configuration via environment variables', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
   });
 
-  it("should treat QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES='1' as true", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', '1');
+  it("should treat CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES='1' as true", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', '1');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig({}, argv, undefined, []);
     expect(config.getTelemetryIncludeSensitiveSpanAttributes()).toBe(true);
   });
 
-  it("should treat QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES='false' as false", async () => {
-    vi.stubEnv('QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', 'false');
+  it("should treat CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES='false' as false", async () => {
+    vi.stubEnv('CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES', 'false');
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig(
@@ -4778,18 +4784,18 @@ describe('sandbox image resolution precedence', () => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
     vi.stubEnv('GEMINI_API_KEY', 'test-api-key');
-    delete process.env['QWEN_SANDBOX_IMAGE'];
+    delete process.env['CANOPY_SANDBOX_IMAGE'];
   });
 
   afterEach(() => {
     process.argv = originalArgv;
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
-    delete process.env['QWEN_SANDBOX_IMAGE'];
+    delete process.env['CANOPY_SANDBOX_IMAGE'];
   });
 
   it('uses --sandbox-image over env and settings', async () => {
-    vi.stubEnv('QWEN_SANDBOX_IMAGE', 'env-image');
+    vi.stubEnv('CANOPY_SANDBOX_IMAGE', 'env-image');
     process.argv = [
       'node',
       'script.js',
@@ -4808,8 +4814,8 @@ describe('sandbox image resolution precedence', () => {
     expect(config.getSandbox()?.image).toBe('cli-image');
   });
 
-  it('uses QWEN_SANDBOX_IMAGE over tools.sandboxImage', async () => {
-    vi.stubEnv('QWEN_SANDBOX_IMAGE', 'env-image');
+  it('uses CANOPY_SANDBOX_IMAGE over tools.sandboxImage', async () => {
+    vi.stubEnv('CANOPY_SANDBOX_IMAGE', 'env-image');
     process.argv = ['node', 'script.js', '--sandbox'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -4850,21 +4856,21 @@ describe('sandbox image resolution precedence', () => {
 
 describe('loadCliConfig runtimeOutputDir', () => {
   const originalArgv = process.argv;
-  const originalRuntimeEnv = process.env['QWEN_RUNTIME_DIR'];
+  const originalRuntimeEnv = process.env['CANOPY_RUNTIME_DIR'];
 
   beforeEach(() => {
     process.argv = ['node', 'script.js'];
     Storage.setRuntimeBaseDir(null);
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   });
 
   afterEach(() => {
     process.argv = originalArgv;
     Storage.setRuntimeBaseDir(null);
     if (originalRuntimeEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
@@ -4883,24 +4889,24 @@ describe('loadCliConfig runtimeOutputDir', () => {
   it('should resolve relative runtimeOutputDir against cwd', async () => {
     const argv = await parseArguments();
     const settings: Settings = {
-      advanced: { runtimeOutputDir: '.qwen' },
+      advanced: { runtimeOutputDir: '.canopy' },
     };
     const cwd = path.resolve('workspace', 'my-project');
     await loadCliConfig(settings, argv, cwd);
-    expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.qwen'));
+    expect(Storage.getRuntimeBaseDir()).toBe(path.join(cwd, '.canopy'));
   });
 
   it('should not set runtime base dir when runtimeOutputDir is absent', async () => {
     const argv = await parseArguments();
     const settings: Settings = {};
     await loadCliConfig(settings, argv);
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 
-  it('should let QWEN_RUNTIME_DIR env var take priority over settings', async () => {
+  it('should let CANOPY_RUNTIME_DIR env var take priority over settings', async () => {
     const envDir = path.resolve('from-env');
     const settingsDir = path.resolve('from-settings');
-    process.env['QWEN_RUNTIME_DIR'] = envDir;
+    process.env['CANOPY_RUNTIME_DIR'] = envDir;
     const argv = await parseArguments();
     const settings: Settings = {
       advanced: { runtimeOutputDir: settingsDir },
@@ -4920,7 +4926,7 @@ describe('loadCliConfig runtimeOutputDir', () => {
     expect(Storage.getRuntimeBaseDir()).toBe(firstRuntimeDir);
 
     await loadCliConfig({}, argv);
-    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalQwenDir());
+    expect(Storage.getRuntimeBaseDir()).toBe(Storage.getGlobalCanopyDir());
   });
 });
 

@@ -22,7 +22,7 @@ describe('runThrottledOnce', () => {
   let lockPath: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-throttle-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-throttle-test-'));
     markerPath = path.join(tempDir, '.marker');
     lockPath = path.join(tempDir, '.marker.lock');
   });

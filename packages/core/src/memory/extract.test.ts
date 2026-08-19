@@ -180,7 +180,7 @@ describe('auto-memory extraction', () => {
     });
 
     it('user-scope rebuild failure is logged and swallowed; project rebuild + cursor advance still happen', async () => {
-      // User-level memory is best-effort: a read-only `~/.qwen/memories/`
+      // User-level memory is best-effort: a read-only `~/.canopy/memories/`
       // must not prevent the project layer from making progress.
       vi.mocked(runAutoMemoryExtractionByAgent).mockResolvedValue({
         touchedTopics: ['user'],

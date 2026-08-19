@@ -197,8 +197,8 @@ export class PermissionManager {
     // splitting. This is the single source of truth for cd tracking and
     // recursive shell-wrapper unwrapping — without it, splitting first
     // would discard the cd context, so a rule like
-    // `deny: ["Write(.qwen/settings.json)"]` would miss
-    // `cd .qwen && bash -lc 'echo > settings.json'`.
+    // `deny: ["Write(.canopy/settings.json)"]` would miss
+    // `cd .canopy && bash -lc 'echo > settings.json'`.
     //
     // Virtual-op verdicts can only ESCALATE the overall decision; a
     // 'default' here means "shell semantics have no opinion" and we still
@@ -346,7 +346,7 @@ export class PermissionManager {
       const cwd = pathCtx?.cwd ?? process.cwd();
       // Use the compound-aware extractor here too so a single
       // `evaluateSingle` call on a segment like
-      // `bash -lc 'echo > .qwen/settings.json'` still surfaces the inner
+      // `bash -lc 'echo > .canopy/settings.json'` still surfaces the inner
       // write to virtual-op rules. The cross-command cd-tracking pass at
       // the top of `evaluate()` handles `cd && wrapper` patterns —
       // per-segment unwrapping handles wrappers in isolation.
@@ -763,8 +763,8 @@ export class PermissionManager {
     // ── Cross-command virtual-op pass (shell tools only) ─────────────────
     // Run before the splitCompound recursion so cd tracking and recursive
     // wrapper unwrapping see the FULL original command. Required so
-    // rules like `Write(.qwen/settings.json)` are recognised as relevant
-    // for `cd .qwen && bash -lc 'echo > settings.json'`.
+    // rules like `Write(.canopy/settings.json)` are recognised as relevant
+    // for `cd .canopy && bash -lc 'echo > settings.json'`.
     if (SHELL_TOOL_NAMES.has(toolName) && command !== undefined) {
       const cwdForOps = pathCtx?.cwd ?? process.cwd();
       const ops = extractShellOperationsAcrossCommand(command, cwdForOps);

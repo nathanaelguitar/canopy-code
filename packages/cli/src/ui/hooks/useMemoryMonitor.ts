@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import process from 'node:process';
 import os from 'node:os';
 import v8 from 'v8';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { type HistoryItemWithoutId, MessageType } from '../types.js';
 
 const debugLogger = createDebugLogger('MEMORY_MONITOR');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -61,7 +61,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     );
     expect(attached?.params).toMatchObject({
       targetInfo: { type: 'tab' },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     expect(attached?.sessionId).toBeUndefined(); // top-level: browser context
     expect(replies.at(-1)).toMatchObject({ id: 4, result: {} });
@@ -73,19 +73,19 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 5,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     const attached = replies.find(
       (r) => r.method === 'Target.attachedToTarget',
     );
-    expect(attached?.sessionId).toBe('qwen-cdp-tab-session'); // nested under the tab session
+    expect(attached?.sessionId).toBe('canopy-cdp-tab-session'); // nested under the tab session
     expect(attached?.params).toMatchObject({
       targetInfo: { type: 'page' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(replies.at(-1)).toMatchObject({
       id: 5,
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
       result: {},
     });
   });
@@ -98,14 +98,14 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 6,
       method: 'Runtime.evaluate',
       params: { expression: '1+1' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(forwardToTab).toHaveBeenCalledWith('Runtime.evaluate', {
       expression: '1+1',
     });
     expect(replies[0]).toMatchObject({
       id: 6,
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
       result: { result: { value: 2 } },
     });
   });
@@ -115,7 +115,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 7,
       method: 'Target.attachToTarget',
-      params: { targetId: 'qwen-cdp-page', flatten: true },
+      params: { targetId: 'canopy-cdp-page', flatten: true },
     });
     const attached = replies.find(
       (reply) => reply.method === 'Target.attachedToTarget',
@@ -148,7 +148,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     });
     expect(replies[0]).toEqual({
       method: 'Target.detachedFromTarget',
-      params: { sessionId, targetId: 'qwen-cdp-page' },
+      params: { sessionId, targetId: 'canopy-cdp-page' },
     });
     expect(replies[1]).toEqual({ id: 9, result: {} });
     await emu.handleFromClient({
@@ -167,7 +167,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 15,
       method: 'Target.attachToTarget',
-      params: { targetId: 'qwen-cdp-tab', flatten: true },
+      params: { targetId: 'canopy-cdp-tab', flatten: true },
     });
     // The tab target is advertised but only attachable via setAutoAttach, so an
     // explicit attach must fail without minting a session.
@@ -176,7 +176,10 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     ).toBeUndefined();
     expect(replies.at(-1)).toMatchObject({
       id: 15,
-      error: { code: -32000, message: 'Cannot attach to target: qwen-cdp-tab' },
+      error: {
+        code: -32000,
+        message: 'Cannot attach to target: canopy-cdp-tab',
+      },
     });
   });
 
@@ -185,7 +188,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 11,
       method: 'Target.getDevToolsTarget',
-      params: { targetId: 'qwen-cdp-page' },
+      params: { targetId: 'canopy-cdp-page' },
     });
     expect(replies[0]).toEqual({ id: 11, result: {} });
     expect(log).not.toHaveBeenCalled();
@@ -198,11 +201,11 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 7,
       method: 'Page.captureScreenshot',
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(replies[0]).toMatchObject({
       id: 7,
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
       error: { code: -32000, message: 'Not allowed' },
     });
   });
@@ -231,14 +234,14 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 30,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     replies.length = 0;
     emu.emitTabEvent('Network.requestWillBeSent', { requestId: 'r1' });
     expect(replies[0]).toEqual({
       method: 'Network.requestWillBeSent',
       params: { requestId: 'r1' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
   });
 
@@ -248,7 +251,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 32,
       method: 'Target.setAutoAttach',
       params: { autoAttach: false, flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     expect(
       replies.filter((r) => r.method === 'Target.attachedToTarget'),
@@ -256,7 +259,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     replies.length = 0;
     emu.emitTabEvent('Network.requestWillBeSent', { requestId: 'r-off' });
     expect(
-      replies.filter((reply) => reply.sessionId === 'qwen-cdp-page-session'),
+      replies.filter((reply) => reply.sessionId === 'canopy-cdp-page-session'),
     ).toHaveLength(0);
   });
 
@@ -265,7 +268,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 31,
       method: 'Target.attachToTarget',
-      params: { targetId: 'qwen-cdp-page', flatten: true },
+      params: { targetId: 'canopy-cdp-page', flatten: true },
     });
     const attached = replies.find(
       (reply) => reply.method === 'Target.attachedToTarget',
@@ -274,7 +277,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     replies.length = 0;
     emu.emitTabEvent('Network.requestWillBeSent', { requestId: 'r-skip' });
     expect(
-      replies.filter((reply) => reply.sessionId === 'qwen-cdp-page-session'),
+      replies.filter((reply) => reply.sessionId === 'canopy-cdp-page-session'),
     ).toHaveLength(0);
     expect(
       replies.filter((reply) => reply.sessionId === sessionId),
@@ -286,7 +289,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 12,
       method: 'Target.attachToTarget',
-      params: { targetId: 'qwen-cdp-page', flatten: true },
+      params: { targetId: 'canopy-cdp-page', flatten: true },
     });
     const attached = replies.find(
       (reply) => reply.method === 'Target.attachedToTarget',
@@ -325,19 +328,19 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 20,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     // ...and an explicit attachToTarget mints a second, distinct session.
     await emu.handleFromClient({
       id: 21,
       method: 'Target.attachToTarget',
-      params: { targetId: 'qwen-cdp-page', flatten: true },
+      params: { targetId: 'canopy-cdp-page', flatten: true },
     });
     const explicit = replies.find(
       (reply) =>
         reply.method === 'Target.attachedToTarget' &&
         (reply.params as { sessionId?: string }).sessionId !==
-          'qwen-cdp-page-session',
+          'canopy-cdp-page-session',
     );
     const explicitSessionId = (explicit?.params as { sessionId?: string })
       ?.sessionId;
@@ -350,7 +353,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     // session it attached through, so from its point of view each event lands
     // exactly once — its request/console buffers cannot double-count.
     expect(
-      replies.filter((reply) => reply.sessionId === 'qwen-cdp-page-session'),
+      replies.filter((reply) => reply.sessionId === 'canopy-cdp-page-session'),
     ).toHaveLength(1);
     expect(
       replies.filter((reply) => reply.sessionId === explicitSessionId),
@@ -363,22 +366,25 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 33,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     replies.length = 0;
     await emu.handleFromClient({
       id: 34,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session' },
+      params: { sessionId: 'canopy-cdp-page-session' },
     });
     expect(replies[0]).toEqual({
       method: 'Target.detachedFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session', targetId: 'qwen-cdp-page' },
+      params: {
+        sessionId: 'canopy-cdp-page-session',
+        targetId: 'canopy-cdp-page',
+      },
     });
     replies.length = 0;
     emu.emitTabEvent('Network.requestWillBeSent', { requestId: 'r-detached' });
     expect(
-      replies.filter((reply) => reply.sessionId === 'qwen-cdp-page-session'),
+      replies.filter((reply) => reply.sessionId === 'canopy-cdp-page-session'),
     ).toHaveLength(0);
   });
 
@@ -388,27 +394,27 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 40,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     await emu.handleFromClient({
       id: 41,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session' },
+      params: { sessionId: 'canopy-cdp-page-session' },
     });
     replies.length = 0;
     await emu.handleFromClient({
       id: 42,
       method: 'Runtime.evaluate',
       params: { expression: '1+1' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(forwardToTab).not.toHaveBeenCalled();
     expect(replies[0]).toMatchObject({
       id: 42,
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
       error: {
         code: -32000,
-        message: 'Unknown CDP session: qwen-cdp-page-session',
+        message: 'Unknown CDP session: canopy-cdp-page-session',
       },
     });
   });
@@ -419,33 +425,33 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 50,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     await emu.handleFromClient({
       id: 51,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session' },
+      params: { sessionId: 'canopy-cdp-page-session' },
     });
     // Re-attach via a new setAutoAttach handshake.
     await emu.handleFromClient({
       id: 52,
       method: 'Target.setAutoAttach',
       params: { flatten: true },
-      sessionId: 'qwen-cdp-tab-session',
+      sessionId: 'canopy-cdp-tab-session',
     });
     replies.length = 0;
     await emu.handleFromClient({
       id: 53,
       method: 'Runtime.evaluate',
       params: { expression: '6*7' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(forwardToTab).toHaveBeenCalledWith('Runtime.evaluate', {
       expression: '6*7',
     });
     expect(replies[0]).toMatchObject({
       id: 53,
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
       result: { value: 42 },
     });
   });
@@ -469,7 +475,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 14,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session' },
+      params: { sessionId: 'canopy-cdp-page-session' },
     });
     expect(
       replies.find((reply) => reply.method === 'Target.detachedFromTarget'),
@@ -483,13 +489,13 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 15,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session' },
+      params: { sessionId: 'canopy-cdp-page-session' },
     });
     await emu.handleFromClient({
       id: 16,
       method: 'Runtime.evaluate',
       params: { expression: '1' },
-      sessionId: 'qwen-cdp-page-session',
+      sessionId: 'canopy-cdp-page-session',
     });
     expect(forwardToTab).toHaveBeenCalledWith('Runtime.evaluate', {
       expression: '1',
@@ -501,7 +507,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
     await emu.handleFromClient({
       id: 60,
       method: 'Target.detachFromTarget',
-      params: { sessionId: 'qwen-cdp-page-session-99' },
+      params: { sessionId: 'canopy-cdp-page-session-99' },
     });
     expect(
       replies.find((reply) => reply.method === 'Target.detachedFromTarget'),
@@ -510,7 +516,7 @@ describe('CdpBrowserEmulator (Plan C #5626)', () => {
       id: 60,
       error: {
         code: -32000,
-        message: 'Unknown CDP session: qwen-cdp-page-session-99',
+        message: 'Unknown CDP session: canopy-cdp-page-session-99',
       },
     });
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,10 @@ import {
   type Client,
 } from '@modelcontextprotocol/sdk/client/index.js';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
-import { SdkControlClientTransport, Storage } from '@qwen-code/qwen-code-core';
+import {
+  SdkControlClientTransport,
+  Storage,
+} from '@canopy-code/canopy-code-core';
 import type { DaemonWorkspaceService } from '../workspace-service/types.js';
 import { mountAcpHttp } from './index.js';
 import type { ClientMcpServerProvider } from './client-mcp-ws.js';

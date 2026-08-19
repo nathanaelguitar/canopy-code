@@ -14,7 +14,7 @@ import {
   registerSession,
   type Config,
   writeRuntimeStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import { isValidSessionId } from '../config/config.js';
 import type { InitializationResult } from '../core/initializer.js';
@@ -93,7 +93,7 @@ export async function startInteractiveUI(
     await writeRuntimeStatus(runtimeStatusPath, {
       sessionId,
       workDir: config.getTargetDir(),
-      qwenVersion: version,
+      canopyVersion: version,
     });
     config.markRuntimeStatusEnabled();
   } catch {
@@ -366,7 +366,7 @@ export async function startInteractiveUI(
         // in gemini.tsx; keep that registration order.
         if (isValidSessionId(sessionId) && (await stat(sessionFile)).size > 0) {
           writeStdoutLine(
-            `\n${t('To continue this session, run')}\nqwen --resume ${sessionId}`,
+            `\n${t('To continue this session, run')}\ncanopy --resume ${sessionId}`,
           );
         }
       }
@@ -384,7 +384,7 @@ export async function startInteractiveUI(
     registerSession({
       sessionId: config.getSessionId(),
       cwd: config.getTargetDir(),
-      qwenVersion: version,
+      canopyVersion: version,
     }),
   );
   registerCleanup(() => config.unregisterSessionRegistry());

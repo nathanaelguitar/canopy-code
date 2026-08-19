@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -143,7 +143,7 @@ describe('createMutationGate (#4175 PR 15)', () => {
     expect(body.error).toMatch(/--token/);
     // `--require-auth` is intentionally NOT named here as a remediation:
     // setting it without a token is itself a boot-error path (see
-    // `run-qwen-serve.ts`). The error must point operators at fixes that
+    // `run-canopy-serve.ts`). The error must point operators at fixes that
     // work standalone.
     expect(body.error).not.toMatch(/--require-auth/);
   });
@@ -398,11 +398,11 @@ describe('allowOriginCors (T2.4 #4514)', () => {
       /Authorization/,
     );
     expect(res.headers.get('access-control-allow-headers')).toMatch(
-      /X-Qwen-Event-Epoch/,
+      /X-Canopy-Event-Epoch/,
     );
     expect(res.headers.get('access-control-max-age')).toBe('86400');
     expect(res.headers.get('access-control-expose-headers')).toBe(
-      'Retry-After, X-Qwen-Event-Epoch, X-Qwen-SSE-Stream-Id',
+      'Retry-After, X-Canopy-Event-Epoch, X-Canopy-SSE-Stream-Id',
     );
   });
 

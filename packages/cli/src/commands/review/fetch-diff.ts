@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review fetch-diff`: write a PR's full unified diff to a file. This
+// `canopy review fetch-diff`: write a PR's full unified diff to a file. This
 // absorbs the lightweight-mode prose (`gh pr diff <n> --repo <o/r> > file`):
 // redirecting through the subcommand keeps the host routing (`--host`) in
 // code and gives the caller back the size facts it needs for paging

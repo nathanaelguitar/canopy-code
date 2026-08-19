@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -103,7 +103,7 @@ import { AgentEventEmitter, AgentEventType } from './agent-events.js';
 import { AgentStatistics, type AgentStatsSummary } from './agent-statistics.js';
 import { matchesMcpPattern } from '../../permissions/rule-parser.js';
 import { ToolNames } from '../../tools/tool-names.js';
-import { DEFAULT_QWEN_MODEL } from '../../config/models.js';
+import { DEFAULT_CANOPY_MODEL } from '../../config/models.js';
 import { type ContextState, templateString } from './agent-headless.js';
 import { getResponseText } from '../../utils/partUtils.js';
 import { getThoughtSummary } from '../../utils/thoughtUtils.js';
@@ -930,7 +930,7 @@ export class AgentCore {
         const responseStream = await chat.sendMessageStream(
           this.modelConfig.model ||
             this.runtimeContext.getModel() ||
-            DEFAULT_QWEN_MODEL,
+            DEFAULT_CANOPY_MODEL,
           messageParams,
           promptId,
         );
@@ -2355,7 +2355,7 @@ Important Rules:
  - When the task is complete, return the final result as a normal model response (not a tool call) and stop.`;
     }
 
-    // Context files (QWEN.md + output-language.md) keep the subagent aligned
+    // Context files (CANOPY.md + output-language.md) keep the subagent aligned
     // with project conventions; the volatile auto-memory section stays last.
     return assembleSystemPrompt({
       base: finalPrompt,

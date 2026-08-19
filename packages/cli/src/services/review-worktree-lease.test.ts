@@ -1,4 +1,4 @@
-// Copyright 2026 Qwen Team
+// Copyright 2026 Canopy Team
 // SPDX-License-Identifier: Apache-2.0
 
 import { execFileSync } from 'node:child_process';
@@ -47,17 +47,17 @@ afterEach(() => {
 describe('review worktree leases', () => {
   it('protects a worktree created after the lease is registered', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
     createReviewWorktreeLease({
       sessionId: 'session-a',
       promptId: 'prompt-parent',
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: worktree,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
 
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     execFileSync('git', [
       '-C',
       root,
@@ -65,7 +65,7 @@ describe('review worktree leases', () => {
       'add',
       '-q',
       worktree,
-      'qwen-review/pr-1',
+      'canopy-review/pr-1',
     ]);
     cleanupReviewWorktreeLeases({
       sessionId: 'session-a',
@@ -77,28 +77,28 @@ describe('review worktree leases', () => {
     expect(
       execFileSync(
         'git',
-        ['-C', root, 'branch', '--list', 'qwen-review/pr-1'],
+        ['-C', root, 'branch', '--list', 'canopy-review/pr-1'],
         { encoding: 'utf8' },
       ).trim(),
     ).toBe('');
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(false);
   });
 
   it('falls back to removing an unregistered worktree directory', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
     mkdirSync(worktree, { recursive: true });
     writeFileSync(join(worktree, 'marker'), 'remove');
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     createReviewWorktreeLease({
       sessionId: 'session-a',
       promptId: 'prompt-parent',
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: worktree,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
 
     cleanupReviewWorktreeLeases({
@@ -111,27 +111,27 @@ describe('review worktree leases', () => {
     expect(
       execFileSync(
         'git',
-        ['-C', root, 'branch', '--list', 'qwen-review/pr-1'],
+        ['-C', root, 'branch', '--list', 'canopy-review/pr-1'],
         { encoding: 'utf8' },
       ).trim(),
     ).toBe('');
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(false);
   });
 
   it('keeps the lease when fallback pruning fails', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
     mkdirSync(worktree, { recursive: true });
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     createReviewWorktreeLease({
       sessionId: 'session-a',
       promptId: 'prompt-parent',
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: worktree,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
     renameSync(join(root, '.git'), join(root, '.git-hidden'));
 
@@ -143,16 +143,16 @@ describe('review worktree leases', () => {
 
     expect(existsSync(worktree)).toBe(false);
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(true);
   });
 
   it('removes only worktrees owned by the completed session', () => {
     const root = createRepository();
-    const owned = join(root, '.qwen', 'tmp', 'review-pr-1');
-    const other = join(root, '.qwen', 'tmp', 'review-pr-2');
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-2']);
+    const owned = join(root, '.canopy', 'tmp', 'review-pr-1');
+    const other = join(root, '.canopy', 'tmp', 'review-pr-2');
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-2']);
     execFileSync('git', [
       '-C',
       root,
@@ -160,7 +160,7 @@ describe('review worktree leases', () => {
       'add',
       '-q',
       owned,
-      'qwen-review/pr-1',
+      'canopy-review/pr-1',
     ]);
     execFileSync('git', [
       '-C',
@@ -169,7 +169,7 @@ describe('review worktree leases', () => {
       'add',
       '-q',
       other,
-      'qwen-review/pr-2',
+      'canopy-review/pr-2',
     ]);
 
     createReviewWorktreeLease({
@@ -178,7 +178,7 @@ describe('review worktree leases', () => {
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: owned,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
     createReviewWorktreeLease({
       sessionId: 'session-b',
@@ -186,7 +186,7 @@ describe('review worktree leases', () => {
       target: 'pr-2',
       repositoryRoot: root,
       worktreePath: other,
-      branch: 'qwen-review/pr-2',
+      branch: 'canopy-review/pr-2',
     });
 
     cleanupReviewWorktreeLeases({
@@ -200,13 +200,13 @@ describe('review worktree leases', () => {
     expect(
       execFileSync(
         'git',
-        ['-C', root, 'branch', '--list', 'qwen-review/pr-1'],
+        ['-C', root, 'branch', '--list', 'canopy-review/pr-1'],
         { encoding: 'utf8' },
       ).trim(),
     ).toBe('');
     expect(
       readFileSync(
-        join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-2.json'),
+        join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-2.json'),
         'utf8',
       ),
     ).toContain('session-b');
@@ -214,8 +214,8 @@ describe('review worktree leases', () => {
 
   it('does not let a child prompt clean up its parent review lease', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     execFileSync('git', [
       '-C',
       root,
@@ -223,7 +223,7 @@ describe('review worktree leases', () => {
       'add',
       '-q',
       worktree,
-      'qwen-review/pr-1',
+      'canopy-review/pr-1',
     ]);
     createReviewWorktreeLease({
       sessionId: 'session-a',
@@ -231,7 +231,7 @@ describe('review worktree leases', () => {
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: worktree,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
 
     cleanupReviewWorktreeLeases({
@@ -242,7 +242,7 @@ describe('review worktree leases', () => {
 
     expect(existsSync(worktree)).toBe(true);
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(true);
   });
 
@@ -257,7 +257,7 @@ describe('review worktree leases', () => {
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: outside,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
 
     cleanupReviewWorktreeLeases({
@@ -268,13 +268,13 @@ describe('review worktree leases', () => {
 
     expect(readFileSync(join(outside, 'marker'), 'utf8')).toBe('keep');
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(true);
   });
 
   it('ignores a lease whose branch does not match its PR target', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
     execFileSync('git', ['-C', root, 'branch', 'keep-me']);
     execFileSync('git', [
       '-C',
@@ -302,7 +302,7 @@ describe('review worktree leases', () => {
 
     expect(existsSync(worktree)).toBe(true);
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(true);
   });
 
@@ -316,19 +316,19 @@ describe('review worktree leases', () => {
       promptId: 'prompt-parent',
       target: '../../../keep',
       repositoryRoot: root,
-      worktreePath: join(root, '.qwen', 'tmp', 'review-pr-1'),
-      branch: 'qwen-review/pr-1',
+      worktreePath: join(root, '.canopy', 'tmp', 'review-pr-1'),
+      branch: 'canopy-review/pr-1',
     });
     clearReviewWorktreeLease(root, '../../../keep');
 
     expect(readFileSync(marker, 'utf8')).toBe('keep');
-    expect(existsSync(join(root, '.qwen', 'tmp'))).toBe(false);
+    expect(existsSync(join(root, '.canopy', 'tmp'))).toBe(false);
   });
 
   it('lets explicit review cleanup disarm the finalizer', () => {
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     execFileSync('git', [
       '-C',
       root,
@@ -336,7 +336,7 @@ describe('review worktree leases', () => {
       'add',
       '-q',
       worktree,
-      'qwen-review/pr-1',
+      'canopy-review/pr-1',
     ]);
     createReviewWorktreeLease({
       sessionId: 'session-a',
@@ -344,12 +344,12 @@ describe('review worktree leases', () => {
       target: 'pr-1',
       repositoryRoot: root,
       worktreePath: worktree,
-      branch: 'qwen-review/pr-1',
+      branch: 'canopy-review/pr-1',
     });
 
     clearReviewWorktreeLease(root, 'pr-1');
     expect(
-      existsSync(join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json')),
+      existsSync(join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json')),
     ).toBe(false);
     cleanupReviewWorktreeLeases({
       sessionId: 'session-a',
@@ -361,10 +361,10 @@ describe('review worktree leases', () => {
     expect(
       execFileSync(
         'git',
-        ['-C', root, 'branch', '--list', 'qwen-review/pr-1'],
+        ['-C', root, 'branch', '--list', 'canopy-review/pr-1'],
         { encoding: 'utf8' },
       ).trim(),
-    ).toContain('qwen-review/pr-1');
+    ).toContain('canopy-review/pr-1');
   });
 });
 
@@ -376,16 +376,18 @@ describe('readReviewWorktreeLease', () => {
       promptId: 'prompt-parent',
       target: 'pr-1',
       repositoryRoot: root,
-      worktreePath: join(root, '.qwen', 'tmp', 'review-pr-1'),
-      branch: 'qwen-review/pr-1',
+      worktreePath: join(root, '.canopy', 'tmp', 'review-pr-1'),
+      branch: 'canopy-review/pr-1',
     });
 
     const lease = readReviewWorktreeLease(root, 'pr-1');
     expect(lease?.sessionId).toBe('session-a');
     expect(lease?.promptId).toBe('prompt-parent');
-    expect(lease?.worktreePath).toBe(join(root, '.qwen', 'tmp', 'review-pr-1'));
+    expect(lease?.worktreePath).toBe(
+      join(root, '.canopy', 'tmp', 'review-pr-1'),
+    );
     expect(reviewLeasePath(root, 'pr-1')).toBe(
-      join(root, '.qwen', 'tmp', 'qwen-review-lease-pr-1.json'),
+      join(root, '.canopy', 'tmp', 'canopy-review-lease-pr-1.json'),
     );
   });
 
@@ -406,8 +408,8 @@ describe('lease acquisition is atomic (#9205)', () => {
     promptId: 'prompt-a',
     target: 'pr-1',
     repositoryRoot: root,
-    worktreePath: join(root, '.qwen', 'tmp', 'review-pr-1'),
-    branch: 'qwen-review/pr-1',
+    worktreePath: join(root, '.canopy', 'tmp', 'review-pr-1'),
+    branch: 'canopy-review/pr-1',
     ...over,
   });
 
@@ -442,7 +444,7 @@ describe('lease acquisition is atomic (#9205)', () => {
     // Every reader treats a torn/unparseable lease as no lease, so the
     // writer rewriting it is self-heal, not clobber.
     const root = createRepository();
-    mkdirSync(join(root, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(root, '.canopy', 'tmp'), { recursive: true });
     writeFileSync(reviewLeasePath(root, 'pr-1'), '{"truncated');
     createReviewWorktreeLease(leaseParams(root));
     expect(readReviewWorktreeLease(root, 'pr-1')?.sessionId).toBe('session-a');
@@ -459,8 +461,8 @@ describe('clearReviewWorktreeLeaseIfOwned', () => {
       promptId: 'prompt-a',
       target: 'pr-1',
       repositoryRoot: root,
-      worktreePath: join(root, '.qwen', 'tmp', 'review-pr-1'),
-      branch: 'qwen-review/pr-1',
+      worktreePath: join(root, '.canopy', 'tmp', 'review-pr-1'),
+      branch: 'canopy-review/pr-1',
     });
 
     clearReviewWorktreeLeaseIfOwned(root, 'pr-1', {
@@ -479,18 +481,18 @@ describe('clearReviewWorktreeLeaseIfOwned', () => {
 
 describe('isReviewLeaseFile', () => {
   it('accepts exactly the filenames the lease writer can produce', () => {
-    expect(isReviewLeaseFile('qwen-review-lease-pr-1.json')).toBe(true);
-    expect(isReviewLeaseFile('qwen-review-lease-pr-99999.json')).toBe(true);
+    expect(isReviewLeaseFile('canopy-review-lease-pr-1.json')).toBe(true);
+    expect(isReviewLeaseFile('canopy-review-lease-pr-99999.json')).toBe(true);
   });
 
   it('rejects near-misses the cleanup sweep must not skip', () => {
     // A file-review target named `lease` flattens to the bare prefix; its
     // side files must stay sweepable, and nothing else is a lease.
-    expect(isReviewLeaseFile('qwen-review-lease-diff.txt')).toBe(false);
-    expect(isReviewLeaseFile('qwen-review-lease-.json')).toBe(false);
-    expect(isReviewLeaseFile('qwen-review-lease-local.json')).toBe(false);
-    expect(isReviewLeaseFile('qwen-review-lease-pr-1.json.bak')).toBe(false);
-    expect(isReviewLeaseFile('xqwen-review-lease-pr-1.json')).toBe(false);
+    expect(isReviewLeaseFile('canopy-review-lease-diff.txt')).toBe(false);
+    expect(isReviewLeaseFile('canopy-review-lease-.json')).toBe(false);
+    expect(isReviewLeaseFile('canopy-review-lease-local.json')).toBe(false);
+    expect(isReviewLeaseFile('canopy-review-lease-pr-1.json.bak')).toBe(false);
+    expect(isReviewLeaseFile('xcanopy-review-lease-pr-1.json')).toBe(false);
   });
 });
 
@@ -500,8 +502,8 @@ describe('cleanupReviewWorktreeLeases scan', () => {
     // a hand-shaped file the writer could never produce is not swept, so the
     // finalizer's destructive path cannot ride a non-lease name.
     const root = createRepository();
-    const worktree = join(root, '.qwen', 'tmp', 'review-pr-1');
-    execFileSync('git', ['-C', root, 'branch', 'qwen-review/pr-1']);
+    const worktree = join(root, '.canopy', 'tmp', 'review-pr-1');
+    execFileSync('git', ['-C', root, 'branch', 'canopy-review/pr-1']);
     execFileSync('git', [
       '-C',
       root,
@@ -509,9 +511,14 @@ describe('cleanupReviewWorktreeLeases scan', () => {
       'add',
       '-q',
       worktree,
-      'qwen-review/pr-1',
+      'canopy-review/pr-1',
     ]);
-    const stray = join(root, '.qwen', 'tmp', 'qwen-review-lease-local.json');
+    const stray = join(
+      root,
+      '.canopy',
+      'tmp',
+      'canopy-review-lease-local.json',
+    );
     writeFileSync(
       stray,
       JSON.stringify({
@@ -520,7 +527,7 @@ describe('cleanupReviewWorktreeLeases scan', () => {
         target: 'pr-1',
         repositoryRoot: root,
         worktreePath: worktree,
-        branch: 'qwen-review/pr-1',
+        branch: 'canopy-review/pr-1',
       }),
     );
 
@@ -541,30 +548,30 @@ describe('reviewLeaseHeldByAnotherSession', () => {
     promptId: 'prompt-parent',
     target: 'pr-1',
     repositoryRoot: '/repo',
-    worktreePath: '/repo/.qwen/tmp/review-pr-1',
-    branch: 'qwen-review/pr-1',
+    worktreePath: '/repo/.canopy/tmp/review-pr-1',
+    branch: 'canopy-review/pr-1',
   };
   let savedSessionId: string | undefined;
 
   beforeEach(() => {
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
   });
 
   afterEach(() => {
     if (savedSessionId === undefined) {
-      delete process.env['QWEN_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
     } else {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
   });
 
   it('returns false when there is no lease', () => {
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     expect(reviewLeaseHeldByAnotherSession(null)).toBe(false);
   });
 
   it('lets the owning session pass regardless of prompt', () => {
-    process.env['QWEN_CODE_SESSION_ID'] = 'session-a';
+    process.env['CANOPY_CODE_SESSION_ID'] = 'session-a';
     expect(reviewLeaseHeldByAnotherSession(lease)).toBe(false);
     // One session reviews a PR across several prompts (rounds, drift
     // restarts); a later prompt of the holder must not be locked out.
@@ -577,12 +584,12 @@ describe('reviewLeaseHeldByAnotherSession', () => {
   });
 
   it('blocks another session', () => {
-    process.env['QWEN_CODE_SESSION_ID'] = 'session-b';
+    process.env['CANOPY_CODE_SESSION_ID'] = 'session-b';
     expect(reviewLeaseHeldByAnotherSession(lease)).toBe(true);
   });
 
   it('blocks a process that has no session id to prove ownership', () => {
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     expect(reviewLeaseHeldByAnotherSession(lease)).toBe(true);
   });
 });

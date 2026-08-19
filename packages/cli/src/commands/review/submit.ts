@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review submit`: the only thing in this skill that writes to a pull
+// `canopy review submit`: the only thing in this skill that writes to a pull
 // request.
 //
 // Step 7 has always opened with a posting gate — "posting is a public,
@@ -44,7 +44,7 @@
 // caller's.
 
 import type { CommandModule } from 'yargs';
-import { atomicWriteFileSync } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync } from '@canopy-code/canopy-code-core';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
 import { getCliVersion } from '../../utils/version.js';
@@ -632,7 +632,7 @@ export const submitCommand: CommandModule = {
       .option('skill-args', {
         type: 'string',
         describe:
-          "Path to the CLI-written record of the review's invocation arguments (defaults to .qwen/tmp/qwen-skill-args-review.txt). Its `--comment` — or the standing `review.comment` setting — is what authorises a post. Deliberately NOT the parser's JSON output: that is a document the caller writes, and a caller that wants to post can write anything in it.",
+          "Path to the CLI-written record of the review's invocation arguments (defaults to .canopy/tmp/canopy-skill-args-review.txt). Its `--comment` — or the standing `review.comment` setting — is what authorises a post. Deliberately NOT the parser's JSON output: that is a document the caller writes, and a caller that wants to post can write anything in it.",
       })
       .option('user-authorized', {
         type: 'boolean',
@@ -652,7 +652,7 @@ export const submitCommand: CommandModule = {
   handler: async (argv) => {
     // Do not use CLI_VERSION here: esbuild replaces it with a build-time value.
     const cliVersion =
-      footerVersion(process.env['QWEN_CODE_STARTUP_VERSION']) ??
+      footerVersion(process.env['CANOPY_CODE_STARTUP_VERSION']) ??
       (await getCliVersion());
     const review = operatorReviewSettings();
     runSubmit(argv as unknown as SubmitArgs, cliVersion, {

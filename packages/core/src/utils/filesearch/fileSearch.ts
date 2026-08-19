@@ -27,7 +27,7 @@ export interface FileSearchOptions {
   projectRoot: string;
   ignoreDirs: string[];
   useGitignore: boolean;
-  useQwenignore: boolean;
+  useCanopyignore: boolean;
   customIgnoreFiles?: string[];
   cache: boolean;
   cacheTtl: number;

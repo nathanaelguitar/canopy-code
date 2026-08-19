@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -53,11 +53,11 @@ vi.mock('../../utils/stdioHelpers.js', () => ({
 let dir: string;
 let ENV: NodeJS.ProcessEnv;
 
-const DIFF = '/abs/qwen-review-pr-1-diff.txt';
+const DIFF = '/abs/canopy-review-pr-1-diff.txt';
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'cov-'));
-  ENV = { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S1' };
+  ENV = { CANOPY_CODE_PROJECT_DIR: dir, CANOPY_CODE_SESSION_ID: 'S1' };
   mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
 });
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -381,8 +381,8 @@ function planPr(): string {
       srcDiffLines: 200,
       diffLines: 300,
       prNumber: '6766',
-      ownerRepo: 'QwenLM/qwen-code',
-      worktreePath: '.qwen/tmp/review-pr-6766',
+      ownerRepo: 'CanopyLM/canopy-code',
+      worktreePath: '.canopy/tmp/review-pr-6766',
       files: [{ path: 'a.ts', kind: 'source', removedLines: 0, heavy: false }],
       chunks: [
         { id: 1, startLine: 1, endLine: 100 },
@@ -487,8 +487,8 @@ describe('coverage — from the harness, not from the caller', () => {
     // failure and has to say so, or the reader chases agents that ran fine.
     expect(() =>
       coverageFromTranscripts(plan(), {
-        QWEN_CODE_PROJECT_DIR: join(dir, 'gone'),
-        QWEN_CODE_SESSION_ID: 'S1',
+        CANOPY_CODE_PROJECT_DIR: join(dir, 'gone'),
+        CANOPY_CODE_SESSION_ID: 'S1',
       }),
     ).toThrow(TranscriptsUnavailableError);
   });
@@ -1090,8 +1090,8 @@ describe('the roster — who should have been here', () => {
       srcDiffLines: 200,
       diffLines: 300,
       prNumber: '6766',
-      ownerRepo: 'QwenLM/qwen-code',
-      worktreePath: '.qwen/tmp/review-pr-6766',
+      ownerRepo: 'CanopyLM/canopy-code',
+      worktreePath: '.canopy/tmp/review-pr-6766',
       files: [{ path: 'a.ts', kind: 'source', removedLines: 0, heavy: false }],
       chunks: [
         { id: 1, startLine: 1, endLine: 100 },
@@ -1129,10 +1129,10 @@ describe('the roster — who should have been here', () => {
     }
     transcript('sec', wholeDiff(), { calls: 8 });
 
-    const prevDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    const prevSession = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = ENV['QWEN_CODE_PROJECT_DIR'];
-    process.env['QWEN_CODE_SESSION_ID'] = ENV['QWEN_CODE_SESSION_ID'];
+    const prevDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    const prevSession = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = ENV['CANOPY_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_SESSION_ID'] = ENV['CANOPY_CODE_SESSION_ID'];
     const prevExit = process.exitCode;
     try {
       vi.mocked(writeStderrLine).mockClear();
@@ -1149,10 +1149,11 @@ describe('the roster — who should have been here', () => {
       expect(roleError).toContain(`Looked for them in: ${promptRecordDir(p)}`);
     } finally {
       process.exitCode = prevExit;
-      if (prevDir === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-      else process.env['QWEN_CODE_PROJECT_DIR'] = prevDir;
-      if (prevSession === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prevSession;
+      if (prevDir === undefined) delete process.env['CANOPY_CODE_PROJECT_DIR'];
+      else process.env['CANOPY_CODE_PROJECT_DIR'] = prevDir;
+      if (prevSession === undefined)
+        delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prevSession;
     }
   });
 
@@ -1169,10 +1170,10 @@ describe('the roster — who should have been here', () => {
     transcript('a2', good(2), { calls: 2 });
     const p = plan();
 
-    const prevDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    const prevSession = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = ENV['QWEN_CODE_PROJECT_DIR'];
-    process.env['QWEN_CODE_SESSION_ID'] = ENV['QWEN_CODE_SESSION_ID'];
+    const prevDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    const prevSession = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = ENV['CANOPY_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_SESSION_ID'] = ENV['CANOPY_CODE_SESSION_ID'];
     const prevExit = process.exitCode;
     try {
       vi.mocked(writeStderrLine).mockClear();
@@ -1196,10 +1197,11 @@ describe('the roster — who should have been here', () => {
       expect(process.exitCode).toBe(prevExit);
     } finally {
       process.exitCode = prevExit;
-      if (prevDir === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-      else process.env['QWEN_CODE_PROJECT_DIR'] = prevDir;
-      if (prevSession === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prevSession;
+      if (prevDir === undefined) delete process.env['CANOPY_CODE_PROJECT_DIR'];
+      else process.env['CANOPY_CODE_PROJECT_DIR'] = prevDir;
+      if (prevSession === undefined)
+        delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prevSession;
     }
   });
 
@@ -1213,10 +1215,10 @@ describe('the roster — who should have been here', () => {
     rmSync(join(dir, 'subagents', 'S1', 'agent-r-1c.jsonl'), { force: true });
     transcript('sec', wholeDiff(), { calls: 8 });
 
-    const prevDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    const prevSession = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = ENV['QWEN_CODE_PROJECT_DIR'];
-    process.env['QWEN_CODE_SESSION_ID'] = ENV['QWEN_CODE_SESSION_ID'];
+    const prevDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    const prevSession = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = ENV['CANOPY_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_SESSION_ID'] = ENV['CANOPY_CODE_SESSION_ID'];
     const prevExit = process.exitCode;
     try {
       vi.mocked(writeStderrLine).mockClear();
@@ -1240,15 +1242,16 @@ describe('the roster — who should have been here', () => {
       // run's REAL plan path substituted, not a `<plan>` placeholder a literal
       // paste would parse as a shell redirection.
       expect(roleError).toContain(
-        `"\${QWEN_CODE_CLI:-qwen}" review agent-prompt --plan '${p}' --roster`,
+        `"\${CANOPY_CODE_CLI:-canopy}" review agent-prompt --plan '${p}' --roster`,
       );
       expect(roleError).toContain(`Looked for them in: ${promptRecordDir(p)}`);
     } finally {
       process.exitCode = prevExit;
-      if (prevDir === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-      else process.env['QWEN_CODE_PROJECT_DIR'] = prevDir;
-      if (prevSession === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prevSession;
+      if (prevDir === undefined) delete process.env['CANOPY_CODE_PROJECT_DIR'];
+      else process.env['CANOPY_CODE_PROJECT_DIR'] = prevDir;
+      if (prevSession === undefined)
+        delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prevSession;
     }
   });
 
@@ -1323,7 +1326,7 @@ describe('the roster — who should have been here', () => {
       files: [{ path: 'a.ts', kind: 'source', removedLines: 0 }],
       chunks: [{ id: 1 }],
       prNumber: '6998',
-      ownerRepo: 'QwenLM/qwen-code',
+      ownerRepo: 'CanopyLM/canopy-code',
     } as RosterPlan);
     expect(withPr.map((r) => r.key)).toContain('0');
 
@@ -1996,7 +1999,7 @@ describe('verificationGaps — Step 4 and Step 5 ran, and read their briefs', ()
     );
     const old = new Date(2020, 0, 1);
     utimesSync(p, old, old);
-    const env = { QWEN_CODE_PROJECT_DIR: sub, QWEN_CODE_SESSION_ID: 'S1' };
+    const env = { CANOPY_CODE_PROJECT_DIR: sub, CANOPY_CODE_SESSION_ID: 'S1' };
 
     const r = verificationGaps(p, { postsFindings: false }, env);
     expect(r.ok).toBe(false);
@@ -2053,7 +2056,7 @@ describe('verificationGaps — Step 4 and Step 5 ran, and read their briefs', ()
     // POSIX shell that parses as input redirection, and the repair round the
     // skill prescribes could never run.
     expect(fix).toContain(
-      `"\${QWEN_CODE_CLI:-qwen}" review agent-prompt ` +
+      `"\${CANOPY_CODE_CLI:-canopy}" review agent-prompt ` +
         `--plan '${p}' --role reverse-audit --findings <file>`,
     );
     expect(fix).not.toContain('<plan>');
@@ -2302,7 +2305,7 @@ describe('coverage — a resumed run credits the prior attempt through the ledge
     ids.forEach((id, i) =>
       appendRunSession(
         planPath,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === ids.length - 1 ? nowMs + 1500 : nowMs,
       ),
     );
@@ -2407,7 +2410,7 @@ describe('verificationGaps — a resumed run reads the prior attempt', () => {
     ids.forEach((id, i) =>
       appendRunSession(
         planPath,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === ids.length - 1 ? nowMs + 1500 : nowMs,
       ),
     );
@@ -2529,7 +2532,7 @@ describe('coverage — a stale Uncoverable declaration cannot cap live coverage'
     ids.forEach((id, i) =>
       appendRunSession(
         planPath,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === ids.length - 1 ? nowMs + 1500 : nowMs,
       ),
     );

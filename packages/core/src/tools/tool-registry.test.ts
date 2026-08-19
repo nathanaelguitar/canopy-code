@@ -990,7 +990,7 @@ describe('ToolRegistry', () => {
       });
     });
 
-    it('strips Qwen-internal daemon secrets from the discovery and tool-call child env (#6601)', async () => {
+    it('strips Canopy-internal daemon secrets from the discovery and tool-call child env (#6601)', async () => {
       const originalServerToken = process.env['QWEN_SERVER_TOKEN'];
       const originalDaemonToken = process.env['QWEN_DAEMON_TOKEN'];
       process.env['QWEN_SERVER_TOKEN'] = 'serve-secret';

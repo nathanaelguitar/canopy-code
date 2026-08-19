@@ -52,7 +52,7 @@ export interface PublishedArtifact {
  * Config for the host publisher. The artifact is uploaded by running
  * a user-supplied command; `{file}` (the local HTML path) and `{key}` (the
  * remote object key) are substituted, and `urlTemplate`'s `{key}` yields the
- * shareable URL. Credentials live in the user's command/environment — qwen
+ * shareable URL. Credentials live in the user's command/environment — canopy
  * never stores them.
  */
 export interface ArtifactHostConfig {

@@ -10,7 +10,7 @@ import type { CommitAttributionNote } from './commitAttribution.js';
 
 const sampleNote: CommitAttributionNote = {
   version: 1,
-  generator: 'Qwen-Coder',
+  generator: 'Canopy-Coder',
   files: {
     'src/main.ts': { aiChars: 150, humanChars: 50, percent: 75 },
     'src/utils.ts': { aiChars: 0, humanChars: 200, percent: 0 },

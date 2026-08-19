@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -59,14 +59,14 @@ describe('scheduleReverseAuditRound — the scheduler on its own', () => {
     const old = new Date(2020, 0, 1);
     utimesSync(plan, old, old);
     diff = join(dir, 'diff.txt');
-    process.env['QWEN_CODE_PROJECT_DIR'] = dir;
-    process.env['QWEN_CODE_SESSION_ID'] = 'S1';
+    process.env['CANOPY_CODE_PROJECT_DIR'] = dir;
+    process.env['CANOPY_CODE_SESSION_ID'] = 'S1';
     mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_PROJECT_DIR'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_PROJECT_DIR'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -1974,15 +1974,15 @@ describe('scheduleReverseAuditRound — a resumed run reads the prior attempt', 
     const old = new Date(2020, 0, 1);
     utimesSync(plan, old, old);
     diff = join(dir, 'diff.txt');
-    process.env['QWEN_CODE_PROJECT_DIR'] = dir;
-    process.env['QWEN_CODE_SESSION_ID'] = 'S1';
+    process.env['CANOPY_CODE_PROJECT_DIR'] = dir;
+    process.env['CANOPY_CODE_SESSION_ID'] = 'S1';
     mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
     mkdirSync(join(dir, 'subagents', 'S0'), { recursive: true });
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_PROJECT_DIR'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_PROJECT_DIR'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -2065,7 +2065,7 @@ describe('scheduleReverseAuditRound — a resumed run reads the prior attempt', 
     ids.forEach((id, i) =>
       appendRunSession(
         plan,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === ids.length - 1 ? nowMs + 1500 : nowMs,
       ),
     );

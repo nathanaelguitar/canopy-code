@@ -35,7 +35,7 @@ vi.mock('fs', async (importOriginal) => {
 describe('initCommand', () => {
   let mockContext: CommandContext;
   const targetDir = '/test/dir';
-  const DEFAULT_CONTEXT_FILENAME = 'QWEN.md';
+  const DEFAULT_CONTEXT_FILENAME = 'CANOPY.md';
   const geminiMdPath = path.join(targetDir, DEFAULT_CONTEXT_FILENAME);
 
   beforeEach(() => {
@@ -115,7 +115,7 @@ describe('initCommand', () => {
       expect.objectContaining({
         type: 'submit_prompt',
         content: expect.stringContaining(
-          'You are Qwen Code, an interactive CLI agent',
+          'You are Canopy Code, an interactive CLI agent',
         ),
       }),
     );
@@ -161,7 +161,7 @@ describe('initCommand', () => {
       expect.objectContaining({
         type: 'submit_prompt',
         content: expect.stringContaining(
-          'You are Qwen Code, an interactive CLI agent',
+          'You are Canopy Code, an interactive CLI agent',
         ),
       }),
     );

@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // Post-review cleanup for /review Step 9.
-//   - Audit the PR for writes that bypassed `qwen review submit` (PR targets).
-//   - Remove the temporary worktree at .qwen/tmp/review-pr-<n>.
-//   - Delete the local branch ref qwen-review/pr-<n>.
-//   - Remove any .qwen/tmp/qwen-review-<target>-* side files.
+//   - Audit the PR for writes that bypassed `canopy review submit` (PR targets).
+//   - Remove the temporary worktree at .canopy/tmp/review-pr-<n>.
+//   - Delete the local branch ref canopy-review/pr-<n>.
+//   - Remove any .canopy/tmp/canopy-review-<target>-* side files.
 //
 // The command is idempotent — missing files / branches are silent OK.
 
@@ -61,12 +61,12 @@ export interface RawIssueComment {
 
 /**
  * Marker prefix every bot comment in this repo's own automation carries
- * (`<!-- qwen-review-ack -->`, `<!-- qwen-pr-precheck:… -->`,
- * `<!-- qwen-triage:… -->`, …). In CI the review runs under the same bot
+ * (`<!-- canopy-review-ack -->`, `<!-- canopy-pr-precheck:… -->`,
+ * `<!-- canopy-triage:… -->`, …). In CI the review runs under the same bot
  * account those workflows post from, and a push mid-review triggers them —
  * without this filter every such comment would be flagged as a bypass.
  */
-const AUTOMATION_MARKER = '<!-- qwen-';
+const AUTOMATION_MARKER = '<!-- canopy-';
 
 /**
  * The bot workflows put their marker on the FIRST line of the body; anchoring
@@ -100,7 +100,7 @@ export interface WindowWrites {
 /**
  * Issue-comment writes by the reviewing account inside the review window.
  *
- * `qwen review submit` is the ONLY sanctioned write in `/review`, and it
+ * `canopy review submit` is the ONLY sanctioned write in `/review`, and it
  * posts a *review* — never an issue comment. So an issue comment the
  * reviewing account created (or edited — the Step 7 ban covers edits too,
  * and `?since=` filters on `updated_at`, so edited rows are already in the
@@ -353,7 +353,7 @@ function auditPrWrites(target: string, prNumber: string): void {
     writeStdoutLine(
       `warning: ${total} write(s) by the reviewing account on ` +
         `${window.ownerRepo}#${window.prNumber} during this review window were not made by ` +
-        `\`qwen review submit\` — the only sanctioned write in /review:`,
+        `\`canopy review submit\` — the only sanctioned write in /review:`,
     );
     for (const c of posted) {
       writeStdoutLine(
@@ -374,7 +374,7 @@ function auditPrWrites(target: string, prNumber: string): void {
       `warning: The likely cause is benign — the user (from another terminal), ` +
         `another workflow, or a bot posting under the same account (${me}) produces ` +
         `exactly this shape. ` +
-        `\`/review\` writes to the PR only through \`qwen review submit\`; a write ` +
+        `\`/review\` writes to the PR only through \`canopy review submit\`; a write ` +
         `here is a real bypass of that gate only if its content is this review's own ` +
         `output. Relay this warning verbatim in the terminal summary so a human can judge.`,
     );
@@ -425,7 +425,7 @@ export function runCleanup(target: string): void {
     }
 
     // Before the sweep below deletes the fetch report (the audit window's
-    // carrier), check the PR for writes that bypassed `qwen review submit`.
+    // carrier), check the PR for writes that bypassed `canopy review submit`.
     auditPrWrites(target, prNumber);
 
     // The audit is network-bound (seconds) — a lease can appear during it (a
@@ -505,7 +505,7 @@ export function runCleanup(target: string): void {
     }
   }
 
-  // --- Per-target side files (under .qwen/tmp/) -------------------------
+  // --- Per-target side files (under .canopy/tmp/) -------------------------
   const prefix = tmpPrefix(target);
   let tmpEntries: string[] = [];
   try {

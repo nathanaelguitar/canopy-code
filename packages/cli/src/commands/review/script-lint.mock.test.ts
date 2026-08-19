@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -413,7 +413,7 @@ describe('buildToolInvocation — config isolation (a PR config cannot suppress 
     // 0700-parent assertion fails.
     const { argv } = buildToolInvocation('hadolint', '/w/Dockerfile');
     const cfg = argv[argv.indexOf('--config') + 1];
-    expect(cfg).not.toBe(join(tmpdir(), 'qwen-review-hadolint-empty.yaml'));
+    expect(cfg).not.toBe(join(tmpdir(), 'canopy-review-hadolint-empty.yaml'));
     // POSIX mode bits only — Windows has no owner/group/other distinction.
     if (process.platform !== 'win32') {
       expect(statSync(dirname(cfg)).mode & 0o777).toBe(0o700);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@
 // this directory already shares between the same two commands.
 
 /** The attribution marker the strip regex anchors on. */
-export const FOOTER_MARKER = 'via Qwen Code /review';
+export const FOOTER_MARKER = 'via Canopy Code /review';
 
 /** The footer naming the reviewing model and the CLI version it ran under. */
 export function reviewFooter(modelId: string, cliVersion: string): string {
@@ -43,7 +43,7 @@ export function reviewFooter(modelId: string, cliVersion: string): string {
  * post as a duplicate attribution line above the canonical one.
  */
 export const REVIEW_FOOTER_RE =
-  /\s*(?:_— (?:(?! via Qwen Code \/review)[^\n])* via Qwen Code \/review(?: \(v[^\n)]*\))?_?\s*)+$/;
+  /\s*(?:_— (?:(?! via Canopy Code \/review)[^\n])* via Canopy Code \/review(?: \(v[^\n)]*\))?_?\s*)+$/;
 
 /** The widest slice `stripReviewFooter` runs the strip regex over. */
 const STRIP_TAIL_LIMIT = 8192;

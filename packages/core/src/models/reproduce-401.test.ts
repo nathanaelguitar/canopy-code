@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -66,7 +66,7 @@ describe('Persistent 401 reproduction — issue #5979 / #6129 / #6283', () => {
       openai: [
         {
           id: 'qwen3-coder',
-          name: 'Qwen3 Coder',
+          name: 'Canopy3 Coder',
           baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
           envKey: ENV_KEY_DASHSCOPE,
         },
@@ -101,13 +101,13 @@ describe('Persistent 401 reproduction — issue #5979 / #6129 / #6283', () => {
       openai: [
         {
           id: 'qwen3-coder',
-          name: 'Qwen3 Coder (DashScope)',
+          name: 'Canopy3 Coder (DashScope)',
           baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
           envKey: ENV_KEY_DASHSCOPE,
         },
         {
           id: 'qwen3-coder-tp',
-          name: 'Qwen3 Coder (Token Plan)',
+          name: 'Canopy3 Coder (Token Plan)',
           baseUrl:
             'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
           envKey: ENV_KEY_TOKEN_PLAN,
@@ -153,7 +153,7 @@ describe('Persistent 401 reproduction — issue #5979 / #6129 / #6283', () => {
       openai: [
         {
           id: 'qwen3-coder',
-          name: 'Qwen3 Coder',
+          name: 'Canopy3 Coder',
           baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
           envKey: ENV_KEY_DASHSCOPE,
         },

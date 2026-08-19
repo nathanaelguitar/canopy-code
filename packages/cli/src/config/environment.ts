@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,11 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import * as dotenv from 'dotenv';
-import { getErrorMessage, QWEN_DIR, Storage } from '@qwen-code/qwen-code-core';
+import {
+  getErrorMessage,
+  CANOPY_DIR,
+  Storage,
+} from '@canopy-code/canopy-code-core';
 import { isWorkspaceTrusted } from './trustedFolders.js';
 import {
   DEFAULT_EXCLUDED_ENV_VARS,
@@ -27,7 +31,7 @@ export {
 } from './shared-env-keys.js';
 import type { Settings } from './settingsSchema.js';
 
-export const SETTINGS_DIRECTORY_NAME = QWEN_DIR;
+export const SETTINGS_DIRECTORY_NAME = CANOPY_DIR;
 
 const RELOAD_EXCLUDED_KEYS = new Set([
   ...PROJECT_ENV_HARDCODED_EXCLUSIONS,
@@ -52,7 +56,7 @@ const RELOAD_EXCLUDED_KEYS = new Set([
 ]);
 
 // Windows env lookup is case-insensitive, so a reload matching only the
-// exact spellings would let `path`/`qwen_server_token`/... case variants
+// exact spellings would let `path`/`canopy_server_token`/... case variants
 // through on the platform where they name the same variable. Same treatment
 // as the hardcoded tier (isHardcodedProjectEnvExclusion).
 const RELOAD_EXCLUDED_KEYS_CASEFOLDED: ReadonlySet<string> = new Set(
@@ -79,31 +83,33 @@ let lastReloadSnapshotSeeded = false;
 /**
  * Returns the set of normalized .env file paths that count as user-level.
  *
- * User-level paths cover the home `.env` and the global Qwen config dir
+ * User-level paths cover the home `.env` and the global Canopy config dir
  * `.env` (which respects `QWEN_HOME`). When `QWEN_HOME` redirects elsewhere,
- * the legacy `<homedir>/.qwen/.env` is also included so credentials users
+ * the legacy `<homedir>/.canopy/.env` is also included so credentials users
  * left there continue to load (and the trust check in untrusted workspaces
  * still allows reading it).
  */
 function getUserLevelEnvPaths(): Set<string> {
   const homeDir = os.homedir();
-  const globalQwenDir = Storage.getGlobalQwenDir();
+  const globalCanopyDir = Storage.getGlobalCanopyDir();
   const paths = new Set([
     path.normalize(path.join(homeDir, '.env')),
-    path.normalize(path.join(globalQwenDir, '.env')),
+    path.normalize(path.join(globalCanopyDir, '.env')),
   ]);
-  const legacyQwenEnv = path.normalize(path.join(homeDir, QWEN_DIR, '.env'));
-  paths.add(legacyQwenEnv);
+  const legacyCanopyEnv = path.normalize(
+    path.join(homeDir, CANOPY_DIR, '.env'),
+  );
+  paths.add(legacyCanopyEnv);
   return paths;
 }
 
 /**
- * Pre-resolves QWEN_HOME and QWEN_RUNTIME_DIR from user-level `.env` files
+ * Pre-resolves QWEN_HOME and CANOPY_RUNTIME_DIR from user-level `.env` files
  * before any settings or storage paths are read. Required because
- * module-load `Storage.getGlobalQwenDir()` would otherwise snapshot legacy
+ * module-load `Storage.getGlobalCanopyDir()` would otherwise snapshot legacy
  * paths for settings.json, OAuth tokens, installation_id, etc., while the
  * regular `.env` load only runs later — splitting global state between
- * `~/.qwen/...` and `<QWEN_HOME>/...`.
+ * `~/.canopy/...` and `<QWEN_HOME>/...`.
  */
 let homeEnvBootstrapped = false;
 export function preResolveHomeEnvOverrides(): void {
@@ -116,14 +122,14 @@ export function preResolveHomeEnvOverrides(): void {
     return;
   }
 
-  // Storage.getGlobalQwenDir() shares the same homedir resolution as the
+  // Storage.getGlobalCanopyDir() shares the same homedir resolution as the
   // rest of the storage layer; when QWEN_HOME is unset it equals
-  // `<homedir>/.qwen`, so path.dirname() recovers `<homedir>`.
-  const initialQwenHome = process.env['QWEN_HOME'];
-  const initialQwenDir = Storage.getGlobalQwenDir();
-  const candidates: string[] = [path.join(initialQwenDir, '.env')];
-  if (!initialQwenHome) {
-    candidates.push(path.join(path.dirname(initialQwenDir), '.env'));
+  // `<homedir>/.canopy`, so path.dirname() recovers `<homedir>`.
+  const initialCanopyHome = process.env['QWEN_HOME'];
+  const initialCanopyDir = Storage.getGlobalCanopyDir();
+  const candidates: string[] = [path.join(initialCanopyDir, '.env')];
+  if (!initialCanopyHome) {
+    candidates.push(path.join(path.dirname(initialCanopyDir), '.env'));
   }
 
   for (const candidate of candidates) {
@@ -131,11 +137,11 @@ export function preResolveHomeEnvOverrides(): void {
   }
 
   // If QWEN_HOME was just discovered, also read <new QWEN_HOME>/.env so
-  // QWEN_RUNTIME_DIR can be sourced from there.
-  const discoveredQwenHome = process.env['QWEN_HOME'];
-  if (discoveredQwenHome && discoveredQwenHome !== initialQwenHome) {
-    const discoveredDir = Storage.getGlobalQwenDir();
-    if (discoveredDir !== initialQwenDir) {
+  // CANOPY_RUNTIME_DIR can be sourced from there.
+  const discoveredCanopyHome = process.env['QWEN_HOME'];
+  if (discoveredCanopyHome && discoveredCanopyHome !== initialCanopyHome) {
+    const discoveredDir = Storage.getGlobalCanopyDir();
+    if (discoveredDir !== initialCanopyDir) {
       readHomeEnvInto(path.join(discoveredDir, '.env'));
     }
   }
@@ -175,21 +181,21 @@ export function resetEnvironmentTrackingForTesting(): void {
  * Collects environment variables from user-level `.env` files and returns
  * them as a plain dictionary **without** mutating `process.env`.
  *
- * Candidates are iterated most-specific-first (`~/.qwen/.env` before
+ * Candidates are iterated most-specific-first (`~/.canopy/.env` before
  * `~/.env`). `??=` ensures the first file to define a key wins, matching
  * dotenv's first-occurrence-wins semantics used elsewhere.
  */
 export function getHomeEnvFallbackVars(
   onReadError?: (message: string) => void,
 ): Record<string, string> {
-  const globalQwenDir = Storage.getGlobalQwenDir();
-  const candidates = [path.join(globalQwenDir, '.env')];
+  const globalCanopyDir = Storage.getGlobalCanopyDir();
+  const candidates = [path.join(globalCanopyDir, '.env')];
   // When QWEN_HOME is set, skip ~/.env to avoid surprise cross-contamination
   // from a shared home .env. getUserLevelEnvPaths() always includes ~/.env
   // because loadEnvironment() populates process.env independently — the two
   // scopes are intentionally different.
   if (!process.env['QWEN_HOME']) {
-    candidates.push(path.join(path.dirname(globalQwenDir), '.env'));
+    candidates.push(path.join(path.dirname(globalCanopyDir), '.env'));
   }
 
   const result: Record<string, string> = {};
@@ -217,7 +223,7 @@ export function getHomeEnvFallbackVars(
  * Finds the .env files to load, respecting workspace trust settings.
  *
  * When workspace is untrusted, only allow user-level .env files at:
- * - ~/.qwen/.env
+ * - ~/.canopy/.env
  * - ~/.env
  * - <QWEN_HOME>/.env (when set)
  *
@@ -238,9 +244,10 @@ export function findEnvFiles(
   } catch {
     // Match loadSettings(): use the resolved path when realpath is unavailable.
   }
-  const globalQwenDir = Storage.getGlobalQwenDir();
-  const legacyQwenDir = path.normalize(path.join(homeDir, QWEN_DIR));
-  const hasCustomConfigDir = path.normalize(globalQwenDir) !== legacyQwenDir;
+  const globalCanopyDir = Storage.getGlobalCanopyDir();
+  const legacyCanopyDir = path.normalize(path.join(homeDir, CANOPY_DIR));
+  const hasCustomConfigDir =
+    path.normalize(globalCanopyDir) !== legacyCanopyDir;
   const found: string[] = [];
   const seen = new Set<string>();
 
@@ -259,8 +266,8 @@ export function findEnvFiles(
     return trusted !== false;
   };
 
-  // Home-dir candidates in priority order: globalQwenDir/.env, then legacy
-  // ~/.qwen/.env (only when QWEN_HOME redirects), then ~/.env.
+  // Home-dir candidates in priority order: globalCanopyDir/.env, then legacy
+  // ~/.canopy/.env (only when QWEN_HOME redirects), then ~/.env.
   const pushCandidate = (filePath: string): boolean => {
     const normalized = path.normalize(filePath);
     if (
@@ -276,9 +283,9 @@ export function findEnvFiles(
   };
 
   const pushHomeCandidates = (): void => {
-    const candidates = [path.join(globalQwenDir, '.env')];
+    const candidates = [path.join(globalCanopyDir, '.env')];
     if (hasCustomConfigDir) {
-      candidates.push(path.join(legacyQwenDir, '.env'));
+      candidates.push(path.join(legacyCanopyDir, '.env'));
     }
     candidates.push(path.join(homeDir, '.env'));
     for (const candidate of candidates) {
@@ -294,8 +301,8 @@ export function findEnvFiles(
       pushHomeCandidates();
       return found;
     } else {
-      // Workspace step: prefer .qwen/.env, then plain .env.
-      const geminiEnvPath = path.join(currentDir, QWEN_DIR, '.env');
+      // Workspace step: prefer .canopy/.env, then plain .env.
+      const geminiEnvPath = path.join(currentDir, CANOPY_DIR, '.env');
       if (pushCandidate(geminiEnvPath)) {
         pushHomeCandidates();
         return found;
@@ -358,7 +365,7 @@ interface ParsedEnvFile {
   readonly path: string;
   readonly parsedEnv: Record<string, string>;
   readonly isHomeScopedEnvFile: boolean;
-  readonly isQwenScopedEnvFile: boolean;
+  readonly isCanopyScopedEnvFile: boolean;
 }
 
 interface ParsedEnvFilesResult {
@@ -385,15 +392,15 @@ function parseEnvFiles(
       const parsedEnv = dotenv.parse(envFileContent);
       const normalizedEnvFilePath = path.normalize(envFilePath);
       const isHomeScopedEnvFile = userLevelPaths.has(normalizedEnvFilePath);
-      const isQwenScopedEnvFile =
+      const isCanopyScopedEnvFile =
         isHomeScopedEnvFile ||
-        path.basename(path.dirname(normalizedEnvFilePath)) === QWEN_DIR;
+        path.basename(path.dirname(normalizedEnvFilePath)) === CANOPY_DIR;
 
       files.push({
         path: envFilePath,
         parsedEnv,
         isHomeScopedEnvFile,
-        isQwenScopedEnvFile,
+        isCanopyScopedEnvFile,
       });
     } catch (err) {
       readFailures.push({
@@ -423,7 +430,7 @@ function canApplyParsedEnvKey(
   if (!envFile.isHomeScopedEnvFile && isHardcodedProjectEnvExclusion(key)) {
     return false;
   }
-  return envFile.isQwenScopedEnvFile || !excludedVars.includes(key);
+  return envFile.isCanopyScopedEnvFile || !excludedVars.includes(key);
 }
 
 export interface RuntimeEnvironmentSnapshot {
@@ -544,10 +551,10 @@ export function loadEnvironment(
   for (const envFile of parsedEnvFiles.files) {
     const excludedVars =
       settings?.advanced?.excludedEnvVars || DEFAULT_EXCLUDED_ENV_VARS;
-    // homeScoped: `.env` lives under the user's home Qwen dir or `~/.env` —
-    //   only these may set QWEN_HOME / QWEN_RUNTIME_DIR.
-    // qwenScoped: any `.env` whose immediate parent is `.qwen` (including
-    //   `<repo>/.qwen/.env`) — exempt from the user `excludedEnvVars` list.
+    // homeScoped: `.env` lives under the user's home Canopy dir or `~/.env` —
+    //   only these may set QWEN_HOME / CANOPY_RUNTIME_DIR.
+    // canopyScoped: any `.env` whose immediate parent is `.canopy` (including
+    //   `<repo>/.canopy/.env`) — exempt from the user `excludedEnvVars` list.
     for (const key in envFile.parsedEnv) {
       if (!canApplyParsedEnvKey(envFile, key, excludedVars)) continue;
 

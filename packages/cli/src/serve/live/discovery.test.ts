@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,7 @@ import { LIVE_HOST_PROTOCOL_VERSION } from './types.js';
 const temporaryDirectories: string[] = [];
 
 async function temporaryRuntime(): Promise<string> {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-live-'));
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-live-'));
   temporaryDirectories.push(directory);
   return directory;
 }

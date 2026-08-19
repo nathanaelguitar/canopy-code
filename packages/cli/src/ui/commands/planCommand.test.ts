@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { planCommand } from './planCommand.js';
 import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 
 describe('planCommand', () => {
   let mockContext: CommandContext;
@@ -20,7 +20,7 @@ describe('planCommand', () => {
           getApprovalMode: vi.fn().mockReturnValue(ApprovalMode.DEFAULT),
           getPrePlanMode: vi.fn().mockReturnValue(ApprovalMode.DEFAULT),
           setApprovalMode: vi.fn(),
-        } as unknown as import('@qwen-code/qwen-code-core').Config,
+        } as unknown as import('@canopy-code/canopy-code-core').Config,
       },
     });
   });

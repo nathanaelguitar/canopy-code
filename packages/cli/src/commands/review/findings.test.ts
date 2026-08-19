@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1892,7 +1892,7 @@ describe('sharedFailingFilesOf — cross-workspace identity', () => {
           command: 'npm test',
           netNew: [],
           shared: [
-            '@qwen-code/qwen-code::src/utils/errors.test.ts',
+            '@canopy-code/canopy-code::src/utils/errors.test.ts',
             'src/plain.test.ts',
           ],
         },
@@ -1900,7 +1900,7 @@ describe('sharedFailingFilesOf — cross-workspace identity', () => {
     });
     expect(shared).toEqual(['src/plain.test.ts']);
     expect(unidentifiable).toEqual([
-      '@qwen-code/qwen-code::src/utils/errors.test.ts',
+      '@canopy-code/canopy-code::src/utils/errors.test.ts',
     ]);
   });
 
@@ -1910,7 +1910,7 @@ describe('sharedFailingFilesOf — cross-workspace identity', () => {
         {
           command: 'npm test',
           netNew: [],
-          shared: ['@qwen-code/qwen-code::src/utils/errors.test.ts'],
+          shared: ['@canopy-code/canopy-code::src/utils/errors.test.ts'],
         },
       ],
     });

@@ -347,7 +347,7 @@ function normalizeDuplicateProperties(
 
     let temporaryKey: string;
     do {
-      temporaryKey = `__qwen_duplicate_${duplicateIndex}`;
+      temporaryKey = `__canopy_duplicate_${duplicateIndex}`;
       duplicateIndex += 1;
     } while (duplicate.propertyNames.has(temporaryKey));
 

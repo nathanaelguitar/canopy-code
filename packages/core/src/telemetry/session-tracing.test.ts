@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -285,14 +285,16 @@ describe('session-tracing', () => {
       });
 
       expect(mockSpans).toHaveLength(1);
-      expect(mockSpans[0]!.name).toBe('qwen-code.interaction');
+      expect(mockSpans[0]!.name).toBe('canopy-code.interaction');
       expect(mockSpans[0]!.attributes['session.id']).toBe('test-session-id');
       expect(mockSpans[0]!.attributes['gen_ai.user.id']).toBe('user-1');
-      expect(mockSpans[0]!.attributes['qwen-code.prompt_id']).toBe('prompt-1');
-      expect(mockSpans[0]!.attributes['qwen-code.model']).toBe('test-model');
+      expect(mockSpans[0]!.attributes['canopy-code.prompt_id']).toBe(
+        'prompt-1',
+      );
+      expect(mockSpans[0]!.attributes['canopy-code.model']).toBe('test-model');
       expect(mockSpans[0]!.attributes).toMatchObject({
         'gen_ai.operation.name': 'invoke_agent',
-        'gen_ai.agent.name': 'qwen-code',
+        'gen_ai.agent.name': 'canopy-code',
         'gen_ai.conversation.id': 'test-session-id',
       });
       expect(mockSpans[0]!.attributes['gen_ai.request.model']).toBeUndefined();
@@ -316,7 +318,7 @@ describe('session-tracing', () => {
         async () => {},
       );
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
       expect(span?.parentContext).toBe(ROOT_CONTEXT);
     });
 
@@ -344,16 +346,16 @@ describe('session-tracing', () => {
 
       expect(result).toBe('done');
       expect(mockSpans).toHaveLength(1);
-      expect(mockSpans[0]!.name).toBe('qwen-code.interaction');
+      expect(mockSpans[0]!.name).toBe('canopy-code.interaction');
       expect(mockSpans[0]!.parentContext).toBe(parentContext);
       expect(mockSpans[0]!.attributes['session.id']).toBe('scoped-session');
       expect(mockSpans[0]!.attributes['gen_ai.user.id']).toBe('scoped-user');
-      expect(mockSpans[0]!.attributes['qwen-code.message_type']).toBe(
+      expect(mockSpans[0]!.attributes['canopy-code.message_type']).toBe(
         'acp_prompt',
       );
       expect(mockSpans[0]!.attributes).toMatchObject({
         'gen_ai.operation.name': 'invoke_agent',
-        'gen_ai.agent.name': 'qwen-code',
+        'gen_ai.agent.name': 'canopy-code',
         'gen_ai.conversation.id': 'scoped-session',
         'gen_ai.output.type': 'json',
       });
@@ -373,8 +375,8 @@ describe('session-tracing', () => {
         () => 'error',
       );
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
-      expect(span?.attributes['qwen-code.turn_status']).toBe('error');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
+      expect(span?.attributes['canopy-code.turn_status']).toBe('error');
       expect(span?.statuses.at(-1)?.code).toBe(SpanStatusCode.ERROR);
       expect(span?.attributes['error.type']).toBe('interaction_error');
     });
@@ -391,7 +393,7 @@ describe('session-tracing', () => {
         ),
       ).rejects.toThrow('boom from fn');
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
       expect(span?.statuses.at(-1)?.code).toBe(SpanStatusCode.ERROR);
       expect(span?.statuses.at(-1)?.message).toBe('boom from fn');
       expect(span?.attributes['error.type']).toBe('Error');
@@ -487,7 +489,7 @@ describe('session-tracing', () => {
 
       const setAttrs = mockSpans[0]!.setAttributesCalls[0]!;
       expect(setAttrs).toHaveProperty('interaction.duration_ms');
-      expect(setAttrs['qwen-code.turn_status']).toBe('ok');
+      expect(setAttrs['canopy-code.turn_status']).toBe('ok');
     });
 
     it('sets json output type only when a JSON schema is configured', () => {
@@ -571,10 +573,10 @@ describe('session-tracing', () => {
           );
 
           const llmRecord = mockSpans.find(
-            (span) => span.name === 'qwen-code.llm_request',
+            (span) => span.name === 'canopy-code.llm_request',
           );
           const toolRecord = mockSpans.find(
-            (span) => span.name === 'qwen-code.tool',
+            (span) => span.name === 'canopy-code.tool',
           );
           expect(llmRecord?.parentContext).toBe(ROOT_CONTEXT);
           expect(llmRecord?.attributes['llm_request.context']).toBe(
@@ -603,7 +605,7 @@ describe('session-tracing', () => {
       });
 
       expect(mockSpans[0]!.ended).toBe(true);
-      expect(mockSpans[0]!.attributes['qwen-code.turn_status']).toBe(
+      expect(mockSpans[0]!.attributes['canopy-code.turn_status']).toBe(
         'cancelled',
       );
       expect(getActiveInteractionSpan('same-prompt')).toBe(mockSpans[1]);
@@ -640,7 +642,7 @@ describe('session-tracing', () => {
         messageType: 'userQuery',
       });
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
       expect(span?.parentContext).toBe(ROOT_CONTEXT);
     });
 
@@ -653,7 +655,7 @@ describe('session-tracing', () => {
         messageType: 'userQuery',
       });
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
       expect(span?.parentContext).toBe(ROOT_CONTEXT);
     });
 
@@ -664,7 +666,7 @@ describe('session-tracing', () => {
         messageType: 'userQuery',
       });
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.interaction');
+      const span = mockSpans.find((s) => s.name === 'canopy-code.interaction');
       expect(span?.attributes['session.id']).toBe('my-session');
     });
   });
@@ -684,11 +686,11 @@ describe('session-tracing', () => {
       const span = startLLMRequestSpan('test-model', 'prompt-llm');
 
       expect(mockSpans).toHaveLength(1);
-      expect(mockSpans[0]!.name).toBe('qwen-code.llm_request');
+      expect(mockSpans[0]!.name).toBe('canopy-code.llm_request');
       expect(mockSpans[0]!.attributes['gen_ai.request.model']).toBe(
         'test-model',
       );
-      expect(mockSpans[0]!.attributes['qwen-code.model']).toBeUndefined();
+      expect(mockSpans[0]!.attributes['canopy-code.model']).toBeUndefined();
 
       endLLMRequestSpan(span, {
         success: true,
@@ -742,7 +744,9 @@ describe('session-tracing', () => {
       endInteractionSpan('ok');
 
       // The LLM span should have a parent context
-      const llmSpan = mockSpans.find((s) => s.name === 'qwen-code.llm_request');
+      const llmSpan = mockSpans.find(
+        (s) => s.name === 'canopy-code.llm_request',
+      );
       expect(llmSpan?.parentContext).toBeDefined();
       expect(llmSpan?.attributes['llm_request.context']).toBe('interaction');
     });
@@ -788,7 +792,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (candidate) => candidate.name === 'qwen-code.llm_request',
+        (candidate) => candidate.name === 'canopy-code.llm_request',
       );
       expect(record?.attributes['session.id']).toBe('parent-session');
       expect(record?.attributes['gen_ai.conversation.id']).toBe(
@@ -817,7 +821,7 @@ describe('session-tracing', () => {
           userId: 'different-user',
         });
         const record = mockSpans.find(
-          (candidate) => candidate.name === 'qwen-code.llm_request',
+          (candidate) => candidate.name === 'canopy-code.llm_request',
         );
         expect(record?.attributes['session.id']).toBe('parent-session');
         expect(record?.attributes['gen_ai.user.id']).toBe('parent-user');
@@ -874,7 +878,7 @@ describe('session-tracing', () => {
       for (const [index, sessionId] of sessionIds.entries()) {
         const record = mockSpans.find(
           (candidate) =>
-            candidate.attributes['qwen-code.prompt_id'] ===
+            candidate.attributes['canopy-code.prompt_id'] ===
             `prompt-${sessionId}`,
         );
         expect(record?.attributes['session.id']).toBe(sessionId);
@@ -899,7 +903,9 @@ describe('session-tracing', () => {
       const span = startLLMRequestSpan('m', 'p');
       endLLMRequestSpan(span, { success: true });
 
-      const llmSpan = mockSpans.find((s) => s.name === 'qwen-code.llm_request');
+      const llmSpan = mockSpans.find(
+        (s) => s.name === 'canopy-code.llm_request',
+      );
       expect(llmSpan?.parentContext).toMatchObject({
         __activeSpan: fakeActive,
       });
@@ -935,7 +941,7 @@ describe('session-tracing', () => {
 
       const attrs = mockSpans[0]!.attributes;
       expect(attrs['gen_ai.request.model']).toBe('test-model');
-      expect(attrs['qwen-code.model']).toBeUndefined();
+      expect(attrs['canopy-code.model']).toBeUndefined();
     });
 
     it('writes operation, provider, conversation, and output type at span creation', () => {
@@ -1500,7 +1506,7 @@ describe('session-tracing', () => {
       const span = startToolSpan('ReadFile', { 'tool.call_id': 'call-1' });
 
       expect(mockSpans).toHaveLength(1);
-      expect(mockSpans[0]!.name).toBe('qwen-code.tool');
+      expect(mockSpans[0]!.name).toBe('canopy-code.tool');
       expect(mockSpans[0]!.attributes['tool.call_id']).toBe('call-1');
       expect(mockSpans[0]!.attributes).toMatchObject({
         'gen_ai.operation.name': 'execute_tool',
@@ -1528,9 +1534,11 @@ describe('session-tracing', () => {
         undefined,
         'main-prompt',
       );
-      const tool = mockSpans.find((record) => record.name === 'qwen-code.tool');
+      const tool = mockSpans.find(
+        (record) => record.name === 'canopy-code.tool',
+      );
 
-      expect(tool?.attributes['gen_ai.agent.name']).toBe('qwen-code');
+      expect(tool?.attributes['gen_ai.agent.name']).toBe('canopy-code');
       endToolSpan(span, { success: true });
     });
 
@@ -1547,7 +1555,7 @@ describe('session-tracing', () => {
       await runInSubagentSpanContext(subagent, async () => {
         const span = startToolSpan('ReadFile', undefined, undefined, 'p');
         const tool = mockSpans.find(
-          (record) => record.name === 'qwen-code.tool',
+          (record) => record.name === 'canopy-code.tool',
         );
         expect(tool?.attributes['gen_ai.agent.name']).toBe('Explore');
         endToolSpan(span, { success: true });
@@ -1620,7 +1628,7 @@ describe('session-tracing', () => {
       const span = startToolSpan('Bash');
       endToolSpan(span, { success: true });
 
-      const toolSpan = mockSpans.find((s) => s.name === 'qwen-code.tool');
+      const toolSpan = mockSpans.find((s) => s.name === 'canopy-code.tool');
       expect(toolSpan?.parentContext).toMatchObject({
         __activeSpan: fakeActive,
       });
@@ -1642,7 +1650,7 @@ describe('session-tracing', () => {
       endToolSpan(span1, { success: false, error: 'timeout' });
 
       // Find tool spans
-      const toolSpans = mockSpans.filter((s) => s.name === 'qwen-code.tool');
+      const toolSpans = mockSpans.filter((s) => s.name === 'canopy-code.tool');
       expect(toolSpans).toHaveLength(2);
 
       const readSpan = toolSpans.find(
@@ -1693,7 +1701,7 @@ describe('session-tracing', () => {
       const span = startToolSpan('Bash', { 'tool.call_id': 'c1' });
       endToolSpan(span, { success: true });
 
-      const toolSpan = mockSpans.find((s) => s.name === 'qwen-code.tool');
+      const toolSpan = mockSpans.find((s) => s.name === 'canopy-code.tool');
       expect(toolSpan?.attributes['session.id']).toBe('session-A');
     });
 
@@ -1708,7 +1716,9 @@ describe('session-tracing', () => {
       const span = startLLMRequestSpan('m', 'p-a');
       endLLMRequestSpan(span, { success: true });
 
-      const llmSpan = mockSpans.find((s) => s.name === 'qwen-code.llm_request');
+      const llmSpan = mockSpans.find(
+        (s) => s.name === 'canopy-code.llm_request',
+      );
       expect(llmSpan?.attributes['session.id']).toBe('session-A');
     });
 
@@ -1728,7 +1738,9 @@ describe('session-tracing', () => {
       endToolExecutionSpan(execSpan, { success: true });
       endToolSpan(toolSpan, { success: true });
 
-      const exec = mockSpans.find((s) => s.name === 'qwen-code.tool.execution');
+      const exec = mockSpans.find(
+        (s) => s.name === 'canopy-code.tool.execution',
+      );
       expect(exec?.attributes['session.id']).toBe('session-A');
     });
 
@@ -1748,7 +1760,7 @@ describe('session-tracing', () => {
       endToolSpan(toolSpan, { success: true });
 
       const blocked = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.blocked_on_user',
+        (s) => s.name === 'canopy-code.tool.blocked_on_user',
       );
       expect(blocked?.attributes['session.id']).toBe('session-A');
     });
@@ -1773,7 +1785,7 @@ describe('session-tracing', () => {
       endHookSpan(hookSpan, { success: true, shouldProceed: true });
       endToolSpan(toolSpan, { success: true });
 
-      const hook = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hook = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hook?.attributes['session.id']).toBe('session-A');
     });
 
@@ -1816,7 +1828,7 @@ describe('session-tracing', () => {
       const span = startToolSpan('Bash', { 'tool.call_id': 'c1' });
       endToolSpan(span, { success: true });
 
-      const toolSpan = mockSpans.find((s) => s.name === 'qwen-code.tool');
+      const toolSpan = mockSpans.find((s) => s.name === 'canopy-code.tool');
       expect(toolSpan?.attributes['session.id']).toBe('cli-session');
     });
   });
@@ -1836,11 +1848,11 @@ describe('session-tracing', () => {
       const toolSpan = startToolSpan('Read', { 'tool.call_id': 'call-1' });
 
       expect(
-        mockSpans.find((span) => span.name === 'qwen-code.llm_request')
+        mockSpans.find((span) => span.name === 'canopy-code.llm_request')
           ?.attributes['gen_ai.user.id'],
       ).toBe('user-A');
       expect(
-        mockSpans.find((span) => span.name === 'qwen-code.tool')?.attributes[
+        mockSpans.find((span) => span.name === 'canopy-code.tool')?.attributes[
           'gen_ai.user.id'
         ],
       ).toBe('user-A');
@@ -1860,7 +1872,7 @@ describe('session-tracing', () => {
       const toolSpan = startToolSpan('Read', {
         'gen_ai.user.id': 'spoofed-user',
       });
-      const record = mockSpans.find((span) => span.name === 'qwen-code.tool');
+      const record = mockSpans.find((span) => span.name === 'canopy-code.tool');
 
       expect(record?.attributes['gen_ai.user.id']).toBe('canonical-user');
       endToolSpan(toolSpan, { success: true });
@@ -1896,10 +1908,10 @@ describe('session-tracing', () => {
       );
 
       const llmRecord = mockSpans.find(
-        (span) => span.name === 'qwen-code.llm_request',
+        (span) => span.name === 'canopy-code.llm_request',
       );
       const toolRecord = mockSpans.find(
-        (span) => span.name === 'qwen-code.tool',
+        (span) => span.name === 'canopy-code.tool',
       );
       expect(llmRecord?.attributes['gen_ai.user.id']).toBe('continuation-user');
       expect(toolRecord?.attributes['gen_ai.user.id']).toBe(
@@ -1923,7 +1935,7 @@ describe('session-tracing', () => {
 
       const llmSpan = startLLMRequestSpan('m', 'expired-prompt');
       const llmRecord = mockSpans.find(
-        (span) => span.name === 'qwen-code.llm_request',
+        (span) => span.name === 'canopy-code.llm_request',
       );
       expect(llmRecord?.attributes).not.toHaveProperty('gen_ai.user.id');
       endLLMRequestSpan(llmSpan, { success: true });
@@ -2036,7 +2048,7 @@ describe('session-tracing', () => {
       });
 
       expect(mockSpans).toHaveLength(2);
-      expect(mockSpans[1]!.name).toBe('qwen-code.tool.execution');
+      expect(mockSpans[1]!.name).toBe('canopy-code.tool.execution');
       expect(mockSpans[1]!.parentContext).toBeDefined();
 
       endToolExecutionSpan(execSpan, { success: true });
@@ -2052,7 +2064,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (span) => span.name === 'qwen-code.tool.execution',
+        (span) => span.name === 'canopy-code.tool.execution',
       );
       expect(record?.attributes['gen_ai.tool.name']).toBe('Bash');
       expect(record?.attributes['tool.call_id']).toBe('call-1');
@@ -2075,7 +2087,9 @@ describe('session-tracing', () => {
       const execSpan = startToolExecutionSpan();
       endToolExecutionSpan(execSpan, { success: true });
 
-      const span = mockSpans.find((s) => s.name === 'qwen-code.tool.execution');
+      const span = mockSpans.find(
+        (s) => s.name === 'canopy-code.tool.execution',
+      );
       expect(span?.parentContext).toMatchObject({
         __activeSpan: fakeActive,
       });
@@ -2085,7 +2099,7 @@ describe('session-tracing', () => {
       const execSpan = startToolExecutionSpan();
 
       expect(mockSpans).toHaveLength(1);
-      expect(mockSpans[0]!.name).toBe('qwen-code.tool.execution');
+      expect(mockSpans[0]!.name).toBe('canopy-code.tool.execution');
 
       endToolExecutionSpan(execSpan, { success: true });
       expect(mockSpans[0]!.ended).toBe(true);
@@ -2101,7 +2115,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.execution',
+        (s) => s.name === 'canopy-code.tool.execution',
       );
       expect(record?.ended).toBe(true);
       // No setStatus call — status stays UNSET, matching setToolSpanCancelled
@@ -2126,7 +2140,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.execution',
+        (s) => s.name === 'canopy-code.tool.execution',
       );
       expect(record?.statuses).toHaveLength(1);
       expect(record?.statuses[0]!.code).toBe(SpanStatusCode.ERROR);
@@ -2144,7 +2158,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (span) => span.name === 'qwen-code.tool.execution',
+        (span) => span.name === 'canopy-code.tool.execution',
       );
       expect(record?.attributes['execution_status']).toBe('error');
       expect(record?.attributes['error_type']).toBe('execution_failed');
@@ -2160,7 +2174,7 @@ describe('session-tracing', () => {
       });
 
       const record = mockSpans.find(
-        (span) => span.name === 'qwen-code.tool.execution',
+        (span) => span.name === 'canopy-code.tool.execution',
       );
       expect(record?.attributes['execution_status']).toBe('cancelled');
       expect(record?.statuses).toHaveLength(0);
@@ -2176,7 +2190,7 @@ describe('session-tracing', () => {
       });
 
       const blockedRecord = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.blocked_on_user',
+        (s) => s.name === 'canopy-code.tool.blocked_on_user',
       );
       expect(blockedRecord).toBeDefined();
       // Parent context carries the tool span via setSpan()'s __parentSpan tag.
@@ -2202,7 +2216,7 @@ describe('session-tracing', () => {
       });
 
       const blockedRecord = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.blocked_on_user',
+        (s) => s.name === 'canopy-code.tool.blocked_on_user',
       );
       expect(blockedRecord?.ended).toBe(true);
       expect(blockedRecord?.attributes['decision']).toBe('cancel');
@@ -2218,7 +2232,7 @@ describe('session-tracing', () => {
       endToolBlockedOnUserSpan(blockedSpan, { decision: 'cancel' });
 
       const blockedRecord = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.blocked_on_user',
+        (s) => s.name === 'canopy-code.tool.blocked_on_user',
       );
       // The second end must NOT overwrite decision recorded by the first.
       expect(blockedRecord?.attributes['decision']).toBe('proceed_once');
@@ -2247,12 +2261,12 @@ describe('session-tracing', () => {
 
       const recordA = mockSpans.find(
         (s) =>
-          s.name === 'qwen-code.tool.blocked_on_user' &&
+          s.name === 'canopy-code.tool.blocked_on_user' &&
           s.attributes['tool.call_id'] === 'a',
       );
       const recordB = mockSpans.find(
         (s) =>
-          s.name === 'qwen-code.tool.blocked_on_user' &&
+          s.name === 'canopy-code.tool.blocked_on_user' &&
           s.attributes['tool.call_id'] === 'b',
       );
       // Only B is ended; A still active.
@@ -2276,7 +2290,7 @@ describe('session-tracing', () => {
 
       const blockedSpan = startToolBlockedOnUserSpan(toolSpan);
       expect(
-        mockSpans.find((s) => s.name === 'qwen-code.tool.blocked_on_user'),
+        mockSpans.find((s) => s.name === 'canopy-code.tool.blocked_on_user'),
       ).toBeDefined();
 
       endToolBlockedOnUserSpan(blockedSpan, { decision: 'proceed_once' });
@@ -2296,7 +2310,7 @@ describe('session-tracing', () => {
         });
       });
 
-      const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hookRecord).toBeDefined();
       expect(hookRecord?.parentContext).toBeDefined();
       expect(hookRecord?.attributes['hook_event']).toBe('PreToolUse');
@@ -2322,7 +2336,7 @@ describe('session-tracing', () => {
         blockType: 'denied',
       });
 
-      const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hookRecord?.attributes['should_proceed']).toBe(false);
       expect(hookRecord?.attributes['block_type']).toBe('denied');
       // Blocking is intentional, not an error — status must stay UNSET.
@@ -2346,7 +2360,7 @@ describe('session-tracing', () => {
         hasAdditionalContext: true,
       });
 
-      const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hookRecord?.attributes['should_stop']).toBe(true);
       expect(hookRecord?.attributes['has_additional_context']).toBe(true);
       expect(hookRecord?.statuses).toHaveLength(0);
@@ -2367,7 +2381,7 @@ describe('session-tracing', () => {
         postBatchStopReason: 'policy halt',
       });
 
-      const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hookRecord?.attributes['hook_event']).toBe('PostToolBatch');
       expect(hookRecord?.attributes['should_stop']).toBe(true);
       expect(hookRecord?.attributes['has_additional_context']).toBe(true);
@@ -2390,7 +2404,7 @@ describe('session-tracing', () => {
       });
       endHookSpan(hookSpan, { success: false, error: 'hook crashed' });
 
-      const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+      const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
       expect(hookRecord?.statuses[0]?.code).toBe(SpanStatusCode.ERROR);
       expect(hookRecord?.statuses[0]?.message).toBe('hook crashed');
       expect(hookRecord?.attributes['error.type']).toBe('hook_error');
@@ -2424,14 +2438,14 @@ describe('session-tracing', () => {
       // Inside context: should have parent
       const insideRecord = mockSpans.find(
         (s) =>
-          s.name === 'qwen-code.tool.execution' &&
+          s.name === 'canopy-code.tool.execution' &&
           (s.parentContext as Record<string, unknown>)?.['__parentSpan'],
       );
       expect(insideRecord).toBeDefined();
 
       // Outside context: should NOT have tool parent
       const outsideRecord = mockSpans.filter(
-        (s) => s.name === 'qwen-code.tool.execution',
+        (s) => s.name === 'canopy-code.tool.execution',
       );
       expect(outsideRecord).toHaveLength(2);
       const noParent = outsideRecord.find(
@@ -2456,7 +2470,7 @@ describe('session-tracing', () => {
       endToolSpan(toolSpan);
 
       // endToolSpan should NOT have added another status
-      const toolRecord = mockSpans.find((s) => s.name === 'qwen-code.tool');
+      const toolRecord = mockSpans.find((s) => s.name === 'canopy-code.tool');
       expect(toolRecord!.statuses).toHaveLength(1);
       expect(toolRecord!.statuses[0]!.code).toBe(SpanStatusCode.ERROR);
     });
@@ -2534,7 +2548,9 @@ describe('session-tracing', () => {
   describe('OTel error resilience — span.end() must run on attribute/status failure', () => {
     it('endLLMRequestSpan: end() runs and activeSpans is cleared when setStatus throws', () => {
       const span = startLLMRequestSpan('test-model', 'prompt-x');
-      const record = mockSpans.find((s) => s.name === 'qwen-code.llm_request')!;
+      const record = mockSpans.find(
+        (s) => s.name === 'canopy-code.llm_request',
+      )!;
 
       mockState.throwOnSetStatus = true;
       endLLMRequestSpan(span, { success: true });
@@ -2548,7 +2564,9 @@ describe('session-tracing', () => {
 
     it('endLLMRequestSpan: end() runs when setAttributes throws', () => {
       const span = startLLMRequestSpan('test-model', 'prompt-x');
-      const record = mockSpans.find((s) => s.name === 'qwen-code.llm_request')!;
+      const record = mockSpans.find(
+        (s) => s.name === 'canopy-code.llm_request',
+      )!;
 
       mockState.throwOnSetAttributes = true;
       endLLMRequestSpan(span, { success: true });
@@ -2558,7 +2576,7 @@ describe('session-tracing', () => {
 
     it('endToolSpan: end() runs when setStatus throws', () => {
       const span = startToolSpan('Bash');
-      const record = mockSpans.find((s) => s.name === 'qwen-code.tool')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.tool')!;
 
       mockState.throwOnSetStatus = true;
       endToolSpan(span, { success: true });
@@ -2573,7 +2591,7 @@ describe('session-tracing', () => {
         execSpan = startToolExecutionSpan();
       });
       const execRecord = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.execution',
+        (s) => s.name === 'canopy-code.tool.execution',
       )!;
 
       mockState.throwOnSetAttributes = true;
@@ -2594,7 +2612,7 @@ describe('session-tracing', () => {
         depth: 0,
         sessionId: 'session-uuid',
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
 
       mockState.throwOnSetAttributes = true;
       endSubagentSpan(span, { status: 'completed' });
@@ -2623,7 +2641,9 @@ describe('session-tracing', () => {
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
 
       expect(mockSpans[0]!.ended).toBe(true);
-      expect(mockSpans[0]!.attributes['qwen-code.span.ttl_expired']).toBe(true);
+      expect(mockSpans[0]!.attributes['canopy-code.span.ttl_expired']).toBe(
+        true,
+      );
       expect(getActiveInteractionSpan('stale-interaction')).toBeUndefined();
     });
 
@@ -2664,7 +2684,7 @@ describe('session-tracing', () => {
       expect(mockSpans[0]!.attributes['interaction.duration_ms']).toBe(
         60 * 60 * 1000,
       );
-      expect(mockSpans[0]!.attributes['qwen-code.turn_status']).toBe('ok');
+      expect(mockSpans[0]!.attributes['canopy-code.turn_status']).toBe('ok');
       expect(mockSpans[0]!.attributes['gen_ai.output.messages']).toBe(
         'final output',
       );
@@ -2682,7 +2702,9 @@ describe('session-tracing', () => {
 
       expect(getActiveInteractionSpan('idle-interaction')).toBeUndefined();
       expect(mockSpans[0]!.ended).toBe(true);
-      expect(mockSpans[0]!.attributes['qwen-code.span.ttl_expired']).toBe(true);
+      expect(mockSpans[0]!.attributes['canopy-code.span.ttl_expired']).toBe(
+        true,
+      );
     });
 
     it('does not let an old child refresh a replacement interaction', () => {
@@ -2739,7 +2761,7 @@ describe('session-tracing', () => {
     });
     it('marks stale spans with ttl_expired + duration_ms before ending them', () => {
       const toolSpan = startToolSpan('staleTool');
-      const record = mockSpans.find((s) => s.name === 'qwen-code.tool')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.tool')!;
 
       // 31 minutes after the span started — past the 30-min TTL.
       const staleNow = Date.now() + 31 * 60 * 1000;
@@ -2748,9 +2770,9 @@ describe('session-tracing', () => {
       expect(record.ended).toBe(true);
       // Without the sentinel attrs, operators couldn't tell a TTL-aborted
       // span from a deliberately-ended span that lost attribution.
-      expect(record.attributes['qwen-code.span.ttl_expired']).toBe(true);
+      expect(record.attributes['canopy-code.span.ttl_expired']).toBe(true);
       expect(
-        record.attributes['qwen-code.span.duration_ms'] as number,
+        record.attributes['canopy-code.span.duration_ms'] as number,
       ).toBeGreaterThanOrEqual(31 * 60 * 1000 - 1000);
 
       // Calling endToolSpan after the TTL fires must still be safe — span
@@ -2760,14 +2782,14 @@ describe('session-tracing', () => {
 
     it('does not mark spans that were ended before TTL expiry', () => {
       const toolSpan = startToolSpan('liveTool');
-      const record = mockSpans.find((s) => s.name === 'qwen-code.tool')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.tool')!;
 
       // End normally, then run a sweep. The span is already ended → the
       // sweep must not retroactively stamp ttl_expired on it.
       endToolSpan(toolSpan, { success: true });
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
 
-      expect(record.attributes['qwen-code.span.ttl_expired']).toBeUndefined();
+      expect(record.attributes['canopy-code.span.ttl_expired']).toBeUndefined();
     });
 
     it('stamps decision=aborted/source=system on TTL-expired blocked_on_user spans', () => {
@@ -2779,13 +2801,15 @@ describe('session-tracing', () => {
         tool_name: 'blockedStaleParent',
       });
       const blockedRecord = mockSpans.find(
-        (s) => s.name === 'qwen-code.tool.blocked_on_user',
+        (s) => s.name === 'canopy-code.tool.blocked_on_user',
       )!;
 
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
 
       expect(blockedRecord.ended).toBe(true);
-      expect(blockedRecord.attributes['qwen-code.span.ttl_expired']).toBe(true);
+      expect(blockedRecord.attributes['canopy-code.span.ttl_expired']).toBe(
+        true,
+      );
       expect(blockedRecord.attributes['decision']).toBe('aborted');
       expect(blockedRecord.attributes['source']).toBe('system');
 
@@ -2878,7 +2902,7 @@ describe('session-tracing', () => {
         invocationKind: 'foreground',
       });
       const record = mockSpans.find(
-        (candidate) => candidate.name === 'qwen-code.subagent',
+        (candidate) => candidate.name === 'canopy-code.subagent',
       );
       expect(record?.attributes['session.id']).toBe('parent-session');
       expect(record?.attributes['gen_ai.conversation.id']).toBe(
@@ -2894,7 +2918,7 @@ describe('session-tracing', () => {
         ...baseOpts,
         invocationKind: 'foreground',
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent');
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent');
 
       expect(record).toBeDefined();
       expect(record!.root).toBeUndefined();
@@ -2904,21 +2928,21 @@ describe('session-tracing', () => {
       expect(record!.attributes['gen_ai.agent.description']).toBe(
         'Search and inspect the workspace',
       );
-      expect(record!.attributes['qwen-code.subagent.id']).toBe(
+      expect(record!.attributes['canopy-code.subagent.id']).toBe(
         'Explore-abc123',
       );
-      expect(record!.attributes['qwen-code.subagent.name']).toBe('Explore');
+      expect(record!.attributes['canopy-code.subagent.name']).toBe('Explore');
       // Required spec attrs.
       expect(record!.attributes['gen_ai.operation.name']).toBe('invoke_agent');
       expect(record!.attributes['gen_ai.provider.name']).toBeUndefined();
       expect(record!.attributes['gen_ai.conversation.id']).toBe('session-uuid');
       expect(record!.attributes['session.id']).toBe('session-uuid');
       // Vendor concept attrs.
-      expect(record!.attributes['qwen-code.subagent.invocation_kind']).toBe(
+      expect(record!.attributes['canopy-code.subagent.invocation_kind']).toBe(
         'foreground',
       );
-      expect(record!.attributes['qwen-code.subagent.is_built_in']).toBe(true);
-      expect(record!.attributes['qwen-code.subagent.depth']).toBe(0);
+      expect(record!.attributes['canopy-code.subagent.is_built_in']).toBe(true);
+      expect(record!.attributes['canopy-code.subagent.depth']).toBe(0);
 
       endSubagentSpan(span, { status: 'completed' });
     });
@@ -2930,7 +2954,7 @@ describe('session-tracing', () => {
         invocationKind: 'foreground',
       });
       const description = mockSpans.find(
-        (record) => record.name === 'qwen-code.subagent',
+        (record) => record.name === 'canopy-code.subagent',
       )!.attributes['gen_ai.agent.description'] as string;
 
       expect(description).toBe(`${'a'.repeat(1023)}…[truncated]`);
@@ -2951,16 +2975,16 @@ describe('session-tracing', () => {
         invokerSpanContext:
           fakeInvokerSpanContext as unknown as import('@opentelemetry/api').SpanContext,
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent');
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent');
 
       expect(record!.root).toBe(true);
       expect(record!.links).toBeDefined();
       expect(record!.links).toHaveLength(1);
       expect(record!.links![0].context.spanId).toBe('invoker-span-id1');
-      expect(record!.links![0].attributes?.['qwen-code.link.kind']).toBe(
+      expect(record!.links![0].attributes?.['canopy-code.link.kind']).toBe(
         'invoker',
       );
-      expect(record!.attributes['qwen-code.subagent.invocation_kind']).toBe(
+      expect(record!.attributes['canopy-code.subagent.invocation_kind']).toBe(
         'fork',
       );
 
@@ -2972,10 +2996,10 @@ describe('session-tracing', () => {
         ...baseOpts,
         invocationKind: 'background',
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent');
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent');
       expect(record!.root).toBe(true);
       // No links because invokerSpanContext was omitted — still root.
-      expect(record!.attributes['qwen-code.subagent.invocation_kind']).toBe(
+      expect(record!.attributes['canopy-code.subagent.invocation_kind']).toBe(
         'background',
       );
       endSubagentSpan(span, { status: 'completed' });
@@ -2994,7 +3018,7 @@ describe('session-tracing', () => {
           invocationKind,
         });
         const record = mockSpans.find(
-          (candidate) => candidate.name === 'qwen-code.subagent',
+          (candidate) => candidate.name === 'canopy-code.subagent',
         );
         expect(record?.attributes['gen_ai.user.id']).toBe('agent-user');
 
@@ -3003,8 +3027,8 @@ describe('session-tracing', () => {
           const toolSpan = startToolSpan('Read');
           const childSpans = mockSpans.filter(
             (candidate) =>
-              candidate.name === 'qwen-code.llm_request' ||
-              candidate.name === 'qwen-code.tool',
+              candidate.name === 'canopy-code.llm_request' ||
+              candidate.name === 'canopy-code.tool',
           );
           expect(childSpans).toHaveLength(2);
           for (const child of childSpans) {
@@ -3039,7 +3063,7 @@ describe('session-tracing', () => {
           invocationKind: 'background',
         });
         const record = mockSpans.find(
-          (candidate) => candidate.name === 'qwen-code.subagent',
+          (candidate) => candidate.name === 'canopy-code.subagent',
         );
         expect(record?.attributes['gen_ai.user.id']).toBe('agent-tool-user');
         endSubagentSpan(agentSpan, { status: 'completed' });
@@ -3057,15 +3081,15 @@ describe('session-tracing', () => {
         modelOverride: 'qwen-coder-7b',
         depth: 2,
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
-      expect(record.attributes['qwen-code.subagent.parent_agent_id']).toBe(
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
+      expect(record.attributes['canopy-code.subagent.parent_agent_id']).toBe(
         'parent-agent-456',
       );
-      expect(record.attributes['qwen-code.subagent.invoking_request_id']).toBe(
-        'req-789',
-      );
+      expect(
+        record.attributes['canopy-code.subagent.invoking_request_id'],
+      ).toBe('req-789');
       expect(record.attributes['gen_ai.request.model']).toBe('qwen-coder-7b');
-      expect(record.attributes['qwen-code.subagent.depth']).toBe(2);
+      expect(record.attributes['canopy-code.subagent.depth']).toBe(2);
       endSubagentSpan(span, { status: 'completed' });
     });
 
@@ -3076,12 +3100,14 @@ describe('session-tracing', () => {
       });
       endSubagentSpan(span, { status: 'completed' });
 
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
       expect(record.ended).toBe(true);
       expect(record.statuses).toHaveLength(0);
-      expect(record.attributes['qwen-code.subagent.status']).toBe('completed');
+      expect(record.attributes['canopy-code.subagent.status']).toBe(
+        'completed',
+      );
       expect(
-        record.attributes['qwen-code.subagent.duration_ms'] as number,
+        record.attributes['canopy-code.subagent.duration_ms'] as number,
       ).toBeGreaterThanOrEqual(0);
     });
 
@@ -3096,12 +3122,12 @@ describe('session-tracing', () => {
         errorType: 'TypeError',
       });
 
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
       expect(record.statuses[0].code).toBe(SpanStatusCode.ERROR);
       expect(record.statuses[0].message).toBe('something broke');
       expect(record.attributes['exception.message']).toBe('something broke');
       expect(record.attributes['error.type']).toBe('TypeError');
-      expect(record.attributes['qwen-code.subagent.status']).toBe('failed');
+      expect(record.attributes['canopy-code.subagent.status']).toBe('failed');
     });
 
     it('endSubagentSpan: failed without explicit error → generic "subagent failed" SpanStatus message', () => {
@@ -3116,7 +3142,7 @@ describe('session-tracing', () => {
       });
       endSubagentSpan(span, { status: 'failed' });
 
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
       expect(record.statuses[0].code).toBe(SpanStatusCode.ERROR);
       expect(record.statuses[0].message).toBe('subagent failed');
       expect(record.attributes['exception.message']).toBeUndefined();
@@ -3135,10 +3161,12 @@ describe('session-tracing', () => {
           error: 'abort detail',
           errorType: 'AbortError',
         });
-        const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+        const record = mockSpans.find(
+          (s) => s.name === 'canopy-code.subagent',
+        )!;
         // No SpanStatus calls means UNSET stays UNSET.
         expect(record.statuses).toHaveLength(0);
-        expect(record.attributes['qwen-code.subagent.status']).toBe(status);
+        expect(record.attributes['canopy-code.subagent.status']).toBe(status);
         expect(record.attributes['exception.message']).toBeUndefined();
         expect(record.attributes['error.type']).toBeUndefined();
       },
@@ -3152,10 +3180,12 @@ describe('session-tracing', () => {
       endSubagentSpan(span, { status: 'completed' });
       endSubagentSpan(span, { status: 'failed', error: 'should not record' });
 
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
       // Only the first end ran — status is still UNSET, not ERROR.
       expect(record.statuses).toHaveLength(0);
-      expect(record.attributes['qwen-code.subagent.status']).toBe('completed');
+      expect(record.attributes['canopy-code.subagent.status']).toBe(
+        'completed',
+      );
     });
 
     it('runInSubagentSpanContext wraps fn in context.with', async () => {
@@ -3182,7 +3212,7 @@ describe('session-tracing', () => {
       expect(span.spanContext().traceId).toBe('0'.repeat(32));
       // No mockSpans entry was created (NOOP returns before tracer.startSpan).
       expect(
-        mockSpans.find((s) => s.name === 'qwen-code.subagent'),
+        mockSpans.find((s) => s.name === 'canopy-code.subagent'),
       ).toBeUndefined();
       // endSubagentSpan on NOOP_SPAN is a safe no-op.
       endSubagentSpan(span, { status: 'completed' });
@@ -3196,7 +3226,7 @@ describe('session-tracing', () => {
       const oversized = 'a'.repeat(2000);
       endSubagentSpan(span, { status: 'failed', error: oversized });
 
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
       const recorded = record.attributes['exception.message'] as string;
       expect(recorded.length).toBeLessThan(oversized.length);
       expect(recorded.endsWith('…[truncated]')).toBe(true);
@@ -3204,7 +3234,7 @@ describe('session-tracing', () => {
 
     it('TTL: fork subagent at 30 min stays alive (4h window)', () => {
       startSubagentSpan({ ...baseOpts, invocationKind: 'fork' });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
 
       // 31 min — past default TTL, well within fork's 4h.
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
@@ -3213,17 +3243,17 @@ describe('session-tracing', () => {
       // 4h + 1 min — past fork's 4h TTL.
       runTTLSweepForTesting(Date.now() + (4 * 60 + 1) * 60 * 1000);
       expect(record.ended).toBe(true);
-      expect(record.attributes['qwen-code.span.ttl_expired']).toBe(true);
-      expect(record.attributes['qwen-code.subagent.status']).toBe('aborted');
-      expect(record.attributes['qwen-code.subagent.terminate_reason']).toBe(
+      expect(record.attributes['canopy-code.span.ttl_expired']).toBe(true);
+      expect(record.attributes['canopy-code.subagent.status']).toBe('aborted');
+      expect(record.attributes['canopy-code.subagent.terminate_reason']).toBe(
         'ttl_swept',
       );
       // TTL sweep stamps the subagent-namespaced duration_ms key so
       // dashboards querying that namespace include swept spans (the
-      // generic qwen-code.span.duration_ms is asserted above).
+      // generic canopy-code.span.duration_ms is asserted above).
       // wenshao @ #4410 DeepSeek 3292560017.
       expect(
-        record.attributes['qwen-code.subagent.duration_ms'] as number,
+        record.attributes['canopy-code.subagent.duration_ms'] as number,
       ).toBeGreaterThan(0);
     });
 
@@ -3232,15 +3262,15 @@ describe('session-tracing', () => {
       // Catches the regression where someone trims
       // LONG_TTL_SUBAGENT_KINDS and drops `'background'` silently.
       startSubagentSpan({ ...baseOpts, invocationKind: 'background' });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
 
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
       expect(record.ended).toBe(false);
 
       runTTLSweepForTesting(Date.now() + (4 * 60 + 1) * 60 * 1000);
       expect(record.ended).toBe(true);
-      expect(record.attributes['qwen-code.subagent.status']).toBe('aborted');
-      expect(record.attributes['qwen-code.subagent.terminate_reason']).toBe(
+      expect(record.attributes['canopy-code.subagent.status']).toBe('aborted');
+      expect(record.attributes['canopy-code.subagent.terminate_reason']).toBe(
         'ttl_swept',
       );
     });
@@ -3250,11 +3280,11 @@ describe('session-tracing', () => {
         ...baseOpts,
         invocationKind: 'foreground',
       });
-      const record = mockSpans.find((s) => s.name === 'qwen-code.subagent')!;
+      const record = mockSpans.find((s) => s.name === 'canopy-code.subagent')!;
 
       runTTLSweepForTesting(Date.now() + 31 * 60 * 1000);
       expect(record.ended).toBe(true);
-      expect(record.attributes['qwen-code.span.ttl_expired']).toBe(true);
+      expect(record.attributes['canopy-code.span.ttl_expired']).toBe(true);
 
       // Defensive: endSubagentSpan after TTL is a no-op (already ended).
       endSubagentSpan(span, { status: 'completed' });
@@ -3279,7 +3309,7 @@ describe('session-tracing', () => {
           invocationKind: 'foreground',
         });
         const subagentRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.subagent',
+          (s) => s.name === 'canopy-code.subagent',
         )!;
 
         await runInSubagentSpanContext(subagentSpan, async () => {
@@ -3287,7 +3317,7 @@ describe('session-tracing', () => {
         });
 
         const llmRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.llm_request',
+          (s) => s.name === 'canopy-code.llm_request',
         );
         expect(llmRecord).toBeDefined();
         // mock trace.setSpan stamps __parentSpan onto the context object.
@@ -3319,14 +3349,14 @@ describe('session-tracing', () => {
           invocationKind: 'foreground',
         });
         const subagentRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.subagent',
+          (s) => s.name === 'canopy-code.subagent',
         )!;
 
         await runInSubagentSpanContext(subagentSpan, async () => {
           startToolSpan('read_file');
         });
 
-        const toolRecord = mockSpans.find((s) => s.name === 'qwen-code.tool');
+        const toolRecord = mockSpans.find((s) => s.name === 'canopy-code.tool');
         expect(toolRecord).toBeDefined();
         const parentSpan = (
           toolRecord!.parentContext as { __parentSpan?: unknown } | undefined
@@ -3353,7 +3383,7 @@ describe('session-tracing', () => {
           invocationKind: 'foreground',
         });
         const subagentRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.subagent',
+          (s) => s.name === 'canopy-code.subagent',
         )!;
 
         await runInSubagentSpanContext(subagentSpan, async () => {
@@ -3363,7 +3393,7 @@ describe('session-tracing', () => {
           });
         });
 
-        const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+        const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
         expect(hookRecord).toBeDefined();
         const parentSpan = (
           hookRecord!.parentContext as { __parentSpan?: unknown } | undefined
@@ -3390,7 +3420,7 @@ describe('session-tracing', () => {
         // Simulate the outer AGENT tool context active.
         const agentToolSpan = startToolSpan('agent');
         const agentToolRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.tool',
+          (s) => s.name === 'canopy-code.tool',
         )!;
         // Open a subagent span as if a bg invocation will eventually
         // wrap its body. Note we do NOT call runInSubagentSpanContext —
@@ -3410,7 +3440,7 @@ describe('session-tracing', () => {
           });
         });
 
-        const hookRecord = mockSpans.find((s) => s.name === 'qwen-code.hook');
+        const hookRecord = mockSpans.find((s) => s.name === 'canopy-code.hook');
         expect(hookRecord).toBeDefined();
         const parentSpan = (
           hookRecord!.parentContext as { __parentSpan?: unknown } | undefined
@@ -3445,8 +3475,8 @@ describe('session-tracing', () => {
         });
         const innerRecord = mockSpans.find(
           (s) =>
-            s.name === 'qwen-code.subagent' &&
-            s.attributes['qwen-code.subagent.id'] === 'inner',
+            s.name === 'canopy-code.subagent' &&
+            s.attributes['canopy-code.subagent.id'] === 'inner',
         )!;
 
         await runInSubagentSpanContext(outerSubagent, async () => {
@@ -3456,7 +3486,7 @@ describe('session-tracing', () => {
         });
 
         const llmRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.llm_request',
+          (s) => s.name === 'canopy-code.llm_request',
         );
         const parentSpan = (
           llmRecord!.parentContext as { __parentSpan?: unknown } | undefined
@@ -3475,7 +3505,7 @@ describe('session-tracing', () => {
           model: 'test-model',
         });
         const interactionRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.interaction',
+          (s) => s.name === 'canopy-code.interaction',
         )!;
         const subagentSpan = startSubagentSpan({
           ...baseOpts,
@@ -3487,7 +3517,7 @@ describe('session-tracing', () => {
         startLLMRequestSpan('qwen3-coder-plus', 'prompt-1');
 
         const llmRecord = mockSpans.find(
-          (s) => s.name === 'qwen-code.llm_request',
+          (s) => s.name === 'canopy-code.llm_request',
         );
         const parentSpan = (
           llmRecord!.parentContext as { __parentSpan?: unknown } | undefined

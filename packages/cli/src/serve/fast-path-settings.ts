@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import {
   reportRejectedLoaderKeys,
 } from '../config/shared-env-keys.js';
 import {
-  getGlobalQwenDirLite,
+  getGlobalCanopyDirLite,
   getSystemDefaultsPath,
   getSystemSettingsPath,
   SETTINGS_DIRECTORY_NAME,
@@ -55,17 +55,17 @@ let cachedTrustedFolderRules: CachedTrustRule[] | undefined;
 
 function getTrustedFoldersPathFastPath(): string {
   return (
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] ??
-    path.join(getGlobalQwenDirLite(), 'trustedFolders.json')
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] ??
+    path.join(getGlobalCanopyDirLite(), 'trustedFolders.json')
   );
 }
 
 function getUserLevelEnvPathsFastPath(): Set<string> {
   const homeDir = os.homedir();
-  const globalQwenDir = getGlobalQwenDirLite();
+  const globalCanopyDir = getGlobalCanopyDirLite();
   return new Set([
     path.normalize(path.join(homeDir, '.env')),
-    path.normalize(path.join(globalQwenDir, '.env')),
+    path.normalize(path.join(globalCanopyDir, '.env')),
     path.normalize(path.join(homeDir, SETTINGS_DIRECTORY_NAME, '.env')),
   ]);
 }
@@ -78,17 +78,17 @@ export function preResolveServeFastPathHomeEnvOverrides(): void {
     return;
   }
 
-  const initialQwenHome = process.env['QWEN_HOME'];
-  const initialQwenDir = getGlobalQwenDirLite();
-  readHomeEnvIntoFastPath(path.join(initialQwenDir, '.env'));
-  if (!initialQwenHome) {
-    readHomeEnvIntoFastPath(path.join(path.dirname(initialQwenDir), '.env'));
+  const initialCanopyHome = process.env['QWEN_HOME'];
+  const initialCanopyDir = getGlobalCanopyDirLite();
+  readHomeEnvIntoFastPath(path.join(initialCanopyDir, '.env'));
+  if (!initialCanopyHome) {
+    readHomeEnvIntoFastPath(path.join(path.dirname(initialCanopyDir), '.env'));
   }
 
-  const discoveredQwenHome = process.env['QWEN_HOME'];
-  if (discoveredQwenHome && discoveredQwenHome !== initialQwenHome) {
-    const discoveredDir = getGlobalQwenDirLite();
-    if (discoveredDir !== initialQwenDir) {
+  const discoveredCanopyHome = process.env['QWEN_HOME'];
+  if (discoveredCanopyHome && discoveredCanopyHome !== initialCanopyHome) {
+    const discoveredDir = getGlobalCanopyDirLite();
+    if (discoveredDir !== initialCanopyDir) {
       readHomeEnvIntoFastPath(path.join(discoveredDir, '.env'));
     }
   }
@@ -116,10 +116,10 @@ export function resetServeFastPathHomeEnvBootstrapForTesting(): void {
 }
 
 function getHomeEnvFallbackVarsFastPath(): Record<string, string> {
-  const globalQwenDir = getGlobalQwenDirLite();
-  const candidates = [path.join(globalQwenDir, '.env')];
+  const globalCanopyDir = getGlobalCanopyDirLite();
+  const candidates = [path.join(globalCanopyDir, '.env')];
   if (!process.env['QWEN_HOME']) {
-    candidates.push(path.join(path.dirname(globalQwenDir), '.env'));
+    candidates.push(path.join(path.dirname(globalCanopyDir), '.env'));
   }
 
   const result: Record<string, string> = {};
@@ -151,11 +151,12 @@ function findEnvFilesFastPath(
   } catch {
     // Match loadSettings(): use the resolved path when realpath is unavailable.
   }
-  const globalQwenDir = getGlobalQwenDirLite();
-  const legacyQwenDir = path.normalize(
+  const globalCanopyDir = getGlobalCanopyDirLite();
+  const legacyCanopyDir = path.normalize(
     path.join(homeDir, SETTINGS_DIRECTORY_NAME),
   );
-  const hasCustomConfigDir = path.normalize(globalQwenDir) !== legacyQwenDir;
+  const hasCustomConfigDir =
+    path.normalize(globalCanopyDir) !== legacyCanopyDir;
   const found: string[] = [];
   const seen = new Set<string>();
 
@@ -185,9 +186,9 @@ function findEnvFilesFastPath(
   };
 
   const pushHomeCandidates = (): void => {
-    const candidates = [path.join(globalQwenDir, '.env')];
+    const candidates = [path.join(globalCanopyDir, '.env')];
     if (hasCustomConfigDir) {
-      candidates.push(path.join(legacyQwenDir, '.env'));
+      candidates.push(path.join(legacyCanopyDir, '.env'));
     }
     candidates.push(path.join(homeDir, '.env'));
     for (const candidate of candidates) {
@@ -203,12 +204,12 @@ function findEnvFilesFastPath(
       pushHomeCandidates();
       return found;
     } else {
-      const qwenEnvPath = path.join(
+      const canopyEnvPath = path.join(
         currentDir,
         SETTINGS_DIRECTORY_NAME,
         '.env',
       );
-      if (pushCandidate(qwenEnvPath)) {
+      if (pushCandidate(canopyEnvPath)) {
         pushHomeCandidates();
         return found;
       }
@@ -245,7 +246,7 @@ function setUpCloudShellEnvironmentFromFilesFastPath(
 }
 
 // Loader-affecting keys must never enter process.env here: this fast path
-// runs before runQwenServeImpl freezes daemonRuntimeBaseEnv, so anything it
+// runs before runCanopyServeImpl freezes daemonRuntimeBaseEnv, so anything it
 // writes is baked into the base env distributed to every workspace's session
 // subprocesses — the exact #8653 vector the daemon-side scrub closes.
 // Rejected keys are stashed for the daemon to persist via
@@ -275,7 +276,7 @@ export function loadServeFastPathEnvironment(
         settings.advanced?.excludedEnvVars ?? DEFAULT_EXCLUDED_ENV_VARS;
       const normalizedEnvFilePath = path.normalize(envFilePath);
       const isHomeScopedEnvFile = userLevelPaths.has(normalizedEnvFilePath);
-      const isQwenScopedEnvFile =
+      const isCanopyScopedEnvFile =
         isHomeScopedEnvFile ||
         path.basename(path.dirname(normalizedEnvFilePath)) ===
           SETTINGS_DIRECTORY_NAME;
@@ -286,7 +287,7 @@ export function loadServeFastPathEnvironment(
         if (!isHomeScopedEnvFile && isHardcodedProjectEnvExclusion(key)) {
           continue;
         }
-        if (!isQwenScopedEnvFile && excludedVars.includes(key)) {
+        if (!isCanopyScopedEnvFile && excludedVars.includes(key)) {
           continue;
         }
         if (!Object.hasOwn(process.env, key)) {
@@ -710,7 +711,7 @@ export function loadServeFastPathSettings(
   const system = readSettingsSummary(getSystemSettingsPath());
   const systemDefaults = readSettingsSummary(getSystemDefaultsPath());
   const user = readSettingsSummary(
-    path.join(getGlobalQwenDirLite(), 'settings.json'),
+    path.join(getGlobalCanopyDirLite(), 'settings.json'),
   );
   const initialTrustCheckSettings = mergeFastPathSettings(system, user);
   const isTrusted =

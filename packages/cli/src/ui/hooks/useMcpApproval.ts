@@ -9,8 +9,8 @@ import type {
   Config,
   MCPServerConfig,
   McpServerScope,
-} from '@qwen-code/qwen-code-core';
-import { ApprovalMode, isGatedMcpScope } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { ApprovalMode, isGatedMcpScope } from '@canopy-code/canopy-code-core';
 import { loadMcpApprovals } from '../../config/mcpApprovals.js';
 import { McpApprovalChoice } from '../components/mcp/MCPServerApprovalDialog.js';
 import { appEvents, AppEvent } from '../../utils/events.js';
@@ -28,7 +28,7 @@ export interface PendingMcpServer {
 function sourceLabel(scope: McpServerScope | undefined): string {
   switch (scope) {
     case 'workspace':
-      return '.qwen/settings.json';
+      return '.canopy/settings.json';
     case 'project':
     default:
       return '.mcp.json';
@@ -63,7 +63,7 @@ function summarize(config: MCPServerConfig): string {
 
 /**
  * Drives the interactive startup approval dialog for gated MCP servers — project
- * `.mcp.json` and workspace `.qwen/settings.json` (issue #4615). On mount it
+ * `.mcp.json` and workspace `.canopy/settings.json` (issue #4615). On mount it
  * computes the queue of `pending` gated servers; the dialog asks about them one
  * at a time. Approving persists the decision (bound to the config hash), un-gates
  * the server for this session, and re-runs discovery so it connects; rejecting

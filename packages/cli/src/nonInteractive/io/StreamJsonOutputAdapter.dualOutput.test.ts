@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { GeminiEventType } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { GeminiEventType } from '@canopy-code/canopy-code-core';
 import { StreamJsonOutputAdapter } from './StreamJsonOutputAdapter.js';
 
 /**

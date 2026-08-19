@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { t } from '../i18n/index.js';
 import {
   findProviderByCredentials,
   resolveMetadataKey,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 /**
  * Field configuration for system information display
@@ -29,7 +29,7 @@ export function getSystemInfoFields(
 ): SystemInfoDisplayField[] {
   const fields: SystemInfoDisplayField[] = [];
 
-  addField(fields, t('Qwen Code'), formatCliVersion(info));
+  addField(fields, t('Canopy Code'), formatCliVersion(info));
   addField(fields, t('Runtime'), formatRuntime(info));
   addField(fields, t('IDE Client'), info.ideClient);
   addField(fields, 'LSP', info.lspStatus ?? '');
@@ -104,9 +104,9 @@ function formatAuth(info: ExtendedSystemInfo): string {
 
   if (
     info.selectedAuthType.startsWith('oauth') ||
-    info.selectedAuthType === 'qwen-oauth'
+    info.selectedAuthType === 'canopy-oauth'
   ) {
-    return 'Qwen OAuth';
+    return 'Canopy OAuth';
   }
 
   return `API Key - ${info.selectedAuthType}`;
@@ -119,7 +119,7 @@ function formatBaseUrl(info: ExtendedSystemInfo): string {
 
   if (
     info.selectedAuthType.startsWith('oauth') ||
-    info.selectedAuthType === 'qwen-oauth'
+    info.selectedAuthType === 'canopy-oauth'
   ) {
     return '';
   }

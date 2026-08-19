@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import type { LspClient } from '@qwen-code/qwen-code-core';
+import type { LspClient } from '@canopy-code/canopy-code-core';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import { MessageType } from '../types.js';
 import { lspCommand } from './lspCommand.js';
@@ -86,7 +86,7 @@ describe('lspCommand', () => {
     expect(result).toMatchObject({
       type: 'message',
       messageType: 'info',
-      content: expect.stringContaining('QWEN_RUNTIME_DIR'),
+      content: expect.stringContaining('CANOPY_RUNTIME_DIR'),
     });
     expect(context.ui.addItem).not.toHaveBeenCalled();
   });

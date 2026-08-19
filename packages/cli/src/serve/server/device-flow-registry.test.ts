@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import { writeStderrLine } from '../../utils/stdioHelpers.js';
 
 vi.mock('../../utils/stdioHelpers.js', () => ({ writeStderrLine: vi.fn() }));
 
-const PROVIDER_ID = 'qwen-oauth' as DeviceFlowProviderId;
+const PROVIDER_ID = 'canopy-oauth' as DeviceFlowProviderId;
 
 // Minimal provider whose `start` resolves synchronously (no real IdP), so the
 // registry emits its `started` event and the event sink fans it out.

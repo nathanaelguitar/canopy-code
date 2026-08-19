@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review capture-local`: capture the working tree's diff — staged,
+// `canopy review capture-local`: capture the working tree's diff — staged,
 // unstaged, and untracked — and partition it into review chunks, in one pass.
 // The local counterpart of `fetch-pr`.
 //
@@ -79,7 +79,7 @@ function runCaptureLocal(args: CaptureLocalArgs): void {
   const diffText = capture.diff.toString('utf8');
 
   // Two directories, and they are not the same one. The diff always lands in
-  // `.qwen/tmp` (its path is ours to choose), but `--out` is the caller's — and
+  // `.canopy/tmp` (its path is ours to choose), but `--out` is the caller's — and
   // `--out reports/plan.json` is a legal request that answering with the temp
   // dir turned into an ENOENT from `writeFileSync`.
   mkdirSync(REVIEW_TMP_DIR, { recursive: true });

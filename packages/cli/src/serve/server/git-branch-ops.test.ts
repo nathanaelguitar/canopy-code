@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,7 +30,7 @@ function git(cwd: string, ...args: string[]): string {
 let repo: string;
 
 beforeEach(() => {
-  repo = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-git-branch-ops-test-'));
+  repo = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-git-branch-ops-test-'));
   git(repo, 'init', '-q', '-b', 'main');
   git(repo, 'config', 'user.email', 'test@example.com');
   git(repo, 'config', 'user.name', 'Test');
@@ -82,7 +82,7 @@ describe('getHeadCommit', () => {
   });
 
   it('returns undefined outside a git repository', async () => {
-    const notARepo = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-not-repo-'));
+    const notARepo = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-not-repo-'));
     try {
       await expect(getHeadCommit(notARepo)).resolves.toBeUndefined();
     } finally {

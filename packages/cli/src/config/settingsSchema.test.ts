@@ -6,10 +6,10 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES,
+  DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES,
   DEFAULT_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH,
   SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   getSettingsSchema,
   MergeStrategy,
@@ -104,7 +104,7 @@ describe('SettingsSchema', () => {
       ).toBeDefined();
       expect(
         getSettingsSchema().context.properties.fileFiltering.properties
-          ?.respectQwenIgnore,
+          ?.respectCanopyIgnore,
       ).toBeDefined();
       expect(
         getSettingsSchema().context.properties.fileFiltering.properties
@@ -117,7 +117,7 @@ describe('SettingsSchema', () => {
       expect(
         getSettingsSchema().context.properties.fileFiltering.properties
           ?.customIgnoreFiles?.default,
-      ).toEqual([...DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES]);
+      ).toEqual([...DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES]);
       expect(
         getSettingsSchema().context.properties.fileFiltering.properties
           ?.customIgnoreFiles?.showInDialog,

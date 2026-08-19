@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,7 @@ import {
   type Mock,
 } from 'vitest';
 import { Config, type ConfigParameters } from '../../config/config.js';
-import { DEFAULT_QWEN_MODEL } from '../../config/models.js';
+import { DEFAULT_CANOPY_MODEL } from '../../config/models.js';
 import {
   createContentGenerator,
   createContentGeneratorConfig,
@@ -63,7 +63,7 @@ vi.mock('../../core/geminiChat.js');
 vi.mock('../../core/contentGenerator.js', async (importOriginal) => {
   const actual =
     await importOriginal<typeof import('../../core/contentGenerator.js')>();
-  const { DEFAULT_QWEN_MODEL } = await import('../../config/models.js');
+  const { DEFAULT_CANOPY_MODEL } = await import('../../config/models.js');
   return {
     ...actual,
     createContentGenerator: vi.fn().mockResolvedValue({
@@ -74,12 +74,12 @@ vi.mock('../../core/contentGenerator.js', async (importOriginal) => {
       useSummarizedThinking: vi.fn().mockReturnValue(false),
     }),
     createContentGeneratorConfig: vi.fn().mockReturnValue({
-      model: DEFAULT_QWEN_MODEL,
+      model: DEFAULT_CANOPY_MODEL,
       authType: actual.AuthType.USE_GEMINI,
     }),
     resolveContentGeneratorConfigWithSources: vi.fn().mockReturnValue({
       config: {
-        model: DEFAULT_QWEN_MODEL,
+        model: DEFAULT_CANOPY_MODEL,
         authType: actual.AuthType.USE_GEMINI,
         apiKey: 'test-api-key',
       },
@@ -143,7 +143,7 @@ async function createMockConfig(
   toolRegistryMocks = {},
 ): Promise<{ config: Config; toolRegistry: ToolRegistry }> {
   const configParams: ConfigParameters = {
-    model: DEFAULT_QWEN_MODEL,
+    model: DEFAULT_CANOPY_MODEL,
     targetDir: '.',
     debugMode: false,
     cwd: process.cwd(),
@@ -172,7 +172,7 @@ async function createMockConfig(
 
   // Mock getContentGeneratorConfig to return a valid config
   vi.spyOn(config, 'getContentGeneratorConfig').mockReturnValue({
-    model: DEFAULT_QWEN_MODEL,
+    model: DEFAULT_CANOPY_MODEL,
     authType: AuthType.USE_GEMINI,
   });
 
@@ -330,12 +330,12 @@ describe('subagent.ts', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       vi.mocked(createContentGeneratorConfig).mockReturnValue({
-        model: DEFAULT_QWEN_MODEL,
+        model: DEFAULT_CANOPY_MODEL,
         authType: undefined,
       });
       vi.mocked(resolveContentGeneratorConfigWithSources).mockReturnValue({
         config: {
-          model: DEFAULT_QWEN_MODEL,
+          model: DEFAULT_CANOPY_MODEL,
           authType: AuthType.USE_GEMINI,
           apiKey: 'test-api-key',
         },
@@ -2033,7 +2033,7 @@ describe('subagent.ts', () => {
         expect(toolCallEvents[0].callId).toBe('call_1');
         expect(toolResultEvents[0].callId).toBe('call_1');
         expect(toolCallEvents[1].callId).toMatch(
-          /^call_1__qwen_dup_2:duplicate:/,
+          /^call_1__canopy_dup_2:duplicate:/,
         );
         expect(toolResultEvents[1].callId).toBe(toolCallEvents[1].callId);
         expect(toolResultEvents[1].error).toContain(
@@ -2042,7 +2042,7 @@ describe('subagent.ts', () => {
 
         const thirdCallArgs = mockSendMessageStream.mock.calls[2][1];
         const parts = thirdCallArgs.message as Part[];
-        expect(parts[0].functionResponse?.id).toBe('call_1__qwen_dup_2');
+        expect(parts[0].functionResponse?.id).toBe('call_1__canopy_dup_2');
         expect(parts[0].functionResponse?.response?.['error']).toContain(
           'Duplicate provider tool call id "call_1"',
         );
@@ -2151,7 +2151,7 @@ describe('subagent.ts', () => {
 
         const thirdCallArgs = mockSendMessageStream.mock.calls[2][1];
         const parts = thirdCallArgs.message as Part[];
-        expect(parts[0].functionResponse?.id).toBe('call_1__qwen_dup_2');
+        expect(parts[0].functionResponse?.id).toBe('call_1__canopy_dup_2');
         expect(parts[0].functionResponse?.response?.['error']).toContain(
           'Duplicate provider tool call id "call_1"',
         );
@@ -2316,7 +2316,7 @@ describe('subagent.ts', () => {
         expect(toolCallEvents).toHaveLength(1);
         expect(toolResultEvents).toHaveLength(1);
         expect(toolCallEvents[0].callId).toMatch(
-          /^call_1__qwen_dup_2:duplicate:/,
+          /^call_1__canopy_dup_2:duplicate:/,
         );
         expect(toolResultEvents[0].callId).toBe(toolCallEvents[0].callId);
         expect(toolResultEvents[0].error).toContain(
@@ -2325,7 +2325,7 @@ describe('subagent.ts', () => {
 
         const secondCallArgs = mockSendMessageStream.mock.calls[1][1];
         const parts = secondCallArgs.message as Part[];
-        expect(parts[0].functionResponse?.id).toBe('call_1__qwen_dup_2');
+        expect(parts[0].functionResponse?.id).toBe('call_1__canopy_dup_2');
         expect(parts[0].functionResponse?.response?.['error']).toContain(
           'Duplicate provider tool call id "call_1"',
         );

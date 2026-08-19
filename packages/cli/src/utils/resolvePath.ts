@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { expandHomeDir } from '@qwen-code/qwen-code-core';
+import { expandHomeDir } from '@canopy-code/canopy-code-core';
 
 export function resolvePath(p: string): string {
   return expandHomeDir(p);

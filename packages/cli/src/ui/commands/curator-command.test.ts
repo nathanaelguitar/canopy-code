@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,8 +17,8 @@ const mocks = vi.hoisted(() => ({
   isTrustedFolder: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   getAutoSkillCuratorStatus: mocks.getStatus,
   runAutoSkillCurator: mocks.run,
   restoreArchivedAutoSkill: mocks.restore,

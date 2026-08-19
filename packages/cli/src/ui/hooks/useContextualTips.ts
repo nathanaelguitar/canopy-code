@@ -14,7 +14,7 @@ import {
   type Config,
   DEFAULT_TOKEN_LIMIT,
   computeThresholds,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   StreamingState,
   MessageType,

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { hashDaemonWorkspace, Storage } from '@qwen-code/qwen-code-core';
+import { hashDaemonWorkspace, Storage } from '@canopy-code/canopy-code-core';
 import type {
   SessionRouter,
   ChannelAgentBridge,
@@ -29,7 +29,7 @@ export interface ParsedChannel {
 }
 
 export function sessionsPath(): string {
-  return path.join(Storage.getGlobalQwenDir(), 'channels', 'sessions.json');
+  return path.join(Storage.getGlobalCanopyDir(), 'channels', 'sessions.json');
 }
 
 function daemonChannelStatePath(
@@ -37,7 +37,7 @@ function daemonChannelStatePath(
   fileName: string,
 ): string {
   return path.join(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     'channels',
     'daemon',
     hashDaemonWorkspace(workspaceCwd),
@@ -74,7 +74,7 @@ export function daemonChannelStateDir(
 }
 
 export function channelLoopPath(): string {
-  return path.join(Storage.getGlobalQwenDir(), 'channels', 'cron.json');
+  return path.join(Storage.getGlobalCanopyDir(), 'channels', 'cron.json');
 }
 
 export function loadChannelsConfig(
@@ -96,7 +96,7 @@ export function resolveExtensionChannelEntrySpecifier(
 
 /**
  * Load channel plugins from active extensions.
- * Extensions declare channels in their qwen-extension.json manifest.
+ * Extensions declare channels in their canopy-extension.json manifest.
  */
 export async function loadChannelsFromExtensions(): Promise<number> {
   let loaded = 0;

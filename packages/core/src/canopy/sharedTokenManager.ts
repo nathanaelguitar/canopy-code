@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,27 +8,27 @@ import path from 'node:path';
 import { promises as fs, unlinkSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
-import type { IQwenOAuth2Client } from './qwenOAuth2.js';
+import type { ICanopyOAuth2Client } from './canopy-oauth2.js';
 import {
-  type QwenCredentials,
+  type CanopyCredentials,
   type TokenRefreshData,
   type ErrorData,
   isErrorResponse,
   CredentialsClearRequiredError,
-} from './qwenOAuth2.js';
+} from './canopy-oauth2.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 import { atomicWriteFile } from '../utils/atomicFileWrite.js';
 import { Storage } from '../config/storage.js';
 
-const debugLogger = createDebugLogger('QWEN_OAUTH');
+const debugLogger = createDebugLogger('CANOPY_OAUTH');
 
 // File System Configuration
-const QWEN_CREDENTIAL_FILENAME = 'oauth_creds.json';
-const QWEN_LOCK_FILENAME = 'oauth_creds.lock';
+const CANOPY_CREDENTIAL_FILENAME = 'oauth_creds.json';
+const CANOPY_LOCK_FILENAME = 'oauth_creds.lock';
 
 // Token and Cache Configuration
 const TOKEN_REFRESH_BUFFER_MS = 30 * 1000; // 30 seconds
-// Must exceed QWEN_OAUTH_REFRESH_TIMEOUT_MS so an in-flight refresh keeps its lock.
+// Must exceed CANOPY_OAUTH_REFRESH_TIMEOUT_MS so an in-flight refresh keeps its lock.
 const LOCK_TIMEOUT_MS = 35_000;
 const CACHE_CHECK_INTERVAL_MS = 5000; // 5 seconds cache check interval (increased from 1 second)
 
@@ -75,24 +75,24 @@ export class TokenManagerError extends Error {
  * Interface for the memory cache state
  */
 interface MemoryCache {
-  credentials: QwenCredentials | null;
+  credentials: CanopyCredentials | null;
   fileModTime: number;
   lastCheck: number;
 }
 
 /**
- * Validates that the given data is a valid QwenCredentials object
+ * Validates that the given data is a valid CanopyCredentials object
  *
  * @param data - The data to validate
  * @returns The validated credentials object
  * @throws Error if the data is invalid
  */
-function validateCredentials(data: unknown): QwenCredentials {
+function validateCredentials(data: unknown): CanopyCredentials {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid credentials format');
   }
 
-  const creds = data as Partial<QwenCredentials>;
+  const creds = data as Partial<CanopyCredentials>;
   const requiredFields = [
     'access_token',
     'refresh_token',
@@ -111,7 +111,7 @@ function validateCredentials(data: unknown): QwenCredentials {
     throw new Error('Invalid credentials: missing expiry_date');
   }
 
-  return creds as QwenCredentials;
+  return creds as CanopyCredentials;
 }
 
 /**
@@ -132,7 +132,7 @@ export class SharedTokenManager {
   /**
    * Promise tracking any ongoing token refresh operation
    */
-  private refreshPromise: Promise<QwenCredentials> | null = null;
+  private refreshPromise: Promise<CanopyCredentials> | null = null;
 
   /**
    * Promise tracking any ongoing file check operation to prevent concurrent checks
@@ -202,18 +202,18 @@ export class SharedTokenManager {
   /**
    * Get valid OAuth credentials, refreshing them if necessary
    *
-   * @param qwenClient - The OAuth2 client instance
+   * @param canopyClient - The OAuth2 client instance
    * @param forceRefresh - If true, refresh token even if current one is still valid
    * @returns Promise resolving to valid credentials
    * @throws TokenManagerError if unable to obtain valid credentials
    */
   async getValidCredentials(
-    qwenClient: IQwenOAuth2Client,
+    canopyClient: ICanopyOAuth2Client,
     forceRefresh = false,
-  ): Promise<QwenCredentials> {
+  ): Promise<CanopyCredentials> {
     try {
       // Check if credentials file has been updated by other sessions
-      await this.checkAndReloadIfNeeded(qwenClient);
+      await this.checkAndReloadIfNeeded(canopyClient);
 
       // Return valid cached credentials if available (unless force refresh is requested)
       if (
@@ -230,7 +230,7 @@ export class SharedTokenManager {
       if (!currentRefreshPromise) {
         // Start new refresh operation with distributed locking
         currentRefreshPromise = this.performTokenRefresh(
-          qwenClient,
+          canopyClient,
           forceRefresh,
         );
         this.refreshPromise = currentRefreshPromise;
@@ -264,7 +264,7 @@ export class SharedTokenManager {
    * Uses promise-based locking to prevent concurrent file checks
    */
   private async checkAndReloadIfNeeded(
-    qwenClient?: IQwenOAuth2Client,
+    canopyClient?: ICanopyOAuth2Client,
   ): Promise<void> {
     // If there's already an ongoing check, wait for it to complete
     if (this.checkPromise) {
@@ -285,7 +285,7 @@ export class SharedTokenManager {
     }
 
     // Start the check operation and store the promise
-    this.checkPromise = this.performFileCheck(qwenClient, now);
+    this.checkPromise = this.performFileCheck(canopyClient, now);
 
     try {
       await this.checkPromise;
@@ -329,7 +329,7 @@ export class SharedTokenManager {
    * This is separated to enable proper promise-based synchronization
    */
   private async performFileCheck(
-    qwenClient: IQwenOAuth2Client | undefined,
+    canopyClient: ICanopyOAuth2Client | undefined,
     checkTime: number,
   ): Promise<void> {
     // Update lastCheck atomically at the start to prevent other calls from proceeding
@@ -347,7 +347,7 @@ export class SharedTokenManager {
 
       // Reload credentials if file has been modified since last cache
       if (fileModTime > this.memoryCache.fileModTime) {
-        await this.reloadCredentialsFromFile(qwenClient);
+        await this.reloadCredentialsFromFile(canopyClient);
         // Update fileModTime only after successful reload
         this.memoryCache.fileModTime = fileModTime;
       }
@@ -377,7 +377,9 @@ export class SharedTokenManager {
   /**
    * Force a file check without time-based throttling (used during refresh operations)
    */
-  private async forceFileCheck(qwenClient?: IQwenOAuth2Client): Promise<void> {
+  private async forceFileCheck(
+    canopyClient?: ICanopyOAuth2Client,
+  ): Promise<void> {
     try {
       const filePath = this.getCredentialFilePath();
       const stats = await fs.stat(filePath);
@@ -385,7 +387,7 @@ export class SharedTokenManager {
 
       // Reload credentials if file has been modified since last cache
       if (fileModTime > this.memoryCache.fileModTime) {
-        await this.reloadCredentialsFromFile(qwenClient);
+        await this.reloadCredentialsFromFile(canopyClient);
         // Update cache state atomically
         this.memoryCache.fileModTime = fileModTime;
         this.memoryCache.lastCheck = Date.now();
@@ -413,10 +415,10 @@ export class SharedTokenManager {
   }
 
   /**
-   * Load credentials from the file system into memory cache and sync with qwenClient
+   * Load credentials from the file system into memory cache and sync with canopyClient
    */
   private async reloadCredentialsFromFile(
-    qwenClient?: IQwenOAuth2Client,
+    canopyClient?: ICanopyOAuth2Client,
   ): Promise<void> {
     try {
       const filePath = this.getCredentialFilePath();
@@ -430,10 +432,10 @@ export class SharedTokenManager {
       // Update memory cache first
       this.memoryCache.credentials = credentials;
 
-      // Sync with qwenClient atomically - rollback on failure
+      // Sync with canopyClient atomically - rollback on failure
       try {
-        if (qwenClient) {
-          qwenClient.setCredentials(credentials);
+        if (canopyClient) {
+          canopyClient.setCredentials(credentials);
         }
       } catch (clientError) {
         // Rollback memory cache on client sync failure
@@ -458,22 +460,22 @@ export class SharedTokenManager {
   /**
    * Refresh the OAuth token using file locking to prevent concurrent refreshes
    *
-   * @param qwenClient - The OAuth2 client instance
+   * @param canopyClient - The OAuth2 client instance
    * @param forceRefresh - If true, skip checking if token is already valid after getting lock
    * @returns Promise resolving to refreshed credentials
    * @throws TokenManagerError if refresh fails or lock cannot be acquired
    */
   private async performTokenRefresh(
-    qwenClient: IQwenOAuth2Client,
+    canopyClient: ICanopyOAuth2Client,
     forceRefresh = false,
-  ): Promise<QwenCredentials> {
+  ): Promise<CanopyCredentials> {
     const startTime = Date.now();
     const lockPath = this.getLockFilePath();
     let lockAcquired = false;
 
     try {
       // Check if we have a refresh token before attempting refresh
-      const currentCredentials = qwenClient.getCredentials();
+      const currentCredentials = canopyClient.getCredentials();
       if (!currentCredentials.refresh_token) {
         throw new TokenManagerError(
           TokenError.NO_REFRESH_TOKEN,
@@ -496,7 +498,7 @@ export class SharedTokenManager {
 
       // Double-check if another process already refreshed the token (unless force refresh is requested)
       // Skip the time-based throttling since we're already in a locked refresh operation
-      await this.forceFileCheck(qwenClient);
+      await this.forceFileCheck(canopyClient);
 
       // Use refreshed credentials if they're now valid (unless force refresh is requested)
       if (
@@ -504,12 +506,12 @@ export class SharedTokenManager {
         this.memoryCache.credentials &&
         this.isTokenValid(this.memoryCache.credentials)
       ) {
-        // No need to call qwenClient.setCredentials here as checkAndReloadIfNeeded already did it
+        // No need to call canopyClient.setCredentials here as checkAndReloadIfNeeded already did it
         return this.memoryCache.credentials;
       }
 
       // Perform the actual token refresh
-      const response = await qwenClient.refreshAccessToken();
+      const response = await canopyClient.refreshAccessToken();
 
       // Check if the token refresh is taking too long
       const totalOperationTime = Date.now() - startTime;
@@ -538,7 +540,7 @@ export class SharedTokenManager {
       }
 
       // Create updated credentials object
-      const credentials: QwenCredentials = {
+      const credentials: CanopyCredentials = {
         access_token: tokenData.access_token,
         token_type: tokenData.token_type,
         refresh_token:
@@ -549,7 +551,7 @@ export class SharedTokenManager {
 
       // Update memory cache and client credentials atomically
       this.memoryCache.credentials = credentials;
-      qwenClient.setCredentials(credentials);
+      canopyClient.setCredentials(credentials);
 
       // Persist to file and update modification time
       await this.saveCredentialsToFile(credentials);
@@ -611,7 +613,7 @@ export class SharedTokenManager {
    * @param credentials - The credentials to save
    */
   private async saveCredentialsToFile(
-    credentials: QwenCredentials,
+    credentials: CanopyCredentials,
   ): Promise<void> {
     const filePath = this.getCredentialFilePath();
     const dirPath = path.dirname(filePath);
@@ -667,7 +669,7 @@ export class SharedTokenManager {
    * @param credentials - The credentials to validate
    * @returns true if token is valid and not expired, false otherwise
    */
-  private isTokenValid(credentials: QwenCredentials): boolean {
+  private isTokenValid(credentials: CanopyCredentials): boolean {
     if (!credentials.expiry_date || !credentials.access_token) {
       return false;
     }
@@ -680,7 +682,7 @@ export class SharedTokenManager {
    * @returns The absolute path to the credentials file
    */
   private getCredentialFilePath(): string {
-    return path.join(Storage.getGlobalQwenDir(), QWEN_CREDENTIAL_FILENAME);
+    return path.join(Storage.getGlobalCanopyDir(), CANOPY_CREDENTIAL_FILENAME);
   }
 
   /**
@@ -689,7 +691,7 @@ export class SharedTokenManager {
    * @returns The absolute path to the lock file
    */
   private getLockFilePath(): string {
-    return path.join(Storage.getGlobalQwenDir(), QWEN_LOCK_FILENAME);
+    return path.join(Storage.getGlobalCanopyDir(), CANOPY_LOCK_FILENAME);
   }
 
   /**
@@ -790,7 +792,7 @@ export class SharedTokenManager {
    * @param lastCheck - Last check timestamp (optional, defaults to current time)
    */
   private updateCacheState(
-    credentials: QwenCredentials | null,
+    credentials: CanopyCredentials | null,
     fileModTime: number,
     lastCheck?: number,
   ): void {
@@ -815,7 +817,7 @@ export class SharedTokenManager {
    *
    * @returns The currently cached credentials or null
    */
-  getCurrentCredentials(): QwenCredentials | null {
+  getCurrentCredentials(): CanopyCredentials | null {
     return this.memoryCache.credentials;
   }
 

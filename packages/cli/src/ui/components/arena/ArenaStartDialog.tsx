@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import type React from 'react';
 import { useMemo, useState } from 'react';
 import { Box, Text } from 'ink';
 import Link from 'ink-link';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import { useConfig } from '../../contexts/ConfigContext.js';
 import { theme } from '../../semantic-colors.js';
 import { useKeypress } from '../../hooks/useKeypress.js';
@@ -39,16 +39,16 @@ export function ArenaStartDialog({
 
     return selectableModels.map((model) => {
       const token = `${model.authType}:${model.id}`;
-      const isQwenOauth = model.authType === AuthType.QWEN_OAUTH;
+      const isCanopyOauth = model.authType === AuthType.CANOPY_OAUTH;
       return {
         key: token,
         value: token,
         label: `[${model.authType}] ${model.label}`,
-        disabled: isQwenOauth,
+        disabled: isCanopyOauth,
       };
     });
   }, [config]);
-  const hasDisabledQwenOauth = modelItems.some((item) => item.disabled);
+  const hasDisabledCanopyOauth = modelItems.some((item) => item.disabled);
   const selectableModelCount = modelItems.filter(
     (item) => !item.disabled,
   ).length;
@@ -114,11 +114,11 @@ export function ArenaStartDialog({
         </Box>
       )}
 
-      {(hasDisabledQwenOauth || needsMoreModels) && (
+      {(hasDisabledCanopyOauth || needsMoreModels) && (
         <Box marginTop={1} flexDirection="column">
-          {hasDisabledQwenOauth && (
+          {hasDisabledCanopyOauth && (
             <Text color={theme.status.warning}>
-              {t('Note: qwen-oauth models are not supported in Arena.')}
+              {t('Note: canopy-oauth models are not supported in Arena.')}
             </Text>
           )}
           {needsMoreModels && (

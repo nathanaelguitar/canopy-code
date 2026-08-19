@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Code
+ * Copyright 2026 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   IdeClient,
   initializeTelemetry,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import { preconnectApi } from '../utils/apiPreconnect.js';
 import { AppEvent, appEvents } from '../utils/events.js';
@@ -194,7 +194,7 @@ export function startPostRenderPrefetches(
           if (hostUpdateRelaunch === 'false') {
             updateEventEmitter.emit('update-info', {
               message: `${result.info.message}\n${t(
-                'Update Qwen Code on the host, then restart the sandbox.',
+                'Update Canopy Code on the host, then restart the sandbox.',
               )}`,
             });
             return;

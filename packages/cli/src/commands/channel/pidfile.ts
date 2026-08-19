@@ -11,7 +11,7 @@ import {
   writeSync,
 } from 'node:fs';
 import * as path from 'node:path';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 
 export interface ServiceInfoWorker {
   workspaceId?: string;
@@ -28,7 +28,7 @@ export interface ServiceInfo {
   servePid?: number;
   workerPid?: number;
   /**
-   * Per-workspace channel workers for a multi-workspace `qwen serve`. Additive
+   * Per-workspace channel workers for a multi-workspace `canopy serve`. Additive
    * to the single-worker `channels` / `workerPid` fields, which stay populated
    * (union of channels; primary worker pid) for older readers.
    */
@@ -36,7 +36,7 @@ export interface ServiceInfo {
 }
 
 function pidFilePath(): string {
-  return path.join(Storage.getGlobalQwenDir(), 'channels', 'service.pid');
+  return path.join(Storage.getGlobalCanopyDir(), 'channels', 'service.pid');
 }
 
 function isValidPid(pid: unknown): pid is number {

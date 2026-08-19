@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -109,39 +109,39 @@ describe('Daemon Metrics', () => {
       initializeDaemonMetrics();
 
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.http.request.count',
+        'canopy-code.daemon.http.request.count',
         expect.objectContaining({ description: expect.any(String) }),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.http.request.duration',
+        'canopy-code.daemon.http.request.duration',
         expect.objectContaining({ unit: 'ms' }),
       );
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.session.lifecycle',
+        'canopy-code.daemon.session.lifecycle',
         expect.any(Object),
       );
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.channel.lifecycle',
+        'canopy-code.daemon.channel.lifecycle',
         expect.any(Object),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.prompt.queue_wait',
+        'canopy-code.daemon.prompt.queue_wait',
         expect.objectContaining({ unit: 'ms' }),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.prompt.duration',
+        'canopy-code.daemon.prompt.duration',
         expect.objectContaining({ unit: 'ms' }),
       );
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.bridge.error.count',
+        'canopy-code.daemon.bridge.error.count',
         expect.any(Object),
       );
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.cancel.count',
+        'canopy-code.daemon.cancel.count',
         expect.any(Object),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.pipe.message_bytes',
+        'canopy-code.daemon.pipe.message_bytes',
         expect.objectContaining({ unit: 'By' }),
       );
     });
@@ -333,15 +333,15 @@ describe('Daemon Metrics', () => {
 
       expect(mockCreateObservableGaugeFn).toHaveBeenCalledTimes(3);
       expect(mockCreateObservableGaugeFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.session.active',
+        'canopy-code.daemon.session.active',
         expect.any(Object),
       );
       expect(mockCreateObservableGaugeFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.sse.active',
+        'canopy-code.daemon.sse.active',
         expect.any(Object),
       );
       expect(mockCreateObservableGaugeFn).toHaveBeenCalledWith(
-        'qwen-code.daemon.process.heap_used',
+        'canopy-code.daemon.process.heap_used',
         expect.objectContaining({ unit: 'bytes' }),
       );
     });

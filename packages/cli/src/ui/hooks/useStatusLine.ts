@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { exec, type ChildProcess } from 'child_process';
 import wrapAnsi from 'wrap-ansi';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { SettingScope } from '../../config/settings.js';
 import { useSettings } from '../contexts/SettingsContext.js';
 import { useUIState } from '../contexts/UIStateContext.js';

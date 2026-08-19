@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -148,10 +148,10 @@ describe('buildClassifierSystemPrompt', () => {
 
     const prompt = buildClassifierSystemPrompt(makeConfig({}));
     expect(prompt).toContain('Self-modification');
-    expect(prompt).toContain('.qwen/settings');
-    expect(prompt).toContain('QWEN.local.md');
-    expect(prompt).toContain('.qwen/rules/');
-    expect(prompt).toContain('.qwen/fork-profiles/');
+    expect(prompt).toContain('.canopy/settings');
+    expect(prompt).toContain('CANOPY.local.md');
+    expect(prompt).toContain('.canopy/rules/');
+    expect(prompt).toContain('.canopy/fork-profiles/');
     expect(prompt).toContain('.mcp.json');
     // Keep wildcard allow-rule widening in the protected self-edit category.
     expect(prompt).toContain('adding or widening permission allow rules');

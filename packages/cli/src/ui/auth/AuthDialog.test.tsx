@@ -8,8 +8,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AuthDialog } from './AuthDialog.js';
 import { LoadedSettings } from '../../config/settings.js';
 import type { Settings } from '../../config/settingsSchema.js';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import { renderWithProviders } from '../../test-utils/render.js';
 import { UIStateContext } from '../contexts/UIStateContext.js';
 import { UIActionsContext } from '../contexts/UIActionsContext.js';
@@ -28,7 +28,7 @@ const createMockUIState = (overrides: UIStateOverrides = {}): UIState => {
       isAuthenticating: false,
       pendingAuthType: undefined,
       externalAuthState: null,
-      qwenAuthState: {
+      canopyAuthState: {
         deviceAuth: null,
         authStatus: 'idle',
         authMessage: null,
@@ -246,7 +246,7 @@ describe('AuthDialog', { timeout: 15000 }, () => {
   beforeEach(() => {
     originalEnv = { ...process.env };
     process.env['GEMINI_API_KEY'] = '';
-    process.env['QWEN_DEFAULT_AUTH_TYPE'] = '';
+    process.env['CANOPY_DEFAULT_AUTH_TYPE'] = '';
     vi.clearAllMocks();
   });
 
@@ -350,9 +350,9 @@ describe('AuthDialog', { timeout: 15000 }, () => {
       expect(lastFrame()).toContain('Third-party Providers');
     });
 
-    it('should not show the GEMINI_API_KEY message if QWEN_DEFAULT_AUTH_TYPE is set to something else', () => {
+    it('should not show the GEMINI_API_KEY message if CANOPY_DEFAULT_AUTH_TYPE is set to something else', () => {
       process.env['GEMINI_API_KEY'] = 'foobar';
-      process.env['QWEN_DEFAULT_AUTH_TYPE'] = AuthType.USE_OPENAI;
+      process.env['CANOPY_DEFAULT_AUTH_TYPE'] = AuthType.USE_OPENAI;
 
       const settings: LoadedSettings = new LoadedSettings(
         {
@@ -394,9 +394,9 @@ describe('AuthDialog', { timeout: 15000 }, () => {
       );
     });
 
-    it('should show the GEMINI_API_KEY message if QWEN_DEFAULT_AUTH_TYPE is set to use api key', () => {
+    it('should show the GEMINI_API_KEY message if CANOPY_DEFAULT_AUTH_TYPE is set to use api key', () => {
       process.env['GEMINI_API_KEY'] = 'foobar';
-      process.env['QWEN_DEFAULT_AUTH_TYPE'] = AuthType.USE_OPENAI;
+      process.env['CANOPY_DEFAULT_AUTH_TYPE'] = AuthType.USE_OPENAI;
 
       const settings: LoadedSettings = new LoadedSettings(
         {
@@ -439,11 +439,11 @@ describe('AuthDialog', { timeout: 15000 }, () => {
     });
   });
 
-  describe('QWEN_DEFAULT_AUTH_TYPE environment variable', () => {
-    it('should select the auth type specified by QWEN_DEFAULT_AUTH_TYPE', () => {
-      // QWEN_OAUTH is the only valid AuthType that can be selected via env var
+  describe('CANOPY_DEFAULT_AUTH_TYPE environment variable', () => {
+    it('should select the auth type specified by CANOPY_DEFAULT_AUTH_TYPE', () => {
+      // CANOPY_OAUTH is the only valid AuthType that can be selected via env var
       // API-KEY is not an AuthType enum value, so it cannot be selected this way
-      process.env['QWEN_DEFAULT_AUTH_TYPE'] = AuthType.QWEN_OAUTH;
+      process.env['CANOPY_DEFAULT_AUTH_TYPE'] = AuthType.CANOPY_OAUTH;
 
       const settings: LoadedSettings = new LoadedSettings(
         {
@@ -480,12 +480,12 @@ describe('AuthDialog', { timeout: 15000 }, () => {
 
       const { lastFrame } = renderAuthDialog(settings);
 
-      // QWEN OAuth no longer has a UI entry; the dialog falls back to the
+      // CANOPY OAuth no longer has a UI entry; the dialog falls back to the
       // default Alibaba ModelStudio option.
       expect(lastFrame()).toContain('Alibaba ModelStudio');
     });
 
-    it('should fall back to default if QWEN_DEFAULT_AUTH_TYPE is not set', () => {
+    it('should fall back to default if CANOPY_DEFAULT_AUTH_TYPE is not set', () => {
       const settings: LoadedSettings = new LoadedSettings(
         {
           settings: {
@@ -525,8 +525,8 @@ describe('AuthDialog', { timeout: 15000 }, () => {
       expect(lastFrame()).toContain('Alibaba ModelStudio');
     });
 
-    it('should show an error and fall back to default if QWEN_DEFAULT_AUTH_TYPE is invalid', () => {
-      process.env['QWEN_DEFAULT_AUTH_TYPE'] = 'invalid-auth-type';
+    it('should show an error and fall back to default if CANOPY_DEFAULT_AUTH_TYPE is invalid', () => {
+      process.env['CANOPY_DEFAULT_AUTH_TYPE'] = 'invalid-auth-type';
 
       const settings: LoadedSettings = new LoadedSettings(
         {
@@ -563,7 +563,7 @@ describe('AuthDialog', { timeout: 15000 }, () => {
 
       const { lastFrame } = renderAuthDialog(settings);
 
-      // Since the auth dialog doesn't show QWEN_DEFAULT_AUTH_TYPE errors anymore,
+      // Since the auth dialog doesn't show CANOPY_DEFAULT_AUTH_TYPE errors anymore,
       // it will just show the default Alibaba ModelStudio option.
       expect(lastFrame()).toContain('Alibaba ModelStudio');
     });
@@ -1554,7 +1554,7 @@ describe('AuthDialog Custom API Key Wizard', { timeout: 15000 }, () => {
         stdin,
         lastFrame,
         'sk-test-key-12345',
-        'qwen/qwen3-coder,gpt-4.1',
+        'canopy/qwen3-coder,gpt-4.1',
       );
       await pressEnterAndWaitFor(
         stdin,
@@ -1567,8 +1567,8 @@ describe('AuthDialog Custom API Key Wizard', { timeout: 15000 }, () => {
           const frame = lastFrame();
           expect(frame).toContain('Custom Provider · Step 6/6 · Review');
           expect(frame).toContain('The following JSON will be saved');
-          expect(frame).toContain('QWEN_CUSTOM_API_KEY_');
-          expect(frame).toContain('qwen/qwen3-coder');
+          expect(frame).toContain('CANOPY_CUSTOM_API_KEY_');
+          expect(frame).toContain('canopy/qwen3-coder');
           expect(frame).toContain('gpt-4.1');
           expect(frame).toContain('Enter to save');
         },

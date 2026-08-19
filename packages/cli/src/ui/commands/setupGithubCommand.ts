@@ -32,7 +32,7 @@ function getOpenUrlsCommands(readmeUrl: string, secretsUrl?: string): string[] {
   return commands;
 }
 
-// Add Qwen Code specific entries to .gitignore file
+// Add Canopy Code specific entries to .gitignore file
 export async function updateGitignore(gitRepoRoot: string): Promise<void> {
   await updateGitignoreWithStatus(gitRepoRoot);
 }
@@ -78,7 +78,7 @@ export const setupGithubCommand: SlashCommand = {
       toolName: 'run_shell_command',
       toolArgs: {
         description:
-          'Setting up GitHub Actions to triage issues and review PRs with Qwen.',
+          'Setting up GitHub Actions to triage issues and review PRs with Canopy.',
         command,
         is_background: false,
       },

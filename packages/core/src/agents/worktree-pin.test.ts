@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -51,10 +51,10 @@ describe('resolveExternalWorktreeDir', () => {
   it('resolves a registered worktree inside the repository', async () => {
     const result = await resolveExternalWorktreeDir(
       config,
-      '.qwen/tmp/review-pr-7',
+      '.canopy/tmp/review-pr-7',
     );
     expect(result).toEqual({
-      path: path.resolve('/repo', '.qwen/tmp/review-pr-7'),
+      path: path.resolve('/repo', '.canopy/tmp/review-pr-7'),
       branch: 'pr-7',
       slug: 'review-pr-7',
       repoRoot: '/repo',
@@ -66,16 +66,19 @@ describe('resolveExternalWorktreeDir', () => {
   // the registry gate and labels stay scoped to the repository. A registered
   // sibling worktree is the documented review-pipeline setup.
   it('accepts a sibling worktree when the parent runs inside a linked worktree', async () => {
-    svc.getRepoTopLevel.mockResolvedValue('/repo/.qwen/tmp/review-pr-1');
+    svc.getRepoTopLevel.mockResolvedValue('/repo/.canopy/tmp/review-pr-1');
     const insideWorktree = {
-      getTargetDir: () => '/repo/.qwen/tmp/review-pr-1',
+      getTargetDir: () => '/repo/.canopy/tmp/review-pr-1',
     } as unknown as Config;
     const result = await resolveExternalWorktreeDir(
       insideWorktree,
       '../review-pr-1-base',
     );
     expect(result).toMatchObject({
-      path: path.resolve('/repo/.qwen/tmp/review-pr-1', '../review-pr-1-base'),
+      path: path.resolve(
+        '/repo/.canopy/tmp/review-pr-1',
+        '../review-pr-1-base',
+      ),
     });
   });
 

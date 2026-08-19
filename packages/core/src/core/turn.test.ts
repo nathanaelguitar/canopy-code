@@ -1075,7 +1075,7 @@ describe('Turn', () => {
       expect(events.length).toBe(1);
       const event = events[0] as ServerGeminiToolCallRequestEvent;
       expect(event.value).toMatchObject({
-        callId: 'fc1__qwen_dup_2',
+        callId: 'fc1__canopy_dup_2',
         providerCallId: 'fc1',
         name: 'tool1',
         args: { arg1: 'val1' },

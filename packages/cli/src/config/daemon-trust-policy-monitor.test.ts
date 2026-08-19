@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ideContextStore } from '@qwen-code/qwen-code-core';
+import { ideContextStore } from '@canopy-code/canopy-code-core';
 import { createDaemonTrustPolicyMonitor } from './daemon-trust-policy-monitor.js';
 import type { DaemonTrustPolicySnapshot } from './daemon-trust-policy.js';
 

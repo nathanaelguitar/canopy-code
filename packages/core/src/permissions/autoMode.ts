@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * AUTO approval mode three-layer filter.
@@ -147,15 +147,15 @@ const PERSISTENCE_PATH_PATTERNS: readonly RegExp[] = Object.freeze([
 ]);
 
 const SELF_MODIFICATION_PATH_PATTERNS: readonly RegExp[] = Object.freeze([
-  /(^|\/)\.qwen\/settings(?:\.[^/]*)?\.json$/,
-  /(^|\/)(qwen|agents)\.md$/,
-  /(^|\/)\.qwen\/qwen\.local\.md$/,
-  /(^|\/)\.qwen\/rules(?:\/|$)/,
-  /(^|\/)\.qwen\/commands(?:\/|$)/,
-  /(^|\/)\.qwen\/agents(?:\/|$)/,
-  /(^|\/)\.qwen\/skills(?:\/|$)/,
-  /(^|\/)\.qwen\/hooks(?:\/|$)/,
-  /(^|\/)\.qwen\/fork-profiles(?:\/|$)/,
+  /(^|\/)\.canopy\/settings(?:\.[^/]*)?\.json$/,
+  /(^|\/)(canopy|agents)\.md$/,
+  /(^|\/)\.canopy\/canopy\.local\.md$/,
+  /(^|\/)\.canopy\/rules(?:\/|$)/,
+  /(^|\/)\.canopy\/commands(?:\/|$)/,
+  /(^|\/)\.canopy\/agents(?:\/|$)/,
+  /(^|\/)\.canopy\/skills(?:\/|$)/,
+  /(^|\/)\.canopy\/hooks(?:\/|$)/,
+  /(^|\/)\.canopy\/fork-profiles(?:\/|$)/,
   /(^|\/)\.mcp\.json$/,
 ]);
 
@@ -186,25 +186,25 @@ function matchesConfiguredContextFile(normalizedPath: string): boolean {
   );
 }
 
-let qwenHomePrefixesCacheKey: string | undefined;
-let qwenHomePrefixesCache: string[] | undefined;
+let canopyHomePrefixesCacheKey: string | undefined;
+let canopyHomePrefixesCache: string[] | undefined;
 
-function getNormalizedQwenHomePrefixes(): string[] {
-  const qwenHome = process.env['QWEN_HOME'];
-  if (!qwenHome) return [];
+function getNormalizedCanopyHomePrefixes(): string[] {
+  const canopyHome = process.env['QWEN_HOME'];
+  if (!canopyHome) return [];
   if (
-    qwenHomePrefixesCacheKey === qwenHome &&
-    qwenHomePrefixesCache !== undefined
+    canopyHomePrefixesCacheKey === canopyHome &&
+    canopyHomePrefixesCache !== undefined
   ) {
-    return qwenHomePrefixesCache;
+    return canopyHomePrefixesCache;
   }
 
-  const candidates = new Set<string>([path.resolve(qwenHome)]);
-  if (qwenHome.startsWith('/') || /^[A-Za-z]:[\\/]/.test(qwenHome)) {
-    candidates.add(qwenHome);
+  const candidates = new Set<string>([path.resolve(canopyHome)]);
+  if (canopyHome.startsWith('/') || /^[A-Za-z]:[\\/]/.test(canopyHome)) {
+    candidates.add(canopyHome);
   }
   try {
-    candidates.add(fs.realpathSync.native(qwenHome));
+    candidates.add(fs.realpathSync.native(canopyHome));
   } catch {
     // QWEN_HOME may not exist yet; the configured path still matters.
   }
@@ -212,20 +212,20 @@ function getNormalizedQwenHomePrefixes(): string[] {
   const prefixes = [...candidates].map((candidate) =>
     normalizePathForAutoModePattern(candidate).replace(/\/+$/, ''),
   );
-  qwenHomePrefixesCacheKey = qwenHome;
-  qwenHomePrefixesCache = prefixes;
+  canopyHomePrefixesCacheKey = canopyHome;
+  canopyHomePrefixesCache = prefixes;
   return prefixes;
 }
 
-function matchesQwenHomeSurface(normalizedPath: string): boolean {
-  for (const normalizedQwenHome of getNormalizedQwenHomePrefixes()) {
-    const qwenHomePrefix = `${normalizedQwenHome}/`;
-    if (!normalizedPath.startsWith(qwenHomePrefix)) continue;
+function matchesCanopyHomeSurface(normalizedPath: string): boolean {
+  for (const normalizedCanopyHome of getNormalizedCanopyHomePrefixes()) {
+    const canopyHomePrefix = `${normalizedCanopyHome}/`;
+    if (!normalizedPath.startsWith(canopyHomePrefix)) continue;
 
-    const relativePath = normalizedPath.slice(qwenHomePrefix.length);
+    const relativePath = normalizedPath.slice(canopyHomePrefix.length);
     if (
       /^settings(?:\.[^/]*)?\.json$/.test(relativePath) ||
-      /^qwen\.local\.md$/.test(relativePath) ||
+      /^canopy\.local\.md$/.test(relativePath) ||
       /^\.mcp\.json$/.test(relativePath) ||
       /^(rules|commands|agents|skills|hooks|fork-profiles)(?:\/|$)/.test(
         relativePath,
@@ -263,7 +263,7 @@ export function isAutoModeProtectedWritePath(filePath: string): boolean {
     const normalized = normalizePathForAutoModePattern(candidate);
     return (
       matchesConfiguredContextFile(normalized) ||
-      matchesQwenHomeSurface(normalized) ||
+      matchesCanopyHomeSurface(normalized) ||
       PERSISTENCE_PATH_PATTERNS.some((pattern) => pattern.test(normalized)) ||
       SELF_MODIFICATION_PATH_PATTERNS.some((pattern) =>
         pattern.test(normalized),
@@ -450,7 +450,7 @@ function stripRawRedirectTargetToken(token: string): string {
  * Returns true when the pending action is a file edit / write targeting a
  * path that lies within the current workspace (cwd + additional directories)
  * AND is not rejected by {@link isAutoModeProtectedWritePath} (covers
- * persistence paths and Qwen self-modification surfaces, including symlinks
+ * persistence paths and Canopy self-modification surfaces, including symlinks
  * whose realpath resolves to a protected target).
  *
  * Symlinks ARE resolved via `WorkspaceContext.isPathWithinWorkspace`, which
@@ -467,8 +467,8 @@ export function passesAcceptEditsFastPath(
   if (!EDIT_TOOL_NAMES.has(ctx.toolName)) return false;
   if (!ctx.filePath) return false;
   // Persistence paths (hooks, package.json scripts, CI definitions) and
-  // Qwen self-modification surfaces (.qwen/settings*.json, configured context
-  // files, .qwen/rules|commands|agents|skills|hooks/, .mcp.json) must never
+  // Canopy self-modification surfaces (.canopy/settings*.json, configured context
+  // files, .canopy/rules|commands|agents|skills|hooks/, .mcp.json) must never
   // auto-approve via fast-path — the former execute code on subsequent tooling
   // operations, the latter let an agent rewrite its own permissions or
   // instructions.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ async function createService(): Promise<{
   service: SessionService;
 }> {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-session-service-lease-'),
+    path.join(os.tmpdir(), 'canopy-session-service-lease-'),
   );
   temporaryDirectories.add(root);
   const runtimeBaseDir = path.join(root, 'runtime');

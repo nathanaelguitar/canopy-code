@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {
-  convertGeminiToQwenConfig,
+  convertGeminiToCanopyConfig,
   isGeminiExtensionConfig,
   type GeminiExtensionConfig,
 } from './gemini-converter.js';
@@ -33,7 +33,7 @@ vi.mock('node:fs', async (importOriginal) => {
   };
 });
 
-describe('convertGeminiToQwenConfig', () => {
+describe('convertGeminiToCanopyConfig', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -51,7 +51,7 @@ describe('convertGeminiToQwenConfig', () => {
 
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(geminiConfig));
 
-    const result = convertGeminiToQwenConfig(mockDir);
+    const result = convertGeminiToCanopyConfig(mockDir);
 
     expect(result.name).toBe('test-extension');
     expect(result.version).toBe('1.0.0');
@@ -75,7 +75,7 @@ describe('convertGeminiToQwenConfig', () => {
 
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(geminiConfig));
 
-    const result = convertGeminiToQwenConfig(mockDir);
+    const result = convertGeminiToCanopyConfig(mockDir);
 
     expect(result.name).toBe('full-extension');
     expect(result.version).toBe('2.0.0');
@@ -93,7 +93,7 @@ describe('convertGeminiToQwenConfig', () => {
 
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
 
-    expect(() => convertGeminiToQwenConfig(mockDir)).toThrow(
+    expect(() => convertGeminiToCanopyConfig(mockDir)).toThrow(
       'Gemini extension config must have name and version fields',
     );
   });
@@ -106,7 +106,7 @@ describe('convertGeminiToQwenConfig', () => {
 
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
 
-    expect(() => convertGeminiToQwenConfig(mockDir)).toThrow(
+    expect(() => convertGeminiToCanopyConfig(mockDir)).toThrow(
       'Gemini extension config must have name and version fields',
     );
   });
@@ -119,7 +119,7 @@ describe('convertGeminiToQwenConfig', () => {
       '/outside/extension/gemini-extension.json',
     );
 
-    expect(() => convertGeminiToQwenConfig(mockDir)).toThrow(
+    expect(() => convertGeminiToCanopyConfig(mockDir)).toThrow(
       /resolves through a symlink outside the extension/,
     );
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,7 +40,7 @@ import {
   type DiscoveredMCPPrompt,
   createDebugLogger,
   matchesAnyServerPattern,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadSettings, SettingScope } from '../../../config/settings.js';
 import { loadMcpApprovals } from '../../../config/mcpApprovals.js';
 import { isToolValid, getToolInvalidReasons } from './utils.js';

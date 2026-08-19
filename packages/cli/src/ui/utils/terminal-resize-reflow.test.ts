@@ -49,8 +49,8 @@ describe('installTerminalResizeReflow', () => {
   // The PR's legacy escape hatches short-circuit the wrappers; keep the
   // suite deterministic when a developer runs it with a hatch exported.
   beforeEach(() => {
-    vi.stubEnv('QWEN_CODE_LEGACY_RESIZE_ERASE', '');
-    vi.stubEnv('QWEN_CODE_LEGACY_ERASE_LINES', '');
+    vi.stubEnv('CANOPY_CODE_LEGACY_RESIZE_ERASE', '');
+    vi.stubEnv('CANOPY_CODE_LEGACY_ERASE_LINES', '');
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -377,8 +377,8 @@ describe('installTerminalResizeReflow', () => {
     }
   });
 
-  it('QWEN_CODE_LEGACY_RESIZE_ERASE disables the wrapper', () => {
-    vi.stubEnv('QWEN_CODE_LEGACY_RESIZE_ERASE', '1');
+  it('CANOPY_CODE_LEGACY_RESIZE_ERASE disables the wrapper', () => {
+    vi.stubEnv('CANOPY_CODE_LEGACY_RESIZE_ERASE', '1');
     try {
       const stdout = new FakeStdout();
       const handle = installTerminalResizeReflow(
@@ -715,7 +715,7 @@ describe('installTerminalResizeReflow', () => {
     // TERM_PROGRAM so the LIFO contract is tested identically in CI.
     const sync = installSynchronizedOutput(
       stdout as unknown as NodeJS.WriteStream,
-      { QWEN_CODE_FORCE_SYNCHRONIZED_OUTPUT: '1' },
+      { CANOPY_CODE_FORCE_SYNCHRONIZED_OUTPUT: '1' },
     );
     const reflow = installTerminalResizeReflow(
       stdout as unknown as NodeJS.WriteStream,
@@ -733,7 +733,7 @@ describe('installTerminalResizeReflow', () => {
     );
     const sync2 = installSynchronizedOutput(
       stdout2 as unknown as NodeJS.WriteStream,
-      { QWEN_CODE_FORCE_SYNCHRONIZED_OUTPUT: '1' },
+      { CANOPY_CODE_FORCE_SYNCHRONIZED_OUTPUT: '1' },
     );
     const reflow2 = installTerminalResizeReflow(
       stdout2 as unknown as NodeJS.WriteStream,

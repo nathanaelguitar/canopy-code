@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -120,7 +120,7 @@ describe('CDP acceptance helpers', () => {
   });
 
   it('stopChild resolves for a child that failed to spawn', async () => {
-    const child = spawn('qwen-nonexistent-binary-for-test');
+    const child = spawn('canopy-nonexistent-binary-for-test');
     child.on('error', () => {});
     await stopChild(child, { graceMs: 10 });
     expect(child.pid).toBeUndefined();

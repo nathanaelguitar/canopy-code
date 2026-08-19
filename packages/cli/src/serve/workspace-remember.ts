@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Application, Request, RequestHandler, Response } from 'express';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { randomUUID } from 'node:crypto';
 import type {
   AcpSessionBridge,

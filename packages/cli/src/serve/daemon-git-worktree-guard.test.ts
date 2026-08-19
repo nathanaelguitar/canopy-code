@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it, vi } from 'vitest';
-import { GitWorktreeService, ToolNames } from '@qwen-code/qwen-code-core';
+import { GitWorktreeService, ToolNames } from '@canopy-code/canopy-code-core';
 import type { ExternalToolGuardPrepareRequest } from '@qwen-code/acp-bridge/bridgeOptions';
 import { SHELL_EXECUTING_TOOL_NAMES } from '@qwen-code/acp-bridge/externalToolGuard';
 import { createDaemonToolGuard } from './daemon-git-worktree-guard.js';
@@ -494,7 +494,7 @@ it -C ${outsideRepo} reset --hard`,
     const guard = createDaemonToolGuard();
 
     await expect(
-      guard(request('git -c user.name=Qwen commit --allow-empty')),
+      guard(request('git -c user.name=Canopy commit --allow-empty')),
     ).resolves.toEqual({ allowed: true });
   });
 
@@ -1473,17 +1473,17 @@ it -C ${outsideRepo} reset --hard`,
 
     it('contains a sub-agent to an in-project agent worktree', async () => {
       // `AgentTool` with `isolation: 'worktree'` provisions under
-      // `<projectRoot>/.qwen/worktrees/`, i.e. inside the session — being
+      // `<projectRoot>/.canopy/worktrees/`, i.e. inside the session — being
       // inside is not enough to leave the boundary alone.
       const agentWorktree = path.join(
         effectiveCwd,
-        '.qwen',
+        '.canopy',
         'worktrees',
         'agent-abc1234',
       );
       const sibling = path.join(
         effectiveCwd,
-        '.qwen',
+        '.canopy',
         'worktrees',
         'agent-def5678',
       );
@@ -1516,7 +1516,7 @@ it -C ${outsideRepo} reset --hard`,
 
     it('contains a sub-agent to the worktree it reports', async () => {
       // A session id unique to this test: `getWorktreesDir` resolves under the
-      // user's global Qwen dir, so a shared id would have this test create and
+      // user's global Canopy dir, so a shared id would have this test create and
       // delete real directories belonging to someone's session.
       const isolatedSessionId = `daemon-guard-${process.pid}-worktree`;
       const owned = GitWorktreeService.getWorktreesDir(isolatedSessionId);

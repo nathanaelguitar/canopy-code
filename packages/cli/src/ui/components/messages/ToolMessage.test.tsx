@@ -16,7 +16,7 @@ import type {
   AnsiOutput,
   AnsiOutputDisplay,
   Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../../config/settings.js';
 import { getScreenBuffer } from '../../selection/screen-buffer.js';
 import { getSelectedText } from '../../selection/selection-text.js';

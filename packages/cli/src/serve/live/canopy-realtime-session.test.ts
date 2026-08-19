@@ -1,17 +1,17 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import {
-  deriveQwenOmniRealtimeUrl,
-  openQwenRealtimeSession,
-  QWEN_REALTIME_LIMITS,
-  type QwenRealtimeCallbacks,
-  type QwenRealtimeSession,
-} from './qwen-realtime-session.js';
+  deriveCanopyOmniRealtimeUrl,
+  openCanopyRealtimeSession,
+  CANOPY_REALTIME_LIMITS,
+  type CanopyRealtimeCallbacks,
+  type CanopyRealtimeSession,
+} from './canopy-realtime-session.js';
 
 class FakeSocket {
   readonly OPEN = 1;
@@ -119,9 +119,9 @@ function functionCall(
 
 async function connect(
   socket: FakeSocket,
-  callbacks: QwenRealtimeCallbacks = {},
-): Promise<QwenRealtimeSession> {
-  const opening = openQwenRealtimeSession(
+  callbacks: CanopyRealtimeCallbacks = {},
+): Promise<CanopyRealtimeSession> {
+  const opening = openCanopyRealtimeSession(
     {
       endpoint: 'https://dashscope.example/compatible-mode/v1',
       apiKey: 'sk-test',
@@ -141,10 +141,10 @@ async function connect(
   return opening;
 }
 
-describe('qwen-realtime-session', () => {
+describe('canopy-realtime-session', () => {
   it('derives a model-qualified WebSocket URL', () => {
     expect(
-      deriveQwenOmniRealtimeUrl(
+      deriveCanopyOmniRealtimeUrl(
         'https://dashscope.aliyuncs.com/compatible-mode/v1',
         'qwen3.5-omni-plus-realtime',
       ),
@@ -152,7 +152,7 @@ describe('qwen-realtime-session', () => {
       'wss://dashscope.aliyuncs.com/api-ws/v1/realtime?model=qwen3.5-omni-plus-realtime',
     );
     expect(
-      deriveQwenOmniRealtimeUrl(
+      deriveCanopyOmniRealtimeUrl(
         'wss://example.test/custom/api-ws/v1/realtime?tenant=one',
         'model/with spaces',
       ),
@@ -237,7 +237,7 @@ describe('qwen-realtime-session', () => {
       onOutputAudioDone: vi.fn(),
       onResponseDone: vi.fn(),
       onDirectTranscript: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-direct', '你好');
@@ -320,7 +320,7 @@ describe('qwen-realtime-session', () => {
     const callbacks = {
       onError: vi.fn(),
       onResponseDone: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-direct', '你好');
@@ -348,7 +348,7 @@ describe('qwen-realtime-session', () => {
       onIgnoredEvent: vi.fn(),
       onResponseDone: vi.fn(),
       onDelegateCall: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-direct', '你好');
@@ -383,7 +383,7 @@ describe('qwen-realtime-session', () => {
 
   it('rejects an idless response.done when no response has completed', async () => {
     const socket = new FakeSocket();
-    const callbacks = { onError: vi.fn() } satisfies QwenRealtimeCallbacks;
+    const callbacks = { onError: vi.fn() } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     socket.message({
@@ -572,7 +572,7 @@ describe('qwen-realtime-session', () => {
     const callbacks = {
       onDelegateCall: vi.fn(),
       onError: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-screen', '查看屏幕');
@@ -608,7 +608,7 @@ describe('qwen-realtime-session', () => {
       onResponseCreated: vi.fn(),
       onOutputTextDone: vi.fn(),
       onDirectTranscript: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-work', '执行任务');
@@ -675,7 +675,7 @@ describe('qwen-realtime-session', () => {
       onResponseDone: vi.fn(),
       onOutputAudioDelta: vi.fn(),
       onOutputTextDone: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-first', '先回答第一个问题');
@@ -754,7 +754,7 @@ describe('qwen-realtime-session', () => {
       onError: vi.fn(),
       onResponseDone: vi.fn(),
       onDirectTranscript: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-first', '第一个问题');
@@ -807,7 +807,7 @@ describe('qwen-realtime-session', () => {
       onDelegateCall: vi.fn(),
       onResponseDone: vi.fn(),
       onDirectTranscript: vi.fn(),
-    } satisfies QwenRealtimeCallbacks;
+    } satisfies CanopyRealtimeCallbacks;
     const session = await connect(socket, callbacks);
 
     commitFinalInput(socket, 'input-handoff', '检查当前页面');
@@ -980,10 +980,10 @@ describe('qwen-realtime-session', () => {
 
     expect(() =>
       session.pushAudio(
-        new Uint8Array(QWEN_REALTIME_LIMITS.maxInputAudioFrameBytes + 2),
+        new Uint8Array(CANOPY_REALTIME_LIMITS.maxInputAudioFrameBytes + 2),
       ),
     ).toThrow(RangeError);
-    socket.bufferedAmount = QWEN_REALTIME_LIMITS.maxBufferedSocketBytes + 1;
+    socket.bufferedAmount = CANOPY_REALTIME_LIMITS.maxBufferedSocketBytes + 1;
     expect(session.pushAudio(new Uint8Array([1, 0]))).toBe(false);
     expect(session.pushAudio(new Uint8Array([1, 0]))).toBe(false);
     expect(onAudioDropped).toHaveBeenCalledTimes(1);

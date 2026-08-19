@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
-import { AuthType, type AvailableModel } from '@qwen-code/qwen-code-core';
+import { AuthType, type AvailableModel } from '@canopy-code/canopy-code-core';
 import {
   isSelectableVoiceModel,
   isTranscribableVoiceModel,
@@ -14,7 +14,7 @@ import {
 function model(overrides: Partial<AvailableModel>): AvailableModel {
   return {
     id: 'qwen3-asr-flash',
-    label: 'Qwen ASR',
+    label: 'Canopy ASR',
     authType: AuthType.USE_OPENAI,
     baseUrl: 'https://dashscope.example/v1',
     ...overrides,

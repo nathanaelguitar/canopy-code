@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review build-test`: run the project's own build and tests over the code
+// `canopy review build-test`: run the project's own build and tests over the code
 // the PR actually changed, and report what happened as data.
 //
 // Agent 7's brief was a paragraph. It named `npm run build`, then `npm test`, and
@@ -266,7 +266,7 @@ export function trimOutput(s: string): string {
 /**
  * The environment every build/test/install command runs under.
  *
- * `QWEN_SKIP_PREPARE` is the load-bearing entry, and it is exported and tested so
+ * `CANOPY_SKIP_PREPARE` is the load-bearing entry, and it is exported and tested so
  * a future edit to this env cannot silently drop it. Without it, `npm ci` builds
  * the whole project through this repo's `prepare` hook — `npm run build` + `npm
  * run bundle` over every workspace, ~190s — which is entirely wasted, because this
@@ -283,7 +283,7 @@ export function buildRunEnv(
     ...base,
     CI: '1',
     npm_config_yes: 'true',
-    QWEN_SKIP_PREPARE: '1',
+    CANOPY_SKIP_PREPARE: '1',
   };
 }
 

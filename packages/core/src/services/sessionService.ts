@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -348,7 +348,7 @@ async function copyFileHistoryBackupsToStaging(
   const copiedNames = new Set<string>();
   if (backupNames.size === 0) return copiedNames;
   const sourceDir = path.join(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     FILE_HISTORY_DIR,
     sourceSessionId,
   );
@@ -449,7 +449,7 @@ async function copyFileHistoryBackupsToStaging(
  * - Removing sessions
  *
  * Sessions are stored as JSONL files, one per session.
- * File location: ~/.qwen/tmp/<project_id>/chats/
+ * File location: ~/.canopy/tmp/<project_id>/chats/
  */
 export class SessionService {
   private readonly storage: Storage;
@@ -482,7 +482,7 @@ export class SessionService {
     sessionId: string,
     options: {
       processKind: SessionWriterProcessKind;
-      qwenVersion?: string | null;
+      canopyVersion?: string | null;
       reclaimPolicy: 'local' | 'never';
     },
   ): Promise<SessionWriterLease> {
@@ -544,15 +544,15 @@ export class SessionService {
     }
 
     // Worktree sessions record cwd as the worktree path
-    // (<repoRoot>/.qwen/worktrees/<slug>), which has a different project
+    // (<repoRoot>/.canopy/worktrees/<slug>), which has a different project
     // hash. Infer the repo root from the path and check its hash. This
     // is durable — it doesn't depend on the sidecar file, which is
     // transient and cleared when the worktree is removed. Pure string
     // ops, so check before the file-read runtime status below.
     // Use lastIndexOf to handle nested worktrees: for
-    // /repo/.qwen/worktrees/parent/.qwen/worktrees/child, the innermost
-    // marker gives repoRoot = /repo/.qwen/worktrees/parent (the workspace).
-    const worktreesMarker = `${path.sep}.qwen${path.sep}worktrees${path.sep}`;
+    // /repo/.canopy/worktrees/parent/.canopy/worktrees/child, the innermost
+    // marker gives repoRoot = /repo/.canopy/worktrees/parent (the workspace).
+    const worktreesMarker = `${path.sep}.canopy${path.sep}worktrees${path.sep}`;
     const markerIdx = recordCwd.lastIndexOf(worktreesMarker);
     if (markerIdx > 0) {
       const repoRoot = recordCwd.substring(0, markerIdx);
@@ -727,7 +727,7 @@ export class SessionService {
 
   private removeFileHistoryBackups(sessionId: string): void {
     fs.rmSync(
-      path.join(Storage.getGlobalQwenDir(), FILE_HISTORY_DIR, sessionId),
+      path.join(Storage.getGlobalCanopyDir(), FILE_HISTORY_DIR, sessionId),
       { recursive: true, force: true },
     );
   }
@@ -2113,7 +2113,10 @@ export class SessionService {
       chatsDir,
       `.${newSessionId}.${operationId}.tmp`,
     );
-    const backupRoot = path.join(Storage.getGlobalQwenDir(), FILE_HISTORY_DIR);
+    const backupRoot = path.join(
+      Storage.getGlobalCanopyDir(),
+      FILE_HISTORY_DIR,
+    );
     const stagedBackupPath = path.join(
       backupRoot,
       `.${newSessionId}.${operationId}.tmp`,

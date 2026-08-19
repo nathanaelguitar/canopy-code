@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import {
   startBackgroundHousekeeping,
@@ -65,7 +65,7 @@ describe('_needsCatchUpForTesting', () => {
   let markerPath: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-scheduler-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-scheduler-test-'));
     markerPath = path.join(tempDir, '.marker');
   });
 
@@ -91,18 +91,20 @@ describe('_needsCatchUpForTesting', () => {
 });
 
 describe('_runHousekeepingForTesting', () => {
-  let qwenHome: string;
+  let canopyHome: string;
   let fileHistoryRoot: string;
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-scheduler-test-'));
-    fileHistoryRoot = path.join(qwenHome, FILE_HISTORY_DIR);
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    canopyHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-scheduler-test-'),
+    );
+    fileHistoryRoot = path.join(canopyHome, FILE_HISTORY_DIR);
+    vi.stubEnv('QWEN_HOME', canopyHome);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
   });
 
   it('whitelists the current session via lazy getSessionId()', async () => {
@@ -118,12 +120,12 @@ describe('_runHousekeepingForTesting', () => {
     expect(fs.readdirSync(fileHistoryRoot)).toEqual(['current-session']);
     // Marker was written by throttledOnce.
     expect(
-      fs.existsSync(path.join(qwenHome, _FILE_HISTORY_MARKER_FOR_TESTING)),
+      fs.existsSync(path.join(canopyHome, _FILE_HISTORY_MARKER_FOR_TESTING)),
     ).toBe(true);
   });
 
   it('sweeps old subagent transcripts under <projectDir>/subagents, protecting the current session', async () => {
-    const projectDir = path.join(qwenHome, 'project');
+    const projectDir = path.join(canopyHome, 'project');
     fs.mkdirSync(projectDir, { recursive: true });
     const subagentsRoot = path.join(projectDir, 'subagents');
     const old = new Date(Date.now() - 60 * MS_PER_DAY);
@@ -142,7 +144,7 @@ describe('_runHousekeepingForTesting', () => {
       'recent-session',
     ]);
     expect(
-      fs.existsSync(_getSubagentMarkerPathForTesting(qwenHome, projectDir)),
+      fs.existsSync(_getSubagentMarkerPathForTesting(canopyHome, projectDir)),
     ).toBe(true);
     expect(fs.existsSync(path.join(projectDir, '.subagent-cleanup'))).toBe(
       false,
@@ -150,7 +152,7 @@ describe('_runHousekeepingForTesting', () => {
   });
 
   it('throttles the subagent sweep per project (second pass does not re-sweep)', async () => {
-    const projectDir = path.join(qwenHome, 'project');
+    const projectDir = path.join(canopyHome, 'project');
     fs.mkdirSync(projectDir, { recursive: true });
     const subagentsRoot = path.join(projectDir, 'subagents');
     const old = new Date(Date.now() - 60 * MS_PER_DAY);
@@ -162,7 +164,7 @@ describe('_runHousekeepingForTesting', () => {
     );
     expect(fs.existsSync(path.join(subagentsRoot, 'stale-1'))).toBe(false);
     expect(
-      fs.existsSync(_getSubagentMarkerPathForTesting(qwenHome, projectDir)),
+      fs.existsSync(_getSubagentMarkerPathForTesting(canopyHome, projectDir)),
     ).toBe(true);
 
     // A fresh old dir + an immediate second pass: the per-project marker
@@ -191,7 +193,7 @@ describe('_runHousekeepingForTesting', () => {
     expect(fs.readdirSync(fileHistoryRoot)).toEqual(['session-1']);
 
     // Reset marker so the second pass is not throttled out.
-    fs.rmSync(path.join(qwenHome, _FILE_HISTORY_MARKER_FOR_TESTING));
+    fs.rmSync(path.join(canopyHome, _FILE_HISTORY_MARKER_FOR_TESTING));
 
     // Backdate session-1 so it would be sweepable if not whitelisted.
     fs.utimesSync(path.join(fileHistoryRoot, 'session-1'), old, old);
@@ -229,18 +231,20 @@ describe('_runHousekeepingForTesting', () => {
 });
 
 describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
-  let qwenHome: string;
+  let canopyHome: string;
   let logDir: string;
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-scheduler-test-'));
-    logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-openai-logs-'));
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    canopyHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-scheduler-test-'),
+    );
+    logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-openai-logs-'));
+    vi.stubEnv('QWEN_HOME', canopyHome);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
     fs.rmSync(logDir, { recursive: true, force: true });
   });
 
@@ -335,7 +339,7 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
     expect(fs.existsSync(old)).toBe(false);
     expect(fs.existsSync(fresh)).toBe(true);
     expect(
-      fs.existsSync(_getOpenAILogsMarkerPathForTesting(qwenHome, logDir)),
+      fs.existsSync(_getOpenAILogsMarkerPathForTesting(canopyHome, logDir)),
     ).toBe(true);
   });
 
@@ -376,7 +380,7 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 
   it('throttles OpenAI log cleanup independently for different directories', async () => {
     const otherLogDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-openai-logs-other-'),
+      path.join(os.tmpdir(), 'canopy-openai-logs-other-'),
     );
     try {
       const first = mkOpenAILog(10);
@@ -393,8 +397,8 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 
       expect(fs.existsSync(first)).toBe(false);
       expect(fs.existsSync(second)).toBe(false);
-      expect(_getOpenAILogsMarkerPathForTesting(qwenHome, logDir)).not.toBe(
-        _getOpenAILogsMarkerPathForTesting(qwenHome, otherLogDir),
+      expect(_getOpenAILogsMarkerPathForTesting(canopyHome, logDir)).not.toBe(
+        _getOpenAILogsMarkerPathForTesting(canopyHome, otherLogDir),
       );
     } finally {
       fs.rmSync(otherLogDir, { recursive: true, force: true });
@@ -402,7 +406,7 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
   });
 
   it('resolves the default per-CWD log dir from getWorkingDir()', async () => {
-    const workingDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cwd-'));
+    const workingDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-cwd-'));
     try {
       const defaultLogDir = path.join(workingDir, 'logs', 'openai');
       fs.mkdirSync(defaultLogDir, { recursive: true });
@@ -426,7 +430,7 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
   });
 
   it('uses the settings directory when content-generator config is unavailable', async () => {
-    const workingDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cwd-'));
+    const workingDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-cwd-'));
     try {
       const defaultLogDir = path.join(workingDir, 'logs', 'openai');
       fs.mkdirSync(defaultLogDir, { recursive: true });
@@ -467,7 +471,7 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 
     expect(fs.existsSync(old)).toBe(true);
     expect(
-      fs.existsSync(_getOpenAILogsMarkerPathForTesting(qwenHome, logDir)),
+      fs.existsSync(_getOpenAILogsMarkerPathForTesting(canopyHome, logDir)),
     ).toBe(false);
   });
 
@@ -484,12 +488,15 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 
     expect(fs.existsSync(old)).toBe(false);
     expect(
-      fs.existsSync(_getOpenAILogsMarkerPathForTesting(qwenHome, logDir)),
+      fs.existsSync(_getOpenAILogsMarkerPathForTesting(canopyHome, logDir)),
     ).toBe(true);
   });
 
   it('uses catch-up delay when the OpenAI marker is missing', async () => {
-    fs.writeFileSync(path.join(qwenHome, _FILE_HISTORY_MARKER_FOR_TESTING), '');
+    fs.writeFileSync(
+      path.join(canopyHome, _FILE_HISTORY_MARKER_FOR_TESTING),
+      '',
+    );
 
     await expect(
       _getFirstPassDelayForTesting(
@@ -500,8 +507,14 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
   });
 
   it('uses the normal delay only when the OpenAI marker is fresh', async () => {
-    fs.writeFileSync(path.join(qwenHome, _FILE_HISTORY_MARKER_FOR_TESTING), '');
-    fs.writeFileSync(_getOpenAILogsMarkerPathForTesting(qwenHome, logDir), '');
+    fs.writeFileSync(
+      path.join(canopyHome, _FILE_HISTORY_MARKER_FOR_TESTING),
+      '',
+    );
+    fs.writeFileSync(
+      _getOpenAILogsMarkerPathForTesting(canopyHome, logDir),
+      '',
+    );
 
     await expect(
       _getFirstPassDelayForTesting(
@@ -513,10 +526,10 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 
   it('uses catch-up delay when the OpenAI marker is older than seven days', async () => {
     const fileHistoryMarker = path.join(
-      qwenHome,
+      canopyHome,
       _FILE_HISTORY_MARKER_FOR_TESTING,
     );
-    const openaiMarker = _getOpenAILogsMarkerPathForTesting(qwenHome, logDir);
+    const openaiMarker = _getOpenAILogsMarkerPathForTesting(canopyHome, logDir);
     fs.writeFileSync(fileHistoryMarker, '');
     fs.writeFileSync(openaiMarker, '');
     const stale = new Date(Date.now() - 8 * MS_PER_DAY);
@@ -548,17 +561,19 @@ describe('_runHousekeepingForTesting (openai-logs cleanup)', () => {
 });
 
 describe('_runPassForTesting (timer-chain defense)', () => {
-  let qwenHome: string;
+  let canopyHome: string;
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-scheduler-test-'));
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    canopyHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-scheduler-test-'),
+    );
+    vi.stubEnv('QWEN_HOME', canopyHome);
     resetInteraction();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
   });
 
   it('catches errors escaping runHousekeeping so the next pass still gets scheduled', async () => {
@@ -601,18 +616,20 @@ describe('startBackgroundHousekeeping', () => {
   // setup. The building blocks (needsCatchUp, runHousekeeping, runPass) are
   // covered above; the glue is a few lines of imperative scheduling that
   // should be verified by the manual smoke test in the pre-PR checklist.
-  let qwenHome: string;
+  let canopyHome: string;
 
   beforeEach(() => {
-    qwenHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-scheduler-test-'));
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    canopyHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-scheduler-test-'),
+    );
+    vi.stubEnv('QWEN_HOME', canopyHome);
     _resetForTesting();
     resetInteraction();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    fs.rmSync(qwenHome, { recursive: true, force: true });
+    fs.rmSync(canopyHome, { recursive: true, force: true });
     _resetForTesting();
   });
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchGitDiff,
   fetchGitDiffHunksForFile,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import { sendBridgeError } from '../server/error-response.js';
 import {
@@ -24,7 +24,7 @@ import {
   registerWorkspaceQualifiedGitDiffRoutes,
 } from './workspace-git-diff.js';
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   fetchGitDiff: vi.fn(),
   fetchGitDiffHunksForFile: vi.fn(),
 }));

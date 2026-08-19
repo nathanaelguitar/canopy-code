@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ vi.mock('../../config/settings.js', () => ({
   loadSettings: mockLoadSettings,
 }));
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   Storage: {
     setRuntimeBaseDir: mockSetRuntimeBaseDir,
   },

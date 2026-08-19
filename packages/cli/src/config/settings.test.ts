@@ -72,7 +72,7 @@ import {
   ENV_WAS_RECOVERED,
 } from './settings.js';
 import { needsMigration } from './migration/index.js';
-import { QWEN_DIR } from '@qwen-code/qwen-code-core';
+import { CANOPY_DIR } from '@canopy-code/canopy-code-core';
 
 const mockDebugLogger = vi.hoisted(() => ({
   debug: vi.fn(),
@@ -81,9 +81,9 @@ const mockDebugLogger = vi.hoisted(() => ({
   info: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     createDebugLogger: () => mockDebugLogger,
@@ -2469,7 +2469,7 @@ describe('Settings Loading and Merging', () => {
     });
 
     it('should resolve ${VAR} in settings from home-level .env file (#4466)', () => {
-      const homeQwenEnvPath = path.join(
+      const homeCanopyEnvPath = path.join(
         path.dirname(USER_SETTINGS_PATH),
         '.env',
       );
@@ -2484,13 +2484,13 @@ describe('Settings Loading and Merging', () => {
       };
 
       (mockFsExistsSync as Mock).mockImplementation(
-        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeQwenEnvPath,
+        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeCanopyEnvPath,
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH)
             return JSON.stringify(userSettingsContent);
-          if (p === homeQwenEnvPath)
+          if (p === homeCanopyEnvPath)
             return 'MY_SECRET_TOKEN=secret_from_dotenv';
           return '{}';
         },
@@ -2511,7 +2511,7 @@ describe('Settings Loading and Merging', () => {
     });
 
     it('should not override process.env values with home .env file (#4466)', () => {
-      const homeQwenEnvPath = path.join(
+      const homeCanopyEnvPath = path.join(
         path.dirname(USER_SETTINGS_PATH),
         '.env',
       );
@@ -2526,13 +2526,13 @@ describe('Settings Loading and Merging', () => {
       };
 
       (mockFsExistsSync as Mock).mockImplementation(
-        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeQwenEnvPath,
+        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeCanopyEnvPath,
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH)
             return JSON.stringify(userSettingsContent);
-          if (p === homeQwenEnvPath) return 'MY_SECRET_TOKEN=from_dotenv';
+          if (p === homeCanopyEnvPath) return 'MY_SECRET_TOKEN=from_dotenv';
           return '{}';
         },
       );
@@ -2551,8 +2551,8 @@ describe('Settings Loading and Merging', () => {
       delete process.env['MY_SECRET_TOKEN'];
     });
 
-    it('should not search dirname(qwenDir)/.env when QWEN_HOME is set (#4466)', () => {
-      const customHome = '/custom/qwen/home';
+    it('should not search dirname(canopyDir)/.env when QWEN_HOME is set (#4466)', () => {
+      const customHome = '/custom/canopy/home';
       process.env['QWEN_HOME'] = customHome;
       const customSettingsPath = path.join(customHome, 'settings.json');
       const dirnameEnvPath = path.join(path.dirname(customHome), '.env');
@@ -2635,8 +2635,8 @@ describe('Settings Loading and Merging', () => {
       delete process.env['HOME_ENV_TOKEN'];
     });
 
-    it('should prefer ~/.qwen/.env over ~/.env for the same key (first-write-wins) (#4466)', () => {
-      const qwenEnvPath = path.join(path.dirname(USER_SETTINGS_PATH), '.env');
+    it('should prefer ~/.canopy/.env over ~/.env for the same key (first-write-wins) (#4466)', () => {
+      const canopyEnvPath = path.join(path.dirname(USER_SETTINGS_PATH), '.env');
       const homeEnvPath = path.join(
         path.dirname(path.dirname(USER_SETTINGS_PATH)),
         '.env',
@@ -2653,13 +2653,13 @@ describe('Settings Loading and Merging', () => {
 
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) =>
-          p === USER_SETTINGS_PATH || p === qwenEnvPath || p === homeEnvPath,
+          p === USER_SETTINGS_PATH || p === canopyEnvPath || p === homeEnvPath,
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH)
             return JSON.stringify(userSettingsContent);
-          if (p === qwenEnvPath) return 'PRECEDENCE_TOKEN=from_qwen_dir';
+          if (p === canopyEnvPath) return 'PRECEDENCE_TOKEN=from_canopy_dir';
           if (p === homeEnvPath) return 'PRECEDENCE_TOKEN=from_home_dir';
           return '{}';
         },
@@ -2674,14 +2674,14 @@ describe('Settings Loading and Merging', () => {
         { headers?: Record<string, string> }
       >;
       expect(mcpServers?.['myServer']?.headers?.['Authorization']).toBe(
-        'Bearer from_qwen_dir',
+        'Bearer from_canopy_dir',
       );
 
       delete process.env['PRECEDENCE_TOKEN'];
     });
 
     it('should succeed with unresolved placeholder when .env read throws (#4466)', () => {
-      const qwenEnvPath = path.join(path.dirname(USER_SETTINGS_PATH), '.env');
+      const canopyEnvPath = path.join(path.dirname(USER_SETTINGS_PATH), '.env');
       const userSettingsContent = {
         mcpServers: {
           myServer: {
@@ -2693,13 +2693,13 @@ describe('Settings Loading and Merging', () => {
       };
 
       (mockFsExistsSync as Mock).mockImplementation(
-        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === qwenEnvPath,
+        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === canopyEnvPath,
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH)
             return JSON.stringify(userSettingsContent);
-          if (p === qwenEnvPath) throw new Error('EACCES: permission denied');
+          if (p === canopyEnvPath) throw new Error('EACCES: permission denied');
           return '{}';
         },
       );
@@ -2943,16 +2943,16 @@ describe('Settings Loading and Merging', () => {
       delete process.env['TEST_PORT'];
     });
 
-    describe('when QWEN_CODE_SYSTEM_SETTINGS_PATH is set', () => {
+    describe('when CANOPY_CODE_SYSTEM_SETTINGS_PATH is set', () => {
       const MOCK_ENV_SYSTEM_SETTINGS_PATH = '/mock/env/system/settings.json';
 
       beforeEach(() => {
-        process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] =
+        process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] =
           MOCK_ENV_SYSTEM_SETTINGS_PATH;
       });
 
       afterEach(() => {
-        delete process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+        delete process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
       });
 
       it('should load system settings from the path specified in the environment variable', () => {
@@ -3419,7 +3419,7 @@ describe('Settings Loading and Merging', () => {
 
     it('should let a system-scope empty allowlist revoke a user entry', () => {
       const systemSettingsPath = '/mock/system/settings.json';
-      process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'] = systemSettingsPath;
+      process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'] = systemSettingsPath;
       try {
         (mockFsExistsSync as Mock).mockReturnValue(true);
         (fs.readFileSync as Mock).mockImplementation(
@@ -3445,14 +3445,14 @@ describe('Settings Loading and Merging', () => {
           [],
         );
       } finally {
-        delete process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
+        delete process.env['CANOPY_CODE_SYSTEM_SETTINGS_PATH'];
       }
     });
   });
 
   describe('reloadScopeFromDisk', () => {
     it('reloads a scope from disk and resolves home env vars', () => {
-      const homeQwenEnvPath = path.join(
+      const homeCanopyEnvPath = path.join(
         path.dirname(USER_SETTINGS_PATH),
         '.env',
       );
@@ -3479,14 +3479,14 @@ describe('Settings Loading and Merging', () => {
       );
 
       (mockFsExistsSync as Mock).mockImplementation(
-        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeQwenEnvPath,
+        (p: fs.PathLike) => p === USER_SETTINGS_PATH || p === homeCanopyEnvPath,
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH) {
             return currentUserSettingsContent;
           }
-          if (p === homeQwenEnvPath) {
+          if (p === homeCanopyEnvPath) {
             return 'RELOADED_THEME=light';
           }
           return '{}';
@@ -3720,12 +3720,12 @@ describe('Settings Loading and Merging', () => {
       settings.setValue(
         SettingScope.User,
         'model.name',
-        '$runtime|openai|qwen3.6-27b-autoround',
+        '$runtime|openai|canopy3.6-27b-autoround',
       );
 
       const writeCall = (fs.writeFileSync as Mock).mock.calls.at(-1);
       const writtenContent = JSON.parse(String(writeCall?.[1]));
-      expect(writtenContent.model.name).toBe('qwen3.6-27b-autoround');
+      expect(writtenContent.model.name).toBe('canopy3.6-27b-autoround');
     });
 
     it('collapses stacked runtime snapshot prefixes before persisting model.name', () => {
@@ -3736,12 +3736,12 @@ describe('Settings Loading and Merging', () => {
       settings.setValue(
         SettingScope.User,
         'model.name',
-        '$runtime|openai|$runtime|openai|qwen3.6-27b-autoround',
+        '$runtime|openai|$runtime|openai|canopy3.6-27b-autoround',
       );
 
       const writeCall = (fs.writeFileSync as Mock).mock.calls.at(-1);
       const writtenContent = JSON.parse(String(writeCall?.[1]));
-      expect(writtenContent.model.name).toBe('qwen3.6-27b-autoround');
+      expect(writtenContent.model.name).toBe('canopy3.6-27b-autoround');
     });
 
     it('persists removed MCP servers when replacing the top-level mcpServers object', () => {
@@ -3948,7 +3948,7 @@ describe('Settings Loading and Merging', () => {
       isWorkspaceTrustedValue = true,
     }) {
       delete process.env['TESTTEST']; // reset
-      const geminiEnvPath = path.resolve(path.join(QWEN_DIR, '.env'));
+      const geminiEnvPath = path.resolve(path.join(CANOPY_DIR, '.env'));
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: isWorkspaceTrustedValue,
@@ -4028,27 +4028,31 @@ describe('Settings Loading and Merging', () => {
       cwdSpy.mockRestore();
     });
 
-    it('uses user .qwen/.env as fallback when the project .env lacks an API key', () => {
+    it('uses user .canopy/.env as fallback when the project .env lacks an API key', () => {
       delete process.env['OPENCODE_GO_API_KEY'];
       delete process.env['PROJECT_ONLY_VAR'];
       const cwdSpy = vi
         .spyOn(process, 'cwd')
         .mockReturnValue(MOCK_WORKSPACE_DIR);
       const projectEnvPath = path.join(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+      const userCanopyEnvPath = path.join(
+        '/mock/home/user',
+        CANOPY_DIR,
+        '.env',
+      );
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
         source: 'file',
       });
       (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-        [projectEnvPath, userQwenEnvPath].includes(p.toString()),
+        [projectEnvPath, userCanopyEnvPath].includes(p.toString()),
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === projectEnvPath) return 'PROJECT_ONLY_VAR=from_project';
-          if (p === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (p === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );
@@ -4059,32 +4063,38 @@ describe('Settings Loading and Merging', () => {
       loadEnvironment(loaded.merged);
 
       expect(process.env['PROJECT_ONLY_VAR']).toEqual('from_project');
-      expect(process.env['OPENCODE_GO_API_KEY']).toEqual('from_user_qwen_env');
+      expect(process.env['OPENCODE_GO_API_KEY']).toEqual(
+        'from_user_canopy_env',
+      );
 
       cwdSpy.mockRestore();
     });
 
-    it('lets the project .env win over user .qwen/.env when both define the API key', () => {
+    it('lets the project .env win over user .canopy/.env when both define the API key', () => {
       delete process.env['OPENCODE_GO_API_KEY'];
       const cwdSpy = vi
         .spyOn(process, 'cwd')
         .mockReturnValue(MOCK_WORKSPACE_DIR);
       const projectEnvPath = path.join(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+      const userCanopyEnvPath = path.join(
+        '/mock/home/user',
+        CANOPY_DIR,
+        '.env',
+      );
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
         source: 'file',
       });
       (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-        [projectEnvPath, userQwenEnvPath].includes(p.toString()),
+        [projectEnvPath, userCanopyEnvPath].includes(p.toString()),
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === projectEnvPath)
             return 'OPENCODE_GO_API_KEY=from_project_env';
-          if (p === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (p === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );
@@ -4099,27 +4109,31 @@ describe('Settings Loading and Merging', () => {
       cwdSpy.mockRestore();
     });
 
-    it('still loads user .qwen/.env fallback when the workspace is untrusted', () => {
+    it('still loads user .canopy/.env fallback when the workspace is untrusted', () => {
       delete process.env['OPENCODE_GO_API_KEY'];
       delete process.env['PROJECT_ENV_VAR'];
       const cwdSpy = vi
         .spyOn(process, 'cwd')
         .mockReturnValue(MOCK_WORKSPACE_DIR);
       const projectEnvPath = path.join(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+      const userCanopyEnvPath = path.join(
+        '/mock/home/user',
+        CANOPY_DIR,
+        '.env',
+      );
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: false,
         source: 'file',
       });
       (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-        [projectEnvPath, userQwenEnvPath].includes(p.toString()),
+        [projectEnvPath, userCanopyEnvPath].includes(p.toString()),
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === projectEnvPath) return 'PROJECT_ENV_VAR=from_project';
-          if (p === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (p === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );
@@ -4130,7 +4144,9 @@ describe('Settings Loading and Merging', () => {
       loadEnvironment(loaded.merged);
 
       expect(process.env['PROJECT_ENV_VAR']).toBeUndefined();
-      expect(process.env['OPENCODE_GO_API_KEY']).toEqual('from_user_qwen_env');
+      expect(process.env['OPENCODE_GO_API_KEY']).toEqual(
+        'from_user_canopy_env',
+      );
 
       cwdSpy.mockRestore();
     });
@@ -4145,7 +4161,11 @@ describe('Settings Loading and Merging', () => {
         .mockReturnValue(path.join(nestedWorkspaceDir, 'nested'));
       const firstWorkspaceEnvPath = path.join(nestedWorkspaceDir, '.env');
       const parentWorkspaceEnvPath = path.join(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+      const userCanopyEnvPath = path.join(
+        '/mock/home/user',
+        CANOPY_DIR,
+        '.env',
+      );
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
@@ -4155,7 +4175,7 @@ describe('Settings Loading and Merging', () => {
         [
           firstWorkspaceEnvPath,
           parentWorkspaceEnvPath,
-          userQwenEnvPath,
+          userCanopyEnvPath,
         ].includes(p.toString()),
       );
       (fs.readFileSync as Mock).mockImplementation(
@@ -4164,8 +4184,8 @@ describe('Settings Loading and Merging', () => {
             return 'FIRST_WORKSPACE_VAR=from_first_workspace';
           if (p === parentWorkspaceEnvPath)
             return 'PARENT_WORKSPACE_VAR=from_parent_workspace';
-          if (p === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (p === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );
@@ -4179,7 +4199,9 @@ describe('Settings Loading and Merging', () => {
         'from_first_workspace',
       );
       expect(process.env['PARENT_WORKSPACE_VAR']).toBeUndefined();
-      expect(process.env['OPENCODE_GO_API_KEY']).toEqual('from_user_qwen_env');
+      expect(process.env['OPENCODE_GO_API_KEY']).toEqual(
+        'from_user_canopy_env',
+      );
 
       cwdSpy.mockRestore();
     });
@@ -4191,21 +4213,25 @@ describe('Settings Loading and Merging', () => {
         .spyOn(process, 'cwd')
         .mockReturnValue(MOCK_WORKSPACE_DIR);
       const projectEnvPath = path.join(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+      const userCanopyEnvPath = path.join(
+        '/mock/home/user',
+        CANOPY_DIR,
+        '.env',
+      );
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
         source: 'file',
       });
       (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-        [projectEnvPath, userQwenEnvPath].includes(p.toString()),
+        [projectEnvPath, userCanopyEnvPath].includes(p.toString()),
       );
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === projectEnvPath)
             return 'GOOGLE_CLOUD_PROJECT=from_project_env';
-          if (p === userQwenEnvPath)
-            return 'GOOGLE_CLOUD_PROJECT=from_user_qwen_env';
+          if (p === userCanopyEnvPath)
+            return 'GOOGLE_CLOUD_PROJECT=from_user_canopy_env';
           return '{}';
         },
       );
@@ -4274,7 +4300,7 @@ describe('Settings Loading and Merging', () => {
       it('should allow .env file to override settings.env values', () => {
         const geminiEnvPath = path.join(
           RESOLVED_MOCK_WORKSPACE_DIR,
-          QWEN_DIR,
+          CANOPY_DIR,
           '.env',
         );
         const userSettingsContent: Settings = {
@@ -4310,7 +4336,7 @@ describe('Settings Loading and Merging', () => {
       it('should not override existing system environment variables', () => {
         process.env['SYSTEM_ENV_VAR'] = 'system_value';
 
-        const geminiEnvPath = path.resolve(path.join(QWEN_DIR, '.env'));
+        const geminiEnvPath = path.resolve(path.join(CANOPY_DIR, '.env'));
         const userSettingsContent: Settings = {
           env: {
             SYSTEM_ENV_VAR: 'from_settings',
@@ -4374,17 +4400,17 @@ describe('Settings Loading and Merging', () => {
         expect(process.env['MULTI_VAR_C']).toEqual('value_c');
       });
 
-      it('should never set QWEN_HOME or QWEN_RUNTIME_DIR from settings.env', () => {
+      it('should never set QWEN_HOME or CANOPY_RUNTIME_DIR from settings.env', () => {
         // Storage-routing vars must not come from settings.json — even at
         // user scope — because a workspace settings.json could otherwise
         // redirect global state after the path bootstrap has run.
         delete process.env['QWEN_HOME'];
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
 
         const userSettingsContent: Settings = {
           env: {
             QWEN_HOME: '/redirected/by/settings',
-            QWEN_RUNTIME_DIR: '/redirected/runtime',
+            CANOPY_RUNTIME_DIR: '/redirected/runtime',
             HARMLESS_VAR: 'ok',
           },
         };
@@ -4408,7 +4434,7 @@ describe('Settings Loading and Merging', () => {
         loadSettings(MOCK_WORKSPACE_DIR);
 
         expect(process.env['QWEN_HOME']).toBeUndefined();
-        expect(process.env['QWEN_RUNTIME_DIR']).toBeUndefined();
+        expect(process.env['CANOPY_RUNTIME_DIR']).toBeUndefined();
         expect(process.env['HARMLESS_VAR']).toEqual('ok');
       });
 
@@ -4533,7 +4559,7 @@ describe('Settings Loading and Merging', () => {
         process.env['THREE_SOURCE_ENV_VAR'] = '';
         const geminiEnvPath = path.join(
           RESOLVED_MOCK_WORKSPACE_DIR,
-          QWEN_DIR,
+          CANOPY_DIR,
           '.env',
         );
         const userSettingsContent: Settings = {
@@ -4566,41 +4592,41 @@ describe('Settings Loading and Merging', () => {
     });
 
     describe('QWEN_HOME custom directory', () => {
-      const originalQwenHome = process.env['QWEN_HOME'];
-      const originalQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+      const originalCanopyHome = process.env['QWEN_HOME'];
+      const originalCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
       const originalTrustedFoldersPath =
-        process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+        process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
       beforeEach(() => {
         delete process.env['DEBUG'];
         delete process.env['DEBUG_MODE'];
-        delete process.env['QWEN_HOME_TEST_VAR'];
+        delete process.env['CANOPY_HOME_TEST_VAR'];
       });
 
       afterEach(() => {
-        if (originalQwenHome === undefined) {
+        if (originalCanopyHome === undefined) {
           delete process.env['QWEN_HOME'];
         } else {
-          process.env['QWEN_HOME'] = originalQwenHome;
+          process.env['QWEN_HOME'] = originalCanopyHome;
         }
-        if (originalQwenRuntimeDir === undefined) {
-          delete process.env['QWEN_RUNTIME_DIR'];
+        if (originalCanopyRuntimeDir === undefined) {
+          delete process.env['CANOPY_RUNTIME_DIR'];
         } else {
-          process.env['QWEN_RUNTIME_DIR'] = originalQwenRuntimeDir;
+          process.env['CANOPY_RUNTIME_DIR'] = originalCanopyRuntimeDir;
         }
         if (originalTrustedFoldersPath === undefined) {
-          delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+          delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
         } else {
-          process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] =
+          process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
             originalTrustedFoldersPath;
         }
         delete process.env['DEBUG'];
         delete process.env['DEBUG_MODE'];
-        delete process.env['QWEN_HOME_TEST_VAR'];
+        delete process.env['CANOPY_HOME_TEST_VAR'];
       });
 
-      it('does not exclude DEBUG/DEBUG_MODE from .env in a QWEN_HOME dir not named .qwen', () => {
-        const customHome = '/tmp/qwen-home-custom';
+      it('does not exclude DEBUG/DEBUG_MODE from .env in a QWEN_HOME dir not named .canopy', () => {
+        const customHome = '/tmp/canopy-home-custom';
         process.env['QWEN_HOME'] = customHome;
         const customGlobalEnvPath = path.join(customHome, '.env');
 
@@ -4615,7 +4641,7 @@ describe('Settings Loading and Merging', () => {
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
             if (p === customGlobalEnvPath)
-              return 'DEBUG=true\nDEBUG_MODE=1\nQWEN_HOME_TEST_VAR=hello';
+              return 'DEBUG=true\nDEBUG_MODE=1\nCANOPY_HOME_TEST_VAR=hello';
             return '{}';
           },
         );
@@ -4626,14 +4652,14 @@ describe('Settings Loading and Merging', () => {
         // because the .env lives inside the user-level QWEN_HOME directory.
         expect(process.env['DEBUG']).toEqual('true');
         expect(process.env['DEBUG_MODE']).toEqual('1');
-        expect(process.env['QWEN_HOME_TEST_VAR']).toEqual('hello');
+        expect(process.env['CANOPY_HOME_TEST_VAR']).toEqual('hello');
       });
 
       it('ignores global-state paths set in a project .env', () => {
         delete process.env['QWEN_HOME'];
-        delete process.env['QWEN_RUNTIME_DIR'];
-        delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
-        delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
+        delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
+        delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
         const cwdSpy = vi
           .spyOn(process, 'cwd')
@@ -4653,9 +4679,9 @@ describe('Settings Loading and Merging', () => {
             if (p === projectEnvPath)
               return [
                 'QWEN_HOME=/tmp/hijack',
-                'QWEN_RUNTIME_DIR=/tmp/hijack-runtime',
-                'QWEN_CODE_MCP_APPROVALS_PATH=/tmp/preapproved.json',
-                'QWEN_CODE_TRUSTED_FOLDERS_PATH=/tmp/trusted.json',
+                'CANOPY_RUNTIME_DIR=/tmp/hijack-runtime',
+                'CANOPY_CODE_MCP_APPROVALS_PATH=/tmp/preapproved.json',
+                'CANOPY_CODE_TRUSTED_FOLDERS_PATH=/tmp/trusted.json',
                 'OTHER_VAR=ok',
               ].join('\n');
             return '{}';
@@ -4666,9 +4692,9 @@ describe('Settings Loading and Merging', () => {
 
         // A project .env must never redirect global state.
         expect(process.env['QWEN_HOME']).toBeUndefined();
-        expect(process.env['QWEN_RUNTIME_DIR']).toBeUndefined();
-        expect(process.env['QWEN_CODE_MCP_APPROVALS_PATH']).toBeUndefined();
-        expect(process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']).toBeUndefined();
+        expect(process.env['CANOPY_RUNTIME_DIR']).toBeUndefined();
+        expect(process.env['CANOPY_CODE_MCP_APPROVALS_PATH']).toBeUndefined();
+        expect(process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']).toBeUndefined();
         // Other vars from the same project .env still load.
         expect(process.env['OTHER_VAR']).toEqual('ok');
 
@@ -4677,11 +4703,11 @@ describe('Settings Loading and Merging', () => {
       });
 
       it('pre-resolves trusted-folders path from a user-level .env', () => {
-        delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
-        const customHome = '/tmp/qwen-home-trust';
+        delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
+        const customHome = '/tmp/canopy-home-trust';
         const customGlobalEnvPath = path.join(customHome, '.env');
         process.env['QWEN_HOME'] = customHome;
-        process.env['QWEN_RUNTIME_DIR'] = '/tmp/qwen-runtime';
+        process.env['CANOPY_RUNTIME_DIR'] = '/tmp/canopy-runtime';
 
         vi.mocked(isWorkspaceTrusted).mockReturnValue({
           isTrusted: true,
@@ -4694,7 +4720,7 @@ describe('Settings Loading and Merging', () => {
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
             if (p === customGlobalEnvPath) {
-              return 'QWEN_CODE_TRUSTED_FOLDERS_PATH=/tmp/custom-trust.json';
+              return 'CANOPY_CODE_TRUSTED_FOLDERS_PATH=/tmp/custom-trust.json';
             }
             return '{}';
           },
@@ -4702,30 +4728,34 @@ describe('Settings Loading and Merging', () => {
 
         loadEnvironment(loadSettings(MOCK_WORKSPACE_DIR).merged);
 
-        expect(process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']).toBe(
+        expect(process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH']).toBe(
           '/tmp/custom-trust.json',
         );
       });
 
-      it('still honors QWEN_HOME from a user-level .env (~/.qwen/.env)', () => {
+      it('still honors QWEN_HOME from a user-level .env (~/.canopy/.env)', () => {
         delete process.env['QWEN_HOME'];
 
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue('/mock/home/user');
-        const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+        const userCanopyEnvPath = path.join(
+          '/mock/home/user',
+          CANOPY_DIR,
+          '.env',
+        );
 
         vi.mocked(isWorkspaceTrusted).mockReturnValue({
           isTrusted: true,
           source: 'file',
         });
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [USER_SETTINGS_PATH, userQwenEnvPath].includes(p.toString()),
+          [USER_SETTINGS_PATH, userCanopyEnvPath].includes(p.toString()),
         );
         (fs.readFileSync as Mock).mockImplementation(
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
-            if (p === userQwenEnvPath) return 'QWEN_HOME=/tmp/from-user-env';
+            if (p === userCanopyEnvPath) return 'QWEN_HOME=/tmp/from-user-env';
             return '{}';
           },
         );
@@ -4739,23 +4769,27 @@ describe('Settings Loading and Merging', () => {
       it('does not pre-resolve attribution markers from a user-level .env', () => {
         delete process.env['QWEN_HOME'];
         delete process.env['QWEN_CODE_SERVE'];
-        delete process.env['QWEN_CODE_DESKTOP'];
+        delete process.env['CANOPY_CODE_DESKTOP'];
 
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue('/mock/home/user');
-        const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+        const userCanopyEnvPath = path.join(
+          '/mock/home/user',
+          CANOPY_DIR,
+          '.env',
+        );
 
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [userQwenEnvPath].includes(p.toString()),
+          [userCanopyEnvPath].includes(p.toString()),
         );
         (fs.readFileSync as Mock).mockImplementation(
           (p: fs.PathOrFileDescriptor) => {
-            if (p === userQwenEnvPath) {
+            if (p === userCanopyEnvPath) {
               return [
                 'QWEN_HOME=/tmp/from-user-env',
                 'QWEN_CODE_SERVE=1',
-                'QWEN_CODE_DESKTOP=1',
+                'CANOPY_CODE_DESKTOP=1',
               ].join('\n');
             }
             return '{}';
@@ -4766,17 +4800,17 @@ describe('Settings Loading and Merging', () => {
 
         expect(process.env['QWEN_HOME']).toEqual('/tmp/from-user-env');
         expect(process.env['QWEN_CODE_SERVE']).toBeUndefined();
-        expect(process.env['QWEN_CODE_DESKTOP']).toBeUndefined();
+        expect(process.env['CANOPY_CODE_DESKTOP']).toBeUndefined();
         cwdSpy.mockRestore();
       });
 
-      it('does not exclude DEBUG/DEBUG_MODE from a workspace .qwen/.env', () => {
+      it('does not exclude DEBUG/DEBUG_MODE from a workspace .canopy/.env', () => {
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue(MOCK_WORKSPACE_DIR);
-        const workspaceQwenEnvPath = path.join(
+        const workspaceCanopyEnvPath = path.join(
           MOCK_WORKSPACE_DIR,
-          QWEN_DIR,
+          CANOPY_DIR,
           '.env',
         );
 
@@ -4785,37 +4819,37 @@ describe('Settings Loading and Merging', () => {
           source: 'file',
         });
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [USER_SETTINGS_PATH, workspaceQwenEnvPath].includes(p.toString()),
+          [USER_SETTINGS_PATH, workspaceCanopyEnvPath].includes(p.toString()),
         );
         (fs.readFileSync as Mock).mockImplementation(
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
-            if (p === workspaceQwenEnvPath)
-              return 'DEBUG=true\nDEBUG_MODE=1\nQWEN_HOME_TEST_VAR=hello';
+            if (p === workspaceCanopyEnvPath)
+              return 'DEBUG=true\nDEBUG_MODE=1\nCANOPY_HOME_TEST_VAR=hello';
             return '{}';
           },
         );
 
         loadEnvironment(loadSettings(MOCK_WORKSPACE_DIR).merged);
 
-        // Per docs, `.qwen/.env` files are never filtered by excludedEnvVars,
+        // Per docs, `.canopy/.env` files are never filtered by excludedEnvVars,
         // even when nested inside a workspace.
         expect(process.env['DEBUG']).toEqual('true');
         expect(process.env['DEBUG_MODE']).toEqual('1');
-        expect(process.env['QWEN_HOME_TEST_VAR']).toEqual('hello');
+        expect(process.env['CANOPY_HOME_TEST_VAR']).toEqual('hello');
         cwdSpy.mockRestore();
       });
 
-      it('still blocks QWEN_HOME from a workspace .qwen/.env', () => {
+      it('still blocks QWEN_HOME from a workspace .canopy/.env', () => {
         delete process.env['QWEN_HOME'];
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
 
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue(MOCK_WORKSPACE_DIR);
-        const workspaceQwenEnvPath = path.join(
+        const workspaceCanopyEnvPath = path.join(
           MOCK_WORKSPACE_DIR,
-          QWEN_DIR,
+          CANOPY_DIR,
           '.env',
         );
 
@@ -4824,15 +4858,15 @@ describe('Settings Loading and Merging', () => {
           source: 'file',
         });
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [USER_SETTINGS_PATH, workspaceQwenEnvPath].includes(p.toString()),
+          [USER_SETTINGS_PATH, workspaceCanopyEnvPath].includes(p.toString()),
         );
         (fs.readFileSync as Mock).mockImplementation(
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
-            if (p === workspaceQwenEnvPath)
+            if (p === workspaceCanopyEnvPath)
               return [
                 'QWEN_HOME=/tmp/hijack',
-                'QWEN_RUNTIME_DIR=/tmp/hijack-runtime',
+                'CANOPY_RUNTIME_DIR=/tmp/hijack-runtime',
                 'OTHER_VAR=ok',
               ].join('\n');
             return '{}';
@@ -4841,23 +4875,27 @@ describe('Settings Loading and Merging', () => {
 
         loadEnvironment(loadSettings(MOCK_WORKSPACE_DIR).merged);
 
-        // A workspace `.qwen/.env` is exempt from `excludedEnvVars` but must
+        // A workspace `.canopy/.env` is exempt from `excludedEnvVars` but must
         // still be blocked from redirecting global state.
         expect(process.env['QWEN_HOME']).toBeUndefined();
-        expect(process.env['QWEN_RUNTIME_DIR']).toBeUndefined();
+        expect(process.env['CANOPY_RUNTIME_DIR']).toBeUndefined();
         expect(process.env['OTHER_VAR']).toEqual('ok');
 
         delete process.env['OTHER_VAR'];
         cwdSpy.mockRestore();
       });
 
-      it('redirects user settings path when QWEN_HOME is set in ~/.qwen/.env', () => {
+      it('redirects user settings path when QWEN_HOME is set in ~/.canopy/.env', () => {
         delete process.env['QWEN_HOME'];
 
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue(MOCK_WORKSPACE_DIR);
-        const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+        const userCanopyEnvPath = path.join(
+          '/mock/home/user',
+          CANOPY_DIR,
+          '.env',
+        );
         const customSettingsPath = path.join(
           '/tmp/from-user-env',
           'settings.json',
@@ -4868,11 +4906,11 @@ describe('Settings Loading and Merging', () => {
           source: 'file',
         });
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [userQwenEnvPath, customSettingsPath].includes(p.toString()),
+          [userCanopyEnvPath, customSettingsPath].includes(p.toString()),
         );
         (fs.readFileSync as Mock).mockImplementation(
           (p: fs.PathOrFileDescriptor) => {
-            if (p === userQwenEnvPath) return 'QWEN_HOME=/tmp/from-user-env';
+            if (p === userCanopyEnvPath) return 'QWEN_HOME=/tmp/from-user-env';
             if (p === customSettingsPath) return JSON.stringify({});
             return '{}';
           },
@@ -4880,7 +4918,7 @@ describe('Settings Loading and Merging', () => {
 
         const loaded = loadSettings(MOCK_WORKSPACE_DIR);
 
-        // The pre-pass propagates QWEN_HOME from ~/.qwen/.env into
+        // The pre-pass propagates QWEN_HOME from ~/.canopy/.env into
         // process.env so subsequent path getters (which now read it lazily)
         // route to /tmp/from-user-env consistently.
         expect(process.env['QWEN_HOME']).toEqual('/tmp/from-user-env');
@@ -4888,15 +4926,15 @@ describe('Settings Loading and Merging', () => {
         cwdSpy.mockRestore();
       });
 
-      it('warns when QWEN_HOME redirects but the legacy ~/.qwen still has settings', () => {
-        const customHome = '/tmp/qwen-home-fresh';
+      it('warns when QWEN_HOME redirects but the legacy ~/.canopy still has settings', () => {
+        const customHome = '/tmp/canopy-home-fresh';
         process.env['QWEN_HOME'] = customHome;
         const legacySettings = path.join(
           '/mock/home/user',
-          QWEN_DIR,
+          CANOPY_DIR,
           'settings.json',
         );
-        // Active QWEN_HOME has nothing yet; legacy ~/.qwen has settings.json.
+        // Active QWEN_HOME has nothing yet; legacy ~/.canopy has settings.json.
         const customSettingsPath = path.join(customHome, 'settings.json');
 
         vi.mocked(isWorkspaceTrusted).mockReturnValue({
@@ -4919,11 +4957,13 @@ describe('Settings Loading and Merging', () => {
         );
         expect(warningMatch).toBeDefined();
         expect(warningMatch).toContain(customHome);
-        expect(warningMatch).toContain(path.join('/mock/home/user', QWEN_DIR));
+        expect(warningMatch).toContain(
+          path.join('/mock/home/user', CANOPY_DIR),
+        );
       });
 
       it('does not warn when QWEN_HOME points to a directory with settings.json', () => {
-        const customHome = '/tmp/qwen-home-migrated';
+        const customHome = '/tmp/canopy-home-migrated';
         process.env['QWEN_HOME'] = customHome;
         const customSettingsPath = path.join(customHome, 'settings.json');
 
@@ -4944,11 +4984,11 @@ describe('Settings Loading and Merging', () => {
         expect(warningMatch).toBeUndefined();
       });
 
-      it('does not warn when QWEN_HOME is unset (default ~/.qwen)', () => {
+      it('does not warn when QWEN_HOME is unset (default ~/.canopy)', () => {
         delete process.env['QWEN_HOME'];
         const legacySettings = path.join(
           '/mock/home/user',
-          QWEN_DIR,
+          CANOPY_DIR,
           'settings.json',
         );
 
@@ -4970,7 +5010,7 @@ describe('Settings Loading and Merging', () => {
       });
 
       it('prefers QWEN_HOME/.env over ~/.env at the home-dir step', () => {
-        const customHome = '/tmp/qwen-home-custom';
+        const customHome = '/tmp/canopy-home-custom';
         process.env['QWEN_HOME'] = customHome;
         const customGlobalEnvPath = path.join(customHome, '.env');
         const homeEnvPath = path.join('/mock/home/user', '.env');
@@ -4988,8 +5028,8 @@ describe('Settings Loading and Merging', () => {
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
             if (p === customGlobalEnvPath)
-              return 'QWEN_HOME_TEST_VAR=fromQwenHome';
-            if (p === homeEnvPath) return 'QWEN_HOME_TEST_VAR=fromHomeDir';
+              return 'CANOPY_HOME_TEST_VAR=fromCanopyHome';
+            if (p === homeEnvPath) return 'CANOPY_HOME_TEST_VAR=fromHomeDir';
             return '{}';
           },
         );
@@ -4999,11 +5039,11 @@ describe('Settings Loading and Merging', () => {
         // QWEN_HOME/.env must win — without the precedence fix, ~/.env would
         // be returned by the walk-up before the QWEN_HOME fallback was ever
         // consulted.
-        expect(process.env['QWEN_HOME_TEST_VAR']).toEqual('fromQwenHome');
+        expect(process.env['CANOPY_HOME_TEST_VAR']).toEqual('fromCanopyHome');
       });
 
-      it('falls back to legacy ~/.qwen/.env for non-routing keys when <QWEN_HOME>/.env is absent', () => {
-        // User keeps OPENAI_API_KEY in ~/.qwen/.env and adds QWEN_HOME to the
+      it('falls back to legacy ~/.canopy/.env for non-routing keys when <QWEN_HOME>/.env is absent', () => {
+        // User keeps OPENAI_API_KEY in ~/.canopy/.env and adds QWEN_HOME to the
         // same file. Adding the redirect must not silently drop credentials
         // sitting in that file when the new dir hasn't been populated yet.
         delete process.env['QWEN_HOME'];
@@ -5012,18 +5052,22 @@ describe('Settings Loading and Merging', () => {
         const cwdSpy = vi
           .spyOn(process, 'cwd')
           .mockReturnValue('/mock/home/user');
-        const customHome = '/tmp/qwen-home-fresh-fallback';
-        const userQwenEnvPath = path.join('/mock/home/user', QWEN_DIR, '.env');
+        const customHome = '/tmp/canopy-home-fresh-fallback';
+        const userCanopyEnvPath = path.join(
+          '/mock/home/user',
+          CANOPY_DIR,
+          '.env',
+        );
         const customSettingsPath = path.join(customHome, 'settings.json');
 
         vi.mocked(isWorkspaceTrusted).mockReturnValue({
           isTrusted: true,
           source: 'file',
         });
-        // Only the legacy ~/.qwen/.env exists; <QWEN_HOME>/.env, the active
+        // Only the legacy ~/.canopy/.env exists; <QWEN_HOME>/.env, the active
         // settings.json under <QWEN_HOME>, and ~/.env all do not.
         (mockFsExistsSync as Mock).mockImplementation((p: fs.PathLike) =>
-          [USER_SETTINGS_PATH, customSettingsPath, userQwenEnvPath].includes(
+          [USER_SETTINGS_PATH, customSettingsPath, userCanopyEnvPath].includes(
             p.toString(),
           ),
         );
@@ -5031,7 +5075,7 @@ describe('Settings Loading and Merging', () => {
           (p: fs.PathOrFileDescriptor) => {
             if (p === USER_SETTINGS_PATH) return JSON.stringify({});
             if (p === customSettingsPath) return JSON.stringify({});
-            if (p === userQwenEnvPath)
+            if (p === userCanopyEnvPath)
               return [
                 `QWEN_HOME=${customHome}`,
                 'OPENAI_API_KEY=secret-from-legacy',
@@ -5056,14 +5100,14 @@ describe('Settings Loading and Merging', () => {
       p: fs.PathLike | fs.PathOrFileDescriptor,
     ): string => path.normalize(p.toString());
 
-    it('uses user .qwen/.env as fallback when the project .env lacks an API key', () => {
+    it('uses user .canopy/.env as fallback when the project .env lacks an API key', () => {
       delete process.env['OPENCODE_GO_API_KEY'];
       delete process.env['PROJECT_ONLY_VAR'];
       const projectEnvPath = path.resolve(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.normalize(
-        path.join('/mock/home/user', QWEN_DIR, '.env'),
+      const userCanopyEnvPath = path.normalize(
+        path.join('/mock/home/user', CANOPY_DIR, '.env'),
       );
-      const envPaths = new Set([projectEnvPath, userQwenEnvPath]);
+      const envPaths = new Set([projectEnvPath, userCanopyEnvPath]);
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
@@ -5077,8 +5121,8 @@ describe('Settings Loading and Merging', () => {
           const filePath = normalizeFsPath(p);
           if (filePath === projectEnvPath)
             return 'PROJECT_ONLY_VAR=from_project';
-          if (filePath === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (filePath === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );
@@ -5086,7 +5130,9 @@ describe('Settings Loading and Merging', () => {
       const result = reloadEnvironment({}, MOCK_WORKSPACE_DIR);
 
       expect(process.env['PROJECT_ONLY_VAR']).toEqual('from_project');
-      expect(process.env['OPENCODE_GO_API_KEY']).toEqual('from_user_qwen_env');
+      expect(process.env['OPENCODE_GO_API_KEY']).toEqual(
+        'from_user_canopy_env',
+      );
       expect(result.updatedKeys).toEqual([
         'PROJECT_ONLY_VAR',
         'OPENCODE_GO_API_KEY',
@@ -5094,13 +5140,13 @@ describe('Settings Loading and Merging', () => {
       expect(result.removedKeys).toEqual([]);
     });
 
-    it('keeps the project .env value during reload when user .qwen/.env also defines it', () => {
+    it('keeps the project .env value during reload when user .canopy/.env also defines it', () => {
       delete process.env['OPENCODE_GO_API_KEY'];
       const projectEnvPath = path.resolve(MOCK_WORKSPACE_DIR, '.env');
-      const userQwenEnvPath = path.normalize(
-        path.join('/mock/home/user', QWEN_DIR, '.env'),
+      const userCanopyEnvPath = path.normalize(
+        path.join('/mock/home/user', CANOPY_DIR, '.env'),
       );
-      const envPaths = new Set([projectEnvPath, userQwenEnvPath]);
+      const envPaths = new Set([projectEnvPath, userCanopyEnvPath]);
 
       vi.mocked(isWorkspaceTrusted).mockReturnValue({
         isTrusted: true,
@@ -5114,8 +5160,8 @@ describe('Settings Loading and Merging', () => {
           const filePath = normalizeFsPath(p);
           if (filePath === projectEnvPath)
             return 'OPENCODE_GO_API_KEY=from_project_env';
-          if (filePath === userQwenEnvPath)
-            return 'OPENCODE_GO_API_KEY=from_user_qwen_env';
+          if (filePath === userCanopyEnvPath)
+            return 'OPENCODE_GO_API_KEY=from_user_canopy_env';
           return '{}';
         },
       );

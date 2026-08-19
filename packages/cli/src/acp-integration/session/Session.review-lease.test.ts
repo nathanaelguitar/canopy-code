@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * ACP prompt turns and the /review worktree lease.
  *
  * Coverage:
  *   RL1: the turn body runs inside promptIdContext, so shell subprocesses
- *        (via getShellContextEnvVars) see QWEN_CODE_PROMPT_ID and
- *        `qwen review fetch-pr` can record its worktree lease.
+ *        (via getShellContextEnvVars) see CANOPY_CODE_PROMPT_ID and
+ *        `canopy review fetch-pr` can record its worktree lease.
  *   RL2: a completed prompt sweeps this prompt's review-worktree leases
  *        (no-op when the review's own cleanup step already cleared them).
  *   RL3: the sweep still runs when the model stream throws — the
@@ -16,20 +16,20 @@
  *   RL4: consecutive prompts sweep under their own prompt IDs.
  *
  * Mirrors the harness in Session.worktree.test.ts: real Session, no
- * module-level mock of @qwen-code/qwen-code-core.
+ * module-level mock of @canopy-code/canopy-code-core.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Session } from './Session.js';
-import type { Config, GeminiChat } from '@qwen-code/qwen-code-core';
+import type { Config, GeminiChat } from '@canopy-code/canopy-code-core';
 import {
   ApprovalMode,
   AuthType,
   GoalPersistenceUnavailableError,
   Storage,
   promptIdContext,
-} from '@qwen-code/qwen-code-core';
-import * as core from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import * as core from '@canopy-code/canopy-code-core';
 import type {
   AgentSideConnection,
   PromptRequest,
@@ -101,7 +101,7 @@ describe('Session review-worktree lease sweep', () => {
       setApprovalMode: vi.fn(),
       getApprovalMode: vi.fn().mockReturnValue(ApprovalMode.DEFAULT),
       switchModel: vi.fn(),
-      getModel: vi.fn().mockReturnValue('qwen3'),
+      getModel: vi.fn().mockReturnValue('canopy3'),
       getSessionId: vi.fn().mockReturnValue(SESSION_ID),
       takeActiveTodoReminder: vi.fn().mockReturnValue(undefined),
       getActiveTodoWorkChainOwner: vi.fn((promptId: string) => promptId),

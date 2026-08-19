@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,7 +38,7 @@ import { createDebugLogger } from '../utils/debugLogger.js';
 import { normalizeContent } from '../utils/textUtils.js';
 import { expandHomeDir } from '../utils/paths.js';
 import {
-  QWEN_DIR,
+  CANOPY_DIR,
   SKILL_PROVIDER_CONFIG_DIRS,
   Storage,
 } from '../config/storage.js';
@@ -922,8 +922,8 @@ export class SkillManager {
         // joins onto an already-absolute root, so it deliberately does not.
         const dirs = SKILL_PROVIDER_CONFIG_DIRS.map((v) =>
           path.resolve(
-            v === QWEN_DIR
-              ? path.join(Storage.getGlobalQwenDir(), SKILLS_CONFIG_DIR)
+            v === CANOPY_DIR
+              ? path.join(Storage.getGlobalCanopyDir(), SKILLS_CONFIG_DIR)
               : path.join(os.homedir(), v, SKILLS_CONFIG_DIR),
           ),
         );
@@ -1035,7 +1035,7 @@ export class SkillManager {
 
     // Iterate provider directories in PROVIDER_CONFIG_DIRS order.
     // The first directory that contains a skill with a given name wins,
-    // so the order defines implicit precedence (.qwen > .agent > .cursor > ...).
+    // so the order defines implicit precedence (.canopy > .agent > .cursor > ...).
     // Load in parallel but fold sequentially to preserve precedence.
     const baseDirs = this.getSkillsBaseDirs(level);
     const perDirSkills = await Promise.all(
@@ -1243,7 +1243,7 @@ export class SkillManager {
   }
 
   private async ensureUserSkillsDir(): Promise<void> {
-    const baseDir = path.join(Storage.getGlobalQwenDir(), SKILLS_CONFIG_DIR);
+    const baseDir = path.join(Storage.getGlobalCanopyDir(), SKILLS_CONFIG_DIR);
     try {
       await fs.mkdir(baseDir, { recursive: true });
     } catch (error) {

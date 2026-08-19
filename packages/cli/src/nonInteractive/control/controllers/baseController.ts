@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,8 +16,8 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import type { DebugLogger } from '@qwen-code/qwen-code-core';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import type { DebugLogger } from '@canopy-code/canopy-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { IControlContext } from '../ControlContext.js';
 import type {
   ControlRequestPayload,

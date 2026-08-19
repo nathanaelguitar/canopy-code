@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   resolveLiveProviderCredential,
   type LiveProviderCredential,
 } from './provider-credentials.js';
-import { openQwenRealtimeSession } from './qwen-realtime-session.js';
+import { openCanopyRealtimeSession } from './canopy-realtime-session.js';
 import type { LiveStatus } from './types.js';
 
 export interface LiveSetupStatus {
@@ -70,7 +70,7 @@ export interface LiveSetupControllerDeps {
 async function validateCredential(
   credential: LiveProviderCredential,
 ): Promise<void> {
-  const session = await openQwenRealtimeSession({
+  const session = await openCanopyRealtimeSession({
     endpoint: credential.endpoint,
     apiKey: credential.apiKey,
     model: credential.realtimeModel,
@@ -141,7 +141,7 @@ export class LiveSetupController {
   async retryInstall(): Promise<LiveSetupStatus> {
     if (!this.deps.getEnabled()) {
       throw new LiveSetupError(
-        'Enable Live Voice before installing Qwen Live Host.',
+        'Enable Live Voice before installing Canopy Live Host.',
         'live_setup_disabled',
         409,
       );
@@ -153,7 +153,7 @@ export class LiveSetupController {
   async launchHost(): Promise<LiveSetupStatus> {
     if (!this.deps.getEnabled()) {
       throw new LiveSetupError(
-        'Enable Live Voice before launching Qwen Live Host.',
+        'Enable Live Voice before launching Canopy Live Host.',
         'live_setup_disabled',
         409,
       );

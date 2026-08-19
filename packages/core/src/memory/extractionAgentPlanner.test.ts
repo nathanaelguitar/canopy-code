@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -387,21 +387,21 @@ describe('runAutoMemoryExtractionByAgent', () => {
     // classifier) so a Once-mock only covers the first call. Restored
     // below to keep subsequent tests on the suite's POSIX defaults.
     vi.mocked(getAutoMemoryRoot).mockReturnValue(
-      'C:\\Users\\foo\\.qwen\\projects\\proj\\memory',
+      'C:\\Users\\foo\\.canopy\\projects\\proj\\memory',
     );
     vi.mocked(getUserAutoMemoryRoot).mockReturnValue(
-      'C:\\Users\\foo\\.qwen\\memories',
+      'C:\\Users\\foo\\.canopy\\memories',
     );
     vi.mocked(runForkedAgent).mockResolvedValue({
       status: 'completed',
       finalText: '',
       filesTouched: [
-        'C:/Users/foo/.qwen/projects/proj/memory/project/release.md',
-        'C:/Users/foo/.qwen/memories/user/role.md',
+        'C:/Users/foo/.canopy/projects/proj/memory/project/release.md',
+        'C:/Users/foo/.canopy/memories/user/role.md',
       ],
       filesWritten: [
-        'C:/Users/foo/.qwen/projects/proj/memory/project/release.md',
-        'C:/Users/foo/.qwen/memories/user/role.md',
+        'C:/Users/foo/.canopy/projects/proj/memory/project/release.md',
+        'C:/Users/foo/.canopy/memories/user/role.md',
       ],
     });
 

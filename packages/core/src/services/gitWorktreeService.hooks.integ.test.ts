@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,7 +27,7 @@ describe('GitWorktreeService.createUserWorktree() — hooksPath setup', () => {
   let repoRoot: string;
 
   beforeEach(async () => {
-    repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-hooks-'));
+    repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-hooks-'));
     execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repoRoot });
     execFileSync('git', ['config', 'user.email', 't@e.com'], { cwd: repoRoot });
     execFileSync('git', ['config', 'user.name', 't'], { cwd: repoRoot });

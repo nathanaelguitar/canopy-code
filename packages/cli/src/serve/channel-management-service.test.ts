@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -329,11 +329,11 @@ describe('createChannelManagementService', () => {
   });
 
   it('manages pairing requests and approvals in the selected workspace scope', async () => {
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const qwenHome = await fs.mkdtemp(
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const canopyHome = await fs.mkdtemp(
       path.join(os.tmpdir(), 'channel-management-pairing-'),
     );
-    process.env['QWEN_HOME'] = qwenHome;
+    process.env['QWEN_HOME'] = canopyHome;
     try {
       const { service } = setup({
         snapshot: settingsSnapshot({
@@ -388,18 +388,18 @@ describe('createChannelManagementService', () => {
         code: 'channel_pairing_approval_not_found',
       });
     } finally {
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
-      await fs.rm(qwenHome, { recursive: true, force: true });
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
+      await fs.rm(canopyHome, { recursive: true, force: true });
     }
   });
 
   it('manages group pairing when groupPolicy uses pairing mode', async () => {
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const qwenHome = await fs.mkdtemp(
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const canopyHome = await fs.mkdtemp(
       path.join(os.tmpdir(), 'channel-management-group-pairing-'),
     );
-    process.env['QWEN_HOME'] = qwenHome;
+    process.env['QWEN_HOME'] = canopyHome;
     try {
       const { service } = setup({
         snapshot: settingsSnapshot({
@@ -484,9 +484,9 @@ describe('createChannelManagementService', () => {
         code: 'channel_pairing_approval_not_found',
       });
     } finally {
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
-      await fs.rm(qwenHome, { recursive: true, force: true });
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
+      await fs.rm(canopyHome, { recursive: true, force: true });
     }
   });
 
@@ -920,11 +920,11 @@ describe('createChannelManagementService', () => {
   });
 
   it('rejects approval of an unknown pairing code', async () => {
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const qwenHome = await fs.mkdtemp(
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const canopyHome = await fs.mkdtemp(
       path.join(os.tmpdir(), 'channel-management-pairing-'),
     );
-    process.env['QWEN_HOME'] = qwenHome;
+    process.env['QWEN_HOME'] = canopyHome;
     try {
       const { service } = setup({
         snapshot: settingsSnapshot({
@@ -938,9 +938,9 @@ describe('createChannelManagementService', () => {
         service.approvePairing('bot', 'ZZZZZZZZ'),
       ).rejects.toMatchObject({ code: 'channel_pairing_request_not_found' });
     } finally {
-      if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-      else process.env['QWEN_HOME'] = previousQwenHome;
-      await fs.rm(qwenHome, { recursive: true, force: true });
+      if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+      else process.env['QWEN_HOME'] = previousCanopyHome;
+      await fs.rm(canopyHome, { recursive: true, force: true });
     }
   });
 

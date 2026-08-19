@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -194,17 +194,17 @@ vi.mock('node:stream', async (importOriginal) => {
 });
 
 // Mock core dependencies
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
   BranchPointInvalidError: class BranchPointInvalidError extends Error {
     constructor(readonly recordId: string) {
       super(`Invalid or inactive branch point: ${recordId}`);
     }
   },
-  INVOCATION_CONTEXT_META_KEY: 'qwen-code/invocation',
+  INVOCATION_CONTEXT_META_KEY: 'canopy-code/invocation',
   PRIVATE_ACP_CAPABILITY_ENV: 'QWEN_CODE_PRIVATE_ACP_CAPABILITY',
   PRIVATE_PARENT_CAPABILITY_META_KEY: 'qwen-code/private-parent-capability',
   parseInvocationContext: vi.fn(
-    (await importOriginal<typeof import('@qwen-code/qwen-code-core')>())
+    (await importOriginal<typeof import('@canopy-code/canopy-code-core')>())
       .parseInvocationContext,
   ),
   SESSION_ARTIFACT_PERSISTENCE_VERSION: 2,
@@ -212,12 +212,12 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
   // The real helper: the goal get/clear fallbacks return its exact shape and
   // the assertions below compare against it.
   emptyGoalSnapshot: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).emptyGoalSnapshot,
   // The real class: `acpAgent` narrows on it with `instanceof`, so a stand-in
   // would make the goal get/clear fallbacks untestable.
   GoalPersistenceUnavailableError: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).GoalPersistenceUnavailableError,
   normalizeEventPayload: vi.fn((payload: unknown) =>
     typeof payload === 'object' &&
@@ -239,10 +239,10 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
   addDaemonRequestAttribute: mockAddDaemonRequestAttribute,
   observeToolResultBoundary: vi.fn(() => false),
   toolResultArtifactState: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).toolResultArtifactState,
   toolResultPartDiagnosticValues: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).toolResultPartDiagnosticValues,
   preloadContentGenerator: mockPreloadContentGenerator,
   createDebugLogger: () => mockDebugLogger,
@@ -278,7 +278,7 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
     patterns?.includes(name) ?? false,
   mcpServerRequiresOAuth: mockMcpServerRequiresOAuth,
   AuthType: {
-    QWEN_OAUTH: 'qwen-oauth',
+    CANOPY_OAUTH: 'canopy-oauth',
     USE_OPENAI: 'openai',
     USE_ANTHROPIC: 'anthropic',
     USE_GEMINI: 'gemini',
@@ -326,16 +326,16 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
   ),
   SessionTranscriptReader: vi.fn(),
   isReplayTurnStartType: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).isReplayTurnStartType,
   parseGoalSnapshotV2: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).parseGoalSnapshotV2,
   parseGoalStateCause: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).parseGoalStateCause,
   findBoundaryAtOrBefore: (
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>()
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>()
   ).findBoundaryAtOrBefore,
   ALL_PROVIDERS: [
     {
@@ -375,7 +375,7 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
         protocolOptions: ['openai', 'anthropic', 'gemini'],
         baseUrl: undefined,
         envKey: (protocol: string, baseUrl: string) =>
-          `QWEN_CUSTOM_API_KEY_${protocol}_${baseUrl.replace(
+          `CANOPY_CUSTOM_API_KEY_${protocol}_${baseUrl.replace(
             /[^A-Za-z0-9]/g,
             '_',
           )}`,
@@ -385,7 +385,7 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
         uiGroup: 'third-party',
         ownsModel: (model: { envKey?: string }) =>
           typeof model.envKey === 'string' &&
-          model.envKey.startsWith('QWEN_CUSTOM_API_KEY_'),
+          model.envKey.startsWith('CANOPY_CUSTOM_API_KEY_'),
       };
     }
     return undefined;
@@ -530,13 +530,13 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
     },
   ),
   clearCachedCredentialFile: vi.fn(),
-  getAllGeminiMdFilenames: vi.fn(() => ['QWEN.md', 'AGENTS.md']),
+  getAllGeminiMdFilenames: vi.fn(() => ['CANOPY.md', 'AGENTS.md']),
   getAutoMemoryRoot: vi.fn(
-    (projectRoot: string) => `${projectRoot}/.qwen/memory`,
+    (projectRoot: string) => `${projectRoot}/.canopy/memory`,
   ),
   getUserAutoMemoryRoot: vi.fn(() => '/tmp/user-memory'),
-  QwenOAuth2Event: {},
-  qwenOAuth2Events: { on: vi.fn(), off: vi.fn() },
+  CanopyOAuth2Event: {},
+  canopyOAuth2Events: { on: vi.fn(), off: vi.fn() },
   MCPDiscoveryState: {
     NOT_STARTED: 'not_started',
     IN_PROGRESS: 'in_progress',
@@ -600,10 +600,10 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
     async (baseName: string) => `${baseName} (Branch)`,
   ),
   Storage: {
-    getGlobalQwenDir: vi.fn(() => '/tmp/qwen-global-test'),
-    getGlobalTempDir: vi.fn(() => '/tmp/qwen-global-temp'),
-    getUserExtensionsDir: vi.fn(() => '/tmp/qwen-extensions'),
-    getRuntimeBaseDir: vi.fn(() => '/tmp/qwen-runtime-test'),
+    getGlobalCanopyDir: vi.fn(() => '/tmp/canopy-global-test'),
+    getGlobalTempDir: vi.fn(() => '/tmp/canopy-global-temp'),
+    getUserExtensionsDir: vi.fn(() => '/tmp/canopy-extensions'),
+    getRuntimeBaseDir: vi.fn(() => '/tmp/canopy-runtime-test'),
     runWithRuntimeBaseDir: vi.fn(
       (
         _runtimeBaseDir: string,
@@ -865,13 +865,13 @@ vi.mock('../utils/languageUtils.js', () => ({
     ) => {
       const p = config?.getOutputLanguageFilePath();
       if (!p) {
-        config?.setOutputLanguageFilePath('/mock/.qwen/output-language.md');
+        config?.setOutputLanguageFilePath('/mock/.canopy/output-language.md');
       }
     },
   ),
   getOutputLanguageFilePath: vi
     .fn()
-    .mockReturnValue('/mock/.qwen/output-language.md'),
+    .mockReturnValue('/mock/.canopy/output-language.md'),
   resolveOutputLanguage: vi.fn((v: string | null | undefined) => v ?? 'auto'),
   resolveOutputLanguageOrPreserveAuto: vi.fn(
     (v: string | null | undefined) => v ?? 'auto',
@@ -901,7 +901,7 @@ import {
   createManagedExternalToolGuard,
 } from './acpAgent.js';
 import { gzipSync } from 'node:zlib';
-import type { Config, GoalSnapshotV2 } from '@qwen-code/qwen-code-core';
+import type { Config, GoalSnapshotV2 } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import type { CliArgs } from '../config/config.js';
 import {
@@ -938,7 +938,7 @@ import {
   APPROVAL_MODES,
   ToolNames,
   GoalPersistenceUnavailableError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { ndJsonStream } from '@qwen-code/acp-bridge/ndJsonStream';
 import { SESSION_SOURCE_META_KEY } from '@qwen-code/acp-bridge';
 import type {
@@ -1953,10 +1953,10 @@ describe('toHttpServer', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests for QwenAgent.initialize() mcpCapabilities + newSession SSE/HTTP
+// Tests for CanopyAgent.initialize() mcpCapabilities + newSession SSE/HTTP
 // ---------------------------------------------------------------------------
 
-describe('QwenAgent MCP SSE/HTTP support', () => {
+describe('CanopyAgent MCP SSE/HTTP support', () => {
   // We need to capture the agent factory from AgentSideConnection constructor
   let capturedAgentFactory:
     | ((conn: AgentSideConnectionLike) => AgentLike)
@@ -2017,7 +2017,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   let stdoutDestroySpy: MockInstance<typeof process.stdout.destroy>;
 
   const mockArgv = {} as CliArgs;
-  const acpLocalReadRootsEnv = 'QWEN_ACP_LOCAL_READ_ROOTS';
+  const acpLocalReadRootsEnv = 'CANOPY_ACP_LOCAL_READ_ROOTS';
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -2204,12 +2204,12 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       prompt: [{ type: 'text', text: 'hello' }],
       _meta: {
         keep: true,
-        'qwen-code/invocation': invocation,
+        'canopy-code/invocation': invocation,
         'qwen-code/private-parent-capability': 'must-not-propagate',
-        'qwen.daemon.modelPrompt': 'trusted model-only prompt',
-        'qwen.daemon.promptDisplayText': 'trusted display text',
-        'qwen.channel.prompt': true,
-        'qwen.daemon.channelDelivery': {
+        'canopy.daemon.modelPrompt': 'trusted model-only prompt',
+        'canopy.daemon.promptDisplayText': 'trusted display text',
+        'canopy.channel.prompt': true,
+        'canopy.daemon.channelDelivery': {
           deliveryId: 'delivery-trusted',
           target: { channelName: 'dingtalk', type: 'user', id: 'user-1' },
         },
@@ -2222,9 +2222,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         prompt: [{ type: 'text', text: 'hello' }],
         _meta: {
           keep: true,
-          'qwen.daemon.promptDisplayText': 'trusted display text',
-          'qwen.channel.prompt': true,
-          'qwen.daemon.channelDelivery': {
+          'canopy.daemon.promptDisplayText': 'trusted display text',
+          'canopy.channel.prompt': true,
+          'canopy.daemon.channelDelivery': {
             deliveryId: 'delivery-trusted',
             target: { channelName: 'dingtalk', type: 'user', id: 'user-1' },
           },
@@ -2239,12 +2239,12 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   });
 
   it('strips channel classification from untrusted callers', async () => {
-    // `qwen.channel.prompt` marks a turn as a channel turn, opting it out
+    // `canopy.channel.prompt` marks a turn as a channel turn, opting it out
     // of loop-detected rejection and the repeated-failure guard, and
-    // `qwen.daemon.channelDelivery` schedules the response delivery. Only
+    // `canopy.daemon.channelDelivery` schedules the response delivery. Only
     // trusted parents (the channel bridges and the daemon bridge) may set
     // them; an untrusted client marking its own prompt must not reach the
-    // session. A plain `qwen --acp` child has no expected capability and
+    // session. A plain `canopy --acp` child has no expected capability and
     // initializes untrusted.
     await setupSessionMocks('untrusted-session');
     const agentPromise = runAcpAgent(
@@ -2266,8 +2266,8 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       prompt: [{ type: 'text', text: 'hello' }],
       _meta: {
         keep: true,
-        'qwen.channel.prompt': true,
-        'qwen.daemon.channelDelivery': {
+        'canopy.channel.prompt': true,
+        'canopy.daemon.channelDelivery': {
           deliveryId: 'delivery-forged',
           target: { channelName: 'dingtalk', type: 'user', id: 'user-1' },
         },
@@ -2550,7 +2550,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         sessionId: 'trusted-session',
         prompt: [{ type: 'text', text: 'hello' }],
         _meta: {
-          'qwen-code/invocation': {
+          'canopy-code/invocation': {
             version: 2,
             sessionId: 'trusted-session',
             promptId: 'trusted-prompt',
@@ -2591,12 +2591,12 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         sessionId: 'trusted-session',
         prompt: [{ type: 'text', text: 'hello' }],
         _meta: {
-          'qwen-code/invocation': {
+          'canopy-code/invocation': {
             version: 1,
             sessionId: 'trusted-session',
             promptId: 'trusted-prompt',
           },
-          'qwen.daemon.modelPrompt': { forged: true },
+          'canopy.daemon.modelPrompt': { forged: true },
         },
       }),
     ).rejects.toThrow('Invalid trusted ACP model prompt');
@@ -2627,14 +2627,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       prompt: [{ type: 'text', text: 'hello' }],
       _meta: {
         keep: true,
-        'qwen-code/invocation': {
+        'canopy-code/invocation': {
           version: 1,
           sessionId: 'forged-session',
           promptId: 'forged-prompt',
         },
         'qwen-code/private-parent-capability': 'forged-capability',
-        'qwen.daemon.modelPrompt': 'forged model-only prompt',
-        'qwen.daemon.promptDisplayText': 'forged display text',
+        'canopy.daemon.modelPrompt': 'forged model-only prompt',
+        'canopy.daemon.promptDisplayText': 'forged display text',
       },
     });
 
@@ -3229,7 +3229,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('appends QWEN_ACP_LOCAL_READ_ROOTS absolute entries to ACP file system fallback roots', async () => {
+  it('appends CANOPY_ACP_LOCAL_READ_ROOTS absolute entries to ACP file system fallback roots', async () => {
     const previousRoots = process.env[acpLocalReadRootsEnv];
     const envRootA = path.resolve('/custom/acp-a');
     const envRootB = path.resolve('/custom/acp-b');
@@ -3459,15 +3459,15 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     const request = {
       cwd: '/tmp',
       mcpServers: [],
-      _meta: { 'qwen.telemetry.traceparent': 'daemon-parent' },
+      _meta: { 'canopy.telemetry.traceparent': 'daemon-parent' },
     };
 
     await agent.newSession(request);
 
     expect(mockExtractDaemonTraceContext).toHaveBeenCalledWith(request);
     expect(mockWithDaemonSpan).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_start',
-      { 'qwen-code.daemon.operation': 'acp_session_new' },
+      'canopy-code.daemon.session_start',
+      { 'canopy-code.daemon.operation': 'acp_session_new' },
       expect.any(Function),
       { parentContext },
     );
@@ -3482,9 +3482,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       'session_register',
       'response_build',
     ]) {
-      expect(attributes[`qwen-code.daemon.session_start.${stage}_ms`]).toEqual(
-        expect.any(Number),
-      );
+      expect(
+        attributes[`canopy-code.daemon.session_start.${stage}_ms`],
+      ).toEqual(expect.any(Number));
     }
     expect(attributes['session.id']).toBe('test-session-id');
     expect(mockStartNonInteractiveOpenAILogHousekeeping).toHaveBeenCalledWith(
@@ -3503,7 +3503,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agent.newSession({
       cwd: '/tmp',
       mcpServers: [],
-      _meta: { 'qwen-code/sessionId': '550e8400-e29b-41d4-a716-446655440000' },
+      _meta: {
+        'canopy-code/sessionId': '550e8400-e29b-41d4-a716-446655440000',
+      },
     });
 
     const argv = vi.mocked(loadCliConfig).mock.calls[0]![1];
@@ -3528,7 +3530,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       agent.newSession({
         cwd: '/tmp',
         mcpServers: [],
-        _meta: { 'qwen-code/sessionId': '../../escape' },
+        _meta: { 'canopy-code/sessionId': '../../escape' },
       }),
     ).rejects.toMatchObject({
       code: -32602,
@@ -3561,7 +3563,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     const request = {
       cwd: '/tmp',
       mcpServers: [],
-      _meta: { 'qwen-code/sessionId': sessionId },
+      _meta: { 'canopy-code/sessionId': sessionId },
     };
 
     const first = agent.newSession(request);
@@ -3679,7 +3681,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       agent.newSession({ cwd: '/tmp', mcpServers: [] }),
     ).rejects.toBe(configError);
     expect(mockSessionStartSpan.setAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_start.failed_stage',
+      'canopy-code.daemon.session_start.failed_stage',
       'config_setup',
     );
 
@@ -3725,7 +3727,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         agent.newSession({ cwd: '/tmp', mcpServers: [] }),
       ).rejects.toBe(fileSystemError);
       expect(mockSessionStartSpan.setAttribute).toHaveBeenCalledWith(
-        'qwen-code.daemon.session_start.failed_stage',
+        'canopy-code.daemon.session_start.failed_stage',
         'file_system_setup',
       );
     } finally {
@@ -3734,7 +3736,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('does not return discontinued qwen-oauth as the only ACP auth option', async () => {
+  it('does not return discontinued canopy-oauth as the only ACP auth option', async () => {
     vi.mocked(buildAuthMethods).mockReturnValue([
       {
         id: 'openai',
@@ -3745,10 +3747,10 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
     const innerConfig = makeInnerConfig();
     vi.mocked(innerConfig.getModelsConfig).mockReturnValue({
-      getCurrentAuthType: vi.fn().mockReturnValue('qwen-oauth'),
+      getCurrentAuthType: vi.fn().mockReturnValue('canopy-oauth'),
     } as unknown as ReturnType<Config['getModelsConfig']>);
     vi.mocked(innerConfig.refreshAuth).mockRejectedValue(
-      new Error('qwen-oauth token expired'),
+      new Error('canopy-oauth token expired'),
     );
     vi.mocked(loadSettings).mockReturnValue(makeSessionSettings());
     vi.mocked(loadCliConfig).mockResolvedValue(
@@ -3879,7 +3881,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       getSessionService: vi.fn(() => new SessionService('/tmp')),
       hasSessionWriteOwnership: vi.fn().mockReturnValue(false),
       getSessionRuntimeBaseDir: vi.fn().mockReturnValue('/runtime-a'),
-      getPlansDir: vi.fn().mockReturnValue('/home/test/.qwen/plans'),
+      getPlansDir: vi.fn().mockReturnValue('/home/test/.canopy/plans'),
       setFileSystemService: vi.fn(),
       getHookSystem: vi.fn().mockReturnValue(undefined),
       getDisableAllHooks: vi.fn().mockReturnValue(true),
@@ -3891,14 +3893,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     runtimeBaseDir = '/runtime-a',
   ): string[] {
     return [
-      '/project/.qwen/tmp',
+      '/project/.canopy/tmp',
       path.join('/project', 'subagents'),
       path.join(runtimeBaseDir, 'tmp'),
-      '/project/.qwen/memory',
+      '/project/.canopy/memory',
       '/tmp/user-memory',
-      '/home/test/.qwen/skills',
-      '/tmp/qwen-extensions',
-      '/home/test/.qwen/plans',
+      '/home/test/.canopy/skills',
+      '/tmp/canopy-extensions',
+      '/home/test/.canopy/plans',
       ...(process.platform === 'win32' ? [] : ['/tmp']),
     ];
   }
@@ -3926,9 +3928,11 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       getFileSystemService: vi.fn().mockReturnValue(fallbackFileSystem),
       setFileSystemService: vi.fn(),
       storage: {
-        getProjectTempDir: vi.fn().mockReturnValue('/project/.qwen/tmp'),
+        getProjectTempDir: vi.fn().mockReturnValue('/project/.canopy/tmp'),
         getProjectDir: vi.fn().mockReturnValue('/project'),
-        getUserSkillsDirs: vi.fn().mockReturnValue(['/home/test/.qwen/skills']),
+        getUserSkillsDirs: vi
+          .fn()
+          .mockReturnValue(['/home/test/.canopy/skills']),
       },
     };
     vi.mocked(loadSettings).mockReturnValue(makeSessionSettings());
@@ -3999,7 +4003,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     mergedMemory: Record<string, unknown> = memory,
   ) {
     const user = {
-      path: '/home/test/.qwen/settings.json',
+      path: '/home/test/.canopy/settings.json',
       settings: { memory },
     };
     const merged = { mcpServers: {}, memory: { ...mergedMemory } };
@@ -4091,11 +4095,11 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     return {
       merged: mergedSettings,
       user: {
-        path: '/home/test/.qwen/settings.json',
+        path: '/home/test/.canopy/settings.json',
         settings: userSettings,
       },
       workspace: {
-        path: '/work/.qwen/settings.json',
+        path: '/work/.canopy/settings.json',
         settings: workspaceSettings,
       },
       isTrusted: true,
@@ -4210,21 +4214,21 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   async function withEmptyTrustedFolders<T>(
     run: (directory: string) => Promise<T>,
   ): Promise<T> {
-    const previousPath = process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    const previousPath = process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     const directory = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-acp-managed-cd-'),
+      path.join(os.tmpdir(), 'canopy-acp-managed-cd-'),
     );
     const trustedFoldersPath = path.join(directory, 'trusted-folders.json');
     await fs.writeFile(trustedFoldersPath, '{}', 'utf8');
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = trustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = trustedFoldersPath;
     resetTrustedFoldersForTesting();
     try {
       return await run(directory);
     } finally {
       if (previousPath === undefined) {
-        delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+        delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
       } else {
-        process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = previousPath;
+        process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = previousPath;
       }
       resetTrustedFoldersForTesting();
       await fs.rm(directory, { recursive: true, force: true });
@@ -4759,7 +4763,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   it('serializes a working-directory change and hard-suspends Todo Stop Guard', async () => {
     const sessionId = '11111111-1111-1111-1111-111111111111';
     const targetDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-todo-guard-cwd-'),
+      path.join(os.tmpdir(), 'canopy-todo-guard-cwd-'),
     );
     const canonicalTargetDir = await fs.realpath(targetDir);
     const innerConfig = await setupSessionMocks(sessionId);
@@ -4804,7 +4808,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   it('reports an MCP refresh warning after changing the working directory', async () => {
     const sessionId = '11111111-1111-1111-1111-111111111111';
     const targetDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-mcp-refresh-cwd-'),
+      path.join(os.tmpdir(), 'canopy-mcp-refresh-cwd-'),
     );
     const canonicalTargetDir = await fs.realpath(targetDir);
     const innerConfig = await setupSessionMocks(sessionId);
@@ -4843,10 +4847,10 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   it('rechecks a no-op working-directory change after a concurrent relocation', async () => {
     const sessionId = '11111111-1111-1111-1111-111111111111';
     const oldDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-todo-guard-cwd-old-'),
+      path.join(os.tmpdir(), 'canopy-todo-guard-cwd-old-'),
     );
     const targetDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-todo-guard-cwd-new-'),
+      path.join(os.tmpdir(), 'canopy-todo-guard-cwd-new-'),
     );
     const canonicalOldDir = await fs.realpath(oldDir);
     const canonicalTargetDir = await fs.realpath(targetDir);
@@ -4941,7 +4945,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   it('keeps Todo Stop Guard hard-suspended when working-directory relocation fails', async () => {
     const sessionId = '11111111-1111-1111-1111-111111111111';
     const targetDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-todo-guard-cwd-failure-'),
+      path.join(os.tmpdir(), 'canopy-todo-guard-cwd-failure-'),
     );
     const innerConfig = await setupSessionMocks(sessionId);
     Object.assign(innerConfig, {
@@ -5711,13 +5715,13 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
           ],
         },
       ]),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen-plus',
-          label: 'Qwen Plus',
+          label: 'Canopy Plus',
           description: 'General coding model',
-          authType: 'qwen',
+          authType: 'canopy',
           contextWindowSize: 65_536,
           baseUrl: 'https://user:sk-secret@api.example.com',
           envKey: 'DASHSCOPE_API_KEY',
@@ -5969,18 +5973,18 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       v: 1,
       workspaceCwd: '/work/status',
       initialized: true,
-      current: { authType: 'qwen', modelId: 'qwen-plus(qwen)' },
+      current: { authType: 'canopy', modelId: 'qwen-plus(canopy)' },
       providers: [
         {
           kind: 'model_provider',
           status: 'ok',
-          authType: 'qwen',
+          authType: 'canopy',
           current: true,
           models: [
             {
-              modelId: 'qwen-plus(qwen)',
+              modelId: 'qwen-plus(canopy)',
               baseModelId: 'qwen-plus',
-              name: 'Qwen Plus',
+              name: 'Canopy Plus',
               description: 'General coding model',
               contextLimit: 65_536,
               baseUrl: 'https://api.example.com',
@@ -6189,7 +6193,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       getMcpServers: vi.fn(() => {
         throw new Error('broken mcp config');
       }),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getActiveRuntimeModelSnapshot: vi.fn().mockReturnValue(undefined),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getAllConfiguredModels: vi.fn(() => {
@@ -6239,17 +6243,17 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('extMethod qwen/status/workspace/preflight returns 6 ACP-side cells', async () => {
+  it('extMethod canopy/status/workspace/preflight returns 6 ACP-side cells', async () => {
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
       getMcpServers: vi.fn().mockReturnValue({}),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getActiveRuntimeModelSnapshot: vi.fn().mockReturnValue(undefined),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getModelsConfig: vi.fn().mockReturnValue({
         getGenerationConfig: vi.fn().mockReturnValue({}),
-        getCurrentAuthType: vi.fn().mockReturnValue('qwen'),
+        getCurrentAuthType: vi.fn().mockReturnValue('canopy'),
         syncAfterAuthRefresh: vi.fn(),
       }),
       getSkillManager: vi.fn().mockReturnValue({
@@ -6258,15 +6262,15 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen-plus',
-          label: 'Qwen Plus',
-          authType: 'qwen',
+          label: 'Canopy Plus',
+          authType: 'canopy',
           baseUrl: 'https://api.example.com',
           isRuntimeModel: false,
         },
         {
           id: 'qwen-image-2.0',
-          label: 'Qwen Image 2.0',
-          authType: 'qwen',
+          label: 'Canopy Image 2.0',
+          authType: 'canopy',
           baseUrl: 'https://api.example.com',
           imageOnly: true,
           isRuntimeModel: false,
@@ -6316,14 +6320,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     ).toBe('ok');
     expect(preflight.cells.find((c) => c.kind === 'providers')).toMatchObject({
       status: 'ok',
-      detail: { count: 1, providers: ['qwen'] },
+      detail: { count: 1, providers: ['canopy'] },
     });
 
     vi.mocked(mockConfig.getAllConfiguredModels).mockReturnValue([
       {
         id: 'qwen-image-2.0',
-        label: 'Qwen Image 2.0',
-        authType: AuthType.QWEN_OAUTH,
+        label: 'Canopy Image 2.0',
+        authType: AuthType.CANOPY_OAUTH,
         imageOnly: true,
       },
     ]);
@@ -6341,13 +6345,13 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
   it('extMethod preflight surfaces SkillError as parse_error errorKind', async () => {
     const skillError = new (
-      await import('@qwen-code/qwen-code-core')
+      await import('@canopy-code/canopy-code-core')
     ).SkillError('bad frontmatter', 'PARSE_ERROR');
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
       getMcpServers: vi.fn().mockReturnValue({}),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getSkillManager: vi.fn().mockReturnValue({
         listSkills: vi.fn().mockRejectedValue(skillError),
@@ -6396,11 +6400,11 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
       getMcpServers: vi.fn().mockReturnValue({}),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getModelsConfig: vi.fn().mockReturnValue({
         getGenerationConfig: vi.fn().mockReturnValue({}),
-        getCurrentAuthType: vi.fn().mockReturnValue('qwen'),
+        getCurrentAuthType: vi.fn().mockReturnValue('canopy'),
         syncAfterAuthRefresh: vi.fn(),
       }),
       getSkillManager: vi.fn(() => {
@@ -6661,18 +6665,18 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('extMethod preflight auth cell reports unknown for qwen-oauth even with placeholder apiKey', async () => {
+  it('extMethod preflight auth cell reports unknown for canopy-oauth even with placeholder apiKey', async () => {
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
       getMcpServers: vi.fn().mockReturnValue({}),
-      getAuthType: vi.fn().mockReturnValue('qwen-oauth'),
+      getAuthType: vi.fn().mockReturnValue('canopy-oauth'),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getModelsConfig: vi.fn().mockReturnValue({
         getGenerationConfig: vi
           .fn()
-          .mockReturnValue({ apiKey: 'QWEN_OAUTH_DYNAMIC_TOKEN' }),
-        getCurrentAuthType: vi.fn().mockReturnValue('qwen-oauth'),
+          .mockReturnValue({ apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN' }),
+        getCurrentAuthType: vi.fn().mockReturnValue('canopy-oauth'),
         syncAfterAuthRefresh: vi.fn(),
       }),
       getSkillManager: vi.fn().mockReturnValue({
@@ -6717,14 +6721,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getActiveRuntimeModelSnapshot: vi.fn().mockReturnValue(undefined),
       getModel: vi.fn().mockReturnValue('missing-model'),
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen-plus',
-          label: 'Qwen Plus',
-          authType: 'qwen',
+          label: 'Canopy Plus',
+          authType: 'canopy',
         },
       ]),
     } as unknown as Config;
@@ -6745,14 +6749,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await expect(
       agent.extMethod(SERVE_STATUS_EXT_METHODS.workspaceProviders, {}),
     ).resolves.toMatchObject({
-      current: { authType: 'qwen', modelId: 'missing-model(qwen)' },
+      current: { authType: 'canopy', modelId: 'missing-model(canopy)' },
       providers: [
         {
-          authType: 'qwen',
+          authType: 'canopy',
           current: false,
           models: [
             {
-              modelId: 'qwen-plus(qwen)',
+              modelId: 'qwen-plus(canopy)',
               baseModelId: 'qwen-plus',
               contextLimit: 128_000,
               isCurrent: false,
@@ -6770,25 +6774,25 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getActiveRuntimeModelSnapshot: vi.fn().mockReturnValue(undefined),
       getModel: vi.fn().mockReturnValue('qwen-plus'),
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen-plus',
-          label: 'Qwen Plus',
-          authType: 'qwen',
+          label: 'Canopy Plus',
+          authType: 'canopy',
         },
         {
           id: 'qwen-flash',
-          label: 'Qwen Flash',
-          authType: 'qwen',
+          label: 'Canopy Flash',
+          authType: 'canopy',
           fastOnly: true,
         },
         {
           id: 'qwen-asr',
-          label: 'Qwen ASR',
-          authType: 'qwen',
+          label: 'Canopy ASR',
+          authType: 'canopy',
           voiceOnly: true,
         },
       ]),
@@ -6816,7 +6820,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       (status['providers'] as Array<{ models: Array<{ modelId: string }> }>)
         .flatMap((provider) => provider.models)
         .map((model) => model.modelId),
-    ).toEqual(['qwen-plus(qwen)']);
+    ).toEqual(['qwen-plus(canopy)']);
 
     mockConnectionState.resolve();
     await agentPromise;
@@ -6826,10 +6830,10 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     mockConfig = {
       ...mockConfig,
       getTargetDir: vi.fn().mockReturnValue('/work/status'),
-      getAuthType: vi.fn().mockReturnValue('qwen'),
+      getAuthType: vi.fn().mockReturnValue('canopy'),
       getActiveRuntimeModelSnapshot: vi.fn().mockReturnValue({
         id: 'runtime-qwen-plus',
-        authType: 'qwen',
+        authType: 'canopy',
       }),
       getCurrentModelRegistryBaseUrl: vi
         .fn()
@@ -6839,8 +6843,8 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         {
           id: 'qwen-plus',
           runtimeSnapshotId: 'runtime-qwen-plus',
-          label: 'Runtime Qwen Plus',
-          authType: 'qwen',
+          label: 'Runtime Canopy Plus',
+          authType: 'canopy',
           isRuntimeModel: true,
         },
       ]),
@@ -6862,14 +6866,14 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await expect(
       agent.extMethod(SERVE_STATUS_EXT_METHODS.workspaceProviders, {}),
     ).resolves.toMatchObject({
-      current: { authType: 'qwen', modelId: 'runtime-qwen-plus(qwen)' },
+      current: { authType: 'canopy', modelId: 'runtime-qwen-plus(canopy)' },
       providers: [
         {
-          authType: 'qwen',
+          authType: 'canopy',
           current: true,
           models: [
             {
-              modelId: 'runtime-qwen-plus(qwen)',
+              modelId: 'runtime-qwen-plus(canopy)',
               baseModelId: 'runtime-qwen-plus',
               contextLimit: 128_000,
               isCurrent: true,
@@ -7061,7 +7065,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   });
 
   it('projects qwen3.8-max reasoning controls through one ACP option', async () => {
-    const sessionId = 'qwen38-reasoning-session';
+    const sessionId = 'canopy38-reasoning-session';
     const innerConfig = await setupSessionMocks(sessionId);
     const generation: {
       reasoning?: false | { effort?: string; budget_tokens?: number };
@@ -7166,7 +7170,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   });
 
   it('hides qwen3.8-max reasoning controls when thinking is mandatory', async () => {
-    const sessionId = 'qwen38-mandatory-thinking-session';
+    const sessionId = 'canopy38-mandatory-thinking-session';
     const innerConfig = await setupSessionMocks(sessionId);
     const generation = {
       reasoning: { effort: 'medium' },
@@ -7212,18 +7216,18 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
   it.each([
     {
-      description: 'hide discontinued qwen-oauth for other auth types',
+      description: 'hide discontinued canopy-oauth for other auth types',
       authType: 'openai',
       model: 'qwen3.6-27b',
       expectedCurrent: 'qwen3.6-27b(openai)',
       expectedModels: ['qwen3.6-27b(openai)'],
     },
     {
-      description: 'keep qwen-oauth for existing qwen-oauth sessions',
-      authType: 'qwen-oauth',
+      description: 'keep canopy-oauth for existing canopy-oauth sessions',
+      authType: 'canopy-oauth',
       model: 'coder-model',
-      expectedCurrent: 'coder-model(qwen-oauth)',
-      expectedModels: ['coder-model(qwen-oauth)', 'qwen3.6-27b(openai)'],
+      expectedCurrent: 'coder-model(canopy-oauth)',
+      expectedModels: ['coder-model(canopy-oauth)', 'qwen3.6-27b(openai)'],
     },
   ])(
     'session model selectors $description',
@@ -7237,7 +7241,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
           {
             id: 'coder-model',
             label: 'coder-model',
-            authType: 'qwen-oauth',
+            authType: 'canopy-oauth',
           },
           {
             id: 'qwen3.6-27b',
@@ -7418,8 +7422,8 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
     expect(new Set(modelIds)).toHaveLength(2);
     expect(modelIds).toEqual([
-      expect.stringMatching(/^qwen-route:v1:/),
-      expect.stringMatching(/^qwen-route:v1:/),
+      expect.stringMatching(/^canopy-route:v1:/),
+      expect.stringMatching(/^canopy-route:v1:/),
     ]);
     expect(modelOption?.options.map((option) => option.value)).toEqual(
       modelIds,
@@ -10090,7 +10094,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings extension methods read and update user memory settings', async () => {
+  it('canopy/settings extension methods read and update user memory settings', async () => {
     const settings = makeMemorySettings(
       {
         enableManagedAutoMemory: false,
@@ -10114,7 +10118,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
     await expect(agent.extMethod('qwen/settings/getPath', {})).resolves.toEqual(
       {
-        path: '/home/test/.qwen/settings.json',
+        path: '/home/test/.canopy/settings.json',
       },
     );
     await expect(
@@ -10131,14 +10135,17 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     });
     await expect(
       agent.extMethod('qwen/settings/getMemoryPaths', {
-        cwd: '/tmp/qwen-memory-cwd-test',
-        projectRoot: '/tmp/qwen-memory-root-test',
+        cwd: '/tmp/canopy-memory-cwd-test',
+        projectRoot: '/tmp/canopy-memory-root-test',
       }),
     ).resolves.toEqual({
       paths: {
-        userMemoryFile: path.join('/tmp/qwen-global-test', 'QWEN.md'),
-        projectMemoryFile: path.join('/tmp/qwen-memory-cwd-test', 'QWEN.md'),
-        autoMemoryDir: '/tmp/qwen-memory-root-test/.qwen/memory',
+        userMemoryFile: path.join('/tmp/canopy-global-test', 'CANOPY.md'),
+        projectMemoryFile: path.join(
+          '/tmp/canopy-memory-cwd-test',
+          'CANOPY.md',
+        ),
+        autoMemoryDir: '/tmp/canopy-memory-root-test/.canopy/memory',
       },
     });
     await expect(
@@ -10174,7 +10181,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings setCoreValue syncs output language rule file', async () => {
+  it('canopy/settings setCoreValue syncs output language rule file', async () => {
     const settings = makeCoreSettings();
     vi.mocked(loadSettings).mockReturnValue(settings);
     const agentPromise = runAcpAgent(mockConfig, settings, mockArgv);
@@ -10204,7 +10211,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  // Shared boot helper for the qwen/settings/* handler tests below.
+  // Shared boot helper for the canopy/settings/* handler tests below.
   async function bootCoreSettingsAgent(settings: LoadedSettings) {
     vi.mocked(loadSettings).mockReturnValue(settings);
     const agentPromise = runAcpAgent(mockConfig, settings, mockArgv);
@@ -10217,7 +10224,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     return { agent, agentPromise };
   }
 
-  it('qwen/permissions/getSettings returns user workspace merged and trust state', async () => {
+  it('canopy/permissions/getSettings returns user workspace merged and trust state', async () => {
     const settings = makeCoreSettings();
     settings.setValue(SettingScope.User, 'permissions.allow', [
       'ShellTool(git status)',
@@ -10235,7 +10242,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     expect(result).toEqual({
       v: 1,
       user: {
-        path: '/home/test/.qwen/settings.json',
+        path: '/home/test/.canopy/settings.json',
         rules: {
           allow: ['ShellTool(git status)'],
           ask: [],
@@ -10243,7 +10250,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         },
       },
       workspace: {
-        path: '/work/.qwen/settings.json',
+        path: '/work/.canopy/settings.json',
         rules: {
           allow: ['ShellTool(npm test)'],
           ask: [],
@@ -10262,7 +10269,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/getCore returns user, workspace, and merged views', async () => {
+  it('canopy/settings/getCore returns user, workspace, and merged views', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10278,7 +10285,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setCoreValue clears model.baseUrl when setting model.name', async () => {
+  it('canopy/settings/setCoreValue clears model.baseUrl when setting model.name', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10300,7 +10307,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/getCore excludes untrusted workspace integrations from merged view', async () => {
+  it('canopy/settings/getCore excludes untrusted workspace integrations from merged view', async () => {
     const settings = makeCoreSettings();
     (settings as { isTrusted: boolean }).isTrusted = false;
     (settings.user.settings as Record<string, unknown>)['mcpServers'] = {
@@ -10347,7 +10354,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/getCore excludes inactive extension integrations from merged view', async () => {
+  it('canopy/settings/getCore excludes inactive extension integrations from merged view', async () => {
     mockExtensionManagerState.extensions = [
       {
         id: 'active-ext',
@@ -10413,7 +10420,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/getCore redacts MCP server env/header secrets', async () => {
+  it('canopy/settings/getCore redacts MCP server env/header secrets', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['mcpServers'] = {
       secure: {
@@ -10455,7 +10462,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/getCore redacts hook env/header secrets', async () => {
+  it('canopy/settings/getCore redacts hook env/header secrets', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['hooks'] = {
       PreToolUse: [
@@ -10481,7 +10488,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setHook restores a redacted hook secret instead of persisting the sentinel', async () => {
+  it('canopy/settings/setHook restores a redacted hook secret instead of persisting the sentinel', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['hooks'] = {
       PreToolUse: [
@@ -10527,7 +10534,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setMcpServer rejects a missing name and persists a valid one', async () => {
+  it('canopy/settings/setMcpServer rejects a missing name and persists a valid one', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10556,7 +10563,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setMcpServer restores redacted secrets instead of persisting the sentinel', async () => {
+  it('canopy/settings/setMcpServer restores redacted secrets instead of persisting the sentinel', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['mcpServers'] = {
       local: {
@@ -10591,7 +10598,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setMcpServer rejects an invalid transport', async () => {
+  it('canopy/settings/setMcpServer rejects an invalid transport', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10607,7 +10614,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setMcpServer rejects malformed timeout strings', async () => {
+  it('canopy/settings/setMcpServer rejects malformed timeout strings', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10644,7 +10651,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/removeMcpServer drops the named server and rejects a missing name', async () => {
+  it('canopy/settings/removeMcpServer drops the named server and rejects a missing name', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['mcpServers'] = {
       local: { transport: 'stdio', command: 'node' },
@@ -10668,7 +10675,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setHook rejects an invalid event and appends a valid hook', async () => {
+  it('canopy/settings/setHook rejects an invalid event and appends a valid hook', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10703,7 +10710,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings hook methods include all core hook events', async () => {
+  it('canopy/settings hook methods include all core hook events', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['hooks'] = {
       PostToolBatch: [{ hooks: [{ type: 'command', command: 'echo batch' }] }],
@@ -10742,7 +10749,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setHook rejects malformed timeout strings', async () => {
+  it('canopy/settings/setHook rejects malformed timeout strings', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10760,7 +10767,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setHook replaces in place at a valid index and appends for out-of-range', async () => {
+  it('canopy/settings/setHook replaces in place at a valid index and appends for out-of-range', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['hooks'] = {
       PreToolUse: [{ hooks: [{ type: 'command', command: 'original' }] }],
@@ -10805,7 +10812,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/removeHook rejects a negative index and an out-of-range index', async () => {
+  it('canopy/settings/removeHook rejects a negative index and an out-of-range index', async () => {
     const settings = makeCoreSettings();
     (settings.user.settings as Record<string, unknown>)['hooks'] = {
       PreToolUse: [{ hooks: [{ type: 'command', command: 'echo hi' }] }],
@@ -10841,7 +10848,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings/setExtensionSetting validates required params before touching extensions', async () => {
+  it('canopy/settings/setExtensionSetting validates required params before touching extensions', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10869,7 +10876,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules validates scope and ruleType', async () => {
+  it('canopy/permissions/setRules validates scope and ruleType', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10913,7 +10920,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules rejects new malformed permission rules', async () => {
+  it('canopy/permissions/setRules rejects new malformed permission rules', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10930,7 +10937,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules rejects oversized permission rule lists', async () => {
+  it('canopy/permissions/setRules rejects oversized permission rule lists', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10952,7 +10959,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules rejects oversized permission rule strings', async () => {
+  it('canopy/permissions/setRules rejects oversized permission rule strings', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -10971,7 +10978,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules preserves already-stored malformed permission rules', async () => {
+  it('canopy/permissions/setRules preserves already-stored malformed permission rules', async () => {
     const settings = makeCoreSettings();
     settings.setValue(SettingScope.User, 'permissions.allow', [
       'ShellTool(git status',
@@ -10995,7 +11002,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules persists normalized rules for the requested scope', async () => {
+  it('canopy/permissions/setRules persists normalized rules for the requested scope', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -11020,7 +11027,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/permissions/setRules syncs live permission managers after replacement', async () => {
+  it('canopy/permissions/setRules syncs live permission managers after replacement', async () => {
     const settings = makeCoreSettings();
     settings.setValue(SettingScope.User, 'permissions.allow', [
       'ShellTool(git status)',
@@ -11087,7 +11094,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     );
   }
 
-  it('qwen/session/loadUpdates rejects an invalid sessionId', async () => {
+  it('canopy/session/loadUpdates rejects an invalid sessionId', async () => {
     const settings = makeCoreSettings();
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
 
@@ -11099,7 +11106,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/session/loadUpdates returns empty updates when no conversation exists', async () => {
+  it('canopy/session/loadUpdates returns empty updates when no conversation exists', async () => {
     const settings = makeCoreSettings();
     mockSessionServiceLoad(null);
     const { agent, agentPromise } = await bootCoreSettingsAgent(settings);
@@ -11114,7 +11121,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/session/loadUpdates replays history and lifts _meta.timestamp to the top level', async () => {
+  it('canopy/session/loadUpdates replays history and lifts _meta.timestamp to the top level', async () => {
     const settings = makeCoreSettings();
     mockSessionServiceLoad({
       conversation: {
@@ -11145,7 +11152,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/session/loadUpdates threads detected historyGaps to the replayer', async () => {
+  it('canopy/session/loadUpdates threads detected historyGaps to the replayer', async () => {
     const settings = makeCoreSettings();
     const gaps = [{ childUuid: 'c', missingParentUuid: 'gone' }];
     mockSessionServiceLoad({
@@ -11175,7 +11182,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/session/loadUpdates surfaces partial + replayError when replay throws', async () => {
+  it('canopy/session/loadUpdates surfaces partial + replayError when replay throws', async () => {
     const settings = makeCoreSettings();
     mockSessionServiceLoad({
       conversation: {
@@ -11197,7 +11204,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/status/session/transcript returns id-less replay events from transcript reader pages', async () => {
+  it('canopy/status/session/transcript returns id-less replay events from transcript reader pages', async () => {
     const settings = makeCoreSettings();
     mockRunExitCleanup.mockResolvedValue(undefined);
     const gaps = [{ childUuid: 'u1', missingParentUuid: 'missing-a1' }];
@@ -11569,7 +11576,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await vi.waitFor(() => expect(toolRegistry.stop).toHaveBeenCalledOnce());
   });
 
-  it('qwen/status/session/transcript rejects malformed cursor and limit params before reading', async () => {
+  it('canopy/status/session/transcript rejects malformed cursor and limit params before reading', async () => {
     const settings = makeCoreSettings();
     const readPage = vi.fn();
     vi.mocked(SessionTranscriptReader).mockImplementation(
@@ -11626,7 +11633,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/status/session/transcript terminates pagination on replay errors', async () => {
+  it('canopy/status/session/transcript terminates pagination on replay errors', async () => {
     const settings = makeCoreSettings();
     vi.mocked(loadCliConfig).mockResolvedValue({
       ...makeInnerConfig(),
@@ -11692,7 +11699,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/status/session/transcript maps oversized snapshots to structured errors', async () => {
+  it('canopy/status/session/transcript maps oversized snapshots to structured errors', async () => {
     const settings = makeCoreSettings();
     const readPage = vi
       .fn()
@@ -11728,7 +11735,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/status/session/transcript maps oversized pages to structured errors', async () => {
+  it('canopy/status/session/transcript maps oversized pages to structured errors', async () => {
     const settings = makeCoreSettings();
     const readPage = vi
       .fn()
@@ -11805,7 +11812,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
       },
     },
   ])(
-    'qwen/status/session/transcript maps $name',
+    'canopy/status/session/transcript maps $name',
     async ({ error, cursor, expected }) => {
       const settings = makeCoreSettings();
       vi.mocked(SessionTranscriptReader).mockImplementation(
@@ -12095,7 +12102,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/providers extension methods list and connect model providers', async () => {
+  it('canopy/providers extension methods list and connect model providers', async () => {
     const settings = makeSessionSettings();
     const agentPromise = runAcpAgent(mockConfig, settings, mockArgv);
 
@@ -12149,7 +12156,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/providers/connect returns preserved model when adapter getValue returns a non-empty string', async () => {
+  it('canopy/providers/connect returns preserved model when adapter getValue returns a non-empty string', async () => {
     vi.mocked(createLoadedSettingsAdapter).mockImplementationOnce(
       (settings: unknown) => {
         (settings as Record<string, unknown>)['getValue'] = vi.fn(
@@ -12187,7 +12194,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/providers/list includes existing provider settings', async () => {
+  it('canopy/providers/list includes existing provider settings', async () => {
     const settings = {
       ...makeSessionSettings(),
       merged: {
@@ -12239,7 +12246,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/skills/install rejects http and non-GitHub source URLs', async () => {
+  it('canopy/skills/install rejects http and non-GitHub source URLs', async () => {
     mockConfig.getSkillManager = vi.fn().mockReturnValue({
       parseSkillContent: vi.fn(),
       refreshCache: vi.fn().mockResolvedValue(undefined),
@@ -12263,9 +12270,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/skills/install installs a GitHub directory skill through ACP', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-skill-'));
-    vi.mocked(Storage.getGlobalQwenDir).mockReturnValue(tempHome);
+  it('canopy/skills/install installs a GitHub directory skill through ACP', async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-skill-'));
+    vi.mocked(Storage.getGlobalCanopyDir).mockReturnValue(tempHome);
 
     const refreshCache = vi.fn().mockResolvedValue(undefined);
     const parseSkillContent = vi.fn(
@@ -12382,7 +12389,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Accept: 'application/vnd.github+json',
-            'User-Agent': 'qwen-code',
+            'User-Agent': 'canopy-code',
           }),
         }),
       );
@@ -12415,9 +12422,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('qwen/skills setEnabled and delete manage global skills through ACP', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-skill-'));
-    vi.mocked(Storage.getGlobalQwenDir).mockReturnValue(tempHome);
+  it('canopy/skills setEnabled and delete manage global skills through ACP', async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-skill-'));
+    vi.mocked(Storage.getGlobalCanopyDir).mockReturnValue(tempHome);
 
     const skillDir = path.join(tempHome, 'skills', 'pptx');
     const skillFile = path.join(skillDir, 'SKILL.md');
@@ -12501,9 +12508,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('qwen/skills rejects path-traversal slugs without touching the global dir', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-skill-'));
-    vi.mocked(Storage.getGlobalQwenDir).mockReturnValue(tempHome);
+  it('canopy/skills rejects path-traversal slugs without touching the global dir', async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-skill-'));
+    vi.mocked(Storage.getGlobalCanopyDir).mockReturnValue(tempHome);
     // A sentinel that a `..` traversal could overwrite (install) or delete.
     const sentinel = path.join(tempHome, 'settings.json');
     await fs.writeFile(sentinel, '{"keep":true}', 'utf8');
@@ -12558,9 +12565,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('qwen/skills setEnabled preserves comments and nested hooks in frontmatter', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-skill-'));
-    vi.mocked(Storage.getGlobalQwenDir).mockReturnValue(tempHome);
+  it('canopy/skills setEnabled preserves comments and nested hooks in frontmatter', async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-skill-'));
+    vi.mocked(Storage.getGlobalCanopyDir).mockReturnValue(tempHome);
 
     const skillDir = path.join(tempHome, 'skills', 'pptx');
     const skillFile = path.join(skillDir, 'SKILL.md');
@@ -12634,7 +12641,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('qwen/settings setCoreValue accepts the auto approval mode', async () => {
+  it('canopy/settings setCoreValue accepts the auto approval mode', async () => {
     const settings = makeCoreSettings();
     vi.mocked(loadSettings).mockReturnValue(settings);
     const agentPromise = runAcpAgent(mockConfig, settings, mockArgv);
@@ -12665,7 +12672,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/providers/connect reuses the stored apiKey when the client omits it', async () => {
+  it('canopy/providers/connect reuses the stored apiKey when the client omits it', async () => {
     const settings = {
       ...makeSessionSettings(),
       merged: {
@@ -12708,9 +12715,9 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/providers/connect reuses the custom apiKey for the requested baseUrl only', async () => {
+  it('canopy/providers/connect reuses the custom apiKey for the requested baseUrl only', async () => {
     const customEnvKey = (protocol: string, baseUrl: string) =>
-      `QWEN_CUSTOM_API_KEY_${protocol}_${baseUrl.replace(
+      `CANOPY_CUSTOM_API_KEY_${protocol}_${baseUrl.replace(
         /[^A-Za-z0-9]/g,
         '_',
       )}`;
@@ -12780,12 +12787,12 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/skills setEnabled resolves user and project skill files through ACP', async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-skill-'));
+  it('canopy/skills setEnabled resolves user and project skill files through ACP', async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-skill-'));
     const tempProject = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-project-skill-'),
+      path.join(os.tmpdir(), 'canopy-project-skill-'),
     );
-    vi.mocked(Storage.getGlobalQwenDir).mockReturnValue(tempHome);
+    vi.mocked(Storage.getGlobalCanopyDir).mockReturnValue(tempHome);
 
     async function writeSkill(root: string, relativeDir: string, name: string) {
       const skillDir = path.join(root, relativeDir, name);
@@ -12802,7 +12809,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     const userSkill = await writeSkill(tempHome, '.agents/skills', 'course');
     const projectSkill = await writeSkill(
       tempProject,
-      '.qwen/skills',
+      '.canopy/skills',
       'project-course',
     );
 
@@ -12926,11 +12933,11 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     }
   });
 
-  it('qwen/skills setEnabled resolves project skills from the ext method cwd', async () => {
+  it('canopy/skills setEnabled resolves project skills from the ext method cwd', async () => {
     const tempProject = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-project-cwd-skill-'),
+      path.join(os.tmpdir(), 'canopy-project-cwd-skill-'),
     );
-    const skillDir = path.join(tempProject, '.qwen', 'skills', 'issue-fixer');
+    const skillDir = path.join(tempProject, '.canopy', 'skills', 'issue-fixer');
     const skillFile = path.join(skillDir, 'SKILL.md');
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(
@@ -13006,7 +13013,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
         'disable-model-invocation: true',
       );
       expect(loadSkillsFromDir).toHaveBeenCalledWith(
-        path.join(tempProject, '.qwen', 'skills'),
+        path.join(tempProject, '.canopy', 'skills'),
         'project',
       );
       expect(listSkills).not.toHaveBeenCalled();
@@ -13183,7 +13190,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
     await agentPromise;
   });
 
-  it('qwen/settings setMemory rejects non-boolean values', async () => {
+  it('canopy/settings setMemory rejects non-boolean values', async () => {
     const settings = makeMemorySettings();
     const agentPromise = runAcpAgent(mockConfig, settings, mockArgv);
 
@@ -13991,7 +13998,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
   });
 
   it('per-session newSession surfaces MCP failures to stderr (round-7 fix: was silent before)', async () => {
-    // Round-7 regression: `QwenAgent.initializeConfig()` (per-session ACP
+    // Round-7 regression: `CanopyAgent.initializeConfig()` (per-session ACP
     // path) reports MCP failures after readiness settles. Per-session configs
     // with failed MCP servers must not fall back to built-in tools silently.
     const innerConfig = await setupSessionMocks('session-failed-mcp');
@@ -14220,7 +14227,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
     expect(extNotification).toHaveBeenCalledTimes(1);
     expect(extNotification).toHaveBeenCalledWith(
-      'qwen/notify/session/mcp-budget-event',
+      'canopy/notify/session/mcp-budget-event',
       {
         v: 1,
         sessionId,
@@ -14244,7 +14251,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 
     expect(extNotification).toHaveBeenCalledTimes(2);
     expect(extNotification).toHaveBeenLastCalledWith(
-      'qwen/notify/session/mcp-budget-event',
+      'canopy/notify/session/mcp-budget-event',
       {
         v: 1,
         sessionId,
@@ -14388,7 +14395,7 @@ describe('QwenAgent MCP SSE/HTTP support', () => {
 // recording service's in-memory `currentCustomTitle` stale, and the next
 // re-anchor (every 32KB) or finalize() silently reverted the rename by
 // re-emitting the cached old title at EOF.
-describe('QwenAgent extMethod renameSession routing', () => {
+describe('CanopyAgent extMethod renameSession routing', () => {
   type AgentSideConnectionLike = { closed: Promise<void> };
   type AgentLike = {
     initialize: (args: Record<string, unknown>) => Promise<unknown>;
@@ -14653,7 +14660,7 @@ describe('QwenAgent extMethod renameSession routing', () => {
     const recording = makeRecordingService();
     const innerConfig = makeLiveSessionInnerConfig(recording);
     innerConfig.getSessionRuntimeBaseDir.mockReturnValue(
-      '/tmp/qwen-runtime-test',
+      '/tmp/canopy-runtime-test',
     );
     const loadSession = vi.fn().mockResolvedValue({
       conversation: {
@@ -14877,7 +14884,7 @@ describe('QwenAgent extMethod renameSession routing', () => {
     await agentPromise;
   });
 
-  it('returns the durable result from qwen/control/session/title without an extra flush', async () => {
+  it('returns the durable result from canopy/control/session/title without an extra flush', async () => {
     const recording = makeRecordingService();
     recording.recordCustomTitle.mockResolvedValue(false);
     const innerConfig = makeLiveSessionInnerConfig(recording);
@@ -15535,10 +15542,10 @@ describe('QwenAgent extMethod renameSession routing', () => {
     const innerConfig = makeLiveSessionInnerConfig(recording);
     const nonOwnerConfig = makeLiveSessionInnerConfig(makeRecordingService());
     innerConfig.getSessionRuntimeBaseDir.mockReturnValue(
-      '/tmp/qwen-runtime-test',
+      '/tmp/canopy-runtime-test',
     );
     nonOwnerConfig.getSessionRuntimeBaseDir.mockReturnValue(
-      '/tmp/qwen-runtime-test',
+      '/tmp/canopy-runtime-test',
     );
     const { agent, agentPromise } = await bootAgent(innerConfig);
     const cleanup = agent as unknown as {
@@ -15566,7 +15573,7 @@ describe('QwenAgent extMethod renameSession routing', () => {
     await agent.newSession({ cwd: '/tmp', mcpServers: [] });
     expect(innerConfig.shutdown).toHaveBeenCalledTimes(2);
     await cleanup.retryPendingConfigCleanup(
-      '/tmp/qwen-runtime-test',
+      '/tmp/canopy-runtime-test',
       liveSessionId,
     );
     expect(innerConfig.shutdown).toHaveBeenCalledTimes(2);
@@ -15576,7 +15583,7 @@ describe('QwenAgent extMethod renameSession routing', () => {
   });
 });
 
-describe('QwenAgent unstable_listSessions cursor parsing', () => {
+describe('CanopyAgent unstable_listSessions cursor parsing', () => {
   let capturedAgentFactory:
     | ((conn: { closed: Promise<void> }) => {
         unstable_listSessions: (
@@ -15844,11 +15851,11 @@ describe('QwenAgent unstable_listSessions cursor parsing', () => {
   });
 });
 
-// Tests for QwenAgent.loadSession() and QwenAgent.unstable_resumeSession()
+// Tests for CanopyAgent.loadSession() and CanopyAgent.unstable_resumeSession()
 // — locks the session-existence guard, the resourceNotFound error contract,
 // and the resume-vs-load semantic difference (load replays UI history,
 // resume does not).
-describe('QwenAgent loadSession / unstable_resumeSession', () => {
+describe('CanopyAgent loadSession / unstable_resumeSession', () => {
   let capturedAgentFactory:
     | ((conn: { closed: Promise<void> }) => {
         initialize: (args: Record<string, unknown>) => Promise<unknown>;
@@ -15918,7 +15925,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     mockRenderPreparedGoalUpdate.mockResolvedValue({ updates: [] });
     mockExtractDaemonTraceContext.mockReturnValue(undefined);
     vi.mocked(Storage.getRuntimeBaseDir).mockReturnValue(
-      '/tmp/qwen-runtime-test',
+      '/tmp/canopy-runtime-test',
     );
     mockConnectionState.reset();
     lastSessionMock = undefined;
@@ -16021,7 +16028,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         .mockImplementation(() => recording.hasWriteOwnership()),
       getSessionRuntimeBaseDir: vi
         .fn()
-        .mockReturnValue('/tmp/qwen-runtime-test'),
+        .mockReturnValue('/tmp/canopy-runtime-test'),
       hydrateSessionRestoreFileHistory: vi.fn(),
       finalizeSessionRestore: vi.fn(),
       loadPausedBackgroundAgents: vi.fn().mockResolvedValue([]),
@@ -16304,7 +16311,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       data: { uri: 'session:persisted-missing' },
     });
     expect(mockSessionStartSpan.setAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.failed_stage',
+      'canopy-code.daemon.session_restore.failed_stage',
       'existence_check',
     );
 
@@ -16328,7 +16335,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         cwd: '/tmp',
         sessionId: 'persisted-1',
         mcpServers: [],
-        _meta: { 'qwen.telemetry.traceparent': 'daemon-parent' },
+        _meta: { 'canopy.telemetry.traceparent': 'daemon-parent' },
       };
 
       if (action === 'load') {
@@ -16339,10 +16346,10 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
 
       expect(mockExtractDaemonTraceContext).toHaveBeenCalledWith(request);
       expect(mockWithDaemonSpan).toHaveBeenCalledWith(
-        'qwen-code.daemon.session_restore',
+        'canopy-code.daemon.session_restore',
         {
-          'qwen-code.daemon.operation': `acp_session_${action}`,
-          'qwen-code.daemon.session_restore.action': action,
+          'canopy-code.daemon.operation': `acp_session_${action}`,
+          'canopy-code.daemon.session_restore.action': action,
           'session.id': 'persisted-1',
         },
         expect.any(Function),
@@ -16363,16 +16370,16 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         'post_replay_services',
       ]) {
         expect(
-          attributes[`qwen-code.daemon.session_restore.${stage}_ms`],
+          attributes[`canopy-code.daemon.session_restore.${stage}_ms`],
         ).toEqual(expect.any(Number));
       }
       if (action === 'load') {
         expect(
-          attributes['qwen-code.daemon.session_restore.history_replay_ms'],
+          attributes['canopy-code.daemon.session_restore.history_replay_ms'],
         ).toEqual(expect.any(Number));
       } else {
         expect(
-          attributes['qwen-code.daemon.session_restore.history_replay_ms'],
+          attributes['canopy-code.daemon.session_restore.history_replay_ms'],
         ).toBeUndefined();
       }
       // Mirror of the live-path test's `existence_check_ms` absence check.
@@ -16380,7 +16387,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       // cold loads report a stage that implies a live session existed,
       // polluting restore-stage dashboards while every test stayed green.
       expect(
-        attributes['qwen-code.daemon.session_restore.live_restore_ms'],
+        attributes['canopy-code.daemon.session_restore.live_restore_ms'],
       ).toBeUndefined();
 
       mockConnectionState.resolve();
@@ -16412,9 +16419,9 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
           await agent.unstable_resumeSession(request);
         }
         expect(mockWithDaemonSpan).toHaveBeenCalledWith(
-          'qwen-code.daemon.session_restore',
+          'canopy-code.daemon.session_restore',
           expect.objectContaining({
-            'qwen-code.daemon.session_restore.action': action,
+            'canopy-code.daemon.session_restore.action': action,
           }),
           expect.any(Function),
           {},
@@ -16431,16 +16438,16 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
           mockSessionStartSpan.setAttribute.mock.calls,
         );
         expect(
-          attributes['qwen-code.daemon.session_restore.settings_load_ms'],
+          attributes['canopy-code.daemon.session_restore.settings_load_ms'],
         ).toEqual(expect.any(Number));
         expect(
-          attributes['qwen-code.daemon.session_restore.live_restore_ms'],
+          attributes['canopy-code.daemon.session_restore.live_restore_ms'],
         ).toEqual(expect.any(Number));
         expect(
-          attributes['qwen-code.daemon.session_restore.response_build_ms'],
+          attributes['canopy-code.daemon.session_restore.response_build_ms'],
         ).toEqual(expect.any(Number));
         expect(
-          attributes['qwen-code.daemon.session_restore.existence_check_ms'],
+          attributes['canopy-code.daemon.session_restore.existence_check_ms'],
         ).toBeUndefined();
       } finally {
         mockConnectionState.resolve();
@@ -16552,7 +16559,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     expect(result).toBe(initializationError);
     expect(innerConfig.shutdown).toHaveBeenCalledOnce();
     expect(mockSessionStartSpan.setAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.failed_stage',
+      'canopy-code.daemon.session_restore.failed_stage',
       'config_setup',
     );
 
@@ -16728,8 +16735,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       entries: [{ content: 'Ship', priority: 'medium', status: 'pending' }],
       _meta: {
         timestamp: 4242,
-        qwenTodoPlan: { id: 'plan-1' },
-        qwenTranscript: { planToolCallId: 'todo-call-1' },
+        canopyTodoPlan: { id: 'plan-1' },
+        canopyTranscript: { planToolCallId: 'todo-call-1' },
       },
     };
     mockHistoryReplay.mockImplementation(
@@ -16770,12 +16777,12 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     })) as {
       _meta?: Record<string, { v: number; updates: unknown[] }>;
     };
 
-    expect(response._meta?.['qwen.session.loadReplay']).toEqual({
+    expect(response._meta?.['canopy.session.loadReplay']).toEqual({
       v: 1,
       updates: [{ ...replayUpdate, timestamp: 4242 }],
     });
@@ -16789,11 +16796,11 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     expect(lastSessionMock?.primeTurnState).toHaveBeenCalledWith(0, []);
     expect(mockHistoryReplay).toHaveBeenCalledTimes(1);
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.partial_replay',
+      'canopy-code.daemon.session_restore.partial_replay',
       false,
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.partial_replay',
+      'canopy-code.daemon.session_restore.partial_replay',
       false,
     );
 
@@ -16857,10 +16864,10 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     })) as { _meta?: Record<string, { updates: unknown[] }> };
 
-    const updates = response._meta?.['qwen.session.loadReplay']?.updates;
+    const updates = response._meta?.['canopy.session.loadReplay']?.updates;
     expect(updates).toEqual([{ ...replayUpdate, timestamp: 4242 }, goalUpdate]);
     expect(mockRenderPreparedGoalUpdate).toHaveBeenCalledOnce();
     expect(mockRenderPreparedGoalUpdate).toHaveBeenCalledWith(
@@ -16967,7 +16974,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     });
     await replayStarted;
     await agent.beginManagedShutdown().writerShutdown;
@@ -17004,8 +17011,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       entries: [{ content: 'Old plan', priority: 'medium', status: 'done' }],
       _meta: {
         timestamp: 4242,
-        qwenTodoPlan: { id: 'old-plan' },
-        qwenTranscript: { planToolCallId: 'old-call' },
+        canopyTodoPlan: { id: 'old-plan' },
+        canopyTranscript: { planToolCallId: 'old-call' },
       },
     };
     mockHistoryReplay.mockImplementation(async (context: unknown) => {
@@ -17084,14 +17091,14 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     })) as {
       _meta?: Record<string, { hasMore?: boolean }>;
     };
 
-    expect(response._meta?.['qwen.session.loadReplay']?.hasMore).toBe(true);
+    expect(response._meta?.['canopy.session.loadReplay']?.hasMore).toBe(true);
     expect(lastSessionMock?.primeTurnState).toHaveBeenCalledWith(0, []);
 
     mockConnectionState.resolve();
@@ -17200,8 +17207,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     });
 
@@ -17301,9 +17308,9 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
-        'qwen.session.loadReplayHideInherited': true,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayHideInherited': true,
       },
     });
 
@@ -17394,7 +17401,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayHideInherited': true },
+      _meta: { 'canopy.session.loadReplayHideInherited': true },
     });
 
     expect(lastSessionMock?.replayHistory).toHaveBeenCalledWith(
@@ -17443,7 +17450,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         cwd: '/tmp',
         sessionId: 'persisted-1',
         mcpServers: [],
-        _meta: { 'qwen.session.loadReplayHideInherited': true },
+        _meta: { 'canopy.session.loadReplayHideInherited': true },
       }),
     ).rejects.toThrow('goal projection failed');
 
@@ -17474,7 +17481,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     });
 
     expect(mockRenderPreparedGoalUpdate).toHaveBeenCalledOnce();
@@ -17527,15 +17534,15 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-long-turn',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     })) as {
       _meta?: Record<string, { hasMore?: boolean }>;
     };
 
     expect(
-      response._meta?.['qwen.session.loadReplay']?.hasMore,
+      response._meta?.['canopy.session.loadReplay']?.hasMore,
     ).toBeUndefined();
     expect(lastSessionMock?.primeTurnState).toHaveBeenCalledWith(0, []);
 
@@ -17581,14 +17588,14 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-bounded',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     })) as {
       _meta?: Record<string, { hasMore?: boolean }>;
     };
 
-    expect(response._meta?.['qwen.session.loadReplay']?.hasMore).toBe(true);
+    expect(response._meta?.['canopy.session.loadReplay']?.hasMore).toBe(true);
 
     mockConnectionState.resolve();
     await agentPromise;
@@ -17637,8 +17644,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-midpair',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     })) as {
       _meta?: Record<
@@ -17651,9 +17658,9 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     // down to the owning call ac1 so it does not start mid-pair.
     expect(capturedHistory).toEqual(messages.slice(1));
     expect(
-      response._meta?.['qwen.session.loadReplay']?.partial,
+      response._meta?.['canopy.session.loadReplay']?.partial,
     ).toBeUndefined();
-    expect(response._meta?.['qwen.session.loadReplay']?.hasMore).toBe(true);
+    expect(response._meta?.['canopy.session.loadReplay']?.hasMore).toBe(true);
 
     mockConnectionState.resolve();
     await agentPromise;
@@ -17698,8 +17705,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-notification',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     })) as {
       _meta?: Record<
@@ -17713,9 +17720,9 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     // realigning the page onto it.
     expect(capturedHistory).toEqual(messages.slice(3));
     expect(
-      response._meta?.['qwen.session.loadReplay']?.partial,
+      response._meta?.['canopy.session.loadReplay']?.partial,
     ).toBeUndefined();
-    expect(response._meta?.['qwen.session.loadReplay']?.hasMore).toBe(true);
+    expect(response._meta?.['canopy.session.loadReplay']?.hasMore).toBe(true);
 
     mockConnectionState.resolve();
     await agentPromise;
@@ -17744,7 +17751,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     })) as {
       _meta?: Record<
         string,
@@ -17757,7 +17764,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       >;
     };
 
-    expect(response._meta?.['qwen.session.loadReplay']).toMatchObject({
+    expect(response._meta?.['canopy.session.loadReplay']).toMatchObject({
       v: 1,
       updates: [],
       partial: true,
@@ -17800,7 +17807,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         cwd: '/tmp',
         sessionId: 'persisted-1',
         mcpServers: [],
-        _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+        _meta: { 'canopy.session.loadReplayMode': 'bulk' },
       }),
     ).rejects.toThrow('prime boom');
 
@@ -17814,7 +17821,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         cwd: '/tmp',
         sessionId: 'persisted-1',
         mcpServers: [],
-        _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+        _meta: { 'canopy.session.loadReplayMode': 'bulk' },
       }),
     ).resolves.toMatchObject({
       modes: expect.anything(),
@@ -17853,7 +17860,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
         cwd: '/tmp',
         sessionId: 'persisted-1',
         mcpServers: [],
-        _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+        _meta: { 'canopy.session.loadReplayMode': 'bulk' },
       })
       .catch((error: unknown) => error);
 
@@ -18166,7 +18173,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     });
     const firstSession = lastSessionMock!;
     vi.mocked(Storage.getRuntimeBaseDir).mockReturnValue(
-      '/tmp/qwen-runtime-other',
+      '/tmp/canopy-runtime-other',
     );
 
     await expect(
@@ -18257,7 +18264,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       cwd: '/tmp',
       sessionId: 'persisted-1',
       mcpServers: [],
-      _meta: { 'qwen.session.loadReplayMode': 'bulk' },
+      _meta: { 'canopy.session.loadReplayMode': 'bulk' },
     })) as LoadSessionResponse & {
       artifactSnapshot?: unknown;
       _meta?: Record<string, { updates: unknown[] }>;
@@ -18265,7 +18272,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
 
     expect(Session).toHaveBeenCalledTimes(1);
     expect(response.artifactSnapshot).toBe(artifactSnapshot);
-    expect(response._meta?.['qwen.session.loadReplay']?.updates).toEqual([
+    expect(response._meta?.['canopy.session.loadReplay']?.updates).toEqual([
       replayUpdate,
     ]);
     expect(firstSession.cumulativeUsage).toEqual(originalUsage);
@@ -18338,8 +18345,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     });
 
@@ -18424,8 +18431,8 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
       },
     });
 
@@ -18495,9 +18502,9 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       sessionId: 'persisted-1',
       mcpServers: [],
       _meta: {
-        'qwen.session.loadReplayMode': 'bulk',
-        'qwen.session.loadReplayPageSize': 2,
-        'qwen.session.loadReplayHideInherited': true,
+        'canopy.session.loadReplayMode': 'bulk',
+        'canopy.session.loadReplayPageSize': 2,
+        'canopy.session.loadReplayHideInherited': true,
       },
     });
 
@@ -18554,7 +18561,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
     });
     const firstSession = lastSessionMock!;
     vi.mocked(Storage.getRuntimeBaseDir).mockReturnValue(
-      '/tmp/qwen-runtime-other',
+      '/tmp/canopy-runtime-other',
     );
 
     await expect(
@@ -18624,7 +18631,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
       data: { uri: 'session:persisted-missing' },
     });
     expect(mockSessionStartSpan.setAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.failed_stage',
+      'canopy-code.daemon.session_restore.failed_stage',
       'existence_check',
     );
 
@@ -18678,7 +18685,7 @@ describe('QwenAgent loadSession / unstable_resumeSession', () => {
 // T2.8 (#4514): extMethod runtime-add / runtime-remove
 // ---------------------------------------------------------------------------
 
-describe('QwenAgent extMethod runtime MCP add/remove (T2.8)', () => {
+describe('CanopyAgent extMethod runtime MCP add/remove (T2.8)', () => {
   let capturedAgentFactory:
     | ((conn: { closed: Promise<void> }) => {
         initialize: (args: Record<string, unknown>) => Promise<unknown>;
@@ -19806,13 +19813,13 @@ describe('sessionLanguage multi-session propagation', () => {
       getSessionId: vi.fn().mockReturnValue('s-a'),
       getOutputLanguageFilePath: vi
         .fn()
-        .mockReturnValue('/proj-a/.qwen/output-language.md'),
+        .mockReturnValue('/proj-a/.canopy/output-language.md'),
     });
     const cfgB = makeConfig({
       getSessionId: vi.fn().mockReturnValue('s-b'),
       getOutputLanguageFilePath: vi
         .fn()
-        .mockReturnValue('/proj-b/.qwen/output-language.md'),
+        .mockReturnValue('/proj-b/.canopy/output-language.md'),
     });
     const cfgC = makeConfig({
       getSessionId: vi.fn().mockReturnValue('s-c'),
@@ -19886,7 +19893,7 @@ describe('sessionLanguage multi-session propagation', () => {
     // Session B (different project path): updateOutputLanguageFile called
     expect(updateOutputLanguageFile).toHaveBeenCalledWith(
       'zh',
-      '/proj-b/.qwen/output-language.md',
+      '/proj-b/.canopy/output-language.md',
     );
 
     // Session C (no path): writeOutputLanguageAndRegisterPath called
@@ -19914,13 +19921,13 @@ describe('sessionLanguage multi-session propagation', () => {
       getSessionId: vi.fn().mockReturnValue('s-a'),
       getOutputLanguageFilePath: vi
         .fn()
-        .mockReturnValue('/proj-a/.qwen/output-language.md'),
+        .mockReturnValue('/proj-a/.canopy/output-language.md'),
     });
     const cfgB = makeConfig({
       getSessionId: vi.fn().mockReturnValue('s-b'),
       getOutputLanguageFilePath: vi
         .fn()
-        .mockReturnValue('/proj-b/.qwen/output-language.md'),
+        .mockReturnValue('/proj-b/.canopy/output-language.md'),
     });
 
     const sessionConfigs = [cfgA, cfgB];
@@ -19989,7 +19996,7 @@ describe('sessionLanguage multi-session propagation', () => {
     );
     expect(updateOutputLanguageFile).toHaveBeenCalledWith(
       'auto',
-      '/proj-b/.qwen/output-language.md',
+      '/proj-b/.canopy/output-language.md',
     );
     expect(resolveOutputLanguageOrPreserveAuto).toHaveBeenCalledWith('auto');
     expect(result).toMatchObject({ outputLanguage: 'auto' });
@@ -20007,7 +20014,7 @@ describe('sessionLanguage multi-session propagation', () => {
       getSessionId: vi.fn().mockReturnValue('s-fail'),
       getOutputLanguageFilePath: vi
         .fn()
-        .mockReturnValue('/readonly/.qwen/output-language.md'),
+        .mockReturnValue('/readonly/.canopy/output-language.md'),
     });
 
     const sessionConfigs = [cfgOk, cfgFail];
@@ -20059,7 +20066,7 @@ describe('sessionLanguage multi-session propagation', () => {
     // Make writes for cfgFail's path throw
     vi.mocked(updateOutputLanguageFile).mockImplementation(
       (_value: string, path?: string) => {
-        if (path === '/readonly/.qwen/output-language.md') {
+        if (path === '/readonly/.canopy/output-language.md') {
           throw new Error('EACCES');
         }
       },
@@ -20086,8 +20093,8 @@ describe('sessionLanguage multi-session propagation', () => {
     const providerConfig = {
       idealab: [
         {
-          id: 'qwen3',
-          name: 'Qwen 3',
+          id: 'canopy3',
+          name: 'Canopy 3',
           baseUrl: 'https://idealab.example/v1',
         },
       ],
@@ -20692,8 +20699,8 @@ describe('sessionLanguage multi-session propagation', () => {
 });
 
 describe('createWorkspaceMcpBudget — env parsing', () => {
-  const KEY = 'QWEN_SERVE_MCP_CLIENT_BUDGET';
-  const MODE = 'QWEN_SERVE_MCP_BUDGET_MODE';
+  const KEY = 'CANOPY_SERVE_MCP_CLIENT_BUDGET';
+  const MODE = 'CANOPY_SERVE_MCP_BUDGET_MODE';
   const onEvent = vi.fn();
 
   afterEach(() => {

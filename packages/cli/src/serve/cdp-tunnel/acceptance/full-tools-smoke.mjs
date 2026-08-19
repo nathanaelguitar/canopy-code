@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,9 +13,9 @@ import {
 
 const endpoint = cdpEndpoint();
 const fixtureUrl = process.env.FIXTURE_URL || 'http://127.0.0.1:4180';
-const command = process.env.QWEN_CDP_MCP_COMMAND;
+const command = process.env.CANOPY_CDP_MCP_COMMAND;
 if (!command) {
-  console.error('Set QWEN_CDP_MCP_COMMAND to an external adapter binary.');
+  console.error('Set CANOPY_CDP_MCP_COMMAND to an external adapter binary.');
   process.exit(2);
 }
 
@@ -144,7 +144,7 @@ const verifyCurrentPage = async (expectedUrl) => {
     await verifierRequest(1, 'initialize', {
       protocolVersion: '2025-06-18',
       capabilities: {},
-      clientInfo: { name: 'qwen-cdp-restore-verifier', version: '1' },
+      clientInfo: { name: 'canopy-cdp-restore-verifier', version: '1' },
     });
     verifier.stdin.write(
       `${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`,
@@ -168,7 +168,7 @@ try {
   await request('initialize', {
     protocolVersion: '2025-06-18',
     capabilities: {},
-    clientInfo: { name: 'qwen-cdp-full-smoke', version: '1' },
+    clientInfo: { name: 'canopy-cdp-full-smoke', version: '1' },
   });
   send({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
@@ -186,7 +186,7 @@ try {
   const snapshot = textOf(await call('take_snapshot'));
   const buttonUid = uidFor(snapshot, 'button "Run fixture action"');
   const linkUid = uidFor(snapshot, 'link "Open fixture target"');
-  checks.snapshot = snapshot.includes('Qwen CDP Fixture');
+  checks.snapshot = snapshot.includes('Canopy CDP Fixture');
   checks.buttonFound = Boolean(buttonUid);
   checks.linkFound = Boolean(linkUid);
 
@@ -208,9 +208,9 @@ try {
 
   const consoleMessages = await waitUntil(
     async () => textOf(await call('list_console_messages')),
-    (text) => text.includes('qwen-fixture-clicked'),
+    (text) => text.includes('canopy-fixture-clicked'),
   );
-  checks.console = consoleMessages.includes('qwen-fixture-clicked');
+  checks.console = consoleMessages.includes('canopy-fixture-clicked');
   const networkRequests = await waitUntil(
     async () => textOf(await call('list_network_requests')),
     (text) => text.includes('/api/click'),

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Traduccions en català per al CLI de Qwen Code per Jordi Mas i Hernàndez <jmas@softcatala.org>
+// Traduccions en català per al CLI de Canopy Code per Jordi Mas i Hernàndez <jmas@softcatala.org>
 
 export default {
   // ============================================================================
@@ -84,7 +84,7 @@ export default {
   'For a full list of shortcuts, see {{docPath}}':
     'Per a una llista completa de dreceres, vegeu {{docPath}}',
   'docs/keyboard-shortcuts.md': 'docs/keyboard-shortcuts.md',
-  'for help on Qwen Code': 'per a ajuda sobre Qwen Code',
+  'for help on Canopy Code': 'per a ajuda sobre Canopy Code',
   'show version info': 'mostra la informació de la versió',
   'submit a bug report': "envia un informe d'error",
   Status: 'Estat',
@@ -92,7 +92,7 @@ export default {
   // ============================================================================
   // Informació del sistema
   // ============================================================================
-  'Qwen Code': 'Qwen Code',
+  'Canopy Code': 'Canopy Code',
   Runtime: "Entorn d'execució",
   OS: 'SO',
   Auth: 'Autenticació',
@@ -108,26 +108,26 @@ export default {
   // ============================================================================
   // Ordres - General
   // ============================================================================
-  'Analyzes the project and creates a tailored QWEN.md file.':
-    'Analitza el projecte i crea un fitxer QWEN.md personalitzat.',
-  'List available Qwen Code tools. Usage: /tools [desc]':
-    'Llista les eines disponibles de Qwen Code. Ús: /tools [desc]',
+  'Analyzes the project and creates a tailored CANOPY.md file.':
+    'Analitza el projecte i crea un fitxer CANOPY.md personalitzat.',
+  'List available Canopy Code tools. Usage: /tools [desc]':
+    'Llista les eines disponibles de Canopy Code. Ús: /tools [desc]',
   'Open the skills panel (browse, search, toggle, pick).':
     "Obre el panell d'habilitats (explorar, cercar, activar, triar).",
   'Manage Skills': 'Gestiona les habilitats',
   'Skills configuration saved.': "Configuració d'habilitats desada.",
   'Skills configuration saved, but refresh failed: {{error}}. Restart to ensure the new state is applied.':
     "Configuració d'habilitats desada, però l'actualització ha fallat: {{error}}. Reinicia per assegurar-te que el nou estat s'apliqui.",
-  'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.qwen/settings.json directly to manage skills at user scope.':
-    "L'espai de treball no és de confiança; els paràmetres de l'espai de treball s'ignoren a la configuració fusionada. Executa /trust primer, o edita ~/.qwen/settings.json directament per gestionar habilitats a l'àmbit d'usuari.",
+  'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.canopy/settings.json directly to manage skills at user scope.':
+    "L'espai de treball no és de confiança; els paràmetres de l'espai de treball s'ignoren a la configuració fusionada. Executa /trust primer, o edita ~/.canopy/settings.json directament per gestionar habilitats a l'àmbit d'usuari.",
   'SkillManager not available.': 'SkillManager no disponible.',
   'Loading skills…': 'Carregant habilitats…',
   'Failed to load skills: {{error}}':
     'No s’han pogut carregar les habilitats: {{error}}',
   'Failed to save skills configuration: {{error}}':
     "No s'ha pogut desar la configuració d'habilitats: {{error}}",
-  'All available skills are disabled. Edit ~/.qwen/settings.json or .qwen/settings.json (skills.disabled) to re-enable.':
-    'Totes les habilitats disponibles estan desactivades. Edita ~/.qwen/settings.json o .qwen/settings.json (skills.disabled) per tornar-les a activar.',
+  'All available skills are disabled. Edit ~/.canopy/settings.json or .canopy/settings.json (skills.disabled) to re-enable.':
+    'Totes les habilitats disponibles estan desactivades. Edita ~/.canopy/settings.json o .canopy/settings.json (skills.disabled) per tornar-les a activar.',
   'Press esc to close.': 'Premeu Esc per tancar.',
   '{{count}} skills · ': '{{count}} habilitats · ',
   '{{matched}} / {{total}} skills · ': '{{matched}} / {{total}} habilitats · ',
@@ -148,7 +148,8 @@ export default {
   '↑/↓ navigate · backspace edits search':
     '↑/↓ navega · Retrocés edita la cerca',
   Bundled: 'Integrada',
-  'Available Qwen Code CLI tools:': 'Eines del CLI de Qwen Code disponibles:',
+  'Available Canopy Code CLI tools:':
+    'Eines del CLI de Canopy Code disponibles:',
   'No tools available': 'No hi ha eines disponibles',
   'View or change the approval mode for tool usage':
     "Mostra o canvia el mode d'aprovació per a l'ús d'eines",
@@ -226,8 +227,8 @@ export default {
     "Esborra l'historial de la conversa i allibera context",
   'Compresses the context by replacing it with a summary.':
     'Comprimeix el context substituint-lo per un resum.',
-  'open full Qwen Code documentation in your browser':
-    'obre la documentació completa de Qwen Code al navegador',
+  'open full Canopy Code documentation in your browser':
+    'obre la documentació completa de Canopy Code al navegador',
   'Configuration not available.': 'Configuració no disponible.',
   'Connect an LLM provider': "Connecta un proveïdor d'LLM",
   // ============================================================================
@@ -323,8 +324,8 @@ export default {
   // ============================================================================
   // Agents - Assistent de creació
   // ============================================================================
-  'Project Level (.qwen/agents/)': 'Nivell de projecte (.qwen/agents/)',
-  'User Level (~/.qwen/agents/)': "Nivell d'usuari (~/.qwen/agents/)",
+  'Project Level (.canopy/agents/)': 'Nivell de projecte (.canopy/agents/)',
+  'User Level (~/.canopy/agents/)': "Nivell d'usuari (~/.canopy/agents/)",
   '✓ Subagent Created Successfully!': '✓ Subagent creat correctament!',
   'Subagent "{{name}}" has been saved to {{level}} level.':
     'El subagent "{{name}}" s\'ha desat al nivell {{level}}.',
@@ -345,7 +346,8 @@ export default {
   'Step {{n}}: Choose Location': 'Pas {{n}}: Triar ubicació',
   'Step {{n}}: Choose Generation Method':
     'Pas {{n}}: Triar mètode de generació',
-  'Generate with Qwen Code (Recommended)': 'Generar amb Qwen Code (Recomanat)',
+  'Generate with Canopy Code (Recommended)':
+    'Generar amb Canopy Code (Recomanat)',
   'Manual Creation': 'Creació manual',
   'Describe what this subagent should do and when it should be used. (Be comprehensive for best results)':
     "Descriviu què ha de fer aquest subagent i quan s'ha d'usar. (Sigueu exhaustiu per obtenir els millors resultats)",
@@ -455,11 +457,11 @@ export default {
   // ============================================================================
   // Ordres - General (continuació)
   // ============================================================================
-  'View and edit Qwen Code settings':
-    'Veure i editar la configuració de Qwen Code',
+  'View and edit Canopy Code settings':
+    'Veure i editar la configuració de Canopy Code',
   Settings: 'Configuració',
-  'To see changes, Qwen Code must be restarted. Press r to exit and apply changes now.':
-    'Per veure els canvis, cal reiniciar Qwen Code. Premeu r per sortir i aplicar els canvis ara.',
+  'To see changes, Canopy Code must be restarted. Press r to exit and apply changes now.':
+    'Per veure els canvis, cal reiniciar Canopy Code. Premeu r per sortir i aplicar els canvis ara.',
   // ============================================================================
   // Etiquetes de configuració
   // ============================================================================
@@ -482,8 +484,8 @@ export default {
   'Custom Witty Phrases': 'Frases enginyoses personalitzades',
   'Show Welcome Back Dialog': 'Mostra el diàleg de benvinguda',
   'Enable User Feedback': 'Activa les valoracions dels usuaris',
-  'How is Qwen doing this session? (optional)':
-    'Com va Qwen en aquesta sessió? (opcional)',
+  'How is Canopy doing this session? (optional)':
+    'Com va Canopy en aquesta sessió? (opcional)',
   Bad: 'Malament',
   Fine: 'Bé',
   Good: 'Molt bé',
@@ -500,7 +502,7 @@ export default {
   'Load Memory From Include Directories':
     'Carrega la memòria des dels directoris inclosos',
   'Respect .gitignore': 'Respecta el .gitignore',
-  'Respect .qwenignore': 'Respecta el .qwenignore',
+  'Respect .canopyignore': 'Respecta el .canopyignore',
   'Enable Recursive File Search': 'Activa la cerca recursiva de fitxers',
   'Interactive Shell (PTY)': 'Shell interactiva (PTY)',
   'Show Color': 'Mostra el color',
@@ -615,16 +617,16 @@ export default {
   remote: 'remot',
   'This extension will add the following commands: {{commands}}.':
     'Aquesta extensió afegirà les ordres següents: {{commands}}.',
-  'This extension will append info to your QWEN.md context using {{fileName}}':
-    'Aquesta extensió afegirà informació al vostre context QWEN.md usant {{fileName}}',
+  'This extension will append info to your CANOPY.md context using {{fileName}}':
+    'Aquesta extensió afegirà informació al vostre context CANOPY.md usant {{fileName}}',
   'This extension will install the following skills:':
     'Aquesta extensió instal·larà les habilitats següents:',
   'This extension will install the following subagents:':
     'Aquesta extensió instal·larà els subagents següents:',
   'Installation cancelled for "{{name}}".':
     'Instal·lació cancel·lada per a "{{name}}".',
-  'You are installing an extension from {{originSource}}. Some features may not work perfectly with Qwen Code.':
-    'Esteu instal·lant una extensió des de {{originSource}}. Algunes funcions poden no funcionar perfectament amb Qwen Code.',
+  'You are installing an extension from {{originSource}}. Some features may not work perfectly with Canopy Code.':
+    'Esteu instal·lant una extensió des de {{originSource}}. Algunes funcions poden no funcionar perfectament amb Canopy Code.',
   '--ref and --auto-update are not applicable for marketplace extensions.':
     "--ref i --auto-update no s'apliquen a les extensions del mercat.",
   'Extension "{{name}}" installed successfully and enabled.':
@@ -734,8 +736,8 @@ export default {
     "instal·la el complement d'IDE necessari per a {{ideName}}",
   'enable IDE integration': "activa la integració de l'IDE",
   'disable IDE integration': "desactiva la integració de l'IDE",
-  'IDE integration is not supported in your current environment. To use this feature, run Qwen Code in one of these supported IDEs: VS Code or VS Code forks.':
-    "La integració de l'IDE no és compatible en el vostre entorn actual. Per usar aquesta funció, executeu Qwen Code en un dels IDEs compatibles: VS Code o bifurcacions de VS Code.",
+  'IDE integration is not supported in your current environment. To use this feature, run Canopy Code in one of these supported IDEs: VS Code or VS Code forks.':
+    "La integració de l'IDE no és compatible en el vostre entorn actual. Per usar aquesta funció, executeu Canopy Code en un dels IDEs compatibles: VS Code o bifurcacions de VS Code.",
   'Set up GitHub Actions': 'Configura GitHub Actions',
   'Configure terminal keybindings for multiline input (VS Code, Cursor, Windsurf, Trae)':
     'Configura les dreceres del terminal per a entrada multilínia (VS Code, Cursor, Windsurf, Trae)',
@@ -770,7 +772,7 @@ export default {
   // ============================================================================
   // Ordres - Hooks
   // ============================================================================
-  'Manage Qwen Code hooks': 'Gestiona els hooks de Qwen Code',
+  'Manage Canopy Code hooks': 'Gestiona els hooks de Canopy Code',
   'List all configured hooks': 'Llista tots els hooks configurats',
   Hooks: 'Hooks',
   'Loading hooks...': 'Carregant hooks...',
@@ -784,24 +786,24 @@ export default {
   'No hook events found.': "No s'han trobat esdeveniments de hook.",
   '{{count}} hook configured': '{{count}} hook configurat',
   '{{count}} hooks configured': '{{count}} hooks configurats',
-  'This menu is read-only. To add or modify hooks, edit settings.json directly or ask Qwen Code.':
-    'Aquest menú és de només lectura. Per afegir o modificar hooks, editeu settings.json directament o demaneu-ho a Qwen Code.',
+  'This menu is read-only. To add or modify hooks, edit settings.json directly or ask Canopy Code.':
+    'Aquest menú és de només lectura. Per afegir o modificar hooks, editeu settings.json directament o demaneu-ho a Canopy Code.',
   'Enter to select · Esc to cancel':
     'Return per seleccionar · Esc per cancel·lar',
   'Exit codes:': 'Codis de sortida:',
   'Configured hooks:': 'Hooks configurats:',
   'No hooks configured for this event.':
     'No hi ha hooks configurats per a aquest esdeveniment.',
-  'To add hooks, edit settings.json directly or ask Qwen.':
-    'Per afegir hooks, editeu settings.json directament o demaneu-ho a Qwen.',
+  'To add hooks, edit settings.json directly or ask Canopy.':
+    'Per afegir hooks, editeu settings.json directament o demaneu-ho a Canopy.',
   'Enter to select · Esc to go back':
     'Return per seleccionar · Esc per tornar enrere',
   'Hook details': 'Detalls del hook',
   'Event:': 'Esdeveniment:',
   'Extension:': 'Extensió:',
   'No hook config selected': 'Cap configuració de hook seleccionada',
-  'To modify or remove this hook, edit settings.json directly or ask Qwen to help.':
-    'Per modificar o eliminar aquest hook, editeu settings.json directament o demaneu ajuda a Qwen.',
+  'To modify or remove this hook, edit settings.json directly or ask Canopy to help.':
+    'Per modificar o eliminar aquest hook, editeu settings.json directament o demaneu ajuda a Canopy.',
   'Hook Configuration - Disabled': 'Configuració de hooks - Desactivats',
   'All hooks are currently disabled. You have {{count}} that are not running.':
     'Tots els hooks estan desactivats. En teniu {{count}} que no estan en execució.',
@@ -812,8 +814,8 @@ export default {
   'StatusLine will not be displayed': "La barra d'estat no es mostrarà",
   'Tool operations will proceed without hook validation':
     "Les operacions d'eines continuaran sense validació de hook",
-  'To re-enable hooks, remove "disableAllHooks" from settings.json or ask Qwen Code.':
-    'Per tornar a activar els hooks, elimineu "disableAllHooks" de settings.json o demaneu-ho a Qwen Code.',
+  'To re-enable hooks, remove "disableAllHooks" from settings.json or ask Canopy Code.':
+    'Per tornar a activar els hooks, elimineu "disableAllHooks" de settings.json o demaneu-ho a Canopy Code.',
   Project: 'Projecte',
   User: 'Usuari',
   Skill: 'Habilitat',
@@ -832,8 +834,8 @@ export default {
   'When a slash command expands into a prompt':
     "Quan una ordre de barra s'expandeix en un missatge",
   'When a new session is started': "Quan s'inicia una nova sessió",
-  'Right before Qwen Code concludes its response':
-    'Immediatament abans que Qwen Code conclou la seva resposta',
+  'Right before Canopy Code concludes its response':
+    'Immediatament abans que Canopy Code conclou la seva resposta',
   'When a subagent (Agent tool call) is started':
     "Quan s'inicia un subagent (crida a l'eina Agent)",
   'Right before a subagent concludes its response':
@@ -879,7 +881,7 @@ export default {
     "bloca el processament, esborra el missatge original i mostra l'stderr només a l'usuari",
   'block expanded prompt submission and show stderr to user only':
     "bloca l'enviament del missatge expandit i mostra l'stderr només a l'usuari",
-  'stdout shown to Qwen': 'stdout mostrat a Qwen',
+  'stdout shown to Canopy': 'stdout mostrat a Canopy',
   'show stderr to user only (blocking errors ignored)':
     "mostra l'stderr només a l'usuari (s'ignoren els errors de blocatge)",
   'command completes successfully': "l'ordre es completa correctament",
@@ -1072,8 +1074,8 @@ export default {
   servers: 'servidors',
   'Add MCP servers to your settings to get started.':
     'Afegiu MCP servers a la configuració per començar.',
-  'Run qwen --debug to see error logs':
-    "Executeu qwen --debug per veure els registres d'errors",
+  'Run canopy --debug to see error logs':
+    "Executeu canopy --debug per veure els registres d'errors",
   'OAuth Authentication': 'Autenticació OAuth',
   'Authenticating... Please complete the login in your browser.':
     "Autenticant... Completeu l'inici de sessió al vostre navegador.",
@@ -1109,8 +1111,8 @@ export default {
   // ===========================================================
   // Ordres - Resum
   // ============================================================================
-  'Generate a project summary and save it to .qwen/PROJECT_SUMMARY.md':
-    'Generar un resum del projecte i desar-lo a .qwen/PROJECT_SUMMARY.md',
+  'Generate a project summary and save it to .canopy/PROJECT_SUMMARY.md':
+    'Generar un resum del projecte i desar-lo a .canopy/PROJECT_SUMMARY.md',
   'No chat client available to generate summary.':
     'No hi ha cap client de xat disponible per generar el resum.',
   'Already generating summary, wait for previous request to complete':
@@ -1187,8 +1189,8 @@ export default {
   'The /directory add command is not supported in restrictive sandbox profiles. Please use --include-directories when starting the session instead.':
     "L'ordre /directory add no és compatible en perfils d'entorn aïllat restrictius. En el seu lloc, useu --include-directories en iniciar la sessió.",
   "Error adding '{{path}}': {{error}}": "Error en afegir '{{path}}': {{error}}",
-  'Successfully added QWEN.md files from the following directories if there are:\n- {{directories}}':
-    "S'han afegit correctament els fitxers QWEN.md dels directoris següents si n'hi ha:\n- {{directories}}",
+  'Successfully added CANOPY.md files from the following directories if there are:\n- {{directories}}':
+    "S'han afegit correctament els fitxers CANOPY.md dels directoris següents si n'hi ha:\n- {{directories}}",
   'Error refreshing memory: {{error}}':
     'Error en actualitzar la memòria: {{error}}',
   'Successfully added directories:\n- {{directories}}':
@@ -1265,33 +1267,33 @@ export default {
     'Cal connectar un proveïdor per continuar. Premeu Ctrl+C de nou per sortir.',
   'Terms of Services and Privacy Notice':
     'Termes de servei i avís de privacitat',
-  'Qwen OAuth': 'Qwen OAuth',
+  'Canopy OAuth': 'Canopy OAuth',
   'Discontinued — switch to Coding Plan or API Key':
     'Descontinuat — canvieu a Coding Plan o API Key',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Please select Coding Plan or API Key instead.':
-    'El nivell gratuït de Qwen OAuth es va descontinuar el 15-04-2026. Seleccioneu Coding Plan o API Key en el seu lloc.',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.':
-    "El nivell gratuït de Qwen OAuth es va descontinuar el 15-04-2026. Seleccioneu un model d'un altre proveïdor o executeu /auth per canviar.",
-  '\n⚠ Qwen OAuth free tier was discontinued on 2026-04-15. Please select another option.\n':
-    '\n⚠ El nivell gratuït de Qwen OAuth es va descontinuar el 15-04-2026. Seleccioneu una altra opció.\n',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Please select Coding Plan or API Key instead.':
+    'El nivell gratuït de Canopy OAuth es va descontinuar el 15-04-2026. Seleccioneu Coding Plan o API Key en el seu lloc.',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.':
+    "El nivell gratuït de Canopy OAuth es va descontinuar el 15-04-2026. Seleccioneu un model d'un altre proveïdor o executeu /auth per canviar.",
+  '\n⚠ Canopy OAuth free tier was discontinued on 2026-04-15. Please select another option.\n':
+    '\n⚠ El nivell gratuït de Canopy OAuth es va descontinuar el 15-04-2026. Seleccioneu una altra opció.\n',
   'Paid · Up to 6,000 requests/5 hrs · All Alibaba Cloud Coding Plan Models':
     "De pagament · Fins a 6.000 sol·licituds/5 h · Tots els models de Coding Plan d'Alibaba Cloud",
   'Alibaba Cloud Coding Plan': "Coding Plan d'Alibaba Cloud",
   'Bring your own API key': 'Porteu la vostra pròpia API Key',
   'Authentication is enforced to be {{enforcedType}}, but you are currently using {{currentType}}.':
     "L'autenticació ha de ser {{enforcedType}}, però actualment esteu usant {{currentType}}.",
-  'Qwen OAuth Authentication': 'Autenticació Qwen OAuth',
+  'Canopy OAuth Authentication': 'Autenticació Canopy OAuth',
   'Please visit this URL to authorize:': 'Visiteu aquesta URL per autoritzar:',
   'Waiting for authorization': "Esperant l'autorització",
   'Time remaining:': 'Temps restant:',
-  'Qwen OAuth Authentication Timeout':
-    "Temps d'espera de l'autenticació Qwen OAuth esgotat",
+  'Canopy OAuth Authentication Timeout':
+    "Temps d'espera de l'autenticació Canopy OAuth esgotat",
   'OAuth token expired (over {{seconds}} seconds). Please select authentication method again.':
     "El token OAuth ha expirat (més de {{seconds}} segons). Seleccioneu el mètode d'autenticació de nou.",
   'Press any key to return to authentication type selection.':
     "Premeu qualsevol tecla per tornar a la selecció del tipus d'autenticació.",
-  'Waiting for Qwen OAuth authentication...':
-    "Esperant l'autenticació Qwen OAuth...",
+  'Waiting for Canopy OAuth authentication...':
+    "Esperant l'autenticació Canopy OAuth...",
   'Authentication timed out. Please try again.':
     "L'autenticació ha expirat. Torneu-ho a intentar.",
   'Waiting for auth... (Press ESC or CTRL+C to cancel)':
@@ -1314,8 +1316,8 @@ export default {
     'Error en autenticar-se. Missatge: {{message}}',
   'Authenticated successfully with {{authType}} credentials.':
     "S'ha autenticat correctament amb les credencials {{authType}}.",
-  'Invalid QWEN_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}':
-    'Valor de QWEN_DEFAULT_AUTH_TYPE no vàlid: "{{value}}". Els valors vàlids són: {{validValues}}',
+  'Invalid CANOPY_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}':
+    'Valor de CANOPY_DEFAULT_AUTH_TYPE no vàlid: "{{value}}". Els valors vàlids són: {{validValues}}',
   // ============================================================================
   // Diàlegs - Model
   // ============================================================================
@@ -1344,12 +1346,12 @@ export default {
   Ask: 'Pregunta',
   Deny: 'Denega',
   Workspace: 'Espai de treball',
-  "Qwen Code won't ask before using allowed tools.":
-    "Qwen Code no preguntarà abans d'usar les eines permeses.",
-  'Qwen Code will ask before using these tools.':
-    "Qwen Code preguntarà abans d'usar aquestes eines.",
-  'Qwen Code is not allowed to use denied tools.':
-    'Qwen Code no té permís per usar les eines denegades.',
+  "Canopy Code won't ask before using allowed tools.":
+    "Canopy Code no preguntarà abans d'usar les eines permeses.",
+  'Canopy Code will ask before using these tools.':
+    "Canopy Code preguntarà abans d'usar aquestes eines.",
+  'Canopy Code is not allowed to use denied tools.':
+    'Canopy Code no té permís per usar les eines denegades.',
   'Manage trusted directories for this workspace.':
     "Gestiona els directoris de confiança d'aquest espai de treball.",
   'Any use of the {{tool}} tool': "Qualsevol ús de l'eina {{tool}}",
@@ -1359,9 +1361,9 @@ export default {
   'From project settings': 'Des de la configuració del projecte',
   'From session': 'Des de la sessió',
   'Project settings': 'Configuració del projecte',
-  'Checked in at .qwen/settings.json': 'Registrat a .qwen/settings.json',
+  'Checked in at .canopy/settings.json': 'Registrat a .canopy/settings.json',
   'User settings': "Configuració d'usuari",
-  'Saved in at ~/.qwen/settings.json': 'Desat a ~/.qwen/settings.json',
+  'Saved in at ~/.canopy/settings.json': 'Desat a ~/.canopy/settings.json',
   'Add a new rule…': 'Afegeix una nova regla…',
   'Add {{type}} permission rule': 'Afegeix la regla de permís {{type}}',
   'Permission rules are a tool name, optionally followed by a specifier in parentheses.':
@@ -1383,10 +1385,10 @@ export default {
   'Search…': 'Cerca…',
   'Add directory…': 'Afegeix un directori…',
   'Add directory to workspace': "Afegeix el directori a l'espai de treball",
-  'Qwen Code can read files in the workspace, and make edits when auto-accept edits is on.':
-    "Qwen Code pot llegir fitxers a l'espai de treball i fer canvis quan l'acceptació automàtica de canvis està activada.",
-  'Qwen Code will be able to read files in this directory and make edits when auto-accept edits is on.':
-    "Qwen Code podrà llegir fitxers en aquest directori i fer canvis quan l'acceptació automàtica de canvis està activada.",
+  'Canopy Code can read files in the workspace, and make edits when auto-accept edits is on.':
+    "Canopy Code pot llegir fitxers a l'espai de treball i fer canvis quan l'acceptació automàtica de canvis està activada.",
+  'Canopy Code will be able to read files in this directory and make edits when auto-accept edits is on.':
+    "Canopy Code podrà llegir fitxers en aquest directori i fer canvis quan l'acceptació automàtica de canvis està activada.",
   'Enter the path to the directory:': 'Introduïu el camí del directori:',
   'Enter directory path…': 'Introduïu el camí del directori…',
   'Tab to complete · Enter to add · Esc to cancel':
@@ -1475,20 +1477,20 @@ export default {
     'Useu /bug per enviar incidències als mantenidors quan alguna cosa vagi malament.',
   'Switch auth type quickly with /auth.':
     "Canvieu ràpidament el tipus d'autenticació amb /auth.",
-  'You can run any shell commands from Qwen Code using ! (e.g. !ls).':
-    'Podeu executar qualsevol ordre shell des de Qwen Code usant ! (p. ex. !ls).',
+  'You can run any shell commands from Canopy Code using ! (e.g. !ls).':
+    'Podeu executar qualsevol ordre shell des de Canopy Code usant ! (p. ex. !ls).',
   'Type / to open the command popup; Tab autocompletes slash commands and saved prompts.':
     "Escriviu / per obrir el menú emergent d'ordres; Tab completa automàticament les ordres de barra i els missatges desats.",
-  'You can resume a previous conversation by running qwen --continue or qwen --resume.':
-    'Podeu reprendre una conversa anterior executant qwen --continue o qwen --resume.',
+  'You can resume a previous conversation by running canopy --continue or canopy --resume.':
+    'Podeu reprendre una conversa anterior executant canopy --continue o canopy --resume.',
   'You can switch permission mode quickly with Shift+Tab or /approval-mode.':
     'Podeu canviar ràpidament el mode de permisos amb Shift+Tab o /approval-mode.',
   'You can switch permission mode quickly with Tab or /approval-mode.':
     'Podeu canviar ràpidament el mode de permisos amb Tab o /approval-mode.',
   'Try /insight to generate personalized insights from your chat history.':
     'Proveu /insight per generar idees personalitzades a partir del vostre historial de xat.',
-  'Add a QWEN.md file to give Qwen Code persistent project context.':
-    'Afegiu un fitxer QWEN.md per donar a Qwen Code un context persistent del projecte.',
+  'Add a CANOPY.md file to give Canopy Code persistent project context.':
+    'Afegiu un fitxer CANOPY.md per donar a Canopy Code un context persistent del projecte.',
   'Use /btw to ask a quick side question without disrupting the conversation.':
     'Useu /btw per fer una pregunta ràpida sense interrompre la conversa.',
   'Context is almost full! Run /compress now or start /new to continue.':
@@ -1901,7 +1903,7 @@ export default {
     '↑/↓: Navegar | ←/→: Canviar de pestanya | Return: Seleccionar',
   '↑/↓: Navigate | Enter: Select | Esc: Cancel':
     '↑/↓: Navegar | Return: Seleccionar | Esc: Cancel·lar',
-  'Authenticate using Qwen OAuth': "Autentica't amb Qwen OAuth",
+  'Authenticate using Canopy OAuth': "Autentica't amb Canopy OAuth",
   'Authenticate using Alibaba Cloud Coding Plan':
     "Autentica't amb el Coding Plan d'Alibaba Cloud",
   'Region for Coding Plan (china/global)':
@@ -1910,12 +1912,12 @@ export default {
   'Show current authentication status': "Mostra l'estat d'autenticació actual",
   'Authentication completed successfully.':
     "L'autenticació s'ha completat correctament.",
-  'Starting Qwen OAuth authentication...':
-    "S'està iniciant l'autenticació de Qwen OAuth...",
-  'Successfully authenticated with Qwen OAuth.':
-    "S'ha autenticat correctament amb Qwen OAuth.",
-  'Failed to authenticate with Qwen OAuth: {{error}}':
-    'Error en autenticar-se amb Qwen OAuth: {{error}}',
+  'Starting Canopy OAuth authentication...':
+    "S'està iniciant l'autenticació de Canopy OAuth...",
+  'Successfully authenticated with Canopy OAuth.':
+    "S'ha autenticat correctament amb Canopy OAuth.",
+  'Failed to authenticate with Canopy OAuth: {{error}}':
+    'Error en autenticar-se amb Canopy OAuth: {{error}}',
   'Processing Alibaba Cloud Coding Plan authentication...':
     "Processant l'autenticació de Coding Plan d'Alibaba Cloud...",
   'Successfully authenticated with Alibaba Cloud Coding Plan.':
@@ -1934,17 +1936,18 @@ export default {
     "⚠  Cap mètode d'autenticació configurat.\n",
   'Run one of the following commands to get started:\n':
     'Executeu una de les ordres següents per començar:\n',
-  '  qwen auth qwen-oauth     - Authenticate with Qwen OAuth (discontinued)':
-    '  qwen auth qwen-oauth     - Autenticar-se amb Qwen OAuth (descontinuat)',
+  '  canopy auth canopy-oauth     - Authenticate with Canopy OAuth (discontinued)':
+    '  canopy auth canopy-oauth     - Autenticar-se amb Canopy OAuth (descontinuat)',
   'Or simply run:': 'O simplement executeu:',
-  '  qwen auth                - Interactive authentication setup\n':
-    "  qwen auth                - Configuració interactiva de l'autenticació\n",
-  '✓ Authentication Method: Qwen OAuth': "✓ Mètode d'autenticació: Qwen OAuth",
+  '  canopy auth                - Interactive authentication setup\n':
+    "  canopy auth                - Configuració interactiva de l'autenticació\n",
+  '✓ Authentication Method: Canopy OAuth':
+    "✓ Mètode d'autenticació: Canopy OAuth",
   '  Type: Free tier (discontinued 2026-04-15)':
     '  Tipus: Nivell gratuït (descontinuat el 15-04-2026)',
   '  Limit: No longer available': '  Límit: Ja no disponible',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan, OpenRouter, Fireworks AI, or another provider.':
-    'El nivell gratuït de Qwen OAuth es va descontinuar el 15-04-2026. Executeu /auth per canviar a Coding Plan, OpenRouter, Fireworks AI o un altre proveïdor.',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan, OpenRouter, Fireworks AI, or another provider.':
+    'El nivell gratuït de Canopy OAuth es va descontinuar el 15-04-2026. Executeu /auth per canviar a Coding Plan, OpenRouter, Fireworks AI o un altre proveïdor.',
   '✓ Authentication Method: Alibaba Cloud Coding Plan':
     "✓ Mètode d'autenticació: Coding Plan d'Alibaba Cloud",
   'Global - Alibaba Cloud': 'Global - Alibaba Cloud',
@@ -1956,8 +1959,8 @@ export default {
     "⚠  Mètode d'autenticació: Coding Plan d'Alibaba Cloud (Incomplet)",
   '  Issue: API key not found in environment or settings\n':
     "  Problema: API Key no trobada a l'entorn o la configuració\n",
-  '  Run `qwen auth coding-plan` to re-configure.\n':
-    '  Executeu `qwen auth coding-plan` per tornar a configurar.\n',
+  '  Run `canopy auth coding-plan` to re-configure.\n':
+    '  Executeu `canopy auth coding-plan` per tornar a configurar.\n',
   '✓ Authentication Method: {{type}}': "✓ Mètode d'autenticació: {{type}}",
   '  Status: Configured\n': '  Estat: Configurat\n',
   'Failed to check authentication status: {{error}}':
@@ -1979,8 +1982,8 @@ export default {
     'Ja esteu en mode de planificació. Useu "/plan exit" per sortir del mode de planificació.',
   'Not in plan mode. Use "/plan" to enter plan mode first.':
     'No esteu en mode de planificació. Useu "/plan" per entrar al mode de planificació primer.',
-  "Set up Qwen Code's status line UI":
-    "Configura la interfície de la barra d'estat de Qwen Code",
+  "Set up Canopy Code's status line UI":
+    "Configura la interfície de la barra d'estat de Canopy Code",
 
   // === Core: added from PR #3328 ===
   'Open the memory manager.': 'Obre el gestor de memòria.',
@@ -2123,14 +2126,14 @@ export default {
   'History collapsed: {{n}} messages hidden. Use /history expand-now to show.':
     'Història reduïda: {{n}} missatges ocults. Utilitzeu /history expand-now per mostrar.',
   // Update command
-  'Check for Qwen Code updates and install if available':
-    'Comprova les actualitzacions de Qwen Code i instal·la si estan disponibles',
-  'Qwen Code update available! {{current}} → {{latest}}':
-    'Actualització de Qwen Code disponible! {{current}} → {{latest}}',
-  'A new version of Qwen Code is available! {{current}} → {{latest}}':
-    'Hi ha una versió nova de Qwen Code disponible! {{current}} → {{latest}}',
-  'Qwen Code {{version}} is up to date!':
-    'Qwen Code {{version}} està actualitzat!',
+  'Check for Canopy Code updates and install if available':
+    'Comprova les actualitzacions de Canopy Code i instal·la si estan disponibles',
+  'Canopy Code update available! {{current}} → {{latest}}':
+    'Actualització de Canopy Code disponible! {{current}} → {{latest}}',
+  'A new version of Canopy Code is available! {{current}} → {{latest}}':
+    'Hi ha una versió nova de Canopy Code disponible! {{current}} → {{latest}}',
+  'Canopy Code {{version}} is up to date!':
+    'Canopy Code {{version}} està actualitzat!',
   'Failed to check for updates ({{reason}}). Please check your network or registry configuration.':
     "No s'han pogut comprovar les actualitzacions ({{reason}}). Comproveu la xarxa o la configuració del registre.",
   'Update check skipped ({{reason}}) — run /update to retry.':
@@ -2147,8 +2150,8 @@ export default {
     "Actualització descarregada. S'aplicarà després de sortir d'aquesta sessió.",
   'Update failed: {{error}}': 'Actualització fallida: {{error}}',
   'Downloading update...': "S'està baixant l'actualització...",
-  'Update successful! Please restart Qwen Code to use the new version. Switching model providers before restarting may not work correctly.':
-    'Actualització correcta! Reinicieu Qwen Code per utilitzar la nova versió. Canviar de proveïdor de models abans de reiniciar pot no funcionar correctament.',
+  'Update successful! Please restart Canopy Code to use the new version. Switching model providers before restarting may not work correctly.':
+    'Actualització correcta! Reinicieu Canopy Code per utilitzar la nova versió. Canviar de proveïdor de models abans de reiniciar pot no funcionar correctament.',
   'Automatic update failed. Please try updating manually.':
     "L'actualització automàtica ha fallat. Proveu d'actualitzar manualment.",
   'Automatic update failed: {{error}}. Re-run the installer to update manually.':
@@ -2174,12 +2177,12 @@ export default {
   'Run the following to update:': 'Executeu el següent per actualitzar:',
   'Unable to auto-update this standalone installation. Please reinstall from:':
     'No es pot actualitzar automàticament aquesta instal·lació autònoma. Reinstal·leu des de:',
-  'Manual update required. Please reinstall Qwen Code.':
-    'Actualització manual requerida. Reinstal·leu Qwen Code.',
-  'This session uses the custom sandbox image {{image}}. Update that image and restart Qwen Code.':
-    'Aquesta sessió utilitza la imatge de sandbox personalitzada {{image}}. Actualitzeu la imatge i reinicieu Qwen Code.',
-  'Update Qwen Code on the host, then restart the sandbox.':
-    "Actualitzeu Qwen Code a l'amfitrió i reinicieu l'entorn aïllat.",
+  'Manual update required. Please reinstall Canopy Code.':
+    'Actualització manual requerida. Reinstal·leu Canopy Code.',
+  'This session uses the custom sandbox image {{image}}. Update that image and restart Canopy Code.':
+    'Aquesta sessió utilitza la imatge de sandbox personalitzada {{image}}. Actualitzeu la imatge i reinicieu Canopy Code.',
+  'Update Canopy Code on the host, then restart the sandbox.':
+    "Actualitzeu Canopy Code a l'amfitrió i reinicieu l'entorn aïllat.",
   'The update will be installed after you exit this session.':
     "L'actualització s'instal·larà després de sortir d'aquesta sessió.",
   'Run /update to install the update on the host.':
@@ -2236,8 +2239,8 @@ export default {
     'No es poden marcar com a preferits els MCP servers proporcionats per una extensió.',
   'User level': "Nivell d'usuari",
   'Project level': 'Nivell de projecte',
-  'Clipboard image paste is unavailable because the native clipboard module could not be loaded. Reinstall Qwen Code or use the npm installation method.':
-    "L'enganxament d'imatges del porta-retalls no està disponible perquè no s'ha pogut carregar el mòdul natiu del porta-retalls. Reinstal·leu Qwen Code o useu el mètode d'instal·lació per npm.",
+  'Clipboard image paste is unavailable because the native clipboard module could not be loaded. Reinstall Canopy Code or use the npm installation method.':
+    "L'enganxament d'imatges del porta-retalls no està disponible perquè no s'ha pogut carregar el mòdul natiu del porta-retalls. Reinstal·leu Canopy Code o useu el mètode d'instal·lació per npm.",
   ' · {{marketplace}} (Tab to clear)': ' · {{marketplace}} (Tab per netejar)',
   '"{{name}}" {{state}}.': '«{{name}}» {{state}}.',
   '(Tab / ←→ to switch)': '(Tab / ←→ per canviar)',
@@ -2598,8 +2601,8 @@ export default {
     "L'accés al micròfon està denegat. Activeu-lo per al vostre terminal a Configuració del sistema → Privadesa i seguretat → Micròfon, després reinicieu el dictat de veu.",
   'Voice dictation is not supported on {{platform}}.':
     'El dictat de veu no està suportat a {{platform}}.',
-  'Voice dictation needs microphone access, which is unavailable in this WSL session. Use WSLg/PulseAudio, or run Qwen Code on a host with a microphone.':
-    'El dictat de veu necessita accés al micròfon, que no està disponible en aquesta sessió WSL. Useu WSLg/PulseAudio o executeu Qwen Code en un amfitrió amb micròfon.',
+  'Voice dictation needs microphone access, which is unavailable in this WSL session. Use WSLg/PulseAudio, or run Canopy Code on a host with a microphone.':
+    'El dictat de veu necessita accés al micròfon, que no està disponible en aquesta sessió WSL. Useu WSLg/PulseAudio o executeu Canopy Code en un amfitrió amb micròfon.',
   'Voice dictation needs microphone access. macOS will ask the first time you record — approve it, then start again. Your first recording may be empty while the dialog is open.':
     'El dictat de veu necessita accés al micròfon. macOS ho preguntarà la primera vegada que enregistreu — aproveu-ho i, després, torneu a començar. El primer enregistrament pot estar buit mentre el diàleg estigui obert.',
   'Voice: recording': 'Veu: enregistrant',
@@ -2737,8 +2740,8 @@ export default {
   'Rollback successful. Restart your terminal to use the previous version.':
     'Reversió correcta. Reinicieu el terminal per usar la versió anterior.',
   'Rollback failed:': 'La reversió ha fallat:',
-  'Rollback on Windows requires manual intervention. Rename qwen-code.old to qwen-code in your installation directory.':
-    "La reversió a Windows requereix intervenció manual. Reanomeneu qwen-code.old a qwen-code dins del directori d'instal·lació.",
+  'Rollback on Windows requires manual intervention. Rename canopy-code.old to canopy-code in your installation directory.':
+    "La reversió a Windows requereix intervenció manual. Reanomeneu canopy-code.old a canopy-code dins del directori d'instal·lació.",
   'No compression needed.': 'No cal compressió.',
 
   // ============================================================================

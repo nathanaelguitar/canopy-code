@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { atomicWriteFileSync } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync } from '@canopy-code/canopy-code-core';
 import {
   existsSync,
   lstatSync,
@@ -79,15 +79,15 @@ interface SaveArtifactArgs {
 // as trustworthy as wherever the command happened to run. Cwd is the fallback
 // when the flag is absent, right whenever the caller runs from the main
 // checkout — in PR worktree mode the worktree-resident inputs arrive as
-// absolute paths that still sit under the main project's `.qwen/tmp/`.
+// absolute paths that still sit under the main project's `.canopy/tmp/`.
 //
-// This used to prefer `QWEN_CODE_PROJECT_DIR`, believing it named that
+// This used to prefer `CANOPY_CODE_PROJECT_DIR`, believing it named that
 // checkout. It never does: the harness exports it as the session-storage
 // directory under the runtime base (`Storage.getProjectDir()` — where the
 // harness's transcripts live), in every environment. Every measured CI review
 // resolved its containment root there, refused its own inputs, and burned
 // minutes working around it (DESIGN.md — The artifact root that pointed at
-// qwen-home). An ambient variable that is wrong 100% of the time it is
+// canopy-home). An ambient variable that is wrong 100% of the time it is
 // consulted is not a fallback; it is a trap, so it is not consulted at all.
 function workspaceRoot(explicit?: string): string {
   return resolve(explicit ?? process.cwd());
@@ -402,7 +402,7 @@ export const saveArtifactCommand: CommandModule = {
       .option('out', {
         type: 'string',
         demandOption: true,
-        describe: 'Output path under .qwen/reviews/',
+        describe: 'Output path under .canopy/reviews/',
       })
       .option('workspace-root', {
         type: 'string',

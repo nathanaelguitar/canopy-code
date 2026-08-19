@@ -72,7 +72,7 @@ export async function relaunchAppInChildProcess(
       ...options?.childEnv,
       QWEN_CODE_NO_RELAUNCH: 'true',
     };
-    if (newEnv['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1') {
+    if (newEnv['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE'] === '1') {
       newEnv['ELECTRON_RUN_AS_NODE'] = '1';
     }
 

@@ -1,6 +1,6 @@
 /**
  * File I/O for durable cron tasks. Reads/writes the per-project tasks file
- * under the user's runtime dir (`~/.qwen/tmp/<project-hash>/`), NOT the
+ * under the user's runtime dir (`~/.canopy/tmp/<project-hash>/`), NOT the
  * working tree — durable tasks are the user's own automation against a
  * project, not project-shared config, so they live alongside the other
  * per-project-private runtime state (checkpoints, shell history) and never
@@ -189,7 +189,7 @@ const TASKS_FILENAME = 'scheduled_tasks.json';
 /** Generic label for the tasks file, for user-facing messages and tool
  * descriptions. The real path is per-project (hashed); this template
  * communicates the location without leaking the hash. */
-export const CRON_TASKS_DISPLAY_PATH = `~/.qwen/tmp/<project-hash>/${TASKS_FILENAME}`;
+export const CRON_TASKS_DISPLAY_PATH = `~/.canopy/tmp/<project-hash>/${TASKS_FILENAME}`;
 
 // Cross-process write-lock tuning for updateCronTasks. Updates hold the
 // lock for single-digit milliseconds, so anything older than STALE_MS is
@@ -393,7 +393,7 @@ export async function removeCronTasks(
 ): Promise<number> {
   const idSet = new Set(ids);
   // Lock-free pre-check: a miss must be entirely side-effect free — taking
-  // the update lock would mkdir .qwen/ just to discover there is nothing
+  // the update lock would mkdir .canopy/ just to discover there is nothing
   // to remove. The authoritative filter re-runs under the lock below.
   const current = await readCronTasks(projectRoot);
   if (!current.some((t) => idSet.has(t.id))) return 0;

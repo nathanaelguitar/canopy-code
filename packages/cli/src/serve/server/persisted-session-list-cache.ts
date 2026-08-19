@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import path from 'node:path';
-import type { SessionArchiveState } from '@qwen-code/qwen-code-core';
+import type { SessionArchiveState } from '@canopy-code/canopy-code-core';
 import type { BridgeSessionSummary } from '../acp-session-bridge.js';
 
 export interface PersistedSessionListScope {

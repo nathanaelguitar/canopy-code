@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * `create_sub_session` tool — spawns a FRESH top-level sub-session (a sibling
  * of the current session, its own transcript) and runs a prompt in it.
  *
- * Daemon-only: it works only when running under `qwen serve`, where the ACP
+ * Daemon-only: it works only when running under `canopy serve`, where the ACP
  * session wires a {@link SubSessionSpawner} that routes the request to the
  * daemon bridge (`spawnOrAttach` + `sendPrompt`). In interactive TUI / headless
  * there is no bridge, so no spawner is wired and the tool reports itself
@@ -35,7 +35,7 @@ export interface CreateSubSessionParams {
 }
 
 const DAEMON_ONLY_MESSAGE =
-  'create_sub_session is only available when running under `qwen serve` ' +
+  'create_sub_session is only available when running under `canopy serve` ' +
   '(daemon mode). There is no session bridge in this environment, so a ' +
   'sub-session cannot be spawned.';
 
@@ -164,9 +164,9 @@ class CreateSubSessionInvocation extends BaseToolInvocation<
       }
 
       // Embed a clickable session link in the display output so the web shell
-      // can render a "jump to session" button. The `qwen-session://` scheme is
+      // can render a "jump to session" button. The `canopy-session://` scheme is
       // intercepted by the markdown renderer and dispatched as a DOM event.
-      const sessionLink = `[🧵 ${res.sessionId.slice(0, 8)}](qwen-session://${res.sessionId})`;
+      const sessionLink = `[🧵 ${res.sessionId.slice(0, 8)}](canopy-session://${res.sessionId})`;
 
       // The sub-session exists and is linked in memory, but the daemon reported
       // that the parent lineage was NOT durably written to its transcript — so
@@ -226,7 +226,7 @@ export class CreateSubSessionTool extends BaseDeclarativeTool<
         'transcript) and run a prompt in it. Use to fan work out into a ' +
         'separate session — e.g. a self-contained sub-task you want isolated ' +
         'from this conversation.\n\n' +
-        'ONLY available when running under `qwen serve` (daemon mode); it is ' +
+        'ONLY available when running under `canopy serve` (daemon mode); it is ' +
         'inert in a plain interactive session.\n\n' +
         '## Completion modes\n' +
         "- `first-turn` (default): waits for the sub-session's first turn to " +

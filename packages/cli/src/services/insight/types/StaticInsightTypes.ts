@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -50,7 +50,7 @@ export interface SessionFacets {
     | 'not_achieved'
     | 'unclear_from_transcript';
   user_satisfaction_counts: Record<string, number>;
-  Qwen_helpfulness:
+  Canopy_helpfulness:
     | 'unhelpful'
     | 'slightly_helpful'
     | 'moderately_helpful'

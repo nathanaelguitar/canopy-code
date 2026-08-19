@@ -205,9 +205,9 @@ describe('ChatRecordingService', () => {
         { text: 'expanded model prompt' },
         {
           text: [
-            '<qwen:user-prompt-submit-context>',
+            '<canopy:user-prompt-submit-context>',
             'hook-only context',
-            '</qwen:user-prompt-submit-context>',
+            '</canopy:user-prompt-submit-context>',
           ].join('\n'),
         },
       ];
@@ -231,9 +231,9 @@ describe('ChatRecordingService', () => {
         [
           {
             text: [
-              '<qwen:user-prompt-submit-context>',
+              '<canopy:user-prompt-submit-context>',
               'hook-only context',
-              '</qwen:user-prompt-submit-context>',
+              '</canopy:user-prompt-submit-context>',
             ].join('\n'),
           },
         ],

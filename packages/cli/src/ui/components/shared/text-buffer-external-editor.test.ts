@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@ vi.mock('node:os', async (importOriginal) => {
 vi.mock('node:fs', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   const mocks = {
-    mkdtempSync: vi.fn().mockReturnValue('/tmp/qwen-edit-mock'),
+    mkdtempSync: vi.fn().mockReturnValue('/tmp/canopy-edit-mock'),
     writeFileSync: vi.fn(),
     readFileSync: vi.fn().mockReturnValue('edited text'),
     rmSync: vi.fn(),
@@ -46,9 +46,9 @@ vi.mock('node:fs', async (importOriginal) => {
   };
 });
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     getExternalEditorCommand: mockGetExternalEditorCommand,
@@ -60,12 +60,12 @@ import pathMod from 'node:path';
 import { useTextBuffer } from './text-buffer.js';
 
 const viewport = { height: 5, width: 40 };
-const expectedTmpFile = pathMod.join('/tmp/qwen-edit-mock', 'buffer.txt');
+const expectedTmpFile = pathMod.join('/tmp/canopy-edit-mock', 'buffer.txt');
 
 describe('openInExternalEditor', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    (fs.mkdtempSync as Mock).mockReturnValue('/tmp/qwen-edit-mock');
+    (fs.mkdtempSync as Mock).mockReturnValue('/tmp/canopy-edit-mock');
     (fs.writeFileSync as Mock).mockImplementation(() => {});
     (fs.readFileSync as Mock).mockReturnValue('edited text');
     (fs.rmSync as Mock).mockImplementation(() => {});
@@ -87,7 +87,7 @@ describe('openInExternalEditor', () => {
     });
 
     expect(fs.mkdtempSync).toHaveBeenCalledWith(
-      expect.stringContaining('qwen-edit-'),
+      expect.stringContaining('canopy-edit-'),
     );
     const writePath = (fs.writeFileSync as Mock).mock.calls[0]?.[0] as string;
     expect(writePath).toBe(expectedTmpFile);
@@ -522,7 +522,7 @@ describe('openInExternalEditor', () => {
       await result.current.openInExternalEditor();
     });
 
-    expect(fs.rmSync).toHaveBeenCalledWith('/tmp/qwen-edit-mock', {
+    expect(fs.rmSync).toHaveBeenCalledWith('/tmp/canopy-edit-mock', {
       recursive: true,
       force: true,
     });
@@ -584,7 +584,7 @@ describe('openInExternalEditor', () => {
       await result.current.openInExternalEditor();
     });
 
-    expect(fs.rmSync).toHaveBeenCalledWith('/tmp/qwen-edit-mock', {
+    expect(fs.rmSync).toHaveBeenCalledWith('/tmp/canopy-edit-mock', {
       recursive: true,
       force: true,
     });
@@ -717,7 +717,7 @@ describe('openInExternalEditor', () => {
 
         expect(mockSpawnSync).not.toHaveBeenCalled();
         expect(result.current.text).toBe('hello');
-        expect(fs.rmSync).toHaveBeenCalledWith('/tmp/qwen-edit-mock', {
+        expect(fs.rmSync).toHaveBeenCalledWith('/tmp/canopy-edit-mock', {
           recursive: true,
           force: true,
         });
@@ -876,7 +876,7 @@ describe('openInExternalEditor', () => {
 
         expect(mockSpawnSync).not.toHaveBeenCalled();
         expect(result.current.text).toBe('hello');
-        expect(fs.rmSync).toHaveBeenCalledWith('/tmp/qwen-edit-mock', {
+        expect(fs.rmSync).toHaveBeenCalledWith('/tmp/canopy-edit-mock', {
           recursive: true,
           force: true,
         });

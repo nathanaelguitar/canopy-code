@@ -126,12 +126,12 @@ export async function resolveTelemetrySettings(options: {
 
   const enabled =
     argv.telemetry ??
-    parseBooleanEnvFlag(env['QWEN_TELEMETRY_ENABLED']) ??
+    parseBooleanEnvFlag(env['CANOPY_TELEMETRY_ENABLED']) ??
     settings.enabled;
 
   const rawTarget =
     (argv.telemetryTarget as string | TelemetryTarget | undefined) ??
-    env['QWEN_TELEMETRY_TARGET'] ??
+    env['CANOPY_TELEMETRY_TARGET'] ??
     (settings.target as string | TelemetryTarget | undefined);
   const target = parseTelemetryTargetValue(rawTarget);
   if (rawTarget !== undefined && target === undefined) {
@@ -144,13 +144,13 @@ export async function resolveTelemetrySettings(options: {
 
   const otlpEndpoint =
     argv.telemetryOtlpEndpoint ??
-    env['QWEN_TELEMETRY_OTLP_ENDPOINT'] ??
+    env['CANOPY_TELEMETRY_OTLP_ENDPOINT'] ??
     env['OTEL_EXPORTER_OTLP_ENDPOINT'] ??
     settings.otlpEndpoint;
 
   const rawProtocol =
     (argv.telemetryOtlpProtocol as string | undefined) ??
-    env['QWEN_TELEMETRY_OTLP_PROTOCOL'] ??
+    env['CANOPY_TELEMETRY_OTLP_PROTOCOL'] ??
     settings.otlpProtocol;
   const otlpProtocol = (['grpc', 'http'] as const).find(
     (p) => p === rawProtocol,
@@ -165,26 +165,26 @@ export async function resolveTelemetrySettings(options: {
 
   const logPrompts =
     argv.telemetryLogPrompts ??
-    parseBooleanEnvFlag(env['QWEN_TELEMETRY_LOG_PROMPTS']) ??
+    parseBooleanEnvFlag(env['CANOPY_TELEMETRY_LOG_PROMPTS']) ??
     settings.logPrompts;
 
   const userId =
     parseTelemetryUserId(
-      'QWEN_TELEMETRY_USER_ID',
-      env['QWEN_TELEMETRY_USER_ID'],
+      'CANOPY_TELEMETRY_USER_ID',
+      env['CANOPY_TELEMETRY_USER_ID'],
     ) ?? parseTelemetryUserId('telemetry.userId', settings.userId);
 
   const includeSensitiveSpanAttributes =
     parseBooleanEnvFlag(
-      env['QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES'],
+      env['CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES'],
     ) ??
     settings.includeSensitiveSpanAttributes ??
     false;
 
   const sensitiveSpanAttributeMaxLength =
     parseSensitiveSpanAttributeMaxLengthEnvValue(
-      'QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH',
-      env['QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'],
+      'CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH',
+      env['CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'],
     ) ??
     parseSensitiveSpanAttributeMaxLengthSetting(
       'telemetry.sensitiveSpanAttributeMaxLength',
@@ -193,22 +193,24 @@ export async function resolveTelemetrySettings(options: {
     DEFAULT_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH;
 
   const outfile =
-    argv.telemetryOutfile ?? env['QWEN_TELEMETRY_OUTFILE'] ?? settings.outfile;
+    argv.telemetryOutfile ??
+    env['CANOPY_TELEMETRY_OUTFILE'] ??
+    settings.outfile;
 
   // Per-signal endpoint overrides (HTTP only).
-  // Priority: QWEN_ env var > standard OTEL_ env var > settings.json
+  // Priority: CANOPY_ env var > standard OTEL_ env var > settings.json
   const otlpTracesEndpoint =
-    env['QWEN_TELEMETRY_OTLP_TRACES_ENDPOINT'] ??
+    env['CANOPY_TELEMETRY_OTLP_TRACES_ENDPOINT'] ??
     env['OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'] ??
     settings.otlpTracesEndpoint;
 
   const otlpLogsEndpoint =
-    env['QWEN_TELEMETRY_OTLP_LOGS_ENDPOINT'] ??
+    env['CANOPY_TELEMETRY_OTLP_LOGS_ENDPOINT'] ??
     env['OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'] ??
     settings.otlpLogsEndpoint;
 
   const otlpMetricsEndpoint =
-    env['QWEN_TELEMETRY_OTLP_METRICS_ENDPOINT'] ??
+    env['CANOPY_TELEMETRY_OTLP_METRICS_ENDPOINT'] ??
     env['OTEL_EXPORTER_OTLP_METRICS_ENDPOINT'] ??
     settings.otlpMetricsEndpoint;
 
@@ -251,7 +253,7 @@ export async function resolveTelemetrySettings(options: {
     : undefined;
 
   const metricsIncludeSessionId =
-    parseBooleanEnvFlag(env['QWEN_TELEMETRY_METRICS_INCLUDE_SESSION_ID']) ??
+    parseBooleanEnvFlag(env['CANOPY_TELEMETRY_METRICS_INCLUDE_SESSION_ID']) ??
     settings.metrics?.includeSessionId ??
     false;
 

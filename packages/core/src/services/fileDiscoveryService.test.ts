@@ -53,15 +53,15 @@ describe('FileDiscoveryService', () => {
       expect(service.shouldGitIgnoreFile('node_modules/foo.js')).toBe(false);
     });
 
-    it('should load .qwenignore patterns even when not in a git repo', async () => {
-      await createTestFile('.qwenignore', 'secrets.txt');
+    it('should load .canopyignore patterns even when not in a git repo', async () => {
+      await createTestFile('.canopyignore', 'secrets.txt');
       const service = new FileDiscoveryService(projectRoot);
 
-      expect(service.shouldQwenIgnoreFile('secrets.txt')).toBe(true);
-      expect(service.getQwenIgnoreFileDisplayForPath('secrets.txt')).toBe(
-        '.qwenignore',
+      expect(service.shouldCanopyIgnoreFile('secrets.txt')).toBe(true);
+      expect(service.getCanopyIgnoreFileDisplayForPath('secrets.txt')).toBe(
+        '.canopyignore',
       );
-      expect(service.shouldQwenIgnoreFile('src/index.js')).toBe(false);
+      expect(service.shouldCanopyIgnoreFile('src/index.js')).toBe(false);
     });
 
     it('should load .agentignore and .aiignore patterns', async () => {
@@ -69,31 +69,31 @@ describe('FileDiscoveryService', () => {
       await createTestFile('.aiignore', 'ai-secret.txt');
       const service = new FileDiscoveryService(projectRoot);
 
-      expect(service.shouldQwenIgnoreFile('agent-secret.txt')).toBe(true);
-      expect(service.getQwenIgnoreFileDisplayForPath('agent-secret.txt')).toBe(
-        '.agentignore',
-      );
-      expect(service.shouldQwenIgnoreFile('ai-secret.txt')).toBe(true);
-      expect(service.getQwenIgnoreFileDisplayForPath('ai-secret.txt')).toBe(
+      expect(service.shouldCanopyIgnoreFile('agent-secret.txt')).toBe(true);
+      expect(
+        service.getCanopyIgnoreFileDisplayForPath('agent-secret.txt'),
+      ).toBe('.agentignore');
+      expect(service.shouldCanopyIgnoreFile('ai-secret.txt')).toBe(true);
+      expect(service.getCanopyIgnoreFileDisplayForPath('ai-secret.txt')).toBe(
         '.aiignore',
       );
-      expect(service.shouldQwenIgnoreFile('src/index.js')).toBe(false);
+      expect(service.shouldCanopyIgnoreFile('src/index.js')).toBe(false);
     });
 
-    it('should load configured custom qwen ignore file patterns', async () => {
+    it('should load configured custom canopy ignore file patterns', async () => {
       await createTestFile('.cursorignore', 'cursor-secret.txt');
       await createTestFile('.agentignore', 'agent-secret.txt');
       const service = new FileDiscoveryService(projectRoot, ['.cursorignore']);
 
-      expect(service.getQwenIgnoreFileNamesDisplay()).toBe(
-        '.qwenignore, .cursorignore',
+      expect(service.getCanopyIgnoreFileNamesDisplay()).toBe(
+        '.canopyignore, .cursorignore',
       );
-      expect(service.shouldQwenIgnoreFile('cursor-secret.txt')).toBe(true);
-      expect(service.getQwenIgnoreFileDisplayForPath('cursor-secret.txt')).toBe(
-        '.cursorignore',
-      );
-      expect(service.shouldQwenIgnoreFile('agent-secret.txt')).toBe(false);
-      expect(service.shouldQwenIgnoreFile('src/index.js')).toBe(false);
+      expect(service.shouldCanopyIgnoreFile('cursor-secret.txt')).toBe(true);
+      expect(
+        service.getCanopyIgnoreFileDisplayForPath('cursor-secret.txt'),
+      ).toBe('.cursorignore');
+      expect(service.shouldCanopyIgnoreFile('agent-secret.txt')).toBe(false);
+      expect(service.shouldCanopyIgnoreFile('src/index.js')).toBe(false);
     });
   });
 
@@ -101,10 +101,10 @@ describe('FileDiscoveryService', () => {
     beforeEach(async () => {
       await fs.mkdir(path.join(projectRoot, '.git'));
       await createTestFile('.gitignore', 'node_modules/\n.git/\ndist');
-      await createTestFile('.qwenignore', 'logs/');
+      await createTestFile('.canopyignore', 'logs/');
     });
 
-    it('should filter out git-ignored and qwen-ignored files by default', () => {
+    it('should filter out git-ignored and canopy-ignored files by default', () => {
       const files = [
         'src/index.ts',
         'node_modules/package/index.js',
@@ -133,7 +133,7 @@ describe('FileDiscoveryService', () => {
 
       const filtered = service.filterFiles(files, {
         respectGitIgnore: false,
-        respectQwenIgnore: true, // still respect this one
+        respectCanopyIgnore: true, // still respect this one
       });
 
       expect(filtered).toEqual(
@@ -143,7 +143,7 @@ describe('FileDiscoveryService', () => {
       );
     });
 
-    it('should not filter files when respectQwenIgnore is false', () => {
+    it('should not filter files when respectCanopyIgnore is false', () => {
       const files = [
         'src/index.ts',
         'node_modules/package/index.js',
@@ -154,7 +154,7 @@ describe('FileDiscoveryService', () => {
 
       const filtered = service.filterFiles(files, {
         respectGitIgnore: true,
-        respectQwenIgnore: false,
+        respectCanopyIgnore: false,
       });
 
       expect(filtered).toEqual(
@@ -171,11 +171,11 @@ describe('FileDiscoveryService', () => {
     });
   });
 
-  describe('shouldGitIgnoreFile & shouldQwenIgnoreFile', () => {
+  describe('shouldGitIgnoreFile & shouldCanopyIgnoreFile', () => {
     beforeEach(async () => {
       await fs.mkdir(path.join(projectRoot, '.git'));
       await createTestFile('.gitignore', 'node_modules/');
-      await createTestFile('.qwenignore', '*.log');
+      await createTestFile('.canopyignore', '*.log');
     });
 
     it('should return true for git-ignored files', () => {
@@ -196,19 +196,19 @@ describe('FileDiscoveryService', () => {
       ).toBe(false);
     });
 
-    it('should return true for qwen-ignored files', () => {
+    it('should return true for canopy-ignored files', () => {
       const service = new FileDiscoveryService(projectRoot);
 
       expect(
-        service.shouldQwenIgnoreFile(path.join(projectRoot, 'debug.log')),
+        service.shouldCanopyIgnoreFile(path.join(projectRoot, 'debug.log')),
       ).toBe(true);
     });
 
-    it('should return false for non-qwen-ignored files', () => {
+    it('should return false for non-canopy-ignored files', () => {
       const service = new FileDiscoveryService(projectRoot);
 
       expect(
-        service.shouldQwenIgnoreFile(path.join(projectRoot, 'src/index.ts')),
+        service.shouldCanopyIgnoreFile(path.join(projectRoot, 'src/index.ts')),
       ).toBe(false);
     });
   });

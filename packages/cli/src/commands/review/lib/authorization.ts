@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ import { parseReviewArgs } from '../parse-args.js';
  * skill's prompt reaches the model. Derived from the session id at call time,
  * not a constant: the args file is named for the session that wrote it, and a
  * review subcommand (a subprocess of that session) reads the same name from the
- * same inherited `QWEN_CODE_SESSION_ID`.
+ * same inherited `CANOPY_CODE_SESSION_ID`.
  */
 function defaultSkillArgsPath(): string {
   return skillArgsPath('review');

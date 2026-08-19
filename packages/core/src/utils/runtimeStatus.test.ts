@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ let tmpDir: string;
 
 beforeEach(async () => {
   fsMocks.readFile.mockClear();
-  tmpDir = await mkdtemp(path.join(os.tmpdir(), 'qwen-runtime-status-'));
+  tmpDir = await mkdtemp(path.join(os.tmpdir(), 'canopy-runtime-status-'));
 });
 
 afterEach(async () => {
@@ -44,7 +44,7 @@ describe('writeRuntimeStatus', () => {
       sessionId: '11111111-2222-3333-4444-555555555555',
       workDir: '/work/dir',
       pid: 4242,
-      qwenVersion: '0.15.3',
+      canopyVersion: '0.15.3',
     });
     expect(written).toBe(targetPath());
 
@@ -56,17 +56,17 @@ describe('writeRuntimeStatus', () => {
     expect(typeof data.hostname).toBe('string');
     expect(data.hostname.length).toBeGreaterThan(0);
     expect(typeof data.started_at).toBe('number');
-    expect(data.qwen_version).toBe('0.15.3');
+    expect(data.canopy_version).toBe('0.15.3');
   });
 
-  it('defaults pid to process.pid and qwen_version to null', async () => {
+  it('defaults pid to process.pid and canopy_version to null', async () => {
     await writeRuntimeStatus(targetPath(), {
       sessionId: 'abc',
       workDir: '/w',
     });
     const data = JSON.parse(await readFile(targetPath(), 'utf-8'));
     expect(data.pid).toBe(process.pid);
-    expect(data.qwen_version).toBeNull();
+    expect(data.canopy_version).toBeNull();
   });
 
   it('leaves no .tmp leftovers on success', async () => {
@@ -150,7 +150,7 @@ describe('readRuntimeStatus', () => {
       sessionId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
       workDir: '/some/where',
       pid: 99,
-      qwenVersion: '0.15.3',
+      canopyVersion: '0.15.3',
     });
     const status = await readRuntimeStatus(targetPath());
     expect(status).not.toBeNull();
@@ -158,7 +158,7 @@ describe('readRuntimeStatus', () => {
     expect(status!.sessionId).toBe('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
     expect(status!.workDir).toBe('/some/where');
     expect(status!.schemaVersion).toBe(RUNTIME_STATUS_SCHEMA_VERSION);
-    expect(status!.qwenVersion).toBe('0.15.3');
+    expect(status!.canopyVersion).toBe('0.15.3');
   });
 
   it('returns null when the file is missing', async () => {
@@ -180,7 +180,7 @@ describe('readRuntimeStatus', () => {
         work_dir: '/w',
         hostname: 'h',
         started_at: 0,
-        qwen_version: null,
+        canopy_version: null,
       }),
       'utf-8',
     );
@@ -197,7 +197,7 @@ describe('readRuntimeStatus', () => {
         work_dir: '/w',
         hostname: 'h',
         started_at: 0,
-        qwen_version: null,
+        canopy_version: null,
       }),
       'utf-8',
     );
@@ -214,7 +214,7 @@ describe('readRuntimeStatus', () => {
         work_dir: '/w',
         hostname: 'h',
         started_at: 0,
-        qwen_version: null,
+        canopy_version: null,
       }),
       'utf-8',
     );
@@ -231,7 +231,7 @@ describe('readRuntimeStatus', () => {
         work_dir: ['/', 'w'],
         hostname: 'h',
         started_at: 0,
-        qwen_version: null,
+        canopy_version: null,
       }),
       'utf-8',
     );
@@ -288,7 +288,7 @@ describe('same-PID session swap', () => {
       sessionId: 'session-a',
       workDir: '/w',
       pid: 4242,
-      qwenVersion: '0.0.0-test',
+      canopyVersion: '0.0.0-test',
     });
     expect(await readRuntimeStatus(oldPath)).not.toBeNull();
 
@@ -297,7 +297,7 @@ describe('same-PID session swap', () => {
       sessionId: 'session-b',
       workDir: '/w',
       pid: 4242,
-      qwenVersion: '0.0.0-test',
+      canopyVersion: '0.0.0-test',
     });
 
     expect(await readRuntimeStatus(oldPath)).toBeNull();

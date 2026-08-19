@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@
  * Threat model:
  *  - Workflows can dispatch up to 1000 agents per run; a runaway script
  *    can burn through significant token budget without an upper bound.
- *  - The env override `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW` lets operators
+ *  - The env override `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW` lets operators
  *    set a per-run output-token cap. The cap is a **soft gate**, not a
  *    hard pre-commit reservation: it is checked at dispatch ENTRY in
  *    `countedDispatch`, so concurrent fan-out (`parallel()` /
@@ -22,7 +22,7 @@
  *    the first overshooting dispatch throws. Worst-case overshoot bound
  *    ≈ `(concurrency_window − 1) × per_dispatch_tokens`, where
  *    `concurrency_window = min(16, cpus−2)` by default (overridable via
- *    `QWEN_CODE_MAX_WORKFLOW_CONCURRENCY`). Operators sizing the cap
+ *    `CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY`). Operators sizing the cap
  *    should pick a value below the true ceiling by this margin; the
  *    gate matches upstream Claude Code 2.1.168 semantics.
  *  - When the env is unset (`total = null`), there is no cap and
@@ -41,11 +41,12 @@ import type { WorkflowBudget } from './workflow-sandbox.js';
 
 const debugLogger = createDebugLogger('WORKFLOW_BUDGET');
 
-export const MAX_TOKENS_PER_WORKFLOW_ENV = 'QWEN_CODE_MAX_TOKENS_PER_WORKFLOW';
+export const MAX_TOKENS_PER_WORKFLOW_ENV =
+  'CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW';
 
 /**
  * Absolute upper bound on the env-override token cap. Even an operator
- * who sets `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW=999999999` cannot exceed
+ * who sets `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW=999999999` cannot exceed
  * this — protects against a fat-finger / misconfig that would silently
  * uncap a workflow. 100M tokens is roughly 20× the largest legitimate
  * single-workflow envelope (5M tokens × heavy ultracode pass).
@@ -54,7 +55,7 @@ export const HARD_MAX_TOKENS_CEILING = 100_000_000;
 
 /**
  * Resolve the per-run output-token ceiling, honoring
- * `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW`. Returns `null` when the env is
+ * `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW`. Returns `null` when the env is
  * unset or empty — null is the "no target" sentinel that
  * `budget.total === null` consumers gate on.
  *
@@ -62,9 +63,9 @@ export const HARD_MAX_TOKENS_CEILING = 100_000_000;
  * numbers), or a non-numeric string is rejected with a debug warning
  * and falls back to `null` — i.e. treated as "no cap" rather than
  * crashing. This matches the `resolveMaxAgentsPerRun` fall-back policy
- * and means `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW=0` does NOT disable
+ * and means `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW=0` does NOT disable
  * workflows; operators wanting "no agents may run" should disable the
- * tool entirely via `QWEN_CODE_DISABLE_WORKFLOWS=1` instead. An
+ * tool entirely via `CANOPY_CODE_DISABLE_WORKFLOWS=1` instead. An
  * override above `HARD_MAX_TOKENS_CEILING` is clamped (with a debug
  * warning).
  */
@@ -182,7 +183,7 @@ export class WorkflowBudgetExceededError extends Error {
 
   constructor(runId: string, budgetTotal: number, spent: number) {
     // P5 R2 (#14): keep the factual portion only — no advisory tail.
-    // The previous "Increase QWEN_CODE_MAX_TOKENS_PER_WORKFLOW or unset
+    // The previous "Increase CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW or unset
     // it to remove the cap" suffix reaches the LLM via `tool_result`,
     // which could coach the model into telling the user how to disable
     // the operator-set budget. Operators looking up the knob can still

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ export function normalizeServeFastPathArgv(
   const firstArg = argv[0]?.replace(/\\/g, '/');
   if (
     firstArg !== undefined &&
-    (firstArg.endsWith('/dist/qwen-cli/cli.js') ||
+    (firstArg.endsWith('/dist/canopy-cli/cli.js') ||
       firstArg.endsWith('/dist/cli.js') ||
       firstArg.endsWith('/dist/cli/cli.js'))
   ) {

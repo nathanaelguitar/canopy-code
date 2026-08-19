@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { buildBackgroundEntryLabel } from '@qwen-code/qwen-code-core';
+import { buildBackgroundEntryLabel } from '@canopy-code/canopy-code-core';
 import type {
   Config,
   TaskStatus,
   WorkflowStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { formatDuration } from './formatters.js';
 import { stripUnsafeCharacters, truncateToWidth } from './textUtils.js';
 

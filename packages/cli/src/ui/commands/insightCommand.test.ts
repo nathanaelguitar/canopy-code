@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import path from 'path';
 import { pathToFileURL } from 'node:url';
-import { parseInsightMessage, Storage } from '@qwen-code/qwen-code-core';
+import { parseInsightMessage, Storage } from '@canopy-code/canopy-code-core';
 import { insightCommand } from './insightCommand.js';
 import type { CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
@@ -15,9 +15,9 @@ import { createMockCommandContext } from '../../test-utils/mockCommandContext.js
 const mockGenerateStaticInsight = vi.fn();
 const mockOpenBrowserSecurely = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     openBrowserSecurely: mockOpenBrowserSecurely,

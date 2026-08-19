@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,8 +34,8 @@ import {
   DEFAULT_STREAM_IDLE_TIMEOUT_MS,
   DEFAULT_STREAM_MAX_LIFETIME_MS,
   MAX_STREAM_GUARD_TIMEOUT_MS,
-  QWEN_STREAM_IDLE_TIMEOUT_MS_ENV,
-  QWEN_STREAM_MAX_LIFETIME_MS_ENV,
+  CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV,
+  CANOPY_STREAM_MAX_LIFETIME_MS_ENV,
 } from './constants.js';
 import { logProtocolTagSanitized } from '../../telemetry/loggers.js';
 import {
@@ -647,9 +647,9 @@ describe('ContentGenerationPipeline', () => {
       // Arrange — provider injects enable_thinking: true via extra_body
       // (e.g. user configured `enableThinking: true` via setup wizard,
       // see provider-config.ts), but request explicitly disables thinking.
-      // DashScope hostname + qwen model name are both required: the gate
-      // is hostname + model-name to avoid leaking the qwen-specific
-      // `enable_thinking` field to non-qwen routings (off-DashScope, or
+      // DashScope hostname + canopy model name are both required: the gate
+      // is hostname + model-name to avoid leaking the canopy-specific
+      // `enable_thinking` field to non-canopy routings (off-DashScope, or
       // GLM/DeepSeek on the same DashScope hostname).
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
@@ -721,7 +721,7 @@ describe('ContentGenerationPipeline', () => {
         expectedToolChoice: undefined,
       },
       {
-        name: 'apply thinkingMandatory to any qwen model on any DashScope endpoint',
+        name: 'apply thinkingMandatory to any canopy model on any DashScope endpoint',
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         model: 'qwen3.9-turbo',
         extraBody: { enable_thinking: true },
@@ -798,7 +798,7 @@ describe('ContentGenerationPipeline', () => {
         expectedToolChoice: 'required',
       },
       {
-        name: 'preserve required tool selection for a non-qwen model with a user reasoning_effort',
+        name: 'preserve required tool selection for a non-canopy model with a user reasoning_effort',
         baseUrl:
           'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
         model: 'glm-5.2',
@@ -998,7 +998,7 @@ describe('ContentGenerationPipeline', () => {
       }
     });
 
-    it('keeps forced tool selection for a non-qwen preset shape end to end', async () => {
+    it('keeps forced tool selection for a non-canopy preset shape end to end', async () => {
       // The table above mocks buildRequest as a plain extra_body merge, so
       // the real provider never executes there. Run the actual DashScope
       // provider instead: its family-gated drop keeps the glm preset's
@@ -1011,7 +1011,7 @@ describe('ContentGenerationPipeline', () => {
         baseUrl:
           'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
         model: 'glm-5.2',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         extra_body: { enable_thinking: true, reasoning_effort: 'high' },
       } as ContentGeneratorConfig;
       mockConfig = {
@@ -1086,7 +1086,7 @@ describe('ContentGenerationPipeline', () => {
         baseUrl:
           'https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1',
         model: 'qwen3.8-max-preview',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         thinkingMandatory: true,
         extra_body: { enable_thinking: false },
       } as ContentGeneratorConfig;
@@ -1729,7 +1729,7 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('emits enable_thinking:false on DashScope hostname when includeThoughts is false', async () => {
-      // Regression for #4501: qwen3 hybrid models (e.g. qwen3.5-flash)
+      // Regression for #4501: canopy3 hybrid models (e.g. qwen3.5-flash)
       // default to thinking-on. Provider buildRequest never auto-injects
       // `enable_thinking`, so a previous guarded `'enable_thinking' in typed`
       // check never fired and side-queries burned reasoning tokens (24-95x
@@ -1775,7 +1775,7 @@ describe('ContentGenerationPipeline', () => {
 
     it('emits enable_thinking:false on DashScope hostname when reasoning is configured to false', async () => {
       // Config-level opt-out (`reasoning: false`) should also disable
-      // qwen3 thinking, mirroring the DeepSeek pair above.
+      // canopy3 thinking, mirroring the DeepSeek pair above.
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
@@ -1811,16 +1811,16 @@ describe('ContentGenerationPipeline', () => {
       expect(apiCall.enable_thinking).toBe(false);
     });
 
-    it('emits enable_thinking:false on QWEN_OAUTH with the default coder-model', async () => {
-      // QWEN_OAUTH is the default auth flow for first-time users and
-      // ships with `model: 'coder-model'` (DEFAULT_QWEN_MODEL in
-      // config/models.ts — aliased to Qwen 3.6 Plus hybrid). The string
-      // doesn't start with `qwen`, so the gate must special-case it;
+    it('emits enable_thinking:false on CANOPY_OAUTH with the default coder-model', async () => {
+      // CANOPY_OAUTH is the default auth flow for first-time users and
+      // ships with `model: 'coder-model'` (DEFAULT_CANOPY_MODEL in
+      // config/models.ts — aliased to Canopy 3.6 Plus hybrid). The string
+      // doesn't start with `canopy`, so the gate must special-case it;
       // otherwise the exact regression that #4501 fixes (side-queries
       // burning reasoning tokens on the default flow) remains live.
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         baseUrl: 'https://some-oauth-issued-endpoint.example/v1',
         model: 'coder-model',
       } as ContentGeneratorConfig;
@@ -1896,7 +1896,7 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('does NOT emit enable_thinking on a non-DashScope hostname', async () => {
-      // `enable_thinking` is a qwen-specific extension. Pushing it at a
+      // `enable_thinking` is a canopy-specific extension. Pushing it at a
       // strict OpenAI-compatible backend could trip an unknown-key 400
       // and would also pollute logs with a meaningless field. Mirror of
       // the DeepSeek negative test above.
@@ -1935,10 +1935,10 @@ describe('ContentGenerationPipeline', () => {
       expect(apiCall.enable_thinking).toBeUndefined();
     });
 
-    it('disables qwen thinking via chat_template_kwargs on a non-DashScope endpoint (vLLM/SGLang)', async () => {
+    it('disables canopy thinking via chat_template_kwargs on a non-DashScope endpoint (vLLM/SGLang)', async () => {
       // Self-hosted OpenAI-compatible servers render the chat template
       // server-side and read the thinking switch from `chat_template_kwargs`,
-      // silently ignoring a top-level `enable_thinking`. A qwen model on such
+      // silently ignoring a top-level `enable_thinking`. A canopy model on such
       // an endpoint must therefore get the switch nested, not top-level — and
       // any top-level `enable_thinking: true` a provider preset injected via
       // extra_body must be stripped so it can't contradict the opt-out.
@@ -1984,9 +1984,9 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('disables coder-model thinking via chat_template_kwargs on a non-DashScope endpoint', async () => {
-      // `coder-model` is the QWEN_OAUTH default, but a user can point it at a
+      // `coder-model` is the CANOPY_OAUTH default, but a user can point it at a
       // self-hosted endpoint. The `model === 'coder-model'` arm must reach the
-      // non-DashScope chat_template_kwargs path just like a `qwen*` model.
+      // non-DashScope chat_template_kwargs path just like a `canopy*` model.
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
         baseUrl: 'https://llm.example.com/v1',
@@ -2070,9 +2070,9 @@ describe('ContentGenerationPipeline', () => {
       });
     });
 
-    it('does NOT emit enable_thinking on a non-qwen model routed through DashScope', async () => {
+    it('does NOT emit enable_thinking on a non-canopy model routed through DashScope', async () => {
       // DashScope's compatible-mode endpoint routes multiple model families
-      // (qwen3, GLM, DeepSeek). Hostname alone is not enough — GLM uses
+      // (canopy3, GLM, DeepSeek). Hostname alone is not enough — GLM uses
       // `extra_body.thinking.enabled` and DeepSeek-on-DashScope uses
       // `thinking: { type: 'disabled' }`, so sending `enable_thinking` is
       // at best a no-op and at worst forwarded upstream and rejected.
@@ -2111,10 +2111,10 @@ describe('ContentGenerationPipeline', () => {
       expect(apiCall.enable_thinking).toBeUndefined();
     });
 
-    it('gates on the wire model, not config: qwen config + non-qwen request.model does NOT emit', async () => {
+    it('gates on the wire model, not config: canopy config + non-canopy request.model does NOT emit', async () => {
       // buildRequest ships `context.model` (= request.model || config.model).
-      // A qwen *config* with a non-qwen *request* model must gate on the
-      // request model — otherwise the qwen-only field leaks to the non-qwen
+      // A canopy *config* with a non-canopy *request* model must gate on the
+      // request model — otherwise the canopy-only field leaks to the non-canopy
       // routing that is actually on the wire (e.g. GLM rejecting it upstream).
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
@@ -2128,7 +2128,7 @@ describe('ContentGenerationPipeline', () => {
       pipeline = new ContentGenerationPipeline(mockConfig);
 
       const request: GenerateContentParameters = {
-        model: 'glm-5', // request-level override to a non-qwen wire model
+        model: 'glm-5', // request-level override to a non-canopy wire model
         contents: [{ parts: [{ text: 'Summarize' }], role: 'user' }],
         config: { thinkingConfig: { includeThoughts: false } },
       };
@@ -2151,9 +2151,9 @@ describe('ContentGenerationPipeline', () => {
       expect(apiCall.enable_thinking).toBeUndefined();
     });
 
-    it('gates on the wire model, not config: non-qwen config + qwen request.model emits false', async () => {
-      // The mirror direction: a non-qwen *config* with a qwen *request* model
-      // must still emit the disable signal, since the wire model is qwen and
+    it('gates on the wire model, not config: non-canopy config + canopy request.model emits false', async () => {
+      // The mirror direction: a non-canopy *config* with a canopy *request* model
+      // must still emit the disable signal, since the wire model is canopy and
       // would otherwise keep thinking-on (the #4501 regression).
       mockContentGeneratorConfig = {
         ...mockContentGeneratorConfig,
@@ -2167,7 +2167,7 @@ describe('ContentGenerationPipeline', () => {
       pipeline = new ContentGenerationPipeline(mockConfig);
 
       const request: GenerateContentParameters = {
-        model: 'qwen3.5-flash', // request-level override to a qwen wire model
+        model: 'qwen3.5-flash', // request-level override to a canopy wire model
         contents: [{ parts: [{ text: 'Summarize' }], role: 'user' }],
         config: { thinkingConfig: { includeThoughts: false } },
       };
@@ -4723,7 +4723,7 @@ describe('ContentGenerationPipeline', () => {
 
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          prompt_cache_key: 'qwen-code:session-123',
+          prompt_cache_key: 'canopy-code:session-123',
           messages,
         }),
         expect.anything(),
@@ -4763,7 +4763,7 @@ describe('ContentGenerationPipeline', () => {
 
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          prompt_cache_key: 'qwen-code:session-123:Explore-a1b2c3d4',
+          prompt_cache_key: 'canopy-code:session-123:Explore-a1b2c3d4',
         }),
         expect.anything(),
       );
@@ -4804,7 +4804,7 @@ describe('ContentGenerationPipeline', () => {
 
       expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          prompt_cache_key: 'qwen-code:session-123',
+          prompt_cache_key: 'canopy-code:session-123',
         }),
         expect.anything(),
       );
@@ -4847,7 +4847,7 @@ describe('ContentGenerationPipeline', () => {
         .calls[0]?.[0] as OpenAI.Chat.ChatCompletionCreateParams & {
         prompt_cache_options?: unknown;
       };
-      expect(sent.prompt_cache_key).toBe('qwen-code:session-123');
+      expect(sent.prompt_cache_key).toBe('canopy-code:session-123');
       expect(sent.prompt_cache_options).toBeUndefined();
       expect(sent.messages).toEqual(messages);
     });
@@ -4968,7 +4968,7 @@ describe('ContentGenerationPipeline', () => {
         .calls[0]?.[0] as OpenAI.Chat.ChatCompletionCreateParams & {
         prompt_cache_options?: { mode?: string };
       };
-      expect(sent.prompt_cache_key).toBe('qwen-code:session-123');
+      expect(sent.prompt_cache_key).toBe('canopy-code:session-123');
       expect(sent.prompt_cache_options).toEqual({ mode: 'explicit' });
       expect(sent.messages[1]?.content).toEqual([
         {
@@ -5697,12 +5697,12 @@ describe('ContentGenerationPipeline', () => {
           return r;
         },
       );
-      // Clean baseline: ignore any ambient QWEN_STREAM_IDLE_TIMEOUT_MS /
-      // QWEN_STREAM_MAX_LIFETIME_MS from the dev/CI shell so the
+      // Clean baseline: ignore any ambient CANOPY_STREAM_IDLE_TIMEOUT_MS /
+      // CANOPY_STREAM_MAX_LIFETIME_MS from the dev/CI shell so the
       // default-timeout tests aren't silently overridden. Env-specific tests
       // re-stub them; afterEach unstubs everything.
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, undefined);
-      vi.stubEnv(QWEN_STREAM_MAX_LIFETIME_MS_ENV, undefined);
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, undefined);
+      vi.stubEnv(CANOPY_STREAM_MAX_LIFETIME_MS_ENV, undefined);
       vi.useFakeTimers();
     });
     afterEach(() => {
@@ -5731,7 +5731,7 @@ describe('ContentGenerationPipeline', () => {
       expect(err).toBeInstanceOf(StreamInactivityTimeoutError);
       expect((err as Error).message).toBe(
         'No stream activity for 1000ms after 0 chunks ' +
-          '(stream lifetime: 1000ms). Set QWEN_STREAM_IDLE_TIMEOUT_MS ' +
+          '(stream lifetime: 1000ms). Set CANOPY_STREAM_IDLE_TIMEOUT_MS ' +
           'to increase this window (or 0 to disable it).',
       );
       expect(err).toMatchObject({ code: 'ETIMEDOUT' });
@@ -5761,7 +5761,7 @@ describe('ContentGenerationPipeline', () => {
       expect(err).toBeInstanceOf(StreamInactivityTimeoutError);
       const message = (err as Error).message;
       expect(message).toContain('No stream activity for 1000ms after 0 chunks');
-      expect(message).toContain('QWEN_STREAM_IDLE_TIMEOUT_MS');
+      expect(message).toContain('CANOPY_STREAM_IDLE_TIMEOUT_MS');
     });
 
     it('uses the default stream idle timeout when no override is configured', async () => {
@@ -6041,8 +6041,8 @@ describe('ContentGenerationPipeline', () => {
       expect(gated.wasReturned()).toBe(true);
     });
 
-    it('honors QWEN_STREAM_IDLE_TIMEOUT_MS when no explicit config is set', async () => {
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '3000');
+    it('honors CANOPY_STREAM_IDLE_TIMEOUT_MS when no explicit config is set', async () => {
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '3000');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6066,7 +6066,7 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('lets an explicit streamIdleTimeoutMs config take precedence over the env', async () => {
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '1000');
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '1000');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6089,8 +6089,8 @@ describe('ContentGenerationPipeline', () => {
       expect(settled).toBe(true);
     });
 
-    it('ignores a malformed QWEN_STREAM_IDLE_TIMEOUT_MS and falls back to the default', async () => {
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, 'not-a-number');
+    it('ignores a malformed CANOPY_STREAM_IDLE_TIMEOUT_MS and falls back to the default', async () => {
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, 'not-a-number');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6116,14 +6116,14 @@ describe('ContentGenerationPipeline', () => {
       expect(settled).toBe(true);
     });
 
-    it('ignores an oversized QWEN_STREAM_IDLE_TIMEOUT_MS (beyond the timer ceiling)', async () => {
+    it('ignores an oversized CANOPY_STREAM_IDLE_TIMEOUT_MS (beyond the timer ceiling)', async () => {
       // A value above the JS timer ceiling must be rejected (fall back to the
       // default), not used verbatim. If it were used, the watchdog would be
       // scheduled ~24.8 days out, so advancing only to the default would never
       // trip it — asserting it trips AT the default proves the value was
       // rejected. (In real Node such a delay is silently compressed to 1ms,
       // which would make the watchdog fire almost immediately.)
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '9999999999');
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '9999999999');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6146,10 +6146,10 @@ describe('ContentGenerationPipeline', () => {
       expect(settled).toBe(true); // trips at the default
     });
 
-    it('rejects a non-decimal QWEN_STREAM_IDLE_TIMEOUT_MS (hex/scientific) and uses the default', async () => {
+    it('rejects a non-decimal CANOPY_STREAM_IDLE_TIMEOUT_MS (hex/scientific) and uses the default', async () => {
       // Number('0x10') === 16; a strict decimal-integer check must reject it so
       // a typo can't silently become a 16ms timeout.
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '0x10');
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '0x10');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6223,7 +6223,7 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('falls back from an invalid config to the env value (config→env cascade)', async () => {
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '4000');
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '4000');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6247,8 +6247,8 @@ describe('ContentGenerationPipeline', () => {
       expect(settled).toBe(true); // trips at 4000ms from the env (not default)
     });
 
-    it('disables the watchdog when QWEN_STREAM_IDLE_TIMEOUT_MS=0', async () => {
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '0');
+    it('disables the watchdog when CANOPY_STREAM_IDLE_TIMEOUT_MS=0', async () => {
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '0');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6329,7 +6329,9 @@ describe('ContentGenerationPipeline', () => {
       expect(error).toMatchObject({ code: 'ETIMEDOUT' });
       expect((error as StreamLifetimeExceededError).maxLifetimeMs).toBe(3000);
       expect((error as StreamLifetimeExceededError).chunksReceived).toBe(5);
-      expect((error as Error).message).toContain('QWEN_STREAM_MAX_LIFETIME_MS');
+      expect((error as Error).message).toContain(
+        'CANOPY_STREAM_MAX_LIFETIME_MS',
+      );
       expect(gated.wasReturned()).toBe(true);
       expect(mockErrorHandler.handle).not.toHaveBeenCalled();
     });
@@ -6402,8 +6404,8 @@ describe('ContentGenerationPipeline', () => {
       expect(done).toBe(true);
     });
 
-    it('honours QWEN_STREAM_MAX_LIFETIME_MS when no explicit config is set', async () => {
-      vi.stubEnv(QWEN_STREAM_MAX_LIFETIME_MS_ENV, '4000');
+    it('honours CANOPY_STREAM_MAX_LIFETIME_MS when no explicit config is set', async () => {
+      vi.stubEnv(CANOPY_STREAM_MAX_LIFETIME_MS_ENV, '4000');
       const gated = gatedStream(); // drip-fed, never ends
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6432,7 +6434,7 @@ describe('ContentGenerationPipeline', () => {
     });
 
     it('lets an explicit streamMaxLifetimeMs config take precedence over the env', async () => {
-      vi.stubEnv(QWEN_STREAM_MAX_LIFETIME_MS_ENV, '1000');
+      vi.stubEnv(CANOPY_STREAM_MAX_LIFETIME_MS_ENV, '1000');
       const gated = gatedStream(); // drip-fed, never ends
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6466,8 +6468,8 @@ describe('ContentGenerationPipeline', () => {
       expect((error as StreamLifetimeExceededError).maxLifetimeMs).toBe(3000);
     });
 
-    it('ignores a malformed QWEN_STREAM_MAX_LIFETIME_MS and falls back to the default', async () => {
-      vi.stubEnv(QWEN_STREAM_MAX_LIFETIME_MS_ENV, 'not-a-number');
+    it('ignores a malformed CANOPY_STREAM_MAX_LIFETIME_MS and falls back to the default', async () => {
+      vi.stubEnv(CANOPY_STREAM_MAX_LIFETIME_MS_ENV, 'not-a-number');
       const gated = gatedStream(); // drip-fed, never ends
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,
@@ -6566,7 +6568,7 @@ describe('ContentGenerationPipeline', () => {
 
     it('caps the lifetime even when the idle watchdog is disabled', async () => {
       // The wrap condition's other half: idle off, lifetime on. Deployments
-      // that set QWEN_STREAM_IDLE_TIMEOUT_MS=0 rely on the cap as their only
+      // that set CANOPY_STREAM_IDLE_TIMEOUT_MS=0 rely on the cap as their only
       // remaining guard, so the cap must still wrap the stream for them.
       const gated = gatedStream(); // drip-fed, never ends
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
@@ -6633,8 +6635,8 @@ describe('ContentGenerationPipeline', () => {
     it('disables both guards when both env knobs are 0', async () => {
       // The env-`0` twin of the test above: a `0` on either deployment knob
       // must reach the guard, not fall through to the default.
-      vi.stubEnv(QWEN_STREAM_IDLE_TIMEOUT_MS_ENV, '0');
-      vi.stubEnv(QWEN_STREAM_MAX_LIFETIME_MS_ENV, '0');
+      vi.stubEnv(CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV, '0');
+      vi.stubEnv(CANOPY_STREAM_MAX_LIFETIME_MS_ENV, '0');
       const gated = gatedStream(); // silent
       (mockClient.chat.completions.create as Mock).mockResolvedValue(
         gated.stream,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -54,7 +54,7 @@ describe('auto-skill curator archive re-read guard', () => {
 
   beforeEach(async () => {
     projectRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skill-curator-reread-'),
+      path.join(os.tmpdir(), 'canopy-skill-curator-reread-'),
     );
   });
 
@@ -68,7 +68,12 @@ describe('auto-skill curator archive re-read guard', () => {
     directoryName: string,
     modifiedAt: Date,
   ): Promise<string> {
-    const directory = path.join(projectRoot, '.qwen', 'skills', directoryName);
+    const directory = path.join(
+      projectRoot,
+      '.canopy',
+      'skills',
+      directoryName,
+    );
     const manifest = path.join(directory, 'SKILL.md');
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(
@@ -114,7 +119,7 @@ describe('auto-skill curator archive re-read guard', () => {
       fs.access(
         path.join(
           projectRoot,
-          '.qwen',
+          '.canopy',
           'archived-skills',
           'auto-skill-reread',
           'SKILL.md',

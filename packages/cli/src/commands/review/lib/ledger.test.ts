@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -139,7 +139,7 @@ describe('ledger marker', () => {
     expect(back!.dropped).toBeGreaterThan(0);
     expect(back!.sha).toBeUndefined();
     const handEdited = parseLedger(
-      '<!-- qwen-review-ledger {"v":1,"round":1,"findings":[],"dropped":3,"sha":"abc1234"} -->',
+      '<!-- canopy-review-ledger {"v":1,"round":1,"findings":[],"dropped":3,"sha":"abc1234"} -->',
     );
     expect(handEdited!.sha).toBeUndefined();
     // The count cap binds on READ too: a hand-edited marker carrying MORE
@@ -149,7 +149,7 @@ describe('ledger marker', () => {
     // list this very parse made partial (probe-measured on the shipped code:
     // 51 entries parsed to 50 and KEPT the sha).
     const overCount = parseLedger(
-      `<!-- qwen-review-ledger ${JSON.stringify({
+      `<!-- canopy-review-ledger ${JSON.stringify({
         v: 1,
         round: 2,
         sha: 'abc1234def567890',
@@ -170,7 +170,7 @@ describe('ledger marker', () => {
     // The body is another account's writable surface. A garbage anchor must
     // not cost the next round its work list, and must not survive as an
     // anchor either — Step 1 would hand it to `git`.
-    const forged = `<!-- qwen-review-ledger {"v":1,"round":1,"findings":[],"sha":"$(rm -rf /)"} -->`;
+    const forged = `<!-- canopy-review-ledger {"v":1,"round":1,"findings":[],"sha":"$(rm -rf /)"} -->`;
     const parsed = parseLedger(forged);
     expect(parsed).not.toBeNull();
     expect(parsed?.sha).toBeUndefined();
@@ -249,17 +249,17 @@ describe('ledger marker', () => {
       undefined,
       '',
       'no marker here',
-      '<!-- qwen-review-ledger not-json -->',
-      '<!-- qwen-review-ledger {"v":2,"round":1,"findings":[]} -->',
-      '<!-- qwen-review-ledger {"v":1,"round":0,"findings":[]} -->',
-      '<!-- qwen-review-ledger {"v":1,"round":1,"findings":"nope"} -->',
-      '<!-- qwen-review-ledger {"v":1,"round":1',
+      '<!-- canopy-review-ledger not-json -->',
+      '<!-- canopy-review-ledger {"v":2,"round":1,"findings":[]} -->',
+      '<!-- canopy-review-ledger {"v":1,"round":0,"findings":[]} -->',
+      '<!-- canopy-review-ledger {"v":1,"round":1,"findings":"nope"} -->',
+      '<!-- canopy-review-ledger {"v":1,"round":1',
     ]) {
       expect(parseLedger(body)).toBeNull();
     }
     // Entries that fail the shape check are dropped, valid siblings kept.
     const mixed = parseLedger(
-      '<!-- qwen-review-ledger {"v":1,"round":1,"findings":[{"id":"R1-1","sev":"C","file":"a.ts","title":"ok"},{"sev":"X"},null]} -->',
+      '<!-- canopy-review-ledger {"v":1,"round":1,"findings":[{"id":"R1-1","sev":"C","file":"a.ts","title":"ok"},{"sev":"X"},null]} -->',
     )!;
     expect(mixed.findings).toHaveLength(1);
   });
@@ -269,7 +269,7 @@ describe('ledger marker', () => {
     const stripped = stripLedgerMarker(body);
     expect(stripped).toContain('prose before');
     expect(stripped).toContain('prose after');
-    expect(stripped).not.toContain('qwen-review-ledger');
+    expect(stripped).not.toContain('canopy-review-ledger');
     expect(stripLedgerMarker('untouched')).toBe('untouched');
   });
 
@@ -286,7 +286,7 @@ describe('ledger marker', () => {
   });
 
   it('leaves an unterminated marker alone rather than truncating the body', () => {
-    const body = 'prose <!-- qwen-review-ledger {"v":1 and the rest of it';
+    const body = 'prose <!-- canopy-review-ledger {"v":1 and the rest of it';
     expect(stripLedgerMarker(body)).toBe(body);
   });
 });

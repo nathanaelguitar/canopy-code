@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,22 +35,22 @@ export interface ReadLoopTaskFileOptions {
    * Confinement root for the home candidate's resolved (symlink-followed)
    * target — a target escaping this dir (e.g. `-> /etc/passwd`) is refused while
    * an in-root dotfile symlink is followed. Pass `$QWEN_HOME` when set, else
-   * `$HOME` (see `homeQwenDir`).
+   * `$HOME` (see `homeCanopyDir`).
    */
   homeDir: string;
   /**
-   * Directory holding the home/global `loop.md` candidate (`<homeQwenDir>/loop.md`).
-   * Pass the QWEN_HOME-aware global dir (`Storage.getGlobalQwenDir()`) so a
+   * Directory holding the home/global `loop.md` candidate (`<homeCanopyDir>/loop.md`).
+   * Pass the QWEN_HOME-aware global dir (`Storage.getGlobalCanopyDir()`) so a
    * relocated config home is honored instead of always reading the real OS home.
-   * Defaults to `<homeDir>/.qwen` so a direct barrel caller keeps the `~/.qwen`
+   * Defaults to `<homeDir>/.canopy` so a direct barrel caller keeps the `~/.canopy`
    * layout.
    */
-  homeQwenDir?: string;
+  homeCanopyDir?: string;
   /**
-   * When false, the project `.qwen/loop.md` candidate is skipped entirely — it
+   * When false, the project `.canopy/loop.md` candidate is skipped entirely — it
    * is repo-controlled, so an untrusted workspace must not read it and feed it
    * to the model (mirrors the folder-trust gate on project hooks). The
-   * home/global `~/.qwen/loop.md` is user-owned and always allowed.
+   * home/global `~/.canopy/loop.md` is user-owned and always allowed.
    *
    * Defaults to false (fail-secure): this function is re-exported from the core
    * barrel, so a caller that omits the option must NOT silently read an
@@ -160,25 +160,25 @@ async function readBoundedTaskFile(filePath: string): Promise<Buffer | null> {
 }
 
 /**
- * Reads `.qwen/loop.md`, project before home, byte-capped at 25 KB. A missing,
+ * Reads `.canopy/loop.md`, project before home, byte-capped at 25 KB. A missing,
  * directory, non-regular, or empty (whitespace-only) path is skipped to the next
  * candidate rather than treated as present; all candidates exhausted → missing.
  * Only the byte cap lives here — the fire-time resolver owns the user-facing
  * truncation notice so the byte-vs-line nuance stays in one place.
  *
  * Project candidate: must be a real regular file at the literal path, and is
- * stat'd BEFORE the blocking open. A symlinked `.qwen/loop.md` is refused
+ * stat'd BEFORE the blocking open. A symlinked `.canopy/loop.md` is refused
  * outright — a repo-controlled symlink such as `-> ../.env` resolves *inside*
  * the workspace, so confinement alone would pass and exfiltrate that file to the
  * model. A FIFO/socket/device/dir is refused too, so a named pipe can never
  * wedge the tick (a blocking `open` on a FIFO waits for a writer) or be read as
  * a task list. The canonical path is still confined to the workspace root to
- * catch an *ancestor* symlink like a checked-in `.qwen -> /outside` that a
+ * catch an *ancestor* symlink like a checked-in `.canopy -> /outside` that a
  * final-component `lstat` cannot see. When `allowProjectFile` is false (untrusted
  * folder) the candidate is dropped entirely.
  *
- * Home candidate: `<homeQwenDir>/loop.md` (the QWEN_HOME-aware global dir, not
- * always the real `~/.qwen`). It is the user's own dotfile, so a symlink IS
+ * Home candidate: `<homeCanopyDir>/loop.md` (the QWEN_HOME-aware global dir, not
+ * always the real `~/.canopy`). It is the user's own dotfile, so a symlink IS
  * followed (a common, legitimate setup — e.g. into a synced dotfiles repo), but
  * the resolved target must be a regular file AND stay within the home
  * confinement root (`homeDir`: `$QWEN_HOME` or `$HOME`) so a FIFO/device/dir
@@ -188,7 +188,7 @@ async function readBoundedTaskFile(filePath: string): Promise<Buffer | null> {
 export async function readLoopTaskFile({
   projectRoot,
   homeDir,
-  homeQwenDir = path.join(homeDir, '.qwen'),
+  homeCanopyDir = path.join(homeDir, '.canopy'),
   allowProjectFile = false,
   realDirCache = moduleRealDirCache,
 }: ReadLoopTaskFileOptions): Promise<LoopTaskFileResult> {
@@ -205,11 +205,11 @@ export async function readLoopTaskFile({
       ? [
           {
             source: 'project' as const,
-            path: path.join(projectRoot, '.qwen', 'loop.md'),
+            path: path.join(projectRoot, '.canopy', 'loop.md'),
           },
         ]
       : []),
-    { source: 'home', path: path.join(homeQwenDir, 'loop.md') },
+    { source: 'home', path: path.join(homeCanopyDir, 'loop.md') },
   ];
 
   for (const { source, path: filePath } of candidates) {
@@ -233,7 +233,7 @@ export async function readLoopTaskFile({
         }
         // A hard-linked loop.md is an ordinary regular file (lstat sees no
         // symlink) but shares a sensitive target's inode (e.g. `ln .env
-        // .qwen/loop.md`), so confinement passes on the same fs and the secret
+        // .canopy/loop.md`), so confinement passes on the same fs and the secret
         // would be read every tick. `nlink > 1` is the only tell — refuse it,
         // mirroring canonicalizeKeytermsFile.
         if (projectStat.nlink > 1) {
@@ -243,7 +243,7 @@ export async function readLoopTaskFile({
           continue;
         }
         // A final-component lstat can't see an ANCESTOR symlink (e.g. a
-        // checked-in `.qwen -> /outside`); realpath resolves it, so confine the
+        // checked-in `.canopy -> /outside`); realpath resolves it, so confine the
         // canonical path to the workspace root before reading.
         const realRoot = await resolveRealDir(projectRoot, realDirCache);
         const real = await fs.realpath(filePath);
@@ -270,13 +270,13 @@ export async function readLoopTaskFile({
         }
         // Same hard-link guard as the project candidate: a `nlink > 1` regular
         // file shares another inode's content (e.g. `ln ~/.ssh/id_ed25519
-        // ~/.qwen/loop.md`) and would otherwise be read and fed to the model.
+        // ~/.canopy/loop.md`) and would otherwise be read and fed to the model.
         if (homeStat.nlink > 1) {
           debugLogger.debug('skipping hard-linked home loop.md', { filePath });
           continue;
         }
         // A home symlink IS followed, but its target must stay WITHIN $HOME:
-        // otherwise `~/.qwen/loop.md -> /etc/passwd` (or `-> /dev/...`) would be
+        // otherwise `~/.canopy/loop.md -> /etc/passwd` (or `-> /dev/...`) would be
         // read and fed to the model every tick. In-home dotfile symlinks (e.g.
         // `-> ~/dotfiles/loop.md`) still resolve inside $HOME and are allowed.
         const realHome = await resolveRealDir(homeDir, realDirCache);
@@ -294,8 +294,8 @@ export async function readLoopTaskFile({
       const code = (error as NodeJS.ErrnoException).code;
       // None of these name a readable loop.md, so try the next candidate:
       // absent (ENOENT), a directory (EISDIR), a non-directory path component
-      // (ENOTDIR, e.g. a stray file where `.qwen` should be), a symlink loop
-      // (ELOOP, e.g. a self-referential `~/.qwen/loop.md`), or an over-long path
+      // (ENOTDIR, e.g. a stray file where `.canopy` should be), a symlink loop
+      // (ELOOP, e.g. a self-referential `~/.canopy/loop.md`), or an over-long path
       // (ENAMETOOLONG). Anything else (EACCES permissions, real I/O) surfaces
       // rather than being silently swallowed.
       if (

@@ -8,11 +8,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { clearCommand } from './clearCommand.js';
 import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
-import { SessionEndReason } from '@qwen-code/qwen-code-core';
+import { SessionEndReason } from '@canopy-code/canopy-code-core';
 
 // Mock the telemetry service
-vi.mock('@qwen-code/qwen-code-core', async () => {
-  const actual = await vi.importActual('@qwen-code/qwen-code-core');
+vi.mock('@canopy-code/canopy-code-core', async () => {
+  const actual = await vi.importActual('@canopy-code/canopy-code-core');
   return {
     ...actual,
     uiTelemetryService: {
@@ -24,7 +24,7 @@ vi.mock('@qwen-code/qwen-code-core', async () => {
   };
 });
 
-import type { GeminiClient } from '@qwen-code/qwen-code-core';
+import type { GeminiClient } from '@canopy-code/canopy-code-core';
 
 describe('clearCommand', () => {
   let mockContext: CommandContext;
@@ -181,7 +181,7 @@ describe('clearCommand', () => {
   });
 
   it('should persist usage when session has activity before clearing', async () => {
-    const core = await import('@qwen-code/qwen-code-core');
+    const core = await import('@canopy-code/canopy-code-core');
     (
       core.uiTelemetryService.getMetrics as ReturnType<typeof vi.fn>
     ).mockReturnValue({
@@ -194,7 +194,7 @@ describe('clearCommand', () => {
   });
 
   it('should not persist usage when session has no activity', async () => {
-    const core = await import('@qwen-code/qwen-code-core');
+    const core = await import('@canopy-code/canopy-code-core');
     (
       core.uiTelemetryService.getMetrics as ReturnType<typeof vi.fn>
     ).mockReturnValue({

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,7 +38,7 @@ interface RegisterDaemonStatusRoutesDeps {
   workspace: DaemonWorkspaceService;
   daemonLog?: DaemonLogger;
   startup?: DaemonStartupSnapshot;
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   getAcpHandle: () => AcpHttpHandle | undefined;
   getRateLimiter: () => RateLimiterInstance | undefined;
   getRestSseActive: () => number;
@@ -79,7 +79,7 @@ export function registerDaemonStatusRoutes(
           workspace: deps.workspace,
           daemonLog: deps.daemonLog,
           startup: deps.startup,
-          qwenCodeVersion: deps.qwenCodeVersion,
+          canopyCodeVersion: deps.canopyCodeVersion,
           acpHandle: deps.getAcpHandle(),
           rateLimiter: deps.getRateLimiter(),
           getRestSseActive: deps.getRestSseActive,
@@ -99,7 +99,7 @@ export function registerDaemonStatusRoutes(
       );
     } catch (err) {
       writeStderrLine(
-        `qwen serve: /daemon/status failed: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: /daemon/status failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       res.status(500).json({
         error: 'Failed to build daemon status',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import { promises as fsp, realpathSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
-import { hashDaemonWorkspace } from '@qwen-code/qwen-code-core';
+import { hashDaemonWorkspace } from '@canopy-code/canopy-code-core';
 import { createServeApp } from './server.js';
 import { ClientMcpSenderRegistry } from './acp-http/client-mcp-sender-registry.js';
 import type { AcpHttpHandle } from './acp-http/index.js';
@@ -134,7 +134,7 @@ function makeWorkspaceService(label: string): DaemonWorkspaceService {
         rules: { allow: [], ask: [], deny: [] },
       },
       workspace: {
-        path: `${ctx.workspaceCwd}/.qwen/settings.json`,
+        path: `${ctx.workspaceCwd}/.canopy/settings.json`,
         rules: {
           allow: request.ruleType === 'allow' ? request.rules : [],
           ask: request.ruleType === 'ask' ? request.rules : [],
@@ -169,7 +169,7 @@ function makeWorkspaceService(label: string): DaemonWorkspaceService {
       }),
     ),
     initWorkspace: vi.fn(async (ctx) => ({
-      path: `${ctx.workspaceCwd}/QWEN.md`,
+      path: `${ctx.workspaceCwd}/CANOPY.md`,
       action: 'created' as const,
     })),
     restartMcpServer: vi.fn(async (_ctx, serverName) => ({
@@ -222,7 +222,7 @@ async function makeHarness(opts?: {
   primaryWriteHold?: { hold: Promise<void>; onWriteStart?: () => void };
 }) {
   const scratch = await fsp.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-workspace-qualified-rest-'),
+    path.join(os.tmpdir(), 'canopy-workspace-qualified-rest-'),
   );
   const primaryCwd = canonicalizeWorkspace(path.join(scratch, 'primary'));
   const secondaryCwd = canonicalizeWorkspace(
@@ -337,7 +337,7 @@ async function makeHarness(opts?: {
 
 async function makeWindowsSelectorHarness() {
   const scratch = await fsp.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-workspace-qualified-rest-win-'),
+    path.join(os.tmpdir(), 'canopy-workspace-qualified-rest-win-'),
   );
   const primaryCwd = canonicalizeWorkspace(path.join(scratch, 'primary'));
   await fsp.mkdir(primaryCwd, { recursive: true });
@@ -1026,7 +1026,7 @@ describe('workspace-qualified core REST', () => {
         .set('Host', host())
         .send({ force: true });
       expect(init.status).toBe(200);
-      expect(init.body.path).toBe(`${h.secondaryCwd}/QWEN.md`);
+      expect(init.body.path).toBe(`${h.secondaryCwd}/CANOPY.md`);
 
       const reload = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/reload`)
@@ -1085,7 +1085,7 @@ describe('workspace-qualified core REST', () => {
           `/workspaces/${encodeURIComponent(h.secondaryId)}/mcp/docs/enable`,
         )
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({});
       expect(enable.status).toBe(200);
@@ -1098,7 +1098,7 @@ describe('workspace-qualified core REST', () => {
       const add = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/mcp/servers`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ name: 'runtime', config: { command: 'node' } });
       expect(add.status).toBe(200);
@@ -1109,7 +1109,7 @@ describe('workspace-qualified core REST', () => {
           `/workspaces/${encodeURIComponent(h.secondaryId)}/mcp/servers/runtime`,
         )
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host());
       expect(remove.status).toBe(200);
       expect(remove.body.removed).toBe(true);
@@ -1189,7 +1189,7 @@ describe('workspace-qualified core REST', () => {
           `/workspaces/${encodeURIComponent(h.secondaryId)}/skills/review/enable`,
         )
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ enabled: false });
       expect(res.status).toBe(200);
@@ -1205,7 +1205,7 @@ describe('workspace-qualified core REST', () => {
       const batch = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/skills/enable`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ skillNames: ['review', 'deploy'], enabled: false });
       expect(batch.status).toBe(200);
@@ -1257,7 +1257,7 @@ describe('workspace-qualified core REST', () => {
           `/workspaces/${encodeURIComponent(h.secondaryId)}/skills/review/enable`,
         )
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .set('Host', host())
         .send({ enabled: false });
       expect(invalidClient.status).toBe(400);
@@ -1266,7 +1266,7 @@ describe('workspace-qualified core REST', () => {
       const invalidBatchClient = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/skills/enable`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'forged-client')
+        .set('X-Canopy-Client-Id', 'forged-client')
         .set('Host', host())
         .send({ skillNames: ['review'], enabled: false });
       expect(invalidBatchClient.status).toBe(400);
@@ -1278,7 +1278,7 @@ describe('workspace-qualified core REST', () => {
       const badBatchBody = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/skills/enable`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ skillNames: [], enabled: false });
       expect(badBatchBody.status).toBe(400);
@@ -1290,7 +1290,7 @@ describe('workspace-qualified core REST', () => {
       const enableBatch = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/skills/enable`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ skillNames: ['review'], enabled: true });
       expect(enableBatch.status).toBe(200);
@@ -1318,7 +1318,7 @@ describe('workspace-qualified core REST', () => {
       const failedBatch = await request(h.app)
         .post(`/workspaces/${encodeURIComponent(h.secondaryId)}/skills/enable`)
         .set('Authorization', 'Bearer secret')
-        .set('X-Qwen-Client-Id', 'client-1')
+        .set('X-Canopy-Client-Id', 'client-1')
         .set('Host', host())
         .send({ skillNames: ['review'], enabled: false });
       expect(failedBatch.status).toBe(500);
@@ -1508,7 +1508,7 @@ describe('workspace-qualified core REST', () => {
           content: '# Secondary memory\n',
         });
       expect(write.status).toBe(200);
-      expect(write.body.filePath).toBe(path.join(h.secondaryCwd, 'QWEN.md'));
+      expect(write.body.filePath).toBe(path.join(h.secondaryCwd, 'CANOPY.md'));
       expect(write.body.changed).toBe(true);
 
       const read = await request(h.app)
@@ -1520,7 +1520,7 @@ describe('workspace-qualified core REST', () => {
       expect(read.body.files).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            path: path.join(h.secondaryCwd, 'QWEN.md'),
+            path: path.join(h.secondaryCwd, 'CANOPY.md'),
             scope: 'workspace',
           }),
         ]),
@@ -1809,8 +1809,8 @@ describe('workspace-qualified core REST', () => {
   });
 
   it('keeps the primary qualified route alive when ACP HTTP is disabled', async () => {
-    const original = process.env['QWEN_SERVE_ACP_HTTP'];
-    process.env['QWEN_SERVE_ACP_HTTP'] = '0';
+    const original = process.env['CANOPY_SERVE_ACP_HTTP'];
+    process.env['CANOPY_SERVE_ACP_HTTP'] = '0';
     const h = await makeHarness({ token: 'secret' });
     try {
       const primary = await request(h.app)
@@ -1838,9 +1838,9 @@ describe('workspace-qualified core REST', () => {
       ).not.toHaveBeenCalled();
     } finally {
       if (original === undefined) {
-        delete process.env['QWEN_SERVE_ACP_HTTP'];
+        delete process.env['CANOPY_SERVE_ACP_HTTP'];
       } else {
-        process.env['QWEN_SERVE_ACP_HTTP'] = original;
+        process.env['CANOPY_SERVE_ACP_HTTP'] = original;
       }
       await fsp.rm(h.scratch, { recursive: true, force: true });
     }
@@ -1870,7 +1870,7 @@ describe('workspace-qualified core REST', () => {
     const h = await makeHarness({ token: 'secret' });
     try {
       await fsp.writeFile(
-        path.join(h.secondaryCwd, 'QWEN.md'),
+        path.join(h.secondaryCwd, 'CANOPY.md'),
         'x'.repeat(17 * 1024 * 1024),
         'utf8',
       );

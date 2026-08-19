@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -213,10 +213,10 @@ export function makeCellId(notebook: NotebookContent): string | undefined {
   );
 
   let fallbackIndex = 1;
-  let fallback = `qwen-cell-${fallbackIndex}`;
+  let fallback = `canopy-cell-${fallbackIndex}`;
   while (existingDisplayIds.has(fallback)) {
     fallbackIndex++;
-    fallback = `qwen-cell-${fallbackIndex}`;
+    fallback = `canopy-cell-${fallbackIndex}`;
   }
   return fallback;
 }

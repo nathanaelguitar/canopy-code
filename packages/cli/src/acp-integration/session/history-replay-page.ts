@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import {
   type HistoryGap,
   type SessionTranscriptCursorState,
   type SessionTranscriptRecordPage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { SessionUpdate } from '@agentclientprotocol/sdk';
 import type { TranscriptReplayStateV1 } from '@qwen-code/acp-bridge/transcriptReplay';
 import { Buffer } from 'node:buffer';
@@ -199,7 +199,7 @@ function replayContext(
         const meta = isObjectRecord(record['_meta']) ? record['_meta'] : {};
         return {
           ...record,
-          _meta: { ...meta, 'qwen.session.recordId': activeRecordId },
+          _meta: { ...meta, 'canopy.session.recordId': activeRecordId },
         } as unknown as SessionUpdate;
       })();
       const deliveredUpdate = liftSessionUpdateTimestamp(updateWithRecordId);
@@ -314,8 +314,8 @@ function readTranscriptSourceRecordIds(
       ? (value['_meta'] as Record<string, unknown>)
       : undefined;
   const transcript =
-    meta?.['qwenTranscript'] && typeof meta['qwenTranscript'] === 'object'
-      ? (meta['qwenTranscript'] as Record<string, unknown>)
+    meta?.['canopyTranscript'] && typeof meta['canopyTranscript'] === 'object'
+      ? (meta['canopyTranscript'] as Record<string, unknown>)
       : undefined;
   const sourceRecordIds = transcript?.['sourceRecordIds'];
   if (!Array.isArray(sourceRecordIds)) return undefined;
@@ -398,12 +398,13 @@ export async function replayTranscriptRecordPage({
           ? (value['_meta'] as Record<string, unknown>)
           : undefined;
       const transcript =
-        meta?.['qwenTranscript'] && typeof meta['qwenTranscript'] === 'object'
-          ? (meta['qwenTranscript'] as Record<string, unknown>)
+        meta?.['canopyTranscript'] &&
+        typeof meta['canopyTranscript'] === 'object'
+          ? (meta['canopyTranscript'] as Record<string, unknown>)
           : undefined;
       value['_meta'] = {
         ...meta,
-        qwenTranscript: {
+        canopyTranscript: {
           ...transcript,
           branchRecordId: branchPoints[recordId],
         },

@@ -10,7 +10,7 @@ import {
   getExtensionDisplayName,
   getExtensionDescription,
   type Extension,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadSettings, SettingScope } from '../../config/settings.js';
 import {
   requestConsentOrFail,

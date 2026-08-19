@@ -9,7 +9,7 @@ import {
   recordChannelMemoryRecallMetrics,
   removeChannelMemoryEntries,
   updateChannelMemoryEntry,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadSettings } from '../../config/settings.js';
 import { writeStderrLine, writeStdoutLine } from '../../utils/stdioHelpers.js';
 import {
@@ -97,7 +97,7 @@ function writeServiceInfoOrExit(channels: string[], cleanup: () => void): void {
     cleanup();
     if (isFileExistsError(err)) {
       writeStderrLine(
-        'Error: Channel service was started concurrently. Use "qwen channel status" to inspect it.',
+        'Error: Channel service was started concurrently. Use "canopy channel status" to inspect it.',
       );
       process.exit(1);
     }
@@ -297,15 +297,17 @@ function checkDuplicateInstance(): void {
   if (existing) {
     if (existing.owner === 'serve') {
       writeStderrLine(
-        `Error: Channel service is managed by qwen serve (PID ${existing.pid}, started ${existing.startedAt}).`,
+        `Error: Channel service is managed by canopy serve (PID ${existing.pid}, started ${existing.startedAt}).`,
       );
-      writeStderrLine('Stop the qwen serve process to stop managed channels.');
+      writeStderrLine(
+        'Stop the canopy serve process to stop managed channels.',
+      );
       process.exit(1);
     }
     writeStderrLine(
       `Error: Channel service is already running (PID ${existing.pid}, started ${existing.startedAt}).`,
     );
-    writeStderrLine('Use "qwen channel stop" to stop it first.');
+    writeStderrLine('Use "canopy channel stop" to stop it first.');
     process.exit(1);
   }
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -85,7 +85,7 @@ export const Footer: React.FC<FooterProps> = ({ containerRef }) => {
   const sandboxInfo = sandboxEnv
     ? sandboxEnv === 'sandbox-exec'
       ? 'seatbelt'
-      : sandboxEnv.startsWith('qwen-code')
+      : sandboxEnv.startsWith('canopy-code')
         ? 'docker'
         : sandboxEnv
     : null;

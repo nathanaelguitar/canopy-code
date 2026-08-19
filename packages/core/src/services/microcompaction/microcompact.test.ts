@@ -23,7 +23,7 @@ function makeInlineImage(mimeType = 'image/png', data = 'AAAA'): Content {
 }
 
 function clearEnv() {
-  delete process.env['QWEN_MC_KEEP_RECENT'];
+  delete process.env['CANOPY_MC_KEEP_RECENT'];
 }
 
 function makeToolCall(name: string): Content {
@@ -443,8 +443,8 @@ describe('microcompactHistory', () => {
     ).toBe('grep results');
   });
 
-  it('uses integer QWEN_MC_KEEP_RECENT values over settings', () => {
-    process.env['QWEN_MC_KEEP_RECENT'] = '3';
+  it('uses integer CANOPY_MC_KEEP_RECENT values over settings', () => {
+    process.env['CANOPY_MC_KEEP_RECENT'] = '3';
     const history: Content[] = Array.from({ length: 4 }).flatMap((_, i) => [
       makeToolCall('read_file'),
       makeToolResult('read_file', `content ${i}`),
@@ -465,9 +465,9 @@ describe('microcompactHistory', () => {
   });
 
   it.each(['0', '-2'])(
-    'floors integer QWEN_MC_KEEP_RECENT=%s to 1',
+    'floors integer CANOPY_MC_KEEP_RECENT=%s to 1',
     (envValue) => {
-      process.env['QWEN_MC_KEEP_RECENT'] = envValue;
+      process.env['CANOPY_MC_KEEP_RECENT'] = envValue;
       const history: Content[] = [
         makeToolCall('read_file'),
         makeToolResult('read_file', 'old content'),
@@ -493,8 +493,8 @@ describe('microcompactHistory', () => {
     },
   );
 
-  it('ignores fractional QWEN_MC_KEEP_RECENT values', () => {
-    process.env['QWEN_MC_KEEP_RECENT'] = '1.5';
+  it('ignores fractional CANOPY_MC_KEEP_RECENT values', () => {
+    process.env['CANOPY_MC_KEEP_RECENT'] = '1.5';
     const history: Content[] = [
       makeUserMessage('first batch'),
       makeInlineImage('image/png', 'IMAGE-OLDEST'),
@@ -518,8 +518,8 @@ describe('microcompactHistory', () => {
     );
   });
 
-  it('falls back to settings when QWEN_MC_KEEP_RECENT is fractional', () => {
-    process.env['QWEN_MC_KEEP_RECENT'] = '1.5';
+  it('falls back to settings when CANOPY_MC_KEEP_RECENT is fractional', () => {
+    process.env['CANOPY_MC_KEEP_RECENT'] = '1.5';
     const history: Content[] = Array.from({ length: 4 }).flatMap((_, i) => [
       makeToolCall('read_file'),
       makeToolResult('read_file', `content ${i}`),
@@ -537,7 +537,7 @@ describe('microcompactHistory', () => {
   });
 
   it('checks env integer syntax before numeric conversion', () => {
-    process.env['QWEN_MC_KEEP_RECENT'] = '9007199254740990.5';
+    process.env['CANOPY_MC_KEEP_RECENT'] = '9007199254740990.5';
     const history: Content[] = [
       makeToolCall('read_file'),
       makeToolResult('read_file', 'old content'),
@@ -556,8 +556,8 @@ describe('microcompactHistory', () => {
     expect(result.meta!.toolsCleared).toBe(1);
   });
 
-  it('ignores unsafe integer QWEN_MC_KEEP_RECENT values', () => {
-    process.env['QWEN_MC_KEEP_RECENT'] = '9007199254740992';
+  it('ignores unsafe integer CANOPY_MC_KEEP_RECENT values', () => {
+    process.env['CANOPY_MC_KEEP_RECENT'] = '9007199254740992';
     const history: Content[] = [
       makeToolCall('read_file'),
       makeToolResult('read_file', 'old content'),

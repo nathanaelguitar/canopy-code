@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -48,7 +48,7 @@ import {
   type CronTaskDelivery,
   type DurableCronTask,
   type CronTaskRun,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 import { isChannelDeliveryError } from '../../runtime/channel-delivery-ipc.js';
 import {
@@ -177,7 +177,7 @@ async function rollbackCronMutation(
     ),
   ).catch((error) => {
     writeStderrLine(
-      `qwen serve: ${route} failed to roll back a stale task mutation: ${error instanceof Error ? error.message : String(error)}`,
+      `canopy serve: ${route} failed to roll back a stale task mutation: ${error instanceof Error ? error.message : String(error)}`,
     );
   });
 }
@@ -442,7 +442,7 @@ function registerScheduledTaskCrudRoutes(
         // reading as empty — surface it instead of hiding the user's tasks
         // behind a silent [].
         writeStderrLine(
-          `qwen serve: GET ${base} failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: GET ${base} failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         res.status(500).json({
           error:
@@ -612,7 +612,7 @@ function registerScheduledTaskCrudRoutes(
           if (sendActivityGateError(res, err)) return;
           if (sendGenerationClosedError(res, err)) return;
           writeStderrLine(
-            `qwen serve: POST ${base} failed to create the task's session: ${err instanceof Error ? err.message : String(err)}`,
+            `canopy serve: POST ${base} failed to create the task's session: ${err instanceof Error ? err.message : String(err)}`,
           );
           res.status(500).json({
             error: "Failed to create the task's session",
@@ -677,7 +677,7 @@ function registerScheduledTaskCrudRoutes(
         if (sendActivityGateError(res, err)) return;
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: POST ${base} failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: POST ${base} failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         res.status(500).json({
           error: 'Failed to create scheduled task',
@@ -935,7 +935,7 @@ function registerScheduledTaskCrudRoutes(
         if (sendActivityGateError(res, err)) return;
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: PATCH ${base}/${id} failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: PATCH ${base}/${id} failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         res.status(500).json({
           error: 'Failed to update scheduled task',
@@ -1064,7 +1064,7 @@ function registerScheduledTaskCrudRoutes(
         if (sendActivityGateError(res, err)) return;
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: DELETE ${base}/${id} failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: DELETE ${base}/${id} failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         res.status(500).json({
           error: 'Failed to delete scheduled task',
@@ -1201,7 +1201,7 @@ function registerScheduledTaskCrudRoutes(
         if (sendActivityGateError(res, err)) return;
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: POST ${base}/${id}/run failed: ${err instanceof Error ? err.message : String(err)}`,
+          `canopy serve: POST ${base}/${id}/run failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         res.status(500).json({
           error: 'Failed to record scheduled task run',

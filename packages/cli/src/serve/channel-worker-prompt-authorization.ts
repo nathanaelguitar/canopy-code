@@ -1,7 +1,7 @@
 const workspacesByToken = new Map<string, string>();
 
 export const CHANNEL_WORKER_PROMPT_AUTHORIZATION_META_KEY =
-  'qwen.daemon.channelPromptAuthorization';
+  'canopy.daemon.channelPromptAuthorization';
 
 export function registerChannelWorkerPromptAuthorization(
   token: string,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -174,7 +174,7 @@ export function readLocalBootId(): string | null {
  *
  * PID numbers and start-time tokens are only meaningful within the
  * namespace that assigned them: two sessions in separate namespaces can
- * share one `~/.qwen` (host + devcontainer with a mounted home, sibling
+ * share one `~/.canopy` (host + devcontainer with a mounted home, sibling
  * CI containers, NFS homes), and each side's sweep would otherwise judge
  * the other's records by PIDs that resolve to nothing — or worse, to a
  * different process — on its own side. Records carry this identity so a

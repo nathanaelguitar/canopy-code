@@ -78,7 +78,7 @@ vi.mock('../ui/commands/hooksCommand.js', async () => {
 
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { BuiltinCommandLoader } from './BuiltinCommandLoader.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { CommandKind } from '../ui/commands/types.js';
 
 import { restoreCommand } from '../ui/commands/restoreCommand.js';

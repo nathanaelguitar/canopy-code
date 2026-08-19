@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -65,7 +65,7 @@ import { readBudgetStop, writeRoundCapStop } from './lib/deadline.js';
 import { runCleanup } from './cleanup.js';
 
 const PLAN = {
-  diffPathAbsolute: '/abs/.qwen/tmp/qwen-review-pr-9206-diff.txt',
+  diffPathAbsolute: '/abs/.canopy/tmp/canopy-review-pr-9206-diff.txt',
   chunks: [
     {
       id: 13,
@@ -152,11 +152,11 @@ describe('issue #9206 — retirement must retire twice-dry chunks, or say why it
     utimesSync(plan, old, old);
     findings = join(dir, 'findings.md');
     writeFileSync(findings, '');
-    for (const k of ['QWEN_CODE_PROJECT_DIR', 'QWEN_CODE_SESSION_ID']) {
+    for (const k of ['CANOPY_CODE_PROJECT_DIR', 'CANOPY_CODE_SESSION_ID']) {
       SAVED[k] = process.env[k];
     }
-    process.env['QWEN_CODE_PROJECT_DIR'] = dir;
-    process.env['QWEN_CODE_SESSION_ID'] = 'S1';
+    process.env['CANOPY_CODE_PROJECT_DIR'] = dir;
+    process.env['CANOPY_CODE_SESSION_ID'] = 'S1';
     mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
   });
 
@@ -378,12 +378,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
     // marker is exactly the evidence it exists to keep — or the sweep
     // deletes run A's history with no Kept line: the evidence loss this
     // issue reports, recurring for the killed-run shape.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     writeFileSync(planPath, JSON.stringify({ prNumber: '9206' }));
     const recordDir = promptRecordDir(planPath);
@@ -409,12 +409,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
     // predate the retry's plan capture and are the only certification
     // history of the killed run; the sweep must keep them on that signal
     // alone.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     writeFileSync(planPath, JSON.stringify({ prNumber: '9206' }));
     const recordDir = promptRecordDir(planPath);
@@ -440,12 +440,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
     // mtime comparison computes false — and silently deletes the directory
     // the first cleanup explicitly kept. A record directory whose plan is
     // gone is itself the retained shape: keep it.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     const recordDir = promptRecordDir(planPath);
     mkdirSync(recordDir, { recursive: true });
@@ -477,12 +477,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
     // (a vanished file, a planted broken symlink) aborted the walk and
     // swept the older evidence beside it. `a-broken-symlink` sorts before
     // the record, so the old code hit the throw first.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     const recordDir = promptRecordDir(planPath);
     mkdirSync(recordDir, { recursive: true });
@@ -510,12 +510,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
     // nothing, and the sweep takes it. Pinning the comparison keeps a
     // `<` \u2192 `!==` mutant (retain a converged run's own records forever,
     // under a false Kept claim) from shipping green.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     writeFileSync(planPath, JSON.stringify({ prNumber: '9206' }));
     const recordDir = promptRecordDir(planPath);
@@ -533,12 +533,12 @@ describe('issue #9206 — Step 9 cleanup must not destroy a non-converged run’
   it('a non-converged run (round cap hit) keeps its prompt-record directory', () => {
     // The real run's shape: the loop never converged and hit the 5-round cap,
     // so the builder wrote its round-cap stop marker INSIDE the record dir.
-    mkdirSync(join(dir, '.qwen', 'tmp'), { recursive: true });
+    mkdirSync(join(dir, '.canopy', 'tmp'), { recursive: true });
     const planPath = join(
       dir,
-      '.qwen',
+      '.canopy',
       'tmp',
-      'qwen-review-pr-9206-fetch.json',
+      'canopy-review-pr-9206-fetch.json',
     );
     writeFileSync(planPath, JSON.stringify({ prNumber: '9206' }));
     const recordDir = promptRecordDir(planPath);

@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 // The cross-round findings ledger, carried IN the posted review body.
 //
 // The round ledger began as a local cache file, and its first live use exposed
-// the flaw: the cache lives in one clone's `.qwen/review-cache/`, so a re-review
+// the flaw: the cache lives in one clone's `.canopy/review-cache/`, so a re-review
 // from CI, another machine, or a fresh checkout opens with amnesia — while the
 // one artifact every environment can see, the posted review itself, carried
 // nothing machine-readable. This module moves the authoritative copy into the
@@ -166,7 +166,7 @@ export const LEDGER_MAX_ROUND = 10_000;
  */
 export const LEDGER_MAX_BYTES = 8192;
 
-const OPEN = '<!-- qwen-review-ledger ';
+const OPEN = '<!-- canopy-review-ledger ';
 const CLOSE = ' -->';
 
 /**
@@ -331,7 +331,7 @@ export function stripLedgerMarker(body: string): string {
     if (start < 0) break;
     const end = out.indexOf(CLOSE, start);
     // An unterminated marker is not a marker: leave the tail alone rather than
-    // truncating a body at a stray `<!-- qwen-review-ledger`.
+    // truncating a body at a stray `<!-- canopy-review-ledger`.
     if (end < 0) break;
     out = out.slice(0, start) + out.slice(end + CLOSE.length);
   }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -222,7 +222,7 @@ describe('setupGithub service', () => {
     const fetchImpl = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const endpoint = String(input);
-        if (endpoint.includes('qwen-invoke.yml')) {
+        if (endpoint.includes('canopy-invoke.yml')) {
           return new Response('missing', {
             status: 404,
             statusText: 'Not Found',
@@ -239,7 +239,7 @@ describe('setupGithub service', () => {
 
     await expect(
       setupGithub({ cwd: scratchDir, workspaceRoot: scratchDir, fetchImpl }),
-    ).rejects.toThrow(/qwen-invoke\.yml/);
+    ).rejects.toThrow(/canopy-invoke\.yml/);
 
     expect(abortedEndpoints.length).toBeGreaterThan(0);
   });
@@ -252,7 +252,7 @@ describe('setupGithub service', () => {
     const fileOps: SetupGithubFileOps = {
       ensureWorkflowDirectory: vi.fn(async () => {}),
       writeTextFile: vi.fn(async (_gitRepoRoot, relativePath) => {
-        if (relativePath.endsWith('qwen-invoke.yml')) {
+        if (relativePath.endsWith('canopy-invoke.yml')) {
           throw new Error('disk full');
         }
         return { sizeBytes: 8 };
@@ -308,7 +308,7 @@ describe('setupGithub service', () => {
 
   it('updates gitignore idempotently', async () => {
     const gitignorePath = path.join(scratchDir, '.gitignore');
-    await fsp.writeFile(gitignorePath, '.qwen/\nnode_modules/\n');
+    await fsp.writeFile(gitignorePath, '.canopy/\nnode_modules/\n');
 
     const first = await updateGitignore(scratchDir);
     const second = await updateGitignore(scratchDir);
@@ -316,7 +316,7 @@ describe('setupGithub service', () => {
     expect(first.status).toBe('updated');
     expect(second.status).toBe('unchanged');
     await expect(fsp.readFile(gitignorePath, 'utf8')).resolves.toBe(
-      '.qwen/\nnode_modules/\n\ngha-creds-*.json\n',
+      '.canopy/\nnode_modules/\n\ngha-creds-*.json\n',
     );
   });
 

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { SessionService } from '@qwen-code/qwen-code-core';
-import type { SessionListItem } from '@qwen-code/qwen-code-core';
+import { SessionService } from '@canopy-code/canopy-code-core';
+import type { SessionListItem } from '@canopy-code/canopy-code-core';
 import type { Suggestion } from '../components/SuggestionsDisplay.js';
 import {
   buildSessionRef,

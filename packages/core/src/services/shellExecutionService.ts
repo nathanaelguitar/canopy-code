@@ -803,7 +803,7 @@ export class ShellExecutionService {
         windowsHide: isWindows,
         env: {
           ...normalizePathEnvForWindows(sanitizeChildEnv(process.env)),
-          QWEN_CODE: '1',
+          CANOPY_CODE: '1',
           TERM: 'xterm-256color',
           ...getShellPagerEnv(pager, {
             includeGitPager: false,
@@ -1506,7 +1506,7 @@ export class ShellExecutionService {
         rows,
         env: {
           ...normalizePathEnvForWindows(sanitizeChildEnv(process.env)),
-          QWEN_CODE: '1',
+          CANOPY_CODE: '1',
           TERM: 'xterm-256color',
           ...getShellPagerEnv(shellExecutionConfig.pager, {
             includeGitPager: true,

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { cleanup } from 'ink-testing-library';
-import { HookEventName } from '@qwen-code/qwen-code-core';
+import { HookEventName } from '@canopy-code/canopy-code-core';
 import { HooksManagementDialog } from './HooksManagementDialog.js';
 import { renderWithProviders } from '../../../test-utils/render.js';
 import { useKeypress } from '../../hooks/useKeypress.js';
@@ -121,9 +121,9 @@ vi.mock('../../semantic-colors.js', () => ({
   },
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     createDebugLogger: vi.fn(() => ({

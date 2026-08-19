@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
   SessionService,
   type SessionLocation,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import {
   SessionArchivedError,
@@ -581,7 +581,7 @@ function logSessionArchiveResult(
     `notFound=${result.notFound.length} notFoundIds=${formatSessionIds(result.notFound)}`,
     `errors=${result.errors.length} errorIds=${formatSessionErrors(result.errors)}`,
   ].join(' ');
-  writeStderrLine(`qwen serve: sessions ${action} result ${details}`);
+  writeStderrLine(`canopy serve: sessions ${action} result ${details}`);
 }
 
 function formatSessionIds(sessionIds: string[]): string {
@@ -604,7 +604,7 @@ function errorMessage(error: unknown): string {
 }
 
 export function logSessionArchiveWarning(message: string): void {
-  writeStderrLine(`qwen serve: ${sanitizeLogLine(message)}`);
+  writeStderrLine(`canopy serve: ${sanitizeLogLine(message)}`);
 }
 
 // Control characters are intentionally stripped from daemon log lines.

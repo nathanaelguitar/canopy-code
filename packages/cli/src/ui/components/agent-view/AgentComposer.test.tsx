@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { render } from 'ink-testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AgentStatus, ApprovalMode } from '@qwen-code/qwen-code-core';
+import { AgentStatus, ApprovalMode } from '@canopy-code/canopy-code-core';
 import {
   useAgentViewActions,
   useAgentViewState,
@@ -52,7 +52,7 @@ describe('AgentComposer', () => {
         [
           'agent-1',
           {
-            modelId: 'qwen',
+            modelId: 'canopy',
             color: 'cyan',
             interactiveAgent: {
               cancelCurrentRound: vi.fn(),

@@ -65,7 +65,7 @@ class DiscoveredToolInvocation extends BaseToolInvocation<
   ): Promise<ToolResult> {
     const callCommand = this.config.getToolCallCommand()!;
     // The user-configured tool-call command is a child process launched on the
-    // agent's behalf, so it must not inherit Qwen-internal daemon secrets.
+    // agent's behalf, so it must not inherit Canopy-internal daemon secrets.
     // Passing `env` explicitly loses the native inheritance that resolved
     // Windows' case-insensitive PATH keys, so normalize as the shell and MCP
     // spawn sites do (a no-op off win32).
@@ -216,7 +216,7 @@ export class ToolRegistry {
     // options-bag
     // ctor; previously 7 positional args with `undefined, undefined`
     // sentinels for `healthConfig` / `budgetConfig`. `pool` is
-    // forwarded from Config (set by daemon-mode QwenAgent in
+    // forwarded from Config (set by daemon-mode CanopyAgent in
     // `newSessionConfig`); when undefined the manager keeps its previous
     // per-session spawn behavior, when defined non-SDK MCP discovery
     // goes through `pool.acquire` so N sessions in the same workspace
@@ -603,7 +603,7 @@ export class ToolRegistry {
         );
       }
       // Same as the tool-call command above: the discovery command is
-      // agent-launched, must not inherit Qwen-internal daemon secrets, and
+      // agent-launched, must not inherit Canopy-internal daemon secrets, and
       // needs the Windows PATH normalization that comes with an explicit env.
       const proc = spawn(cmdParts[0] as string, cmdParts.slice(1) as string[], {
         env: normalizePathEnvForWindows(sanitizeChildEnv(process.env)),

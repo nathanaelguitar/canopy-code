@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -968,10 +968,10 @@ describe('Agent View supervisor server', () => {
 });
 
 async function makeSocketPath(): Promise<{ dir: string; socketPath: string }> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-agent-view-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-agent-view-'));
   const socketPath =
     process.platform === 'win32'
-      ? `\\\\.\\pipe\\qwen-agent-view-test-${process.pid}-${Date.now()}`
+      ? `\\\\.\\pipe\\canopy-agent-view-test-${process.pid}-${Date.now()}`
       : path.join(dir, 'supervisor.sock');
   return { dir, socketPath };
 }

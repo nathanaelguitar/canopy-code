@@ -38,11 +38,11 @@ const PROJECT_SUMMARY_FILENAME = 'PROJECT_SUMMARY.md';
 const WELCOME_BACK_STATE_FILENAME = 'welcome-back-state.json';
 
 function getProjectSummaryPath(): string {
-  return path.join(process.cwd(), '.qwen', PROJECT_SUMMARY_FILENAME);
+  return path.join(process.cwd(), '.canopy', PROJECT_SUMMARY_FILENAME);
 }
 
 function getWelcomeBackStatePath(): string {
-  return path.join(process.cwd(), '.qwen', WELCOME_BACK_STATE_FILENAME);
+  return path.join(process.cwd(), '.canopy', WELCOME_BACK_STATE_FILENAME);
 }
 
 function buildSummaryFingerprint(stat: {

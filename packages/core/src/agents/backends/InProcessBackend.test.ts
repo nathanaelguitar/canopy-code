@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -843,14 +843,14 @@ describe('InProcessBackend', () => {
     const { runtimeContext } = destructureAgentCoreCall(lastCall!);
     const agentContext = runtimeContext as unknown as {
       getFileService: () => {
-        getQwenIgnoreFileNamesDisplay: () => string;
+        getCanopyIgnoreFileNamesDisplay: () => string;
       };
     };
 
     expect(parentConfig.getFileFilteringOptions).toHaveBeenCalled();
-    expect(agentContext.getFileService().getQwenIgnoreFileNamesDisplay()).toBe(
-      '.qwenignore, .cursorignore',
-    );
+    expect(
+      agentContext.getFileService().getCanopyIgnoreFileNamesDisplay(),
+    ).toBe('.canopyignore, .cursorignore');
   });
 
   it('should propagate runConfig limits to AgentInteractive', async () => {

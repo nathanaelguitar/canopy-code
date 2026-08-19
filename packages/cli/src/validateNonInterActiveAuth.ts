@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config } from '@qwen-code/qwen-code-core';
-import { OutputFormat } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { OutputFormat } from '@canopy-code/canopy-code-core';
 import { validateAuthMethod } from './config/auth.js';
 import { type LoadedSettings } from './config/settings.js';
 import { JsonOutputAdapter } from './nonInteractive/io/JsonOutputAdapter.js';

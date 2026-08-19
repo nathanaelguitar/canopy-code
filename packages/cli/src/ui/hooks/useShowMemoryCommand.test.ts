@@ -15,12 +15,12 @@ const { mockDebugLogger } = vi.hoisted(() => ({
     error: vi.fn(),
   },
 }));
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => mockDebugLogger,
 }));
 
 import { createShowMemoryAction } from './useShowMemoryCommand.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import { MessageType, type Message } from '../types.js';
 
@@ -43,7 +43,7 @@ function createMockConfig({
 }
 
 const mockSettings = {
-  merged: { context: { fileName: 'QWEN.md' } },
+  merged: { context: { fileName: 'CANOPY.md' } },
 } as unknown as LoadedSettings;
 
 describe('createShowMemoryAction', () => {

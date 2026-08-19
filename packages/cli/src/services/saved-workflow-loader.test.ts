@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     listSavedWorkflows: vi.fn(),
@@ -19,7 +19,7 @@ import {
   listSavedWorkflows,
   type Config,
   type SavedWorkflowEntry,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { SavedWorkflowLoader } from './saved-workflow-loader.js';
 import { CommandKind, type CommandContext } from '../ui/commands/types.js';
 
@@ -43,7 +43,7 @@ function entry(
 ): SavedWorkflowEntry {
   return {
     name: 'deep-research',
-    scriptPath: '/proj/.qwen/workflows/deep-research.js',
+    scriptPath: '/proj/.canopy/workflows/deep-research.js',
     source: 'project',
     ...overrides,
   };
@@ -60,7 +60,7 @@ describe('SavedWorkflowLoader', () => {
       entry({ name: 'deep-research', source: 'project' }),
       entry({
         name: 'triage',
-        scriptPath: '/home/.qwen/workflows/triage.js',
+        scriptPath: '/home/.canopy/workflows/triage.js',
         source: 'user',
       }),
     ]);
@@ -86,7 +86,7 @@ describe('SavedWorkflowLoader', () => {
     expect(result).toEqual({
       type: 'tool',
       toolName: 'workflow',
-      toolArgs: { scriptPath: '/proj/.qwen/workflows/deep-research.js' },
+      toolArgs: { scriptPath: '/proj/.canopy/workflows/deep-research.js' },
     });
   });
 
@@ -100,7 +100,7 @@ describe('SavedWorkflowLoader', () => {
       type: 'tool',
       toolName: 'workflow',
       toolArgs: {
-        scriptPath: '/proj/.qwen/workflows/deep-research.js',
+        scriptPath: '/proj/.canopy/workflows/deep-research.js',
         args: { topic: 'llms', depth: 3 },
       },
     });

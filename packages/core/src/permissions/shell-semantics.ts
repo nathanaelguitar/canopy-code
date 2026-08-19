@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen team
+ * Copyright 2025 Canopy team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -2046,8 +2046,8 @@ const MAX_SHELL_UNWRAP_DEPTH = 4;
  *
  * Used by {@link extractShellOperationsAcrossCommand} to track the effective
  * cwd left-to-right across compound segments, so a segment like
- * `cd .qwen && echo > settings.json` correctly attributes the write to
- * `<cwd>/.qwen/settings.json`.
+ * `cd .canopy && echo > settings.json` correctly attributes the write to
+ * `<cwd>/.canopy/settings.json`.
  */
 type CdResolution =
   | { kind: 'not-cd' }
@@ -2131,10 +2131,10 @@ function resolveCdTargetCwd(
  *
  * @example
  *   extractShellOperationsAcrossCommand(
- *     "cd .qwen && bash -lc 'echo {} > settings.json'",
+ *     "cd .canopy && bash -lc 'echo {} > settings.json'",
  *     '/repo',
  *   )
- *   // → [{ virtualTool: 'write_file', filePath: '/repo/.qwen/settings.json' }]
+ *   // → [{ virtualTool: 'write_file', filePath: '/repo/.canopy/settings.json' }]
  */
 export function extractShellOperationsAcrossCommand(
   command: string,

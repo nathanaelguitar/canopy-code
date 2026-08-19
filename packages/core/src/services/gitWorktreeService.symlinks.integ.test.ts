@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,7 +32,7 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
   let repoRoot: string;
 
   beforeEach(async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-wt-symlinks-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-wt-symlinks-'));
     // Resolve symlinks (macOS /var → /private/var) so path comparisons
     // line up with what GitWorktreeService produces internally.
     repoParent = await fs.realpath(dir);
@@ -185,7 +185,7 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     // own parent temp dir, so the fixed name below is private to this
     // run: no cross-run collision, and afterEach reclaims it even if the
     // process is killed before the cleanup below.
-    const siblingDir = path.join(path.dirname(repoRoot), 'qwen-wt-sibling');
+    const siblingDir = path.join(path.dirname(repoRoot), 'canopy-wt-sibling');
 
     try {
       await fs.mkdir(siblingDir);
@@ -193,14 +193,14 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
 
       const service = new GitWorktreeService(repoRoot);
       const result = await service.createUserWorktree('traverse', 'main', {
-        symlinkDirectories: ['../qwen-wt-sibling'],
+        symlinkDirectories: ['../canopy-wt-sibling'],
       });
 
       expect(result.success).toBe(true);
-      const dest = path.join(result.worktree!.path, '..', 'qwen-wt-sibling');
+      const dest = path.join(result.worktree!.path, '..', 'canopy-wt-sibling');
       // No symlink was created inside the worktree directory.
       const stat = await fs
-        .lstat(path.join(result.worktree!.path, 'qwen-wt-sibling'))
+        .lstat(path.join(result.worktree!.path, 'canopy-wt-sibling'))
         .catch(() => null);
       expect(stat).toBeNull();
       // Sibling itself is untouched.
@@ -235,24 +235,24 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     expect(wrote).toBe(false);
   });
 
-  it('rejects paths inside .qwen (security guard)', async () => {
-    // `.qwen` is CLI metadata: symlinking `.qwen/worktrees` would create
-    // a worktrees-inside-worktrees loop; symlinking `.qwen/projects` or
-    // `.qwen/tmp` would alias session metadata users have no legitimate
+  it('rejects paths inside .canopy (security guard)', async () => {
+    // `.canopy` is CLI metadata: symlinking `.canopy/worktrees` would create
+    // a worktrees-inside-worktrees loop; symlinking `.canopy/projects` or
+    // `.canopy/tmp` would alias session metadata users have no legitimate
     // reason to share across worktrees. Guard rejects the whole subtree.
-    await fs.mkdir(path.join(repoRoot, '.qwen'), { recursive: true });
-    await fs.writeFile(path.join(repoRoot, '.qwen', 'projects'), 'data');
+    await fs.mkdir(path.join(repoRoot, '.canopy'), { recursive: true });
+    await fs.writeFile(path.join(repoRoot, '.canopy', 'projects'), 'data');
 
     const service = new GitWorktreeService(repoRoot);
-    const result = await service.createUserWorktree('reject-qwen', 'main', {
-      symlinkDirectories: ['.qwen/projects'],
+    const result = await service.createUserWorktree('reject-canopy', 'main', {
+      symlinkDirectories: ['.canopy/projects'],
     });
     expect(result.success).toBe(true);
 
     const wt = result.worktree!.path;
-    // No symlink at <worktree>/.qwen/projects.
+    // No symlink at <worktree>/.canopy/projects.
     const wrote = await fs
-      .lstat(path.join(wt, '.qwen', 'projects'))
+      .lstat(path.join(wt, '.canopy', 'projects'))
       .then((s) => s.isSymbolicLink())
       .catch(() => false);
     expect(wrote).toBe(false);
@@ -272,11 +272,11 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     // `sourceRepoPath` differs from its canonical realpath.
 
     const realDirRaw = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-wt-realdir-'),
+      path.join(os.tmpdir(), 'canopy-wt-realdir-'),
     );
     const realDir = await fs.realpath(realDirRaw);
     const linkParentRaw = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-wt-linkdir-'),
+      path.join(os.tmpdir(), 'canopy-wt-linkdir-'),
     );
     const linkParent = await fs.realpath(linkParentRaw);
     const repoViaSymlink = path.join(linkParent, 'repo-via-symlink');
@@ -335,9 +335,9 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     }
   });
 
-  it('refuses sources whose realpath escapes the repo root or lands in .git/.qwen (committed-symlink bypass)', async () => {
+  it('refuses sources whose realpath escapes the repo root or lands in .git/.canopy (committed-symlink bypass)', async () => {
     // Round-7 security fix: the lexical `isWithinRoot(sourceAbs, …)` and
-    // `.git`/`.qwen` blocklist checks DON'T resolve symlinks, so a symlink
+    // `.git`/`.canopy` blocklist checks DON'T resolve symlinks, so a symlink
     // committed into the source repo HEAD (or set up out-of-band by a
     // malicious post-install script / repo tarball) can chain through to
     // arbitrary targets. Two flavours covered here:
@@ -361,7 +361,7 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     await fs.symlink('.git', path.join(repoRoot, 'escape-to-git'));
 
     const outsideDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-wt-outside-'),
+      path.join(os.tmpdir(), 'canopy-wt-outside-'),
     );
     const outsideResolved = await fs.realpath(outsideDir);
     await fs.writeFile(path.join(outsideResolved, 'secret'), 'should-not-leak');
@@ -495,7 +495,7 @@ describe('GitWorktreeService.createUserWorktree() — symlinkDirectories', () =>
     it('handles "no such ref" when origin is reachable but the PR does not exist', async () => {
       // Set up a bare upstream with only main — no pull/<N>/head refs.
       const upstream = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-wt-pr-no-such-ref-'),
+        path.join(os.tmpdir(), 'canopy-wt-pr-no-such-ref-'),
       );
       const upstreamResolved = await fs.realpath(upstream);
       execFileSync('git', ['init', '-q', '--bare', '-b', 'main'], {

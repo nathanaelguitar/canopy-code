@@ -41,14 +41,14 @@ describe('ComputerUseTool', () => {
     // Auto-approve install so tool.test.ts doesn't block on the install
     // confirmation prompt. The bootstrap state machine is tested in detail
     // in bootstrap.test.ts; tool.test.ts focuses on the tool wrapper logic.
-    process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'] = '1';
+    process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'] = '1';
   });
 
   afterEach(() => {
-    delete process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'];
+    delete process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'];
   });
 
-  it('exposes qwen-facing name with computer_use__ prefix', () => {
+  it('exposes canopy-facing name with computer_use__ prefix', () => {
     const tool = new ComputerUseTool('click', COMPUTER_USE_SCHEMAS.click);
     expect(tool.name).toBe('computer_use__click');
     expect(tool.displayName).toBe('computer_use__click');
@@ -82,8 +82,8 @@ describe('ComputerUseTool', () => {
   });
 
   it('resolves the configured maxImageDimension and forwards it to the client', async () => {
-    const prev = process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
-    delete process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
+    const prev = process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
+    delete process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
     try {
       const fake = makeFakeClient(async () => ({
         content: [{ type: 'text', text: '[]' }],
@@ -106,9 +106,9 @@ describe('ComputerUseTool', () => {
       expect(fake.setIdleTimeoutMs).toHaveBeenCalledWith(30_000);
     } finally {
       if (prev === undefined) {
-        delete process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
+        delete process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'];
       } else {
-        process.env['QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = prev;
+        process.env['CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION'] = prev;
       }
     }
   });
@@ -211,11 +211,11 @@ describe('coerceTypes', () => {
 describe('ComputerUseTool.build() coercion integration', () => {
   beforeEach(() => {
     ComputerUseClient.setSharedForTest(undefined);
-    process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'] = '1';
+    process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'] = '1';
   });
 
   afterEach(() => {
-    delete process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'];
+    delete process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'];
   });
 
   it('build() succeeds when a numeric coordinate is a string (coerces to number)', () => {
@@ -226,7 +226,7 @@ describe('ComputerUseTool.build() coercion integration', () => {
 
   it('build() succeeds when element_index is a numeric string (coerces to integer)', () => {
     const tool = new ComputerUseTool('click', COMPUTER_USE_SCHEMAS.click);
-    // qwen3.6 may send element_index: "11" (string); coerceTypes -> 11 (integer).
+    // canopy3.6 may send element_index: "11" (string); coerceTypes -> 11 (integer).
     expect(() => tool.build({ pid: 1, element_index: '11' })).not.toThrow();
   });
 
@@ -287,7 +287,7 @@ describe('ComputerUseInvocation confirmation pathway', () => {
   let tmpHome: string;
 
   beforeEach(() => {
-    tmpHome = mkdtempSync(join(tmpdir(), 'qwen-cu-tool-'));
+    tmpHome = mkdtempSync(join(tmpdir(), 'canopy-cu-tool-'));
     mockHome = tmpHome;
     ComputerUseClient.setSharedForTest(undefined);
     vi.clearAllMocks();
@@ -431,7 +431,7 @@ describe('ComputerUseInvocation confirmation pathway', () => {
 
   // Every approval mode where the scheduler auto-approves the tool call and
   // bypasses the confirmation dialog — so its onConfirm never records install
-  // approval. With QWEN_COMPUTER_USE_AUTO_APPROVE unset, the bootstrap fallback
+  // approval. With CANOPY_COMPUTER_USE_AUTO_APPROVE unset, the bootstrap fallback
   // used to refuse and surface "install declined by user":
   //   - YOLO       → needsConfirmation() returns false, dialog never built.
   //   - AUTO_EDIT  → isAutoEditApproved() approves info-type tools, skips onConfirm.
@@ -616,11 +616,11 @@ describe('buildDisplayText', () => {
 describe('execute() image content forwarding', () => {
   beforeEach(() => {
     ComputerUseClient.setSharedForTest(undefined);
-    process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'] = '1';
+    process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'] = '1';
   });
 
   afterEach(() => {
-    delete process.env['QWEN_COMPUTER_USE_AUTO_APPROVE'];
+    delete process.env['CANOPY_COMPUTER_USE_AUTO_APPROVE'];
     ComputerUseClient.setSharedForTest(undefined);
   });
 

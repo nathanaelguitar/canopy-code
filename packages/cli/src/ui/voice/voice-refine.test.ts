@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { refineVoiceTranscript } from './voice-refine.js';
 
 const mockRunSideQuery = vi.hoisted(() => vi.fn());
@@ -16,10 +16,10 @@ const mockLogger = vi.hoisted(() => ({
   debug: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async () => {
+vi.mock('@canopy-code/canopy-code-core', async () => {
   const actual = await vi.importActual<
-    typeof import('@qwen-code/qwen-code-core')
-  >('@qwen-code/qwen-code-core');
+    typeof import('@canopy-code/canopy-code-core')
+  >('@canopy-code/canopy-code-core');
   return {
     ...actual,
     createDebugLogger: vi.fn(() => mockLogger),

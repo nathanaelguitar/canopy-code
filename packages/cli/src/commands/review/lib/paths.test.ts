@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,11 +15,11 @@ import {
 
 describe('PARSE_ARGS_REPORT', () => {
   it('is the literal path the skill tees to in Step 0', () => {
-    // The skill's Step 0 hard-codes `.qwen/tmp/qwen-review-parse-args.json` in
+    // The skill's Step 0 hard-codes `.canopy/tmp/canopy-review-parse-args.json` in
     // its tee command. If this constant drifts from that literal the fallback
     // silently stops reading the report and the original bug returns.
     expect(PARSE_ARGS_REPORT).toBe(
-      join('.qwen', 'tmp', 'qwen-review-parse-args.json'),
+      join('.canopy', 'tmp', 'canopy-review-parse-args.json'),
     );
   });
 });
@@ -27,30 +27,30 @@ describe('PARSE_ARGS_REPORT', () => {
 describe('tmpFile — target is a single safe component', () => {
   it('keeps ordinary labels intact', () => {
     expect(tmpFile('pr-6771', 'diff.txt')).toContain(
-      'qwen-review-pr-6771-diff.txt',
+      'canopy-review-pr-6771-diff.txt',
     );
     expect(tmpFile('local', 'plan.json')).toContain(
-      'qwen-review-local-plan.json',
+      'canopy-review-local-plan.json',
     );
   });
 
   it('flattens a file-path target so its parent is not a missing directory', () => {
-    // `src/foo.ts` used to make `.qwen/tmp/qwen-review-src/foo.ts-diff.txt`, whose
+    // `src/foo.ts` used to make `.canopy/tmp/canopy-review-src/foo.ts-diff.txt`, whose
     // `src/` parent nobody created — ENOENT.
     const p = tmpFile('src/foo.ts', 'diff.txt');
     expect(p).not.toContain('src/foo.ts');
-    expect(dirname(p)).toBe(join('.qwen', 'tmp'));
+    expect(dirname(p)).toBe(join('.canopy', 'tmp'));
     // The separator is flattened to an underscore, so the target survives as a
     // single component directly under the temp dir.
-    expect(basename(p)).toBe('qwen-review-src_foo.ts-diff.txt');
+    expect(basename(p)).toBe('canopy-review-src_foo.ts-diff.txt');
   });
 
   it('refuses to escape the temp dir with a crafted target', () => {
     const p = tmpFile('../../evil', 'diff.txt');
-    expect(dirname(p)).toBe(join('.qwen', 'tmp'));
+    expect(dirname(p)).toBe(join('.canopy', 'tmp'));
     expect(p).not.toContain('..');
     // The dot-segment traversal is stripped to a plain component, not nested.
-    expect(basename(p)).toBe('qwen-review-evil-diff.txt');
+    expect(basename(p)).toBe('canopy-review-evil-diff.txt');
   });
 });
 
@@ -64,8 +64,8 @@ describe('probeWorktreePath', () => {
     // The probe drives `git worktree add` with the shared worktree as cwd, so a
     // relative probe path would resolve against that worktree and nest the probe
     // tree inside it. Absolute keeps it a sibling wherever it is called from.
-    expect(probeWorktreePath('.qwen/tmp/review-pr-1')).toBe(
-      `${resolve('.qwen/tmp/review-pr-1')}-probe`,
+    expect(probeWorktreePath('.canopy/tmp/review-pr-1')).toBe(
+      `${resolve('.canopy/tmp/review-pr-1')}-probe`,
     );
   });
 

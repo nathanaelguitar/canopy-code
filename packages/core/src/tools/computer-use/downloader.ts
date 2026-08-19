@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * Downloads + installs the pinned cua-driver binary into
- * `~/.qwen/computer-use/`.
+ * `~/.canopy/computer-use/`.
  *
  * Source order is OSS mirror → GitHub (see constants.resolveAssetUrls); the
  * first reachable source wins. The asset's sha256 is verified against the
@@ -229,7 +229,7 @@ export async function ensureInstalled(opts: InstallOptions): Promise<string> {
     // prompt (best-effort; notarized binaries pass regardless).
     await stripQuarantine(extractRoot);
     // Register with LaunchServices so cua-driver's `open -a CuaDriver serve`
-    // relaunch resolves THIS copy under ~/.qwen — that relaunch is what makes
+    // relaunch resolves THIS copy under ~/.canopy — that relaunch is what makes
     // TCC attribute Accessibility / Screen Recording to com.trycua.driver
     // instead of the launching terminal (iTerm/Terminal/VS Code). Without it
     // the auto-relaunch can't find our app and falls back to the terminal's
@@ -263,7 +263,7 @@ function computerUseTmp(home: string): string {
   // collides with another tool; scope under the install root's parent.
   return join(
     tmpdir(),
-    'qwen-computer-use-dl',
+    'canopy-computer-use-dl',
     Buffer.from(home).toString('hex').slice(0, 8),
   );
 }

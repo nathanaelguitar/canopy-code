@@ -39,7 +39,7 @@ export interface InsightMemorableMoment {
 }
 
 export interface InsightImprovements {
-  Qwen_md_additions: Array<{
+  Canopy_md_additions: Array<{
     addition: string;
     why: string;
     prompt_scaffold: string;

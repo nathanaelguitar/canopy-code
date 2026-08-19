@@ -11,7 +11,7 @@ import {
   isExtensionCommittedWithWarningsError,
   parseInstallSource,
   type ExtensionScope,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getErrorMessage } from '../../utils/errors.js';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
 import { isWorkspaceTrusted } from '../../config/trustedFolders.js';

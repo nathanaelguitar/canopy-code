@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -80,7 +80,7 @@ export interface DaemonStartupSnapshot {
   processStartedAt: string;
   listenerReadyAt?: string;
   processToListenMs?: number;
-  runQwenServeToListenMs?: number;
+  runCanopyServeToListenMs?: number;
   preheat: {
     status: DaemonStartupPreheatStatus;
     durationMs?: number;
@@ -123,7 +123,7 @@ export interface BuildDaemonStatusOptions {
   workspaceRegistry?: WorkspaceRegistry;
   workspace: DaemonWorkspaceService;
   daemonLog?: DaemonLogger;
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   acpHandle?: AcpHttpHandle;
   rateLimiter?: RateLimiterInstance;
   getRestSseActive: () => number;
@@ -853,8 +853,8 @@ export async function buildDaemonStatusResponse(
       mode: input.opts.mode,
       workspaceCwd: input.boundWorkspace,
       ...(input.startup ? { startup: cloneStartup(input.startup) } : {}),
-      ...(input.qwenCodeVersion
-        ? { qwenCodeVersion: input.qwenCodeVersion }
+      ...(input.canopyCodeVersion
+        ? { canopyCodeVersion: input.canopyCodeVersion }
         : {}),
       ...(input.daemonLog?.getDaemonId()
         ? { daemonId: input.daemonLog.getDaemonId() }
@@ -1029,8 +1029,8 @@ function cloneStartup(startup: DaemonStartupSnapshot): DaemonStartupSnapshot {
     ...(startup.processToListenMs !== undefined
       ? { processToListenMs: startup.processToListenMs }
       : {}),
-    ...(startup.runQwenServeToListenMs !== undefined
-      ? { runQwenServeToListenMs: startup.runQwenServeToListenMs }
+    ...(startup.runCanopyServeToListenMs !== undefined
+      ? { runCanopyServeToListenMs: startup.runCanopyServeToListenMs }
       : {}),
     preheat: {
       status: startup.preheat.status,

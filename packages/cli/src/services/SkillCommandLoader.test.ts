@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,11 +18,11 @@ import {
   buildSkillLlmContent,
   type Config,
   type SkillConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const recordAutoSkillUsageMock = vi.hoisted(() => vi.fn());
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   recordAutoSkillUsage: recordAutoSkillUsageMock,
 }));
 
@@ -31,14 +31,14 @@ function makeSkill(overrides: Partial<SkillConfig> = {}): SkillConfig {
     name: 'my-skill',
     description: 'My skill description',
     level: 'user',
-    filePath: '/tmp/qwen-test/skills/my-skill/SKILL.md',
+    filePath: '/tmp/canopy-test/skills/my-skill/SKILL.md',
     body: 'Skill body content.',
     ...overrides,
   };
 }
 
 function makeSkillPrompt(body: string): string {
-  return buildSkillLlmContent('/tmp/qwen-test/skills/my-skill', body);
+  return buildSkillLlmContent('/tmp/canopy-test/skills/my-skill', body);
 }
 
 describe('SkillCommandLoader', () => {
@@ -212,14 +212,14 @@ describe('SkillCommandLoader', () => {
       skillDetail: {
         name: 'my-skill',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-test/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-test/SKILL.md',
       },
     });
 
     expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
       name: 'my-skill',
       level: 'project',
-      filePath: '/test/project/.qwen/skills/auto-skill-test/SKILL.md',
+      filePath: '/test/project/.canopy/skills/auto-skill-test/SKILL.md',
     });
   });
 
@@ -229,7 +229,7 @@ describe('SkillCommandLoader', () => {
       skillDetail: {
         name: 'my-skill',
         level: 'user',
-        filePath: '/test/user/.qwen/skills/my-skill/SKILL.md',
+        filePath: '/test/user/.canopy/skills/my-skill/SKILL.md',
       },
     },
     {
@@ -261,7 +261,7 @@ describe('SkillCommandLoader', () => {
         skillDetail: {
           name: 'my-skill',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-test/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-test/SKILL.md',
         },
       }),
     ).resolves.toBeUndefined();

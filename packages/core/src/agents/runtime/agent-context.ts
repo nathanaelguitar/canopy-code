@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -79,7 +79,7 @@ export function getCurrentAgentId(): string | null {
  * Returns the depth of the current agent context frame. 0 means we're
  * inside a top-level subagent (or no subagent at all — but in that case
  * the caller won't typically need this). Used by telemetry to populate
- * `qwen-code.subagent.depth` on subagent spans.
+ * `canopy-code.subagent.depth` on subagent spans.
  *
  * @remarks Returns 0 for two semantically distinct states: (a) no agent
  * frame exists, and (b) a top-level frame exists with `depth=0`. Callers

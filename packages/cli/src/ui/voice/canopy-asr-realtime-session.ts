@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { randomUUID } from 'node:crypto';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import WebSocket from 'ws';
 import type {
   SocketLike,
@@ -16,7 +16,7 @@ import type {
 import { deriveWebSocketBase } from './voice-stream-session.js';
 import { escapeAnsiCtrlCodes } from '../utils/textUtils.js';
 
-export interface QwenRealtimeDeps {
+export interface CanopyRealtimeDeps {
   createWebSocket?: (
     url: string,
     options: { headers: Record<string, string> },
@@ -28,9 +28,12 @@ const CONNECT_TIMEOUT_MS = 8000;
 const FINISH_TIMEOUT_MS = 60_000;
 const MAX_BUFFERED_AUDIO_BYTES = 1024 * 1024;
 const MAX_SERVER_ERROR_MESSAGE_LENGTH = 200;
-const debugLogger = createDebugLogger('VOICE_QWEN_REALTIME');
+const debugLogger = createDebugLogger('VOICE_CANOPY_REALTIME');
 
-export function deriveQwenRealtimeUrl(baseUrl: string, model: string): string {
+export function deriveCanopyRealtimeUrl(
+  baseUrl: string,
+  model: string,
+): string {
   return `${deriveWebSocketBase(baseUrl)}/api-ws/v1/realtime?model=${encodeURIComponent(model)}`;
 }
 
@@ -45,14 +48,14 @@ function toError(error: unknown): Error {
 }
 
 function formatServerErrorMessage(raw: unknown): string {
-  const text = typeof raw === 'string' ? raw : 'Qwen ASR realtime failed.';
+  const text = typeof raw === 'string' ? raw : 'Canopy ASR realtime failed.';
   return escapeAnsiCtrlCodes(text).slice(0, MAX_SERVER_ERROR_MESSAGE_LENGTH);
 }
 
-export function openQwenAsrRealtimeStream(
+export function openCanopyAsrRealtimeStream(
   config: VoiceStreamConfig,
   callbacks: VoiceStreamCallbacks = {},
-  deps: QwenRealtimeDeps = {},
+  deps: CanopyRealtimeDeps = {},
 ): Promise<VoiceStreamSession> {
   const createWebSocket =
     deps.createWebSocket ??
@@ -67,7 +70,7 @@ export function openQwenAsrRealtimeStream(
       return;
     }
     const ws = createWebSocket(
-      deriveQwenRealtimeUrl(config.baseUrl, config.model),
+      deriveCanopyRealtimeUrl(config.baseUrl, config.model),
       {
         headers: config.apiKey
           ? { Authorization: `Bearer ${config.apiKey}` }
@@ -153,7 +156,7 @@ export function openQwenAsrRealtimeStream(
     }
 
     connectTimer = setTimeout(() => {
-      if (!opened) fail(new Error('Qwen ASR realtime connection timed out.'));
+      if (!opened) fail(new Error('Canopy ASR realtime connection timed out.'));
     }, CONNECT_TIMEOUT_MS);
 
     const sendSessionUpdate = () => {
@@ -188,7 +191,7 @@ export function openQwenAsrRealtimeStream(
         msg = JSON.parse(String(data));
       } catch (error) {
         debugLogger.warn(
-          '[voice] failed to parse Qwen ASR realtime message:',
+          '[voice] failed to parse Canopy ASR realtime message:',
           error,
         );
         return;
@@ -209,7 +212,7 @@ export function openQwenAsrRealtimeStream(
                 if (!backpressureWarned) {
                   backpressureWarned = true;
                   debugLogger.warn(
-                    '[voice] dropping Qwen ASR realtime audio due to socket backpressure.',
+                    '[voice] dropping Canopy ASR realtime audio due to socket backpressure.',
                   );
                 }
                 return;
@@ -234,7 +237,7 @@ export function openQwenAsrRealtimeStream(
                 finishResolve = res;
                 finishReject = rej;
                 finishTimer = setTimeout(() => {
-                  fail(new Error('Qwen ASR realtime finish timed out.'));
+                  fail(new Error('Canopy ASR realtime finish timed out.'));
                 }, FINISH_TIMEOUT_MS);
                 try {
                   sendJson({ type: 'input_audio_buffer.commit' });
@@ -267,7 +270,7 @@ export function openQwenAsrRealtimeStream(
               formatServerErrorMessage(
                 msg.error?.message ??
                   msg.error?.code ??
-                  'Qwen ASR realtime transcription failed.',
+                  'Canopy ASR realtime transcription failed.',
               ),
             ),
           );
@@ -276,7 +279,7 @@ export function openQwenAsrRealtimeStream(
           if (!openSettled) {
             fail(
               new Error(
-                'Qwen ASR realtime session finished before it was ready.',
+                'Canopy ASR realtime session finished before it was ready.',
               ),
             );
             break;
@@ -296,7 +299,7 @@ export function openQwenAsrRealtimeStream(
               formatServerErrorMessage(
                 msg.error?.message ??
                   msg.error?.code ??
-                  'Qwen ASR realtime request failed.',
+                  'Canopy ASR realtime request failed.',
               ),
             ),
           );
@@ -314,20 +317,20 @@ export function openQwenAsrRealtimeStream(
       if (failed) return;
       if (!openSettled) {
         openSettled = true;
-        reject(new Error('Qwen ASR realtime connection closed.'));
+        reject(new Error('Canopy ASR realtime connection closed.'));
         return;
       }
       if (finishReject) {
         finishReject(
           new Error(
-            'Qwen ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
+            'Canopy ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
           ),
         );
         finishResolve = null;
         finishReject = null;
       } else {
         const error = new Error(
-          'Qwen ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
+          'Canopy ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
         );
         terminalError ??= error;
         callbacks.onError?.(terminalError);

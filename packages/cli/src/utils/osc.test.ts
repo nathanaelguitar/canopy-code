@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -170,8 +170,8 @@ describe('oscITerm2Notify', () => {
   it('formats notification with title and message', () => {
     process.env['TERM_PROGRAM'] = 'iTerm.app';
     delete process.env['TERM'];
-    const result = oscITerm2Notify('Qwen Code', 'Hello');
-    expect(result).toContain('Qwen Code:\nHello');
+    const result = oscITerm2Notify('Canopy Code', 'Hello');
+    expect(result).toContain('Canopy Code:\nHello');
   });
 
   it('formats notification without title', () => {

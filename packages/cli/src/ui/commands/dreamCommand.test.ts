@@ -6,7 +6,7 @@
 
 import * as path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import { dreamCommand } from './dreamCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 

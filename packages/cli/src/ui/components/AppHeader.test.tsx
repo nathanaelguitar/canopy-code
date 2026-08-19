@@ -38,7 +38,7 @@ const createSettings = (options?: {
     user: {
       settings: { ui },
       originalSettings: { ui },
-      path: '/home/u/.qwen/settings.json',
+      path: '/home/u/.canopy/settings.json',
     },
     workspace: { settings: {}, originalSettings: {}, path: '' },
   } as never;
@@ -48,7 +48,7 @@ const createMockConfig = (overrides = {}) => ({
   getContentGeneratorConfig: vi.fn(() => ({ authType: undefined })),
   getModel: vi.fn(() => 'gemini-pro'),
   getModelDisplayName: vi.fn(() => 'Gemini Pro'),
-  getTargetDir: vi.fn(() => '/projects/qwen-code'),
+  getTargetDir: vi.fn(() => '/projects/canopy-code'),
   getMcpServers: vi.fn(() => ({})),
   getBlockedMcpServers: vi.fn(() => []),
   getDebugMode: vi.fn(() => false),
@@ -90,7 +90,7 @@ const renderWithProviders = (
 describe('<AppHeader />', () => {
   it('shows the working directory', () => {
     const { lastFrame } = renderWithProviders(createMockUIState());
-    expect(lastFrame()).toContain('/projects/qwen-code');
+    expect(lastFrame()).toContain('/projects/canopy-code');
   });
 
   it('hides the header when screen reader is enabled', () => {
@@ -100,15 +100,15 @@ describe('<AppHeader />', () => {
       createMockConfig({ getScreenReader: vi.fn(() => true) }),
     );
     // When screen reader is enabled, header is not rendered
-    expect(lastFrame()).not.toContain('/projects/qwen-code');
-    expect(lastFrame()).not.toContain('Qwen Code');
+    expect(lastFrame()).not.toContain('/projects/canopy-code');
+    expect(lastFrame()).not.toContain('Canopy Code');
   });
 
   it('shows the header with all info when banner is visible', () => {
     const { lastFrame } = renderWithProviders(createMockUIState());
-    expect(lastFrame()).toContain('>_ Qwen Code');
+    expect(lastFrame()).toContain('>_ Canopy Code');
     expect(lastFrame()).toContain('Gemini Pro');
-    expect(lastFrame()).toContain('/projects/qwen-code');
+    expect(lastFrame()).toContain('/projects/canopy-code');
   });
 
   it('hides the banner when ui.hideBanner is set, but keeps tips intact', () => {
@@ -116,7 +116,7 @@ describe('<AppHeader />', () => {
       createMockUIState(),
       createSettings({ hideTips: false, hideBanner: true }),
     );
-    expect(lastFrame()).not.toContain('>_ Qwen Code');
+    expect(lastFrame()).not.toContain('>_ Canopy Code');
     expect(lastFrame()).not.toContain('██╔═══██╗');
   });
 
@@ -146,9 +146,9 @@ describe('<AppHeader />', () => {
     );
     const frame = lastFrame() ?? '';
     expect(frame).toContain('Acme CLI');
-    expect(frame).not.toContain('>_ Qwen Code');
+    expect(frame).not.toContain('>_ Canopy Code');
     expect(frame).toContain('ACME');
-    // Default Qwen logo must NOT bleed through when the user supplied art.
+    // Default Canopy logo must NOT bleed through when the user supplied art.
     expect(frame).not.toContain('██╔═══██╗');
   });
 });

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { LoadedSettings } from '../../config/settings.js';
 import type { SettingScope } from '../../config/settings.js';
 import { renderWithProviders } from '../../test-utils/render.js';

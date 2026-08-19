@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { render } from 'ink-testing-library';
 import { describe, expect, it } from 'vitest';
-import type { GoalSnapshotV2 } from '@qwen-code/qwen-code-core';
+import type { GoalSnapshotV2 } from '@canopy-code/canopy-code-core';
 import { GOAL_STATUS_KINDS, MessageType } from '../../types.js';
 import { GoalStatusMessage } from './GoalStatusMessage.js';
 

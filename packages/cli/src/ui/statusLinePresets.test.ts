@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -81,17 +81,17 @@ describe('statusLinePresets', () => {
   });
 
   it('formats model reasoning directly', () => {
-    expect(formatModelWithReasoning('qwen3-code-plus', false)).toBe(
-      'qwen3-code-plus reasoning off',
+    expect(formatModelWithReasoning('canopy3-code-plus', false)).toBe(
+      'canopy3-code-plus reasoning off',
     );
     expect(
-      formatModelWithReasoning('qwen3-code-plus', { effort: 'high' }),
-    ).toBe('qwen3-code-plus high');
+      formatModelWithReasoning('canopy3-code-plus', { effort: 'high' }),
+    ).toBe('canopy3-code-plus high');
     expect(
-      formatModelWithReasoning('qwen3-code-plus', { effort: undefined }),
-    ).toBe('qwen3-code-plus');
-    expect(formatModelWithReasoning('qwen3-code-plus', undefined)).toBe(
-      'qwen3-code-plus',
+      formatModelWithReasoning('canopy3-code-plus', { effort: undefined }),
+    ).toBe('canopy3-code-plus');
+    expect(formatModelWithReasoning('canopy3-code-plus', undefined)).toBe(
+      'canopy3-code-plus',
     );
   });
 
@@ -105,7 +105,7 @@ describe('statusLinePresets', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       currentDir: '/repo/project',
       branch: 'feature/pr-4087-statusline',
       contextWindowSize: 1000,
@@ -133,7 +133,7 @@ describe('statusLinePresets', () => {
         data,
       ),
     ).toEqual([
-      'qwen3-code-plus · Context 75% left · /repo/project · #4087 · +12 -3 · Ready',
+      'canopy3-code-plus · Context 75% left · /repo/project · #4087 · +12 -3 · Ready',
     ]);
   });
 
@@ -141,7 +141,7 @@ describe('statusLinePresets', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       reasoning: { effort: 'high' },
       currentDir: '/repo/project',
       branch: 'feature/pr-4087-statusline',
@@ -163,7 +163,7 @@ describe('statusLinePresets', () => {
         data,
       ),
     ).toEqual([
-      '\u279c project · git:(feature/pr-4087-statusline) · qwen3-code-plus high · qwen3-code-plus · Context 75% left · 1.2k total in · 340 total out · /repo/project · #4087 · +12 -3 · 1.0k Context 25% used · Ready · v1.2.3 · 1.0k window · 250 used · session-123',
+      '\u279c project · git:(feature/pr-4087-statusline) · canopy3-code-plus high · canopy3-code-plus · Context 75% left · 1.2k total in · 340 total out · /repo/project · #4087 · +12 -3 · 1.0k Context 25% used · Ready · v1.2.3 · 1.0k window · 250 used · session-123',
     ]);
   });
 
@@ -171,7 +171,7 @@ describe('statusLinePresets', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       reasoning: { effort: 'high' },
       currentDir: '/repo/project',
       branch: undefined,
@@ -192,14 +192,14 @@ describe('statusLinePresets', () => {
         },
         data,
       ),
-    ).toEqual(['qwen3-code-plus high · qwen3-code-plus']);
+    ).toEqual(['canopy3-code-plus high · canopy3-code-plus']);
   });
 
   it('shows when reasoning is disabled', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       reasoning: false,
       currentDir: '/repo/project',
       branch: undefined,
@@ -220,14 +220,14 @@ describe('statusLinePresets', () => {
         },
         data,
       ),
-    ).toEqual(['qwen3-code-plus reasoning off']);
+    ).toEqual(['canopy3-code-plus reasoning off']);
   });
 
   it('falls back to the model name when reasoning is unset', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       currentDir: '/repo/project',
       branch: undefined,
       contextWindowSize: 0,
@@ -247,7 +247,7 @@ describe('statusLinePresets', () => {
         },
         data,
       ),
-    ).toEqual(['qwen3-code-plus']);
+    ).toEqual(['canopy3-code-plus']);
   });
 
   it('strips provider prefix from model display name', () => {
@@ -281,7 +281,7 @@ describe('statusLinePresets', () => {
     const data = buildStatusLinePresetData({
       sessionId: 'session-123',
       version: '1.2.3',
-      modelDisplayName: 'qwen3-code-plus',
+      modelDisplayName: 'canopy3-code-plus',
       currentDir: '/repo/project',
       branch: 'feature/pr-1',
       pullRequestNumber: '4087',
@@ -309,7 +309,7 @@ describe('statusLinePresets', () => {
     expect(
       aggregateModelTokens({
         models: {
-          qwen: { tokens: { prompt: 100, candidates: 20 } },
+          canopy: { tokens: { prompt: 100, candidates: 20 } },
           coder: { tokens: { prompt: 300, candidates: 40 } },
         },
       }),

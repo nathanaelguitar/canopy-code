@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -129,7 +129,7 @@ export function isPositivePrNumber(value: unknown): boolean {
  * `compose-review`'s deterministic script-lint gate reads this to decide whether a
  * script-lint report was OWED — a diff that carries such a file but produced no
  * report fails closed to unreviewed. It is the one predicate both the orchestrator's
- * `qwen review script-lint` step and the gate that checks its output share, so they
+ * `canopy review script-lint` step and the gate that checks its output share, so they
  * cannot disagree about what counts as an executable script.
  */
 export function hasExecutableScript(plan: RosterPlan): boolean {
@@ -240,7 +240,7 @@ export function requiredAgents(plan: RosterPlan): RequiredAgent[] {
     add('1c');
     add('7');
     // The executable-script lint is NOT an agent: the orchestrator runs
-    // `qwen review script-lint` deterministically and `compose-review` reads its
+    // `canopy review script-lint` deterministically and `compose-review` reads its
     // report as the sole authority (see hasExecutableScript). There is no role to
     // require here — the gate enforces itself from the report, model out of the loop.
   }

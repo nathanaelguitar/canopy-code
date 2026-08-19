@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -26,7 +26,7 @@ export class TemplateRenderer {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Qwen Code Insights</title>
+    <title>Canopy Code Insights</title>
     <style>
       ${INSIGHT_CSS}
     </style>

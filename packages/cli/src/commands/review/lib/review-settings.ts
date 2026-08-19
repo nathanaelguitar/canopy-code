@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,7 +46,7 @@ export interface OperatorReviewSettings {
 /**
  * The `review.*` policy settings resolved from operator-controlled scopes
  * only (system defaults → user → system). The workspace scope is excluded
- * because `.qwen/settings.json` is repository-controlled content that the
+ * because `.canopy/settings.json` is repository-controlled content that the
  * review reads: a repository must not decide, for every reviewer who opens
  * it, whether findings publish (`comment`), whether the posted review names
  * its model (`attribution`), or how deeply the pipeline verifies (`effort`).

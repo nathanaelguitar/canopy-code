@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -63,7 +63,7 @@ import {
   claudePermissionModeToApprovalMode,
 } from './agent-frontmatter-schema.js';
 import { ToolDisplayNamesMigration, ToolNames } from '../tools/tool-names.js';
-import { QWEN_DIR, Storage } from '../config/storage.js';
+import { CANOPY_DIR, Storage } from '../config/storage.js';
 import {
   hasRebuiltToolRegistry,
   rebuildToolRegistryOnOverride,
@@ -1308,8 +1308,8 @@ export class SubagentManager {
 
     const baseDir =
       level === 'project'
-        ? path.join(this.config.getProjectRoot(), QWEN_DIR, AGENT_CONFIG_DIR)
-        : path.join(Storage.getGlobalQwenDir(), AGENT_CONFIG_DIR);
+        ? path.join(this.config.getProjectRoot(), CANOPY_DIR, AGENT_CONFIG_DIR)
+        : path.join(Storage.getGlobalCanopyDir(), AGENT_CONFIG_DIR);
 
     return path.join(baseDir, `${name}.md`);
   }
@@ -1346,8 +1346,8 @@ export class SubagentManager {
 
     const baseDir =
       level === 'project'
-        ? path.join(projectRoot, QWEN_DIR, AGENT_CONFIG_DIR)
-        : path.join(Storage.getGlobalQwenDir(), AGENT_CONFIG_DIR);
+        ? path.join(projectRoot, CANOPY_DIR, AGENT_CONFIG_DIR)
+        : path.join(Storage.getGlobalCanopyDir(), AGENT_CONFIG_DIR);
 
     try {
       const files = await fs.readdir(baseDir);
@@ -1528,7 +1528,7 @@ function parseSubagentContent(
       | undefined;
     const colorRaw = frontmatter['color'];
     // CC silently drops colors outside the allowlist (_Y). Preserve the
-    // legacy qwen `auto` sentinel for backward compat with existing files.
+    // legacy canopy `auto` sentinel for backward compat with existing files.
     const color =
       typeof colorRaw === 'string' && (isColor(colorRaw) || colorRaw === 'auto')
         ? colorRaw

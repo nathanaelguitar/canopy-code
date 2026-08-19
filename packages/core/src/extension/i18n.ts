@@ -14,7 +14,7 @@ import type { ExtensionSetting } from './extensionSettings.js';
 export type LocalizableString = string | Record<string, string>;
 
 /**
- * Raw shape of qwen-extension.json before locale resolution.
+ * Raw shape of canopy-extension.json before locale resolution.
  * `description`, `displayName`, and setting descriptions may be locale maps.
  */
 export interface RawExtensionConfig

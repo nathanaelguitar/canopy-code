@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,7 @@ import {
 import type { WorkspaceRegistry } from '../workspace-registry.js';
 
 interface RegisterCapabilitiesRoutesDeps {
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   mode: ServeOptions['mode'];
   currentServeFeatures: () => ReturnType<typeof getAdvertisedServeFeatures>;
   boundWorkspace: string;
@@ -55,8 +55,8 @@ export function registerCapabilitiesRoutes(
     const envelope: CapabilitiesEnvelope = {
       v: CAPABILITIES_SCHEMA_VERSION,
       protocolVersions: getServeProtocolVersions(),
-      ...(deps.qwenCodeVersion
-        ? { qwenCodeVersion: deps.qwenCodeVersion }
+      ...(deps.canopyCodeVersion
+        ? { canopyCodeVersion: deps.canopyCodeVersion }
         : {}),
       mode: deps.mode,
       features,

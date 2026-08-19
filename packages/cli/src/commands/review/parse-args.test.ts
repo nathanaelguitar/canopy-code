@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -77,7 +77,7 @@ vi.mock('../../config/settings.js', async (importOriginal) => {
     // The production call carries `{ skipWorkspaceSettings: true }` — these
     // policy keys resolve from operator scopes only. A caller that forgets
     // the flag reads the workspace-polluted view below instead, and the
-    // wiring assertions redden: a repository's `.qwen/settings.json` must
+    // wiring assertions redden: a repository's `.canopy/settings.json` must
     // not control them.
     loadSettings: vi.fn((...callArgs: unknown[]) => {
       const opts = callArgs[1] as
@@ -160,7 +160,7 @@ const CASES: Case[] = [
   },
   {
     name: 'PR URL → owner/repo/number extracted',
-    raw: 'https://github.com/QwenLM/qwen-code/pull/6711',
+    raw: 'https://github.com/QwenLM/canopy-code/pull/6711',
     expect: { targetType: 'pr-url', effort: 'high', warningCount: 0 },
   },
   {
@@ -272,19 +272,19 @@ const CASES: Case[] = [
   },
   {
     name: 'numeric-prefix junk after /pull/ is not a PR URL (bug: /pull/42oops read as PR 42)',
-    raw: 'https://github.com/QwenLM/qwen-code/pull/42oops',
+    raw: 'https://github.com/QwenLM/canopy-code/pull/42oops',
     expect: {
       targetType: 'local',
-      extraTokens: ['https://github.com/QwenLM/qwen-code/pull/42oops'],
+      extraTokens: ['https://github.com/QwenLM/canopy-code/pull/42oops'],
       warningCount: 1,
     },
   },
   {
     name: 'shell metacharacters in owner never reach the verdict',
-    raw: '"https://github.com/$(rm -rf x)/qwen-code/pull/42"',
+    raw: '"https://github.com/$(rm -rf x)/canopy-code/pull/42"',
     expect: {
       targetType: 'local',
-      extraTokens: ['https://github.com/$(rm -rf x)/qwen-code/pull/42'],
+      extraTokens: ['https://github.com/$(rm -rf x)/canopy-code/pull/42'],
       warningCount: 1,
     },
   },
@@ -304,27 +304,29 @@ describe('parseReviewArgs', () => {
   });
 
   it('extracts host/owner/repo/number from a PR URL', () => {
-    const got = parseReviewArgs('https://github.com/QwenLM/qwen-code/pull/42');
+    const got = parseReviewArgs(
+      'https://github.com/QwenLM/canopy-code/pull/42',
+    );
     expect(got.target).toEqual({
       type: 'pr-url',
-      url: 'https://github.com/QwenLM/qwen-code/pull/42',
+      url: 'https://github.com/QwenLM/canopy-code/pull/42',
       host: 'github.com',
-      owner: 'QwenLM',
-      repo: 'qwen-code',
+      owner: 'CanopyLM',
+      repo: 'canopy-code',
       number: 42,
     });
   });
 
   it('canonicalizes an uppercase scheme/host and drops query and fragment', () => {
     const got = parseReviewArgs(
-      'HTTPS://GitHub.com/QwenLM/qwen-code/pull/42?diff=split#discussion',
+      'HTTPS://GitHub.com/CanopyLM/canopy-code/pull/42?diff=split#discussion',
     );
     expect(got.target).toEqual({
       type: 'pr-url',
-      url: 'https://github.com/QwenLM/qwen-code/pull/42',
+      url: 'https://github.com/QwenLM/canopy-code/pull/42',
       host: 'github.com',
-      owner: 'QwenLM',
-      repo: 'qwen-code',
+      owner: 'CanopyLM',
+      repo: 'canopy-code',
       number: 42,
     });
     expect(got.warnings).toHaveLength(0);
@@ -332,18 +334,18 @@ describe('parseReviewArgs', () => {
 
   it('a trailing path segment after the number stays a valid URL boundary', () => {
     const got = parseReviewArgs(
-      'https://github.com/QwenLM/qwen-code/pull/42/files',
+      'https://github.com/QwenLM/canopy-code/pull/42/files',
     );
     expect(got.target).toMatchObject({ type: 'pr-url', number: 42 });
   });
 
   it('refuses a junk PR URL instead of guessing (never a file path, never PR 42)', () => {
     const got = parseReviewArgs(
-      'https://github.com/QwenLM/qwen-code/pull/42oops',
+      'https://github.com/QwenLM/canopy-code/pull/42oops',
     );
     expect(got.target).toEqual({ type: 'local' });
     expect(got.extraTokens).toEqual([
-      'https://github.com/QwenLM/qwen-code/pull/42oops',
+      'https://github.com/QwenLM/canopy-code/pull/42oops',
     ]);
     expect(got.warnings[0]).toContain('not a GitHub PR URL');
   });
@@ -518,7 +520,7 @@ describe('parseReviewArgs — --severity-floor (the convergence posture knob)', 
     // a same-number URL name one PR (round-9 finding — a raw-token Set read
     // them as two and fell back to the local tree).
     const mixed = parseReviewArgs(
-      '--severity-floor 6711 --effort https://github.com/QwenLM/qwen-code/pull/6711',
+      '--severity-floor 6711 --effort https://github.com/QwenLM/canopy-code/pull/6711',
     );
     expect(mixed.target).toMatchObject({ number: 6711 });
     expect(mixed.warnings.some((w) => w.includes('Ambiguous'))).toBe(false);
@@ -885,7 +887,7 @@ describe('parseReviewArgs — case and single-dash disposal (bug: guessed where 
  * Wiring-level tests: the real yargs command, not the pure function. The
  * pure-function table cannot see transport failures — the documented
  * positional invocation broke on any raw string that begins with a flag
- * (`qwen review parse-args '--effort low'` → `Unknown argument`), and every
+ * (`canopy review parse-args '--effort low'` → `Unknown argument`), and every
  * unit test kept passing while it did.
  */
 describe('parseArgsCommand wiring', () => {
@@ -1192,11 +1194,11 @@ describe('parse-args warns when the bundle is not built from these sources', () 
 
   it('warns through a symlinked alias of the bundle', () => {
     // node hands `argv[1]` over unresolved, so a dogfooding alias like
-    // `ln -s dist/cli.js ~/bin/qwen` must resolve back to the bundle before
+    // `ln -s dist/cli.js ~/bin/canopy` must resolve back to the bundle before
     // the layout guard derives `dist/` from it — otherwise the check is
     // silently off for every symlinked entry.
     stamp(FOREIGN_DIGEST);
-    const alias = join(repo, 'qwen-alias');
+    const alias = join(repo, 'canopy-alias');
     fsReal.symlinkSync(argv1, alias);
     const original = process.argv[1];
     process.argv[1] = alias;

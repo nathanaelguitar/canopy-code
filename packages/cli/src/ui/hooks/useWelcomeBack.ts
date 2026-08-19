@@ -12,7 +12,7 @@ import {
   saveWelcomeBackRestartChoice,
   type ProjectSummaryInfo,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { type Settings } from '../../config/settingsSchema.js';
 
 export interface WelcomeBackState {
@@ -99,7 +99,7 @@ export function useWelcomeBack(
 
       if (choice === 'continue' && welcomeBackInfo?.content) {
         // Create the context message to fill in the input box
-        const contextMessage = `@.qwen/PROJECT_SUMMARY.md, Based on our previous conversation,Let's continue?`;
+        const contextMessage = `@.canopy/PROJECT_SUMMARY.md, Based on our previous conversation,Let's continue?`;
 
         // Set the input fill state instead of directly submitting
         setInputFillText(contextMessage);

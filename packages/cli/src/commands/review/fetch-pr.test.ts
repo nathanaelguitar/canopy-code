@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -291,7 +291,7 @@ vi.mock('../../services/review-worktree-lease.js', () => ({
   readReviewWorktreeLease: vi.fn((): unknown => null),
   reviewLeaseHeldByAnotherSession: vi.fn((): boolean => false),
   reviewLeasePath: (repositoryRoot: string, target: string) =>
-    `${repositoryRoot}/.qwen/tmp/qwen-review-lease-${target}.json`,
+    `${repositoryRoot}/.canopy/tmp/canopy-review-lease-${target}.json`,
 }));
 
 vi.mock('./lib/gh.js', () => ({
@@ -377,22 +377,22 @@ describe('fetch-pr report assembly', () => {
     // fetch-pr refuses to run without the lease identity (a lease-less run
     // would build the review state with no lock against concurrent
     // sessions), so every path this suite drives starts registered.
-    savedEnv.sessionId = process.env['QWEN_CODE_SESSION_ID'];
-    savedEnv.promptId = process.env['QWEN_CODE_PROMPT_ID'];
-    process.env['QWEN_CODE_SESSION_ID'] = 'session-self';
-    process.env['QWEN_CODE_PROMPT_ID'] = 'prompt-now';
+    savedEnv.sessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    savedEnv.promptId = process.env['CANOPY_CODE_PROMPT_ID'];
+    process.env['CANOPY_CODE_SESSION_ID'] = 'session-self';
+    process.env['CANOPY_CODE_PROMPT_ID'] = 'prompt-now';
   });
 
   afterEach(() => {
     if (savedEnv.sessionId === undefined) {
-      delete process.env['QWEN_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
     } else {
-      process.env['QWEN_CODE_SESSION_ID'] = savedEnv.sessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedEnv.sessionId;
     }
     if (savedEnv.promptId === undefined) {
-      delete process.env['QWEN_CODE_PROMPT_ID'];
+      delete process.env['CANOPY_CODE_PROMPT_ID'];
     } else {
-      process.env['QWEN_CODE_PROMPT_ID'] = savedEnv.promptId;
+      process.env['CANOPY_CODE_PROMPT_ID'] = savedEnv.promptId;
     }
   });
 
@@ -401,7 +401,7 @@ describe('fetch-pr report assembly', () => {
     if (!handler) throw new Error('fetch-pr handler missing');
     await handler({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '42',
       owner_repo: 'acme/widgets',
       remote: 'origin',
@@ -449,8 +449,8 @@ describe('fetch-pr report assembly', () => {
       promptId: 'prompt-other',
       target: 'pr-42',
       repositoryRoot: process.cwd(),
-      worktreePath: '.qwen/tmp/review-pr-42',
-      branch: 'qwen-review/pr-42',
+      worktreePath: '.canopy/tmp/review-pr-42',
+      branch: 'canopy-review/pr-42',
     };
 
     it('refuses with an actionable error when another session holds the lease', async () => {
@@ -488,7 +488,7 @@ describe('fetch-pr report assembly', () => {
       vi.mocked(reviewLeaseHeldByAnotherSession).mockReturnValueOnce(true);
 
       await expect(reportFor({})).rejects.toThrow(
-        'qwen-review-lease-pr-42.json',
+        'canopy-review-lease-pr-42.json',
       );
     });
 
@@ -525,10 +525,10 @@ describe('fetch-pr report assembly', () => {
       // them, and a lease-less run builds the whole review state with no
       // lock against concurrent sessions (#9205). Fail closed like the
       // takeover rule does.
-      delete process.env['QWEN_CODE_SESSION_ID'];
-      delete process.env['QWEN_CODE_PROMPT_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_PROMPT_ID'];
 
-      await expect(reportFor({})).rejects.toThrow('QWEN_CODE_SESSION_ID');
+      await expect(reportFor({})).rejects.toThrow('CANOPY_CODE_SESSION_ID');
 
       expect(vi.mocked(readReviewWorktreeLease)).not.toHaveBeenCalled();
       expect(vi.mocked(createReviewWorktreeLease)).not.toHaveBeenCalled();
@@ -563,7 +563,7 @@ describe('fetch-pr report assembly', () => {
           // tracks the platform separator instead of pinning a POSIX
           // literal against it.
           worktreePath: worktreePath('42'),
-          branch: 'qwen-review/pr-42',
+          branch: 'canopy-review/pr-42',
         }),
       );
       // Success must NOT clear the lease: it persists so a concurrent session
@@ -628,7 +628,7 @@ describe('fetch-pr report assembly', () => {
         target: 'pr-42',
         repositoryRoot: process.cwd(),
         worktreePath: worktreePath('42'),
-        branch: 'qwen-review/pr-42',
+        branch: 'canopy-review/pr-42',
       });
       vi.mocked(reviewLeaseHeldByAnotherSession).mockReturnValueOnce(false);
       producerMocks.git.mockImplementation(() => {
@@ -652,7 +652,7 @@ describe('fetch-pr report assembly', () => {
       );
       expect(producerMocks.execFileSync).toHaveBeenCalledWith(
         'git',
-        ['branch', '-D', 'qwen-review/pr-42'],
+        ['branch', '-D', 'canopy-review/pr-42'],
         { stdio: 'pipe' },
       );
       expect(vi.mocked(clearReviewWorktreeLeaseIfOwned)).toHaveBeenCalledWith(
@@ -3253,10 +3253,10 @@ describe('fetch-pr diff identity (diffSha256)', () => {
     // builds the review state with no lock against concurrent sessions), so
     // the handler this suite drives starts registered, same shape as the
     // report-assembly suite.
-    savedEnv.sessionId = process.env['QWEN_CODE_SESSION_ID'];
-    savedEnv.promptId = process.env['QWEN_CODE_PROMPT_ID'];
-    process.env['QWEN_CODE_SESSION_ID'] = 'session-self';
-    process.env['QWEN_CODE_PROMPT_ID'] = 'prompt-now';
+    savedEnv.sessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    savedEnv.promptId = process.env['CANOPY_CODE_PROMPT_ID'];
+    process.env['CANOPY_CODE_SESSION_ID'] = 'session-self';
+    process.env['CANOPY_CODE_PROMPT_ID'] = 'prompt-now';
     producerMocks.readFileSync.mockImplementation(() => {
       throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
     });
@@ -3279,14 +3279,14 @@ describe('fetch-pr diff identity (diffSha256)', () => {
 
   afterEach(() => {
     if (savedEnv.sessionId === undefined) {
-      delete process.env['QWEN_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
     } else {
-      process.env['QWEN_CODE_SESSION_ID'] = savedEnv.sessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedEnv.sessionId;
     }
     if (savedEnv.promptId === undefined) {
-      delete process.env['QWEN_CODE_PROMPT_ID'];
+      delete process.env['CANOPY_CODE_PROMPT_ID'];
     } else {
-      process.env['QWEN_CODE_PROMPT_ID'] = savedEnv.promptId;
+      process.env['CANOPY_CODE_PROMPT_ID'] = savedEnv.promptId;
     }
   });
 
@@ -3295,7 +3295,7 @@ describe('fetch-pr diff identity (diffSha256)', () => {
     if (!handler) throw new Error('fetch-pr handler missing');
     await handler({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '42',
       owner_repo: 'acme/widgets',
       remote: 'origin',
@@ -3380,10 +3380,10 @@ describe('fetch-pr run-session ledger wiring', () => {
     // builds the review state with no lock against concurrent sessions), so
     // the handler this suite drives starts registered, same shape as the
     // report-assembly suite.
-    savedEnv.sessionId = process.env['QWEN_CODE_SESSION_ID'];
-    savedEnv.promptId = process.env['QWEN_CODE_PROMPT_ID'];
-    process.env['QWEN_CODE_SESSION_ID'] = 'session-self';
-    process.env['QWEN_CODE_PROMPT_ID'] = 'prompt-now';
+    savedEnv.sessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    savedEnv.promptId = process.env['CANOPY_CODE_PROMPT_ID'];
+    process.env['CANOPY_CODE_SESSION_ID'] = 'session-self';
+    process.env['CANOPY_CODE_PROMPT_ID'] = 'prompt-now';
     // clearAllMocks resets call history, NOT implementations — re-assert the
     // ones the preceding diff-identity describe reprogrammed, so this
     // suite's "no diff captured" shape is an assertion rather than a
@@ -3417,14 +3417,14 @@ describe('fetch-pr run-session ledger wiring', () => {
 
   afterEach(() => {
     if (savedEnv.sessionId === undefined) {
-      delete process.env['QWEN_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
     } else {
-      process.env['QWEN_CODE_SESSION_ID'] = savedEnv.sessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedEnv.sessionId;
     }
     if (savedEnv.promptId === undefined) {
-      delete process.env['QWEN_CODE_PROMPT_ID'];
+      delete process.env['CANOPY_CODE_PROMPT_ID'];
     } else {
-      process.env['QWEN_CODE_PROMPT_ID'] = savedEnv.promptId;
+      process.env['CANOPY_CODE_PROMPT_ID'] = savedEnv.promptId;
     }
   });
 
@@ -3433,7 +3433,7 @@ describe('fetch-pr run-session ledger wiring', () => {
     if (!handler) throw new Error('fetch-pr handler missing');
     await handler({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '42',
       owner_repo: 'acme/widgets',
       remote: 'origin',

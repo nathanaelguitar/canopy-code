@@ -11,9 +11,9 @@ import {
   Config,
   FileDiscoveryService,
   ExtensionManager,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { isWorkspaceTrusted } from '../../config/trustedFolders.js';
-import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
+import type { MCPServerConfig } from '@canopy-code/canopy-code-core';
 import { getPendingGatedMcpServers } from '../../config/mcpApprovals.js';
 import { assembleMcpServers } from '../../config/mcpServers.js';
 import { getCurrentLanguage } from '../../i18n/index.js';
@@ -167,7 +167,7 @@ export const reconnectCommand: CommandModule = {
   describe: 'Reconnect MCP server(s)',
   builder: (yargs) =>
     yargs
-      .usage('Usage: qwen mcp reconnect [options] [server-name]')
+      .usage('Usage: canopy mcp reconnect [options] [server-name]')
       .positional('server-name', {
         describe: 'Name of the server to reconnect',
         type: 'string',

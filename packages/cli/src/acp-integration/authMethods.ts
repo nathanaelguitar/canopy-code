@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import type { AuthMethod } from '@agentclientprotocol/sdk';
 
 export function buildAuthMethods(): AuthMethod[] {

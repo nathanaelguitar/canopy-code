@@ -12,7 +12,7 @@ import { createMockWorkspaceContext } from './mockWorkspaceContext.js';
 
 describe('createMockWorkspaceContext', () => {
   it('accepts missing descendants under a workspace root', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     try {
       const workspace = createMockWorkspaceContext(rootDir);
 
@@ -25,7 +25,7 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('does not treat a similarly prefixed sibling as inside the workspace', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     try {
       const workspace = createMockWorkspaceContext(rootDir);
 
@@ -38,9 +38,9 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('checks additional workspace directories', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const additionalDir = mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-workspace-'),
+      path.join(os.tmpdir(), 'canopy-workspace-'),
     );
     try {
       const workspace = createMockWorkspaceContext(rootDir, [additionalDir]);
@@ -57,10 +57,10 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('canonicalizes workspace aliases for containment checks', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const aliasDir = path.join(
       os.tmpdir(),
-      `qwen-workspace-alias-${Date.now()}`,
+      `canopy-workspace-alias-${Date.now()}`,
     );
     symlinkSync(rootDir, aliasDir);
 
@@ -77,10 +77,10 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('does not collapse missing paths below a symlinked ancestor', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const aliasDir = path.join(
       os.tmpdir(),
-      `qwen-workspace-alias-${Date.now()}`,
+      `canopy-workspace-alias-${Date.now()}`,
     );
     symlinkSync(rootDir, aliasDir);
 
@@ -102,7 +102,7 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('rejects dangling leaf symlinks', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const danglingPath = path.join(rootDir, 'dangling');
     symlinkSync(path.join(rootDir, 'missing-target'), danglingPath);
 
@@ -116,8 +116,8 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('resolves existing candidate paths before checking containment', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
-    const outsideDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-outside-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
+    const outsideDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-outside-'));
     const insidePath = path.join(rootDir, 'inside.txt');
     const outsidePath = path.join(outsideDir, 'outside.txt');
     const escapePath = path.join(rootDir, 'escape');
@@ -137,7 +137,7 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('rejects paths through a symlink cycle', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const cyclePath = path.join(rootDir, 'cycle');
     symlinkSync('cycle', cyclePath);
 
@@ -153,7 +153,7 @@ describe('createMockWorkspaceContext', () => {
   });
 
   it('ignores an invalid workspace root when another root is valid', () => {
-    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     const cyclePath = path.join(rootDir, 'cycle');
     const candidatePath = path.join(rootDir, 'inside.txt');
     symlinkSync('cycle', cyclePath);

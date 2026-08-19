@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -64,10 +64,10 @@ import { WorkflowDispatchScheduler } from './workflow-dispatch-scheduler.js';
  * cannot bypass it. The 1001st call throws. Override via env (see below).
  */
 export const DEFAULT_MAX_AGENTS_PER_RUN = 1000;
-export const MAX_WORKFLOW_AGENTS_ENV = 'QWEN_CODE_MAX_WORKFLOW_AGENTS';
+export const MAX_WORKFLOW_AGENTS_ENV = 'CANOPY_CODE_MAX_WORKFLOW_AGENTS';
 /**
  * Absolute upper bound on the env-override agent cap. Even an operator who
- * sets `QWEN_CODE_MAX_WORKFLOW_AGENTS=999999999` cannot exceed this — the
+ * sets `CANOPY_CODE_MAX_WORKFLOW_AGENTS=999999999` cannot exceed this — the
  * intent is to catch fat-finger / misconfig that would silently uncap a
  * runaway workflow (1000-agent default × per-agent token cost). 10000 is
  * 10× the default, generous for legitimate large fan-outs.
@@ -75,7 +75,7 @@ export const MAX_WORKFLOW_AGENTS_ENV = 'QWEN_CODE_MAX_WORKFLOW_AGENTS';
 export const HARD_MAX_AGENTS_PER_RUN_CEILING = 10_000;
 
 /**
- * Resolve the per-run agent cap, honoring `QWEN_CODE_MAX_WORKFLOW_AGENTS`.
+ * Resolve the per-run agent cap, honoring `CANOPY_CODE_MAX_WORKFLOW_AGENTS`.
  * Mirrors `resolveMaxConcurrentBackgroundAgents` (background-tasks.ts): a
  * non-integer / <1 override is rejected with a debug warning and the default
  * is used. An override above `HARD_MAX_AGENTS_PER_RUN_CEILING` is clamped
@@ -110,7 +110,7 @@ export function resolveMaxAgentsPerRun(
 }
 
 export const MAX_WORKFLOW_CONCURRENCY_ENV =
-  'QWEN_CODE_MAX_WORKFLOW_CONCURRENCY';
+  'CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY';
 /**
  * Absolute upper bound on the env-override concurrency window. Above this,
  * a single Node process running N concurrent LLM calls is past the point a
@@ -122,7 +122,7 @@ export const HARD_MAX_CONCURRENCY_CEILING = 64;
  * Maximum agents in flight at once within a single run, shared across all
  * `parallel()` / `pipeline()` calls. `min(16, cpus-2)` mirrors upstream;
  * `max(1, …)` guards 1–2 core machines where `cpus-2 <= 0` would otherwise
- * produce a deadlocking limit. `QWEN_CODE_MAX_WORKFLOW_CONCURRENCY` overrides
+ * produce a deadlocking limit. `CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY` overrides
  * the computed value with an explicit integer in `[1, HARD_MAX_CONCURRENCY_CEILING]`;
  * an invalid override falls back to the cpu-derived default with a debug
  * warning, and an over-ceiling override is clamped.
@@ -165,8 +165,8 @@ export function resolveConcurrencyLimit(
  * hitting either shows up as a `null` element in `parallel()`: an agent that
  * silently went missing rather than one that visibly failed. So both are
  * operator-tunable via env, on the same env-override pattern as the other
- * workflow bounds; like `QWEN_CODE_MAX_WORKFLOW_AGENTS` (and unlike
- * `QWEN_CODE_WORKFLOW_STALL_SECONDS` / `QWEN_CODE_MAX_WORKFLOW_SECONDS`,
+ * workflow bounds; like `CANOPY_CODE_MAX_WORKFLOW_AGENTS` (and unlike
+ * `CANOPY_CODE_WORKFLOW_STALL_SECONDS` / `CANOPY_CODE_MAX_WORKFLOW_SECONDS`,
  * which apply valid overrides verbatim), clamped to a hard ceiling.
  *
  * Three time bounds act on a dispatch and they are NOT redundant:
@@ -175,16 +175,16 @@ export function resolveConcurrencyLimit(
  *  - `max_time_minutes` (this) — total wall time for ONE attempt, stalled or
  *    not. Bounds the case the watchdog cannot see (a model that keeps
  *    emitting progress forever).
- *  - `QWEN_CODE_MAX_WORKFLOW_SECONDS` (30min default) — the whole run,
+ *  - `CANOPY_CODE_MAX_WORKFLOW_SECONDS` (30min default) — the whole run,
  *    every dispatch together. Raising the per-agent bound without raising
  *    this one just moves which limit kills the run.
  */
 export const DEFAULT_WORKFLOW_SUBAGENT_MAX_TURNS = 50;
 export const DEFAULT_WORKFLOW_SUBAGENT_MAX_TIME_MINUTES = 10;
 export const WORKFLOW_SUBAGENT_MAX_TURNS_ENV =
-  'QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS';
+  'CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS';
 export const WORKFLOW_SUBAGENT_MAX_MINUTES_ENV =
-  'QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES';
+  'CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES';
 /** 10× the defaults — generous for a legitimate long agent, still bounded. */
 export const HARD_WORKFLOW_SUBAGENT_MAX_TURNS_CEILING = 500;
 export const HARD_WORKFLOW_SUBAGENT_MAX_MINUTES_CEILING = 100;
@@ -355,7 +355,7 @@ export interface WorkflowRunRequest {
   /**
    * P-nested: resolver for the `workflow(nameOrRef, args)` global. When
    * provided, the top-level sandbox exposes `workflow`, which resolves a
-   * saved workflow (by name from `.qwen/workflows/<name>.js`, or by
+   * saved workflow (by name from `.canopy/workflows/<name>.js`, or by
    * `{scriptPath}`) and runs it as a nested orchestration that shares THIS
    * run's agent-count cap, concurrency window, token budget, and emitter
    * (so nested phases/logs and token spend roll into the same registry
@@ -992,7 +992,7 @@ async function runOverridePath(
   // only after createSchemaConfigOverride / createSchemaModeState /
   // addEventListener — so any throw in those three (e.g. a broken MCP
   // server during the schema override's tool-registry rebuild) orphaned
-  // the just-provisioned worktree on disk under .qwen/worktrees/. Move
+  // the just-provisioned worktree on disk under .canopy/worktrees/. Move
   // schema setup + signal chaining + emitter creation inside.
   try {
     // Schema mode: build a per-call Config override with a fresh ToolRegistry
@@ -1231,7 +1231,7 @@ interface WorktreePreservedInfo {
  *    `hasUnmergedWorktreeCommits` (which resolves the slug to its
  *    branch name internally).
  *  - `path` — absolute worktree directory under
- *    `<projectRoot>/.qwen/worktrees/`; the subagent's rebound cwd.
+ *    `<projectRoot>/.canopy/worktrees/`; the subagent's rebound cwd.
  *  - `branch` — the branch created for this worktree
  *    (`worktree-<slug>`); appears verbatim in the user-facing preserved
  *    suffix.
@@ -1260,7 +1260,7 @@ async function provisionWorkflowWorktree(
   config: Config,
 ): Promise<WorkflowWorktreeIsolation> {
   const cwd = config.getTargetDir();
-  if (/\.qwen[\\/]worktrees[\\/]/.test(cwd)) {
+  if (/\.canopy[\\/]worktrees[\\/]/.test(cwd)) {
     throw new Error(
       `agent({isolation:'worktree'}): parent is already inside a worktree ` +
         `(${cwd}). Nested isolation worktrees are not supported — the ` +
@@ -1741,7 +1741,7 @@ export class WorkflowOrchestrator {
       // below) counting the same set of calls.
       //
       // P5: budget gate (entry check). When a per-run token cap is set
-      // (QWEN_CODE_MAX_TOKENS_PER_WORKFLOW), fail-fast at fire time if the
+      // (CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW), fail-fast at fire time if the
       // cap is already busted. Token recording happens inside the production
       // dispatch (createProductionDispatch reads subagent stats and reports
       // back via the onTokens callback the WorkflowTool wires). No-op when

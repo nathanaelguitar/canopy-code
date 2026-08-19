@@ -33,7 +33,7 @@ describe('rebuildTeamAutoMemoryIndex', () => {
 
   beforeEach(() => {
     clearAutoMemoryRootCache();
-    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-team-index-'));
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-team-index-'));
     fs.mkdirSync(path.join(projectRoot, '.git'));
   });
 
@@ -117,9 +117,9 @@ describe('rebuildTeamAutoMemoryIndex', () => {
   });
 
   it('refuses to write through a symlinked team root (no write outside the repo)', async () => {
-    // A committed `.qwen/team-memory -> /elsewhere` symlink would otherwise
+    // A committed `.canopy/team-memory -> /elsewhere` symlink would otherwise
     // redirect the generated index outside the repo with no approval.
-    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-outside-'));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-outside-'));
     try {
       const teamRoot = getTeamAutoMemoryRoot(projectRoot);
       fs.mkdirSync(path.dirname(teamRoot), { recursive: true });
@@ -141,15 +141,15 @@ describe('rebuildTeamAutoMemoryIndex', () => {
   });
 
   it('rejects a PARENT-component symlink that escapes the repo (no write outside)', async () => {
-    // `.qwen` itself is a symlink to an outside dir, with a real `team-memory`
+    // `.canopy` itself is a symlink to an outside dir, with a real `team-memory`
     // dir at the target. lstat(teamRoot) only inspects the LEAF (a real dir) and
     // would pass — the realpath whole-path check must still reject the escape.
-    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-outside-'));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-outside-'));
     try {
       fs.mkdirSync(path.join(outside, TEAM_AUTO_MEMORY_DIRNAME));
       const teamRoot = getTeamAutoMemoryRoot(projectRoot);
-      const qwenDir = path.dirname(teamRoot); // <repo>/.qwen
-      fs.symlinkSync(outside, qwenDir, 'dir');
+      const canopyDir = path.dirname(teamRoot); // <repo>/.canopy
+      fs.symlinkSync(outside, canopyDir, 'dir');
 
       // The leaf resolves to a real (non-symlink) directory outside the repo,
       // so the existing leaf-only guard does NOT fire.
@@ -177,7 +177,7 @@ describe('rebuildTeamAutoMemoryIndex', () => {
   it('replaces a symlinked MEMORY.md instead of writing through it', async () => {
     // MEMORY.md pre-placed as a symlink to an outside file: noFollow must
     // replace the link with the regular index, leaving the target untouched.
-    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-outside-'));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-outside-'));
     try {
       writeMemory('feedback/a.md', 'Alpha', 'desc A');
       const target = path.join(outside, 'secret.md');

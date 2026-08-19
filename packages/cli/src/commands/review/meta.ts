@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review meta`: the PR/repo identity facts the skill used to derive
+// `canopy review meta`: the PR/repo identity facts the skill used to derive
 // with prose `gh` commands — `gh repo view --json owner,name,url` for a bare
 // PR number's owner/repo+host, and `gh pr view --json headRefOid` for the
 // live head SHA (Step 7's post target and the 422 head-drift check). One

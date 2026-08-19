@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -589,11 +589,11 @@ export class HookRunner {
 
       const env = {
         // Hook commands are child processes launched on the agent's behalf,
-        // so they must not inherit Qwen-internal daemon secrets.
+        // so they must not inherit Canopy-internal daemon secrets.
         ...sanitizeChildEnv(process.env),
         GEMINI_PROJECT_DIR: input.cwd,
         CLAUDE_PROJECT_DIR: input.cwd, // For compatibility
-        QWEN_PROJECT_DIR: input.cwd, // For Qwen Code compatibility
+        CANOPY_PROJECT_DIR: input.cwd, // For Canopy Code compatibility
         ...getShellContextEnvVars(),
         ...hookConfig.env,
       };

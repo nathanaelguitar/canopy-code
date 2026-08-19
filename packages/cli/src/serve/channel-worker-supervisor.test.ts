@@ -233,10 +233,10 @@ describe('createChannelWorkerSupervisor', () => {
         env: expect.objectContaining({
           QWEN_DAEMON_URL: 'http://127.0.0.1:4170',
           QWEN_DAEMON_TOKEN: 'secret-token',
-          QWEN_DAEMON_WORKSPACE: '/workspace',
+          CANOPY_DAEMON_WORKSPACE: '/workspace',
           QWEN_CODE_NO_RELAUNCH: 'true',
           QWEN_CODE_SERVE: '1',
-          QWEN_CHANNEL_DAEMON_WORKER: expect.any(String),
+          CANOPY_CHANNEL_DAEMON_WORKER: expect.any(String),
         }),
         cwd: '/workspace',
         stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
@@ -254,8 +254,8 @@ describe('createChannelWorkerSupervisor', () => {
     expect(env).toHaveProperty('GITHUB_TOKEN', 'github-secret');
     expect(env).toHaveProperty('TELEGRAM_BOT_TOKEN', 'telegram-secret');
     expect(env).toHaveProperty('HTTPS_PROXY', 'http://proxy.example.com:8080');
-    expect(env['QWEN_CHANNEL_DAEMON_WORKER']).not.toBe('1');
-    const promptAuthorization = env['QWEN_CHANNEL_DAEMON_WORKER']!;
+    expect(env['CANOPY_CHANNEL_DAEMON_WORKER']).not.toBe('1');
+    const promptAuthorization = env['CANOPY_CHANNEL_DAEMON_WORKER']!;
     expect(
       isChannelWorkerPromptAuthorized(promptAuthorization, '/workspace'),
     ).toBe(true);
@@ -976,7 +976,7 @@ describe('createChannelWorkerSupervisor', () => {
 
     const env = (spawnWorker.mock.calls[0]![2] as { env: NodeJS.ProcessEnv })
       .env;
-    const promptAuthorization = env['QWEN_CHANNEL_DAEMON_WORKER']!;
+    const promptAuthorization = env['CANOPY_CHANNEL_DAEMON_WORKER']!;
     expect(
       isChannelWorkerPromptAuthorized(promptAuthorization, '/workspace'),
     ).toBe(true);
@@ -1005,7 +1005,7 @@ describe('createChannelWorkerSupervisor', () => {
 
     await expect(supervisor.start()).rejects.toThrow('spawn ENOENT');
 
-    const promptAuthorization = capturedEnv?.['QWEN_CHANNEL_DAEMON_WORKER'];
+    const promptAuthorization = capturedEnv?.['CANOPY_CHANNEL_DAEMON_WORKER'];
     expect(promptAuthorization).toBeDefined();
     expect(
       isChannelWorkerPromptAuthorized(promptAuthorization!, '/workspace'),

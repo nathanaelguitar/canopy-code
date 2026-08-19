@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,8 +11,8 @@
  * The daemon WS (parent process) holds a per-connection `ClientMcpRegistrar`
  * that carries `mcp_message` JSON-RPC frames down to the extension. But the
  * agent's `McpClientManager` — where the matching `sendSdkMcpMessage` binds —
- * runs in the `qwen --acp` CHILD process. The child reaches back up via the
- * `qwen/control/client_mcp/message` ext-method, which `BridgeClient.extMethod`
+ * runs in the `canopy --acp` CHILD process. The child reaches back up via the
+ * `canopy/control/client_mcp/message` ext-method, which `BridgeClient.extMethod`
  * answers by looking up a sender for the named server.
  *
  * This module is the glue:

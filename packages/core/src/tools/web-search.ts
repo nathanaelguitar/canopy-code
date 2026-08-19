@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -269,16 +269,16 @@ export function evaluateWebSearchGate(config: Config): WebSearchGateResult {
   // this tool can actually use; fall back to the first match so the notice
   // below names the concrete disqualifier.
   const isUsableEntry = (m: (typeof matches)[number]): boolean =>
-    m.authType !== AuthType.QWEN_OAUTH &&
+    m.authType !== AuthType.CANOPY_OAUTH &&
     !!m.baseUrl &&
     isDashScopeCompatibleBaseUrl(m.baseUrl) &&
     !!m.envKey &&
     !!process.env[m.envKey]?.trim();
   const entry = matches.find(isUsableEntry) ?? matches[0];
-  if (entry.authType === AuthType.QWEN_OAUTH) {
+  if (entry.authType === AuthType.CANOPY_OAUTH) {
     return {
       ok: false,
-      notice: `WebSearch search model "${selector}" resolves to a Qwen OAuth entry. The search side channel needs a modelProviders entry with a direct API key (envKey); OAuth tokens cannot back it. Use an authType-qualified selector (e.g. "openai:<model-id>") to target a specific entry.`,
+      notice: `WebSearch search model "${selector}" resolves to a Canopy OAuth entry. The search side channel needs a modelProviders entry with a direct API key (envKey); OAuth tokens cannot back it. Use an authType-qualified selector (e.g. "openai:<model-id>") to target a specific entry.`,
     };
   }
   if (!entry.baseUrl) {
@@ -655,7 +655,7 @@ class WebSearchToolInvocation extends BaseToolInvocation<
       timeout: resolveRequestTimeout(SEARCH_TIMEOUT_MS),
       maxRetries: 1,
       defaultHeaders: {
-        'User-Agent': `QwenCode/${this.config.getCliVersion() || 'unknown'} (${process.platform}; ${process.arch})`,
+        'User-Agent': `CanopyCode/${this.config.getCliVersion() || 'unknown'} (${process.platform}; ${process.arch})`,
         // Entry-declared headers win, matching the providers' merge order.
         ...(backend.customHeaders ?? {}),
       },
@@ -1052,7 +1052,7 @@ export class WebSearchTool extends BaseDeclarativeTool<
 
   /**
    * The description embeds the current month; recompute it on schema access
-   * so a long-lived process (qwen serve, the ACP bridge) crossing a month
+   * so a long-lived process (canopy serve, the ACP bridge) crossing a month
    * boundary does not pin search queries to a stale year. Within a month the
    * string is identical, preserving prompt-cache stability.
    */

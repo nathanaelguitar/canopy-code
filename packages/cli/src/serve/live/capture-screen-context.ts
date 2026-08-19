@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ import {
   type PermissionDecision,
   type ToolInvocation,
   type ToolResult,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const MAX_SCREENSHOT_BYTES = 8 * 1024 * 1024;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -152,7 +152,7 @@ export class CaptureScreenContextTool extends BaseDeclarativeTool<
 > {
   constructor(
     private readonly capture: ScreenContextCapturer,
-    private readonly captureDirectory = join(tmpdir(), 'qwen-live-appshot'),
+    private readonly captureDirectory = join(tmpdir(), 'canopy-live-appshot'),
   ) {
     super(
       CAPTURE_SCREEN_CONTEXT_TOOL_NAME,

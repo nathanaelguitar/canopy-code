@@ -198,9 +198,9 @@ import {
   DEFAULT_FILE_FILTERING_OPTIONS,
   DEFAULT_MEMORY_FILE_FILTERING_OPTIONS,
 } from './constants.js';
-import { DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES } from '../utils/qwenIgnoreParser.js';
+import { DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES } from '../utils/canopy-ignore-parser.js';
 import { DEFAULT_TOOL_RESULTS_TOTAL_CHARS_THRESHOLD } from './clearContextDefaults.js';
-import { DEFAULT_QWEN_EMBEDDING_MODEL } from './models.js';
+import { DEFAULT_CANOPY_EMBEDDING_MODEL } from './models.js';
 import {
   registerSessionModel,
   registerSessionProjectDir,
@@ -468,19 +468,19 @@ export interface ChatCompressionSettings {
    * apportioning chars across history during compression size estimation.
    * Also used as the placeholder budget when stripping inline media
    * out of the side-query compaction prompt. Default 1600.
-   * Env override: `QWEN_IMAGE_TOKEN_ESTIMATE`.
+   * Env override: `CANOPY_IMAGE_TOKEN_ESTIMATE`.
    */
   imageTokenEstimate?: number;
   /**
    * Number of most-recently-touched files whose current content is
    * restored (embedded or referenced) after auto-compaction. Default 5.
-   * Env override: `QWEN_COMPACT_MAX_RECENT_FILES`.
+   * Env override: `CANOPY_COMPACT_MAX_RECENT_FILES`.
    */
   maxRecentFilesToRetain?: number;
   /**
    * Number of most-recent images (tool screenshots / user pastes)
    * restored after auto-compaction. Default 3.
-   * Env override: `QWEN_COMPACT_MAX_RECENT_IMAGES`.
+   * Env override: `CANOPY_COMPACT_MAX_RECENT_IMAGES`.
    */
   maxRecentImagesToRetain?: number;
   /**
@@ -489,20 +489,20 @@ export interface ChatCompressionSettings {
    * `screenshotTriggerThreshold`, independent of token usage. Aimed at
    * computer-use sessions where frequent screenshots dilute model
    * attention without necessarily exceeding the token budget. Default true.
-   * Env override: `QWEN_COMPACT_SCREENSHOT_TRIGGER` (`1`/`true`/`0`/`false`).
+   * Env override: `CANOPY_COMPACT_SCREENSHOT_TRIGGER` (`1`/`true`/`0`/`false`).
    */
   enableScreenshotTrigger?: boolean;
   /**
    * Tool-returned image count at or above which the screenshot trigger
    * fires (only when `enableScreenshotTrigger`). Default 20.
-   * Env override: `QWEN_COMPACT_SCREENSHOT_THRESHOLD`.
+   * Env override: `CANOPY_COMPACT_SCREENSHOT_THRESHOLD`.
    */
   screenshotTriggerThreshold?: number;
   /**
    * Inline image count at or above which historical image payloads are
    * replaced with text references and only recent images are reattached.
    * Below this threshold images stay in-place untouched. Default 20.
-   * Env override: `QWEN_IMAGE_PAYLOAD_THRESHOLD`.
+   * Env override: `CANOPY_IMAGE_PAYLOAD_THRESHOLD`.
    */
   imagePayloadThreshold?: number;
 }
@@ -585,12 +585,12 @@ export interface TelemetryMetricsSettings {
 
 /**
  * Security-relevant settings controlling what client-side correlation
- * data qwen-code writes into outbound LLM API requests.
+ * data canopy-code writes into outbound LLM API requests.
  *
  * **Why this is a separate namespace from `telemetry.*`:** telemetry
  * controls data flow into the user's OWN observability backend (OTLP
  * collector / file outfile). The settings here control data flow OUT of
- * the qwen-code process and INTO third-party LLM provider request
+ * the canopy-code process and INTO third-party LLM provider request
  * streams (DashScope, OpenAI, Anthropic, etc.). Different recipients =
  * different consent decision, so a different settings tree.
  *
@@ -673,7 +673,7 @@ function normalizeGitCoAuthor(value: GitCoAuthorParam | undefined): {
       if (!knownDisable.includes(lowered)) {
         // Unrecognised string — disable (safer-by-default) but log
         // so a user wondering "why is my setting being ignored?"
-        // can see the actual coercion in QWEN_DEBUG_LOG_FILE.
+        // can see the actual coercion in CANOPY_DEBUG_LOG_FILE.
         gitCoAuthorLogger.warn(
           `Unrecognized string value for general.gitCoAuthor.${fieldName}: ${JSON.stringify(v)}; treating as false. Accepted forms: true/yes/on/1, false/no/off/0/empty.`,
         );
@@ -726,7 +726,7 @@ export const DEFAULT_TOOL_OUTPUT_BATCH_BUDGET = 200_000;
  * Provenance of an MCP server config. Two purposes (see issue #4615):
  *
  * - **Approval gating**: `'project'` (a workspace `.mcp.json`) and `'workspace'`
- *   (a workspace `.qwen/settings.json`) are checked-in / shareable and therefore
+ *   (a workspace `.canopy/settings.json`) are checked-in / shareable and therefore
  *   untrusted — both are held behind the pending-approval gate. See
  *   {@link isGatedMcpScope}.
  * - **Precedence**: `'workspace'` and `'system'` rank ABOVE a `.mcp.json`
@@ -900,7 +900,7 @@ export interface WorktreeSettings {
    *
    * Paths must be relative to the repo root; absolute paths and any
    * entry containing `..` are rejected by the service. Entries that
-   * resolve to git-internal paths (`.git`, `.qwen`) are also rejected
+   * resolve to git-internal paths (`.git`, `.canopy`) are also rejected
    * — symlinking those would either break git inside the worktree or
    * create a worktrees-inside-worktrees loop. Missing source dirs and
    * pre-existing destinations are silently skipped.
@@ -935,7 +935,7 @@ export interface AgentsCollabSettings {
   displayMode?: string;
   /** Arena-specific settings */
   arena?: {
-    /** Custom base directory for Arena worktrees (default: ~/.qwen/arena) */
+    /** Custom base directory for Arena worktrees (default: ~/.canopy/arena) */
     worktreeBaseDir?: string;
     /** Preserve worktrees and state files after session ends */
     preserveArtifacts?: boolean;
@@ -974,7 +974,7 @@ export interface ConfigParameters {
    * CLI surface. Matched case-insensitively on the final (post-rename)
    * command name. Sourced from settings (`slashCommands.disabled`, UNION
    * merged across scopes), the `--disabled-slash-commands` CLI flag, and
-   * the `QWEN_DISABLED_SLASH_COMMANDS` environment variable.
+   * the `CANOPY_DISABLED_SLASH_COMMANDS` environment variable.
    */
   disabledSlashCommands?: string[];
   /**
@@ -1087,7 +1087,7 @@ export interface ConfigParameters {
   fileReadCacheDisabled?: boolean;
   fileFiltering?: {
     respectGitIgnore?: boolean;
-    respectQwenIgnore?: boolean;
+    respectCanopyIgnore?: boolean;
     customIgnoreFiles?: string[];
     enableRecursiveFileSearch?: boolean;
     enableFuzzySearch?: boolean;
@@ -1174,7 +1174,7 @@ export interface ConfigParameters {
    * Idle timeout in milliseconds for MCP tool calls. If the MCP server does
    * not produce any response or progress update within this time, the call
    * is aborted. Default: 300000 (5 minutes). Can be overridden via
-   * QWEN_CODE_MCP_TOOL_IDLE_TIMEOUT_MS environment variable.
+   * CANOPY_CODE_MCP_TOOL_IDLE_TIMEOUT_MS environment variable.
    */
   mcpToolIdleTimeoutMs?: number;
   /**
@@ -1243,7 +1243,7 @@ export interface ConfigParameters {
   channel?: string;
   /**
    * File descriptor number for structured JSON event output (dual output mode).
-   * When set, Qwen Code outputs structured JSON events to this fd while
+   * When set, Canopy Code outputs structured JSON events to this fd while
    * continuing to render the TUI on stdout. The caller must provide this fd
    * via spawn stdio configuration.
    * Mutually exclusive with jsonFile.
@@ -1259,7 +1259,7 @@ export interface ConfigParameters {
    * JSON Schema that the model's final output must conform to. When set, a
    * synthetic `structured_output` tool is registered and the non-interactive
    * CLI ends the session the first time the model calls it with valid args.
-   * Only meaningful in headless mode (`qwen -p`).
+   * Only meaningful in headless mode (`canopy -p`).
    */
   jsonSchema?: Record<string, unknown>;
   /**
@@ -1282,7 +1282,7 @@ export interface ConfigParameters {
   enableManagedAutoDream?: boolean;
   /**
    * Enable the git-shared team memory tier. Defaults to false (opt-in).
-   * Overridable at runtime by `QWEN_CODE_MEMORY_TEAM` ('0'/'1') via
+   * Overridable at runtime by `CANOPY_CODE_MEMORY_TEAM` ('0'/'1') via
    * {@link Config.getTeamMemoryEnabled}.
    */
   enableTeamMemory?: boolean;
@@ -1322,7 +1322,7 @@ export interface ConfigParameters {
   /**
    * Safe mode: disables all user customizations (context files, hooks,
    * extensions, skills, MCP servers, rules) for troubleshooting.
-   * Activated via `--safe-mode` CLI flag or `QWEN_CODE_SAFE_MODE=true` env var.
+   * Activated via `--safe-mode` CLI flag or `CANOPY_CODE_SAFE_MODE=true` env var.
    */
   safeMode?: boolean;
   /**
@@ -1377,7 +1377,7 @@ export interface ConfigParameters {
   projectHooks?: Record<string, unknown>;
 
   hooks?: Record<string, unknown>;
-  /** Glob patterns to exclude from .qwen/rules/ loading. */
+  /** Glob patterns to exclude from .canopy/rules/ loading. */
   contextRuleExcludes?: string[];
   /** Warnings generated during configuration resolution */
   warnings?: string[];
@@ -1440,19 +1440,19 @@ function loadMemoryPressureConfig(): MemoryPressureConfig {
 
   try {
     config.softPressureRatio = readMemoryPressureRatioEnv(
-      'QWEN_MEMORY_PRESSURE_SOFT',
+      'CANOPY_MEMORY_PRESSURE_SOFT',
       config.softPressureRatio,
     );
     config.hardPressureRatio = readMemoryPressureRatioEnv(
-      'QWEN_MEMORY_PRESSURE_HARD',
+      'CANOPY_MEMORY_PRESSURE_HARD',
       config.hardPressureRatio,
     );
     config.criticalRatio = readMemoryPressureRatioEnv(
-      'QWEN_MEMORY_PRESSURE_CRITICAL',
+      'CANOPY_MEMORY_PRESSURE_CRITICAL',
       config.criticalRatio,
     );
 
-    const enableGC = process.env['QWEN_MEMORY_ENABLE_GC'];
+    const enableGC = process.env['CANOPY_MEMORY_ENABLE_GC'];
     if (
       enableGC &&
       ['0', 'false', 'off', 'no'].includes(enableGC.trim().toLowerCase())
@@ -1463,7 +1463,7 @@ function loadMemoryPressureConfig(): MemoryPressureConfig {
     validateMemoryPressureConfig(config);
   } catch (err) {
     const fallbackMsg =
-      '[QWEN] WARNING: Invalid memory pressure config; using defaults. ' +
+      '[CANOPY] WARNING: Invalid memory pressure config; using defaults. ' +
       `Error: ${getErrorMessage(err)}`;
     process.stderr.write(`${fallbackMsg}\n`);
     memoryPressureConfigLogger.warn(fallbackMsg);
@@ -1630,8 +1630,8 @@ const EMPTY_DISABLED_SKILL_NAMES: ReadonlySet<string> = Object.freeze(
 );
 
 // Tracks whether the first Config in this process has claimed the global
-// QWEN_CODE_SESSION_ID env var. Prevents throwaway Config instances from
-// overwriting the real session's ID while still allowing nested qwen-code
+// CANOPY_CODE_SESSION_ID env var. Prevents throwaway Config instances from
+// overwriting the real session's ID while still allowing nested canopy-code
 // processes to claim their own (they start with a fresh module scope).
 let sessionEnvClaimed = false;
 let projectDirEnvClaimed = false;
@@ -1660,7 +1660,7 @@ function resolveSensitiveSpanAttributeMaxLength(
  * construction — the setting declares `requiresRestart`, so re-reading
  * the environment per call could let the tool description, tool output,
  * and scheduler each report a different expiry if the env var changed
- * mid-session. The QWEN_CODE_CRON_MAX_AGE_DAYS environment variable
+ * mid-session. The CANOPY_CODE_CRON_MAX_AGE_DAYS environment variable
  * overrides the settings value (convenient for cloud/container
  * deployments). `normalizeRecurringMaxAge` owns the `0 → Infinity`
  * (no expiry) contract shared with the CronScheduler constructor.
@@ -1670,7 +1670,7 @@ function resolveSensitiveSpanAttributeMaxLength(
  * otherwise surface only as "jobs stopped firing after 7 days".
  */
 function resolveCronRecurringMaxAgeDays(setting: number | undefined): number {
-  const env = process.env['QWEN_CODE_CRON_MAX_AGE_DAYS'];
+  const env = process.env['CANOPY_CODE_CRON_MAX_AGE_DAYS'];
   const fromEnv = env !== undefined && env.trim() !== '';
   const raw = fromEnv ? Number(env) : setting;
   if (raw === undefined || !Number.isFinite(raw) || raw < 0) {
@@ -1678,7 +1678,7 @@ function resolveCronRecurringMaxAgeDays(setting: number | undefined): number {
       // eslint-disable-next-line no-console -- operator-facing misconfiguration breadcrumb; debug file logging is usually off in daemon deployments
       console.warn(
         (fromEnv
-          ? `QWEN_CODE_CRON_MAX_AGE_DAYS="${env}" is invalid`
+          ? `CANOPY_CODE_CRON_MAX_AGE_DAYS="${env}" is invalid`
           : `cronRecurringMaxAgeDays=${setting} is invalid`) +
           `; recurring cron jobs will expire after the ` +
           `${DEFAULT_RECURRING_MAX_AGE_DAYS}-day default.`,
@@ -1793,7 +1793,7 @@ export class Config {
    * `startMcpDiscoveryInBackground` (or legacy blocking discovery)
    * fires the first pass. Pre-fix the acpAgent registered after
    * `initialize()` returned, missing the first pass entirely under
-   * `QWEN_CODE_LEGACY_MCP_BLOCKING=1` and racing against background
+   * `CANOPY_CODE_LEGACY_MCP_BLOCKING=1` and racing against background
    * discovery completion under the default mode.
    */
   private pendingMcpBudgetCallback?: (event: McpBudgetEvent) => void;
@@ -1967,7 +1967,7 @@ export class Config {
   private cronScheduler: CronScheduler | null = null;
   private readonly fileFiltering: {
     respectGitIgnore: boolean;
-    respectQwenIgnore: boolean;
+    respectCanopyIgnore: boolean;
     customIgnoreFiles: string[];
     enableRecursiveFileSearch: boolean;
     enableFuzzySearch: boolean;
@@ -2140,7 +2140,7 @@ export class Config {
   private messageBus?: MessageBus;
   private readonly memoryManager: MemoryManager;
   private readonly modelChangeListeners = new Set<(model: string) => void>();
-  // True on the Config that claimed the process-global QWEN_CODE_MODEL slot
+  // True on the Config that claimed the process-global CANOPY_CODE_MODEL slot
   // (first in this process); gates the global write in publishModelEnv so no
   // other instance updates it. Per-session publishing is not gated on it.
   private readonly ownsModelEnvSlot: boolean = false;
@@ -2152,11 +2152,11 @@ export class Config {
     // Only set the global env marker once per process lifetime, so
     // throwaway Config instances (e.g. telemetry-only) don't clobber
     // the real interactive session's ID. Uses a module-level flag
-    // rather than checking env existence — otherwise a nested qwen-code
+    // rather than checking env existence — otherwise a nested canopy-code
     // launched from within a session would inherit the parent's ID and
     // never claim its own.
     if (!sessionEnvClaimed && process.env) {
-      process.env['QWEN_CODE_SESSION_ID'] = this.sessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = this.sessionId;
       sessionEnvClaimed = true;
     }
     this.sessionData = params.sessionData;
@@ -2164,7 +2164,8 @@ export class Config {
     this.setSessionRestoreProjection(params.sessionRestoreProjection);
     setDebugLogSession(this);
     this.debugLogger = createDebugLogger();
-    this.embeddingModel = params.embeddingModel ?? DEFAULT_QWEN_EMBEDDING_MODEL;
+    this.embeddingModel =
+      params.embeddingModel ?? DEFAULT_CANOPY_EMBEDDING_MODEL;
     this.fileSystemService = new StandardFileSystemService();
     this.sandbox = params.sandbox;
     this.targetDir = path.resolve(params.targetDir);
@@ -2222,7 +2223,7 @@ export class Config {
     this.cliAllowedMcpServerNames = params.cliAllowedMcpServerNames;
     this.excludedMcpServers = params.excludedMcpServers;
     this.pendingMcpServers = params.pendingMcpServers;
-    const envTimeout = process.env['QWEN_CODE_MCP_TOOL_IDLE_TIMEOUT_MS'];
+    const envTimeout = process.env['CANOPY_CODE_MCP_TOOL_IDLE_TIMEOUT_MS'];
     const parsedEnv = envTimeout !== undefined ? Number(envTimeout) : NaN;
     this.mcpToolIdleTimeoutMs =
       params.mcpToolIdleTimeoutMs ??
@@ -2264,7 +2265,7 @@ export class Config {
     };
     this.gitCoAuthor = {
       ...normalizeGitCoAuthor(params.gitCoAuthor),
-      name: 'Qwen-Coder',
+      name: 'Canopy-Coder',
       email: 'qwen-coder@alibabacloud.com',
     };
     this.usageStatisticsEnabled = params.usageStatisticsEnabled ?? true;
@@ -2273,9 +2274,9 @@ export class Config {
 
     this.fileFiltering = {
       respectGitIgnore: params.fileFiltering?.respectGitIgnore ?? true,
-      respectQwenIgnore: params.fileFiltering?.respectQwenIgnore ?? true,
+      respectCanopyIgnore: params.fileFiltering?.respectCanopyIgnore ?? true,
       customIgnoreFiles: params.fileFiltering?.customIgnoreFiles ?? [
-        ...DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES,
+        ...DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES,
       ],
       enableRecursiveFileSearch:
         params.fileFiltering?.enableRecursiveFileSearch ?? true,
@@ -2435,7 +2436,7 @@ export class Config {
     // session's directory. The env var is still set for the single-session CLI,
     // where it is the only consumer and there is nothing to collide with.
     if (!projectDirEnvClaimed && process.env) {
-      process.env['QWEN_CODE_PROJECT_DIR'] = this.storage.getProjectDir();
+      process.env['CANOPY_CODE_PROJECT_DIR'] = this.storage.getProjectDir();
       projectDirEnvClaimed = true;
     }
     this.inputFormat = params.inputFormat ?? InputFormat.TEXT;
@@ -2484,7 +2485,7 @@ export class Config {
     // publishes its own session's model — publishModelEnv registers it per
     // session, like the project dir above, so daemon-mode subprocesses read
     // theirs, not the first session's. The process-global slot is claimed
-    // first-writer-wins, as QWEN_CODE_SESSION_ID is, so a throwaway Config
+    // first-writer-wins, as CANOPY_CODE_SESSION_ID is, so a throwaway Config
     // never clobbers the live session's global value. Done here rather than
     // alongside the session ID because the value comes from the ModelsConfig
     // just constructed.
@@ -3034,10 +3035,10 @@ export class Config {
     // after the registry exists. This lets `Config.initialize()` (and the
     // cli's `input_enabled` checkpoint) resolve without waiting on MCP
     // server response time. Users can opt back into the legacy synchronous
-    // behavior with `QWEN_CODE_LEGACY_MCP_BLOCKING=1` — kept ≥ 1 release as
+    // behavior with `CANOPY_CODE_LEGACY_MCP_BLOCKING=1` — kept ≥ 1 release as
     // an escape hatch.
     const legacyBlockingMcp =
-      process.env['QWEN_CODE_LEGACY_MCP_BLOCKING'] === '1';
+      process.env['CANOPY_CODE_LEGACY_MCP_BLOCKING'] === '1';
     // Also force the inline-discovery skip when the caller opts
     // out of MCP entirely (ACP bootstrap path) — otherwise the legacy
     // blocking mode would still spawn MCP servers via the tool-registry
@@ -3102,7 +3103,7 @@ export class Config {
     // unconditionally skipping discovery in either would silently strand
     // them: `getMcpServers()` reports them as configured, but nothing ever
     // connects to them or registers their tools (a live repro of exactly
-    // this — `qwen --bare --mcp-config` with a top-tier server — surfaced
+    // this — `canopy --bare --mcp-config` with a top-tier server — surfaced
     // the bare-mode half of this gate was never updated alongside safe
     // mode's). Checking `getMcpServers()` (not `topTierMcpServers` directly)
     // also respects the `allowedMcpServers` filter already applied there.
@@ -3131,19 +3132,19 @@ export class Config {
     // directory the worktree creators (`enter_worktree` and
     // `agent isolation:'worktree'`) write to. Using `this.targetDir`
     // directly would cause launches from a monorepo subdirectory to
-    // scan `<subdir>/.qwen/worktrees/` — which never exists — and the
+    // scan `<subdir>/.canopy/worktrees/` — which never exists — and the
     // sweep would silently be a no-op forever.
     if (!this.getBareMode()) {
       void (async () => {
         try {
           // Resolve the repo top-level FIRST. The previous code bailed
-          // on `fs.access(<targetDir>/.qwen/worktrees)` before resolving,
+          // on `fs.access(<targetDir>/.canopy/worktrees)` before resolving,
           // so a monorepo subdir launch (where `targetDir` is the
           // subdir, not the repo root) always early-returned and the
           // sweep was permanently a no-op. Fast-bail still happens, just
           // against the *correct* directory.
           const root = findGitRoot(this.targetDir) ?? this.targetDir;
-          const worktreesDir = path.join(root, '.qwen', 'worktrees');
+          const worktreesDir = path.join(root, '.canopy', 'worktrees');
           try {
             await fsPromises.access(worktreesDir);
           } catch {
@@ -3202,7 +3203,7 @@ export class Config {
         sessionId: this.sessionId,
         transcriptPath: this.getTranscriptPath(),
         processKind: 'acp',
-        qwenVersion: this.cliVersion ?? null,
+        canopyVersion: this.cliVersion ?? null,
         reclaimPolicy: this.sessionWriterReclaimPolicy,
         takeoverPolicy: this.sessionWriterTakeoverPolicy,
         onOwnershipAcquired: (acquiredLease) => {
@@ -3229,7 +3230,7 @@ export class Config {
       let projection: SessionRestoreProjection | undefined;
       if (this.sessionRestoreProjectionSource) {
         addDaemonRequestAttribute(
-          'qwen-code.daemon.session_restore.projection_acquisition',
+          'canopy-code.daemon.session_restore.projection_acquisition',
           'after_writer_lease',
         );
         projection = await this.sessionRestoreProjectionSource();
@@ -3406,7 +3407,7 @@ export class Config {
    *
    * Resolves immediately when:
    * - bare mode is on (no MCP discovery is started),
-   * - `QWEN_CODE_LEGACY_MCP_BLOCKING=1` is set (MCP already discovered
+   * - `CANOPY_CODE_LEGACY_MCP_BLOCKING=1` is set (MCP already discovered
    *   synchronously inside {@link initialize}), or
    * - no MCP servers are configured.
    */
@@ -3460,7 +3461,7 @@ export class Config {
   async refreshHierarchicalMemory(
     loadReason: Exclude<InstructionLoadReason, 'include'> = 'refresh',
   ): Promise<void> {
-    // Safe mode: skip all context file loading (QWEN.md, AGENTS.md, rules)
+    // Safe mode: skip all context file loading (CANOPY.md, AGENTS.md, rules)
     if (this.isSafeMode()) {
       this.setUserMemory('');
       this.autoMemoryPrompt = '';
@@ -3490,7 +3491,7 @@ export class Config {
       );
     if (this.isManagedMemoryAvailable()) {
       // User-level read is best-effort — an EACCES on
-      // `~/.qwen/memories/MEMORY.md` must not strip the whole managed-memory
+      // `~/.canopy/memories/MEMORY.md` must not strip the whole managed-memory
       // section out of the system prompt. Project-level read still bubbles
       // (its failure is a real config-load problem).
       const teamMemoryEnabled =
@@ -3654,7 +3655,7 @@ export class Config {
     }
 
     return (
-      `Warning: Loaded always-on context (QWEN.md context files + auto-memory) uses about ` +
+      `Warning: Loaded always-on context (CANOPY.md context files + auto-memory) uses about ` +
       `${estimatedTokens.toLocaleString()} tokens, more than ` +
       `${Math.round(MEMORY_CONTEXT_WARNING_RATIO * 100)}% of this ` +
       `model's ${contextWindowSize.toLocaleString()} token context window. ` +
@@ -3986,7 +3987,7 @@ export class Config {
     // instance (the one that already claimed via sessionEnvClaimed), so this
     // correctly updates the env var to reflect the new active session.
     if (process.env) {
-      process.env['QWEN_CODE_SESSION_ID'] = this.sessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = this.sessionId;
     }
     // Re-key the per-session model registry onto the new session id. Without
     // this the entry stays keyed on the outgoing id, so after /clear (or
@@ -4044,7 +4045,7 @@ export class Config {
     //
     // Only refresh when THIS process established its own sidecar at
     // startup (interactive UI). A non-interactive `/clear` (e.g.
-    // qwen --prompt-interactive) must not delete a sibling shell's
+    // canopy --prompt-interactive) must not delete a sibling shell's
     // sidecar that happens to share the outgoing session id
     // mirrors the kimi-cli "write only when a session is
     // established for this process" rule.
@@ -4060,7 +4061,7 @@ export class Config {
           await writeRuntimeStatus(newPath, {
             sessionId: newSessionId,
             workDir,
-            qwenVersion: cliVersion,
+            canopyVersion: cliVersion,
           });
         });
       }
@@ -4079,7 +4080,7 @@ export class Config {
         // advertising the pre-/clear session id until exit.
         //
         // `name` is deliberately not patched: it is the handle a user
-        // just read out of `qwen sessions ps`, and re-deriving it here
+        // just read out of `canopy sessions ps`, and re-deriving it here
         // would rename a live session on every /clear for no gain — the
         // directory it names has not changed.
         this.queueSessionRegistryWrite(async () => {
@@ -4161,7 +4162,7 @@ export class Config {
    *
    * - A sidecar write that rejects or hangs must not skip or block the
    *   patch — the two target independent failure domains (project-local
-   *   `chats/` dir vs the global Qwen dir).
+   *   `chats/` dir vs the global Canopy dir).
    * - The patch writes the HOME filesystem, while `/cd` flushes the
    *   sidecar chain: awaiting the patch there would hang `/cd` whenever
    *   HOME stalls while the project directory is healthy. Registry
@@ -4201,7 +4202,7 @@ export class Config {
         await writeRuntimeStatus(sidecarPath, {
           sessionId,
           workDir,
-          qwenVersion: this.cliVersion ?? null,
+          canopyVersion: this.cliVersion ?? null,
         });
       });
     }
@@ -4209,7 +4210,7 @@ export class Config {
       this.queueSessionRegistryWrite(async () => {
         // The registry's DIRECTORY column is how a user tells two live
         // sessions apart, so a mid-session directory switch has to reach
-        // it too — otherwise `qwen sessions ps` keeps advertising the
+        // it too — otherwise `canopy sessions ps` keeps advertising the
         // folder this session left. Unlike the /clear path, `name`
         // follows: it is derived from the directory's basename, which is
         // exactly what changed here.
@@ -4304,7 +4305,7 @@ export class Config {
     }
   }
 
-  // Keeps QWEN_CODE_MODEL on the model that is actually active. A subprocess
+  // Keeps CANOPY_CODE_MODEL on the model that is actually active. A subprocess
   // has no other authoritative source: settings files miss /model switches and
   // describe the wrong home under QWEN_HOME isolation. Published per session —
   // every Config writes its OWN session's model, keyed on sessionId exactly
@@ -4320,7 +4321,7 @@ export class Config {
     const model = this.getModel();
     registerSessionModel(this.sessionId, model);
     if (this.ownsModelEnvSlot) {
-      process.env['QWEN_CODE_MODEL'] = model;
+      process.env['CANOPY_CODE_MODEL'] = model;
     }
   }
 
@@ -4775,14 +4776,14 @@ export class Config {
     // Some OpenAI-compatible reasoning models (e.g. DeepSeek) require
     // reasoning_content to be preserved across turns.
 
-    // Hot update path: only supported for qwen-oauth.
+    // Hot update path: only supported for canopy-oauth.
     // For other auth types we always refresh to recreate the ContentGenerator.
     //
     // Rationale:
-    // - Non-qwen providers may need to re-validate credentials / baseUrl / envKey.
+    // - Non-canopy providers may need to re-validate credentials / baseUrl / envKey.
     // - ModelsConfig.applyResolvedModelDefaults can clear or change credentials sources.
     // - Refresh keeps runtime behavior consistent and centralized.
-    if (authType === AuthType.QWEN_OAUTH && !requiresRefresh) {
+    if (authType === AuthType.CANOPY_OAUTH && !requiresRefresh) {
       const { config, sources } = resolveContentGeneratorConfigWithSources(
         this,
         authType,
@@ -4794,7 +4795,7 @@ export class Config {
         },
       );
 
-      // Hot-update fields (qwen-oauth models share the same auth + client).
+      // Hot-update fields (canopy-oauth models share the same auth + client).
       // Deliberately does NOT copy `reasoning`: it is a global, model-independent
       // preference captured in `priorReasoningEffort` above and re-applied via
       // setReasoningEffort() below. Do not add `reasoning` here — that would
@@ -4930,7 +4931,7 @@ export class Config {
    *
    * For runtime models, the modelId should be in format `$runtime|${authType}|${modelId}`.
    * This triggers a refresh of the ContentGenerator when required (always on authType changes).
-   * For qwen-oauth model switches that are hot-update safe, this may update in place.
+   * For canopy-oauth model switches that are hot-update safe, this may update in place.
    *
    * @param authType - Target authentication type
    * @param modelId - Target model ID (or `$runtime|${authType}|${modelId}` for runtime models)
@@ -5577,8 +5578,8 @@ export class Config {
   /**
    * Replace the in-process `disabledTools`
    * snapshot with a fresh set sourced from the workspace settings.
-   * Intended for the `qwen serve` mutation surface
-   * (`setWorkspaceToolEnabled` → ACP `qwen/control/...` → here): the
+   * Intended for the `canopy serve` mutation surface
+   * (`setWorkspaceToolEnabled` → ACP `canopy/control/...` → here): the
    * settings file is the source of truth, and this setter keeps the
    * in-memory Config in sync so a subsequent MCP rediscovery / next
    * tool registration honors the just-toggled value.
@@ -5602,13 +5603,13 @@ export class Config {
 
   /**
    * optional workspace-shared MCP transport pool
-   * injected by the daemon-mode `QwenAgent`. When set, the wrapping
+   * injected by the daemon-mode `CanopyAgent`. When set, the wrapping
    * `ToolRegistry` threads it into `McpClientManager`, which delegates
    * non-SDK MCP server discovery to the pool instead of spawning its
-   * own per-session `McpClient`. Standalone `qwen` (non-daemon) leaves
+   * own per-session `McpClient`. Standalone `canopy` (non-daemon) leaves
    * this `undefined` and the manager keeps its previous behavior.
    *
-   * Eagerly instantiated by `QwenAgent` (per Q6 resolved); the
+   * Eagerly instantiated by `CanopyAgent` (per Q6 resolved); the
    * pool itself is lazy w.r.t. actual MCP work — it spawns nothing
    * until the first `acquire()` from a session.
    */
@@ -6883,32 +6884,32 @@ export class Config {
   }
 
   isCronEnabled(): boolean {
-    if (process.env['QWEN_CODE_DISABLE_CRON'] === '1') return false;
+    if (process.env['CANOPY_CODE_DISABLE_CRON'] === '1') return false;
     return this.cronEnabled;
   }
 
   isAgentTeamEnabled(): boolean {
     // Agent team is experimental and opt-in: enabled via settings or env var
-    if (process.env['QWEN_CODE_ENABLE_AGENT_TEAM'] === '1') return true;
+    if (process.env['CANOPY_CODE_ENABLE_AGENT_TEAM'] === '1') return true;
     return this.agentTeamEnabled;
   }
 
   isArtifactEnabled(): boolean {
     // Publishing writes outside the project and opens a browser, so it is
-    // limited to interactive, non-SDK sessions. QWEN_CODE_DISABLE_ARTIFACT
-    // hard-disables both artifact tools; QWEN_CODE_ENABLE_ARTIFACT remains as
+    // limited to interactive, non-SDK sessions. CANOPY_CODE_DISABLE_ARTIFACT
+    // hard-disables both artifact tools; CANOPY_CODE_ENABLE_ARTIFACT remains as
     // a compatibility override for old configs that explicitly disabled them.
-    if (process.env['QWEN_CODE_DISABLE_ARTIFACT'] === '1') return false;
+    if (process.env['CANOPY_CODE_DISABLE_ARTIFACT'] === '1') return false;
     if (this.sdkMode) return false;
     if (!this.interactive) return false;
-    if (process.env['QWEN_CODE_ENABLE_ARTIFACT'] === '1') return true;
+    if (process.env['CANOPY_CODE_ENABLE_ARTIFACT'] === '1') return true;
     return this.artifactEnabled;
   }
 
   isRecordArtifactEnabled(): boolean {
-    if (process.env['QWEN_CODE_DISABLE_ARTIFACT'] === '1') return false;
+    if (process.env['CANOPY_CODE_DISABLE_ARTIFACT'] === '1') return false;
     if (this.sdkMode) return false;
-    if (process.env['QWEN_CODE_ENABLE_ARTIFACT'] === '1') return true;
+    if (process.env['CANOPY_CODE_ENABLE_ARTIFACT'] === '1') return true;
     return this.artifactEnabled;
   }
 
@@ -6976,15 +6977,15 @@ export class Config {
   }
 
   shouldAutoOpenArtifact(): boolean {
-    if (process.env['QWEN_ARTIFACT_NO_AUTO_OPEN'] === '1') return false;
+    if (process.env['CANOPY_ARTIFACT_NO_AUTO_OPEN'] === '1') return false;
     return this.artifactAutoOpen && !this.isBrowserLaunchSuppressed();
   }
 
   isWorkflowsEnabled(): boolean {
     // Workflows are experimental and opt-in: enabled via settings or env var
-    // P1 also honors a kill switch: QWEN_CODE_DISABLE_WORKFLOWS=1 forces off
-    if (process.env['QWEN_CODE_DISABLE_WORKFLOWS'] === '1') return false;
-    if (process.env['QWEN_CODE_ENABLE_WORKFLOWS'] === '1') return true;
+    // P1 also honors a kill switch: CANOPY_CODE_DISABLE_WORKFLOWS=1 forces off
+    if (process.env['CANOPY_CODE_DISABLE_WORKFLOWS'] === '1') return false;
+    if (process.env['CANOPY_CODE_ENABLE_WORKFLOWS'] === '1') return true;
     return this.workflowsEnabled;
   }
 
@@ -6995,7 +6996,7 @@ export class Config {
   /**
    * P5 T7: read the `skipWorkflowUsageWarning` setting. When `true`, the
    * `Workflow` tool suppresses the one-time banner that announces the
-   * `QWEN_CODE_MAX_TOKENS_PER_WORKFLOW` env knob. The registry-side
+   * `CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW` env knob. The registry-side
    * `shouldShowUsageWarning()` latch is still session-scoped, so even
    * when this returns `false` the banner fires at most once per
    * process.
@@ -7011,7 +7012,7 @@ export class Config {
   /**
    * Configured screenshot longest-edge cap for Computer Use, or `undefined`
    * to leave cua-driver's built-in default (1568) in place. Resolved together
-   * with the `QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION` env override at the point
+   * with the `CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION` env override at the point
    * the driver connects (see `resolveMaxImageDimension`).
    */
   getComputerUseMaxImageDimension(): number | undefined {
@@ -7028,11 +7029,11 @@ export class Config {
    * `CLAUDE_CODE_EMIT_TOOL_USE_SUMMARIES` gate, but defaults to on so the
    * compact-mode UI benefits without configuration.
    *
-   * Env overrides (either direction): `QWEN_CODE_EMIT_TOOL_USE_SUMMARIES=0`
+   * Env overrides (either direction): `CANOPY_CODE_EMIT_TOOL_USE_SUMMARIES=0`
    * to force off, `=1` to force on.
    */
   getEmitToolUseSummaries(): boolean {
-    const env = process.env['QWEN_CODE_EMIT_TOOL_USE_SUMMARIES'];
+    const env = process.env['CANOPY_CODE_EMIT_TOOL_USE_SUMMARIES'];
     if (env === '0' || env === 'false') return false;
     if (env === '1' || env === 'true') return true;
     return this.emitToolUseSummaries;
@@ -7049,14 +7050,14 @@ export class Config {
   getFileFilteringRespectGitIgnore(): boolean {
     return this.fileFiltering.respectGitIgnore;
   }
-  getFileFilteringRespectQwenIgnore(): boolean {
-    return this.fileFiltering.respectQwenIgnore;
+  getFileFilteringRespectCanopyIgnore(): boolean {
+    return this.fileFiltering.respectCanopyIgnore;
   }
 
   getFileFilteringOptions(): FileFilteringOptions {
     return {
       respectGitIgnore: this.fileFiltering.respectGitIgnore,
-      respectQwenIgnore: this.fileFiltering.respectQwenIgnore,
+      respectCanopyIgnore: this.fileFiltering.respectCanopyIgnore,
       customIgnoreFiles: [...this.fileFiltering.customIgnoreFiles],
     };
   }
@@ -7203,14 +7204,14 @@ export class Config {
 
   /**
    * Whether the git-shared team memory tier is active. Opt-in: off unless the
-   * `memory.enableTeamMemory` setting is on. `QWEN_CODE_MEMORY_TEAM` overrides
+   * `memory.enableTeamMemory` setting is on. `CANOPY_CODE_MEMORY_TEAM` overrides
    * for tests / power users ('0' forces off, '1' forces on).
    */
   getTeamMemoryEnabled(): boolean {
     if (this.getBareMode()) {
       return false;
     }
-    const override = process.env['QWEN_CODE_MEMORY_TEAM'];
+    const override = process.env['CANOPY_CODE_MEMORY_TEAM'];
     if (override === '0') {
       return false;
     }
@@ -7223,14 +7224,14 @@ export class Config {
   /**
    * Whether the daemon/session should auto-sync team memory with the git
    * remote (pull + commit + push). Resolves the `memory.enableTeamMemorySync`
-   * setting, with env `QWEN_CODE_MEMORY_TEAM_SYNC` ('0'/'1') as an override.
+   * setting, with env `CANOPY_CODE_MEMORY_TEAM_SYNC` ('0'/'1') as an override.
    * Off by default since it mutates the repo and pushes. Inert in bare mode.
    */
   getTeamMemorySyncEnabled(): boolean {
     if (this.getBareMode()) {
       return false;
     }
-    const override = process.env['QWEN_CODE_MEMORY_TEAM_SYNC'];
+    const override = process.env['CANOPY_CODE_MEMORY_TEAM_SYNC'];
     if (override === '0') {
       return false;
     }
@@ -8394,7 +8395,7 @@ export class Config {
     // --json-schema runs. It must be registered in BOTH the bare-mode
     // branch and the regular branch — without it the model can't finish
     // a structured run, so omitting either branch causes
-    // `qwen [--bare] --json-schema X -p "..."` to loop until
+    // `canopy [--bare] --json-schema X -p "..."` to loop until
     // maxSessionTurns and exit via the "plain text" failure path. Hoisted
     // out of the two branches so the dynamic-import factory shape stays
     // in sync between them.
@@ -8681,7 +8682,7 @@ export class Config {
     }
 
     // create_sub_session: spawn a fresh top-level sub-session and run a prompt
-    // in it. Only functional under `qwen serve` (needs the bridge, wired as a
+    // in it. Only functional under `canopy serve` (needs the bridge, wired as a
     // spawner by the ACP session); the tool's execute() reports a clear
     // daemon-only error otherwise. Registered unconditionally so the message is
     // available rather than the tool silently missing.

@@ -8,7 +8,7 @@
  * Contextual tip registry — defines tips, their conditions, and display rules.
  */
 
-import { type CompactionThresholds } from '@qwen-code/qwen-code-core';
+import { type CompactionThresholds } from '@canopy-code/canopy-code-core';
 
 export type TipTrigger = 'startup' | 'post-response';
 
@@ -83,8 +83,9 @@ export const tipRegistry: ContextualTip[] = [
     priority: 70,
   },
   {
-    id: 'new-user-qwenmd',
-    content: 'Add a QWEN.md file to give Qwen Code persistent project context.',
+    id: 'new-user-canopymd',
+    content:
+      'Add a CANOPY.md file to give Canopy Code persistent project context.',
     trigger: 'startup',
     isRelevant: (ctx) => ctx.sessionCount < 10,
     cooldownPrompts: 0,
@@ -93,7 +94,7 @@ export const tipRegistry: ContextualTip[] = [
   {
     id: 'new-user-resume',
     content:
-      'You can resume a previous conversation by running qwen --continue or qwen --resume.',
+      'You can resume a previous conversation by running canopy --continue or canopy --resume.',
     trigger: 'startup',
     isRelevant: (ctx) => ctx.sessionCount < 10,
     cooldownPrompts: 0,
@@ -102,7 +103,7 @@ export const tipRegistry: ContextualTip[] = [
   {
     id: 'shell-commands',
     content:
-      'You can run any shell commands from Qwen Code using ! (e.g. !ls).',
+      'You can run any shell commands from Canopy Code using ! (e.g. !ls).',
     trigger: 'startup',
     isRelevant: (ctx) => ctx.sessionCount < 15,
     cooldownPrompts: 0,

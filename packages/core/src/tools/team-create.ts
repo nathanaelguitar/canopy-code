@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -112,7 +112,7 @@ class TeamCreateInvocation extends BaseToolInvocation<
         if (!reclaimed) {
           const msg =
             `Team "${teamName}" already exists and appears to be ` +
-            `owned by a live qwen-code session. Pick a different ` +
+            `owned by a live canopy-code session. Pick a different ` +
             `name, or — if you're sure no other session is using ` +
             `it — remove the on-disk artifacts manually:\n` +
             `  rm -rf "${getTeamDir(teamName)}" "${getTasksDir(teamName)}"`;
@@ -204,7 +204,7 @@ When spawning teammates via the Agent tool, choose the \`subagent_type\` based o
 
 - **Enforced read-only teammates** use the Agent tool's read_only option. This replaces the selected agent's tool surface with inspection and team-coordination tools, so shell and file writes are unavailable. Use them for research, search, review, or planning tasks.
 - **Full-capability agents** (e.g., general-purpose) have access to all tools including file editing, writing, and bash. Use these for tasks that require making changes.
-- **Custom agents** defined in \`.qwen/agents/\` may have their own tool restrictions. Check their descriptions to understand what they can and cannot do.
+- **Custom agents** defined in \`.canopy/agents/\` may have their own tool restrictions. Check their descriptions to understand what they can and cannot do.
 
 Always review the agent type descriptions and their available tools listed in the Agent tool prompt before selecting a \`subagent_type\` for a teammate.
 
@@ -218,8 +218,8 @@ Create a new team to coordinate multiple agents working on a project. Teams have
 \`\`\`
 
 This creates:
-- A team file at \`~/.qwen/teams/{team-name}/config.json\`
-- A corresponding task list directory at \`~/.qwen/tasks/{team-name}/\`
+- A team file at \`~/.canopy/teams/{team-name}/config.json\`
+- A corresponding task list directory at \`~/.canopy/tasks/{team-name}/\`
 
 ## Team Workflow
 
@@ -260,7 +260,7 @@ Teammates go idle after every turn—this is completely normal and expected. A t
 ## Discovering Team Members
 
 Teammates can read the team config file to discover other team members:
-- **Team config location**: \`~/.qwen/teams/{team-name}/config.json\`
+- **Team config location**: \`~/.canopy/teams/{team-name}/config.json\`
 
 The config file contains a \`members\` array with each teammate's:
 - \`name\`: Human-readable name (**always use this** for messaging and task assignment)
@@ -273,12 +273,12 @@ The config file contains a \`members\` array with each teammate's:
 
 Example of reading team config:
 \`\`\`
-Use the Read tool to read ~/.qwen/teams/{team-name}/config.json
+Use the Read tool to read ~/.canopy/teams/{team-name}/config.json
 \`\`\`
 
 ## Task List Coordination
 
-Teams share a task list that all teammates can access at \`~/.qwen/tasks/{team-name}/\`.
+Teams share a task list that all teammates can access at \`~/.canopy/tasks/{team-name}/\`.
 
 Teammates should:
 1. Check TaskList periodically, **especially after completing each task**, to find available work or see newly unblocked tasks

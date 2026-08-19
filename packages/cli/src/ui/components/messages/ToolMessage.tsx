@@ -24,14 +24,14 @@ import type {
   McpToolProgressData,
   FileDiff,
   TerminalImageDisplay,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   formatVisionBridgeNoticeDisplay,
   isTerminalImageDisplay,
   isVisionBridgeNoticeDisplay,
   ToolNames,
   ToolNamesMigration,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { ToolConfirmationMessage } from './ToolConfirmationMessage.js';
 import { PlanSummaryDisplay } from '../PlanSummaryDisplay.js';
 import { ShellInputPrompt } from '../ShellInputPrompt.js';

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,8 +17,8 @@ import type {
   ToolRegistry,
   AnyDeclarativeTool,
   AnyToolInvocation,
-} from '@qwen-code/qwen-code-core';
-import { Kind, ToolNames } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { Kind, ToolNames } from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 
 // Helper to create mock message parts for tests
@@ -674,18 +674,18 @@ describe('ToolCallEmitter', () => {
               content: 'Task 1',
               priority: 'medium',
               status: 'pending',
-              _meta: { qwenTodo: { id: '1' } },
+              _meta: { canopyTodo: { id: '1' } },
             },
             {
               content: 'Task 2',
               priority: 'medium',
               status: 'in_progress',
-              _meta: { qwenTodo: { id: '2', blockedBy: ['1'] } },
+              _meta: { canopyTodo: { id: '2', blockedBy: ['1'] } },
             },
           ],
           _meta: {
-            qwenTodoPlan: { id: 'plan-1' },
-            qwenTranscript: { planToolCallId: 'call-todo' },
+            canopyTodoPlan: { id: 'plan-1' },
+            canopyTranscript: { planToolCallId: 'call-todo' },
           },
         });
       });
@@ -709,10 +709,10 @@ describe('ToolCallEmitter', () => {
               content: 'From args',
               priority: 'medium',
               status: 'completed',
-              _meta: { qwenTodo: { id: '1' } },
+              _meta: { canopyTodo: { id: '1' } },
             },
           ],
-          _meta: { qwenTranscript: { planToolCallId: 'call-todo' } },
+          _meta: { canopyTranscript: { planToolCallId: 'call-todo' } },
         });
       });
 
@@ -1102,7 +1102,7 @@ describe('ToolCallEmitter', () => {
           sessionUpdate: 'plan',
           entries: [],
           _meta: {
-            qwenTranscript: { planToolCallId: 'call-todo-empty' },
+            canopyTranscript: { planToolCallId: 'call-todo-empty' },
           },
         });
       });
@@ -1127,7 +1127,7 @@ describe('ToolCallEmitter', () => {
           sessionUpdate: 'plan',
           entries: [],
           _meta: {
-            qwenTranscript: { planToolCallId: 'call-todo-cleared' },
+            canopyTranscript: { planToolCallId: 'call-todo-cleared' },
           },
         });
       });

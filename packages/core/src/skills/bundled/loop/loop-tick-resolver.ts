@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ export {
 export type { LoopMode } from './autonomous-loop.js';
 
 /**
- * Fire-time resolver for `.qwen/loop.md`-driven loops.
+ * Fire-time resolver for `.canopy/loop.md`-driven loops.
  *
  * A `/loop` whose scheduled prompt is one of these sentinels re-reads loop.md
  * on every fire and gets either the FULL task block (first delivery, or whenever
@@ -52,16 +52,16 @@ export interface LoopTickResolverDeps {
   /** Home-candidate confinement root: `$QWEN_HOME` when set, else `$HOME`. */
   homeDir: string;
   /**
-   * QWEN_HOME-aware global dir holding the home `loop.md` (`Storage.getGlobalQwenDir()`).
-   * Omitted → defaults to `<homeDir>/.qwen` inside readLoopTaskFile.
+   * QWEN_HOME-aware global dir holding the home `loop.md` (`Storage.getGlobalCanopyDir()`).
+   * Omitted → defaults to `<homeDir>/.canopy` inside readLoopTaskFile.
    */
-  homeQwenDir?: string;
+  homeCanopyDir?: string;
   /**
    * Pass `() => config.isTrustedFolder()`. Re-evaluated on every `resolve()`,
    * never captured once: `isTrustedFolder()` is not process-stable in IDE
    * sessions (a workspace-trust update can flip it), and a trusted→untrusted
    * flip must immediately stop reading the repo-controlled project
-   * `.qwen/loop.md` (the user-owned `~/.qwen/loop.md` still is read).
+   * `.canopy/loop.md` (the user-owned `~/.canopy/loop.md` still is read).
    */
   allowProjectFile: () => boolean;
 }
@@ -259,34 +259,34 @@ export class LoopTickResolver {
   }
 
   /** MODEL-FACING label for the home loop.md location. Mirrors
-   * readLoopTaskFile's home candidate (`<homeQwenDir>/loop.md`) so the absent
+   * readLoopTaskFile's home candidate (`<homeCanopyDir>/loop.md`) so the absent
    * reminder — and the caller's sanitized resolve-error — names the location
    * actually checked (QWEN_HOME-aware), but must NEVER surface a raw absolute
    * path: it flows into model/API text, leaking the host's filesystem layout.
-   *   - under $HOME             → tilde-abbreviated `~/.qwen/loop.md`;
+   *   - under $HOME             → tilde-abbreviated `~/.canopy/loop.md`;
    *   - relocated via $QWEN_HOME → the literal `$QWEN_HOME/loop.md`, not the
    *     resolved dir (`tildeifyPath` only abbreviates $HOME, so it's a no-op for
    *     a $QWEN_HOME outside $HOME and would otherwise pass the path through);
    *   - any other out-of-$HOME dir → a generic placeholder, never the path.
    * The real absolute path stays in LOCAL debug logs only. */
   homeLoopLabel(): string {
-    const homeQwenDir =
-      this.deps.homeQwenDir ?? path.join(this.deps.homeDir, '.qwen');
-    const homeLoopPath = path.join(homeQwenDir, 'loop.md');
+    const homeCanopyDir =
+      this.deps.homeCanopyDir ?? path.join(this.deps.homeDir, '.canopy');
+    const homeLoopPath = path.join(homeCanopyDir, 'loop.md');
 
     const tildeified = tildeifyPath(homeLoopPath);
     if (tildeified !== homeLoopPath) {
       return tildeified.replace(/\\/g, '/');
     }
     // Outside $HOME: tildeifyPath was a no-op. When $QWEN_HOME relocated the
-    // global dir (homeQwenDir is its resolved value), report the literal env-var
+    // global dir (homeCanopyDir is its resolved value), report the literal env-var
     // name — never the absolute path. The home candidate is always
-    // `<homeQwenDir>/loop.md`, so swap the whole resolved dir for `$QWEN_HOME` and
+    // `<homeCanopyDir>/loop.md`, so swap the whole resolved dir for `$QWEN_HOME` and
     // re-attach the user-facing POSIX slash + basename directly. Deriving the tail from the
     // resolved path's length instead mishandles edge dirs: a trailing slash
-    // (`$QWEN_HOME=/x/.qwen/`) over-counts the separator, and a filesystem-root
-    // homeQwenDir (`$QWEN_HOME=/` → homeLoopPath `/loop.md`, dirname `/`) drops the
-    // leading separator — both garbling the tail into `$QWEN_HOMEloop.md`.
+    // (`$QWEN_HOME=/x/.canopy/`) over-counts the separator, and a filesystem-root
+    // homeCanopyDir (`$QWEN_HOME=/` → homeLoopPath `/loop.md`, dirname `/`) drops the
+    // leading separator — both garbling the tail into `$CANOPY_HOMEloop.md`.
     if (process.env['QWEN_HOME']) {
       return '$QWEN_HOME/loop.md';
     }
@@ -296,13 +296,13 @@ export class LoopTickResolver {
   /** The checked-candidate "where" string shared by the absent reminder and the
    * caller's sanitized resolve-error. Names the project candidate ONLY when it
    * was actually read (`projectChecked` — a trusted folder), so neither path can
-   * claim `.qwen/loop.md (project)` for an untrusted folder where the project
+   * claim `.canopy/loop.md (project)` for an untrusted folder where the project
    * file is skipped. The home label is the QWEN_HOME-aware, never-absolute
    * homeLoopLabel(). Single source of truth so the two messages can't drift. */
   absentLocations(projectChecked: boolean): string {
     const homeLabel = this.homeLoopLabel();
     return projectChecked
-      ? `.qwen/loop.md (project) or ${homeLabel} (home)`
+      ? `.canopy/loop.md (project) or ${homeLabel} (home)`
       : `${homeLabel} (home)`;
   }
 
@@ -367,7 +367,7 @@ export class LoopTickResolver {
     const result = await readLoopTaskFile({
       projectRoot: this.deps.projectRoot,
       homeDir: this.deps.homeDir,
-      homeQwenDir: this.deps.homeQwenDir,
+      homeCanopyDir: this.deps.homeCanopyDir,
       allowProjectFile,
       realDirCache: this.#realDirCache,
     });

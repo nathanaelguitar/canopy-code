@@ -33,8 +33,8 @@ export interface ExtensionSetting {
 }
 
 const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const SETTINGS_SELECTOR_FILENAME = '.qwen-extension-settings.json';
-const SETTINGS_BUNDLE_PREFIX = '$qwen:extension-settings:v2:';
+const SETTINGS_SELECTOR_FILENAME = '.canopy-extension-settings.json';
+const SETTINGS_BUNDLE_PREFIX = '$canopy:extension-settings:v2:';
 
 interface ExtensionSettingsSelector {
   version: 1;
@@ -156,7 +156,7 @@ const getKeychainStorageName = (
   extensionId: string,
   scope: ExtensionSettingScope,
 ): string => {
-  const base = `Qwen Code Extensions ${extensionName} ${extensionId}`;
+  const base = `Canopy Code Extensions ${extensionName} ${extensionId}`;
   if (scope === ExtensionSettingScope.WORKSPACE) {
     return `${base} ${process.cwd()}`;
   }

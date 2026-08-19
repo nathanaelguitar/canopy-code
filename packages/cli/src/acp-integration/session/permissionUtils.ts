@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ToolCallConfirmationDetails } from '@qwen-code/qwen-code-core';
-import { ToolConfirmationOutcome } from '@qwen-code/qwen-code-core';
+import type { ToolCallConfirmationDetails } from '@canopy-code/canopy-code-core';
+import { ToolConfirmationOutcome } from '@canopy-code/canopy-code-core';
 import type {
   AgentSideConnection,
   PermissionOption,
@@ -94,8 +94,8 @@ export function interactionMetaFields(
 ): Record<string, unknown> {
   return confirmation.type === 'ask_user_question'
     ? {
-        qwenInteractionKind: 'user_question',
-        qwenQuestions: confirmation.questions,
+        canopyInteractionKind: 'user_question',
+        canopyQuestions: confirmation.questions,
       }
     : {};
 }

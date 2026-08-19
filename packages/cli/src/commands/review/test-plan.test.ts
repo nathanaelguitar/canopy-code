@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -235,12 +235,12 @@ describe('extractClaims', () => {
     });
   });
 
-  it('excludes a cd base under .qwen/ or build output from path claims', () => {
+  it('excludes a cd base under .canopy/ or build output from path claims', () => {
     // The cd base is a directory the Test Plan tells the reader to CREATE
-    // (.qwen/) or gitignored build output (dist/) — absent at the reviewed
+    // (.canopy/) or gitignored build output (dist/) — absent at the reviewed
     // commit by construction, the same exclusion isPathClaim applies to tokens.
-    const qwen = extractClaims('`cd .qwen/tmp/review-pr-9 && npm test`');
-    expect(qwen.filter((c) => c.kind === 'path')).toEqual([]);
+    const canopy = extractClaims('`cd .canopy/tmp/review-pr-9 && npm test`');
+    expect(canopy.filter((c) => c.kind === 'path')).toEqual([]);
 
     const dist = extractClaims('`cd dist/foo && npm test`');
     expect(dist.filter((c) => c.kind === 'path')).toEqual([]);
@@ -471,7 +471,7 @@ describe('npmScriptOf', () => {
       'npm ls --workspaces',
       'npm pack',
       'npm publish --dry-run',
-      'npm view qwen-code version',
+      'npm view canopy-code version',
       'npm outdated',
       'yarn add left-pad',
     ]) {
@@ -547,7 +547,7 @@ describe('runTestPlan', () => {
     claims.find((c) => c.text === text)?.verdict;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'qwen-test-plan-'));
+    dir = mkdtempSync(join(tmpdir(), 'canopy-test-plan-'));
     writeFileSync(join(dir, 'diff.txt'), 'diff');
     writeFileSync(
       join(dir, 'package.json'),
@@ -622,18 +622,18 @@ describe('runTestPlan', () => {
 
     it('claims a slash token as a path only with EVIDENCE it is one', () => {
       // This PR's own Test Plan produced two false `contradicted` notes before
-      // this bar: `QwenLM/qwen-code` (a --repo slug) and `.qwen/tmp/review-…`
+      // this bar: `CanopyLM/canopy-code` (a --repo slug) and `.canopy/tmp/review-…`
       // (a path the reader is told to CREATE). A bare two-segment token with
       // no extension is a slug or a ref far more often than a directory.
       const r = run(
-        '## Test Plan\n\nRun `gh pr view 1 --repo QwenLM/qwen-code`, ' +
-          'check `origin/main`, create `.qwen/tmp/review-pr-1/x.json`, ' +
+        '## Test Plan\n\nRun `gh pr view 1 --repo CanopyLM/canopy-code`, ' +
+          'check `origin/main`, create `.canopy/tmp/review-pr-1/x.json`, ' +
           'then read `packages/cli/` and `./run.sh`',
       );
       const texts = r.claims.map((c) => c.text);
-      expect(texts).not.toContain('QwenLM/qwen-code'); // flag value AND slug
+      expect(texts).not.toContain('CanopyLM/canopy-code'); // flag value AND slug
       expect(texts).not.toContain('origin/main'); // ref, no extension
-      expect(texts.some((t) => t.startsWith('.qwen/'))).toBe(false); // temp root
+      expect(texts.some((t) => t.startsWith('.canopy/'))).toBe(false); // temp root
       expect(texts).not.toContain('packages/cli/'); // bare dir, no evidence
       expect(texts).toContain('./run.sh'); // explicit ./ prefix qualifies
     });
@@ -1016,7 +1016,7 @@ describe('the CLI option contract', () => {
   // verdict only reachable when the build-test report was actually loaded.
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'qwen-test-plan-cli-'));
+    dir = mkdtempSync(join(tmpdir(), 'canopy-test-plan-cli-'));
     writeFileSync(join(dir, 'diff.txt'), 'diff');
     writeFileSync(
       join(dir, 'plan.json'),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * CDP browser-level emulation layer for the Plan C "CDP tunnel" (issue #5626).
@@ -51,10 +51,10 @@ export interface CdpEmulatorCallbacks {
 }
 
 /** Stable synthetic ids for the single tab/page this tunnel exposes. */
-const TAB_TARGET_ID = 'qwen-cdp-tab';
-const PAGE_TARGET_ID = 'qwen-cdp-page';
-const TAB_SESSION_ID = 'qwen-cdp-tab-session';
-const PAGE_SESSION_ID = 'qwen-cdp-page-session';
+const TAB_TARGET_ID = 'canopy-cdp-tab';
+const PAGE_TARGET_ID = 'canopy-cdp-page';
+const TAB_SESSION_ID = 'canopy-cdp-tab-session';
+const PAGE_SESSION_ID = 'canopy-cdp-page-session';
 // Must match CDP_PROTOCOL_VERSION in packages/chrome-extension/src/background/cdp-bridge.ts.
 const CDP_PROTOCOL_VERSION = '1.3';
 
@@ -126,9 +126,9 @@ export class CdpBrowserEmulator {
             id,
             result: {
               protocolVersion: CDP_PROTOCOL_VERSION,
-              product: 'QwenCDPTunnel/1.0',
-              revision: '@qwen',
-              userAgent: 'QwenCDPTunnel',
+              product: 'CanopyCDPTunnel/1.0',
+              revision: '@canopy',
+              userAgent: 'CanopyCDPTunnel',
               jsVersion: 'unknown',
             },
           });
@@ -185,7 +185,7 @@ export class CdpBrowserEmulator {
               },
             });
           }
-          const attachedSessionId = `qwen-cdp-page-session-${this.nextPageSessionId++}`;
+          const attachedSessionId = `canopy-cdp-page-session-${this.nextPageSessionId++}`;
           this.attachedPageSessions.add(attachedSessionId);
           this.cb.reply({
             method: 'Target.attachedToTarget',
@@ -251,7 +251,7 @@ export class CdpBrowserEmulator {
           // empty-result ack keeps puppeteer from hanging on optional commands;
           // surface the unknown ones so the coverage gap stays visible.
           this.cb.log?.(
-            `qwen serve: /cdp unsupported browser-level CDP method: ${method ?? '(none)'}`,
+            `canopy serve: /cdp unsupported browser-level CDP method: ${method ?? '(none)'}`,
           );
           return this.cb.reply({ id, result: {} });
       }
@@ -360,7 +360,7 @@ export class CdpBrowserEmulator {
       // with a running total so the drop stream stays diagnosable.
       if (this.droppedTabEvents === 1 || this.droppedTabEvents % 100 === 0) {
         this.cb.log?.(
-          `qwen serve: /cdp tab event "${method}" dropped (${this.droppedTabEvents} total) — no active page session (lazy-attach clients are command-only until Target.setAutoAttach)`,
+          `canopy serve: /cdp tab event "${method}" dropped (${this.droppedTabEvents} total) — no active page session (lazy-attach clients are command-only until Target.setAutoAttach)`,
         );
       }
     }

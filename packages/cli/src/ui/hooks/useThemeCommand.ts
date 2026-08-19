@@ -10,7 +10,7 @@ import type { LoadedSettings, SettingScope } from '../../config/settings.js'; //
 import { type HistoryItemWithoutId, MessageType } from '../types.js';
 import process from 'node:process';
 import { t } from '../../i18n/index.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 
 interface UseThemeCommandReturn {
   isThemeDialogOpen: boolean;

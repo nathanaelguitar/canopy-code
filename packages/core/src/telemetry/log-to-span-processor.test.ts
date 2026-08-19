@@ -606,7 +606,7 @@ describe('LogToSpanProcessor', () => {
       body: 'tool call cancelled',
       hrTime: [1000, 0] as [number, number],
       attributes: {
-        'event.name': 'qwen-code.tool_call',
+        'event.name': 'canopy-code.tool_call',
         status: 'cancelled',
         success: false,
         error: 'cancelled by user',
@@ -625,7 +625,7 @@ describe('LogToSpanProcessor', () => {
       body: 'auth cancelled with error',
       hrTime: [1000, 0] as [number, number],
       attributes: {
-        'event.name': 'qwen-code.auth',
+        'event.name': 'canopy-code.auth',
         status: 'cancelled',
         error_message: 'auth flow failed',
       },
@@ -842,13 +842,13 @@ describe('LogToSpanProcessor', () => {
   });
 
   describe('bridge skip-list (#3731 Phase 3)', () => {
-    it('skips qwen-code.subagent_execution when native subagent span is active', async () => {
+    it('skips canopy-code.subagent_execution when native subagent span is active', async () => {
       mockIsInNativeSubagentSpan = true;
       const logRecord = {
         body: 'subagent started',
         hrTime: [2000, 0] as [number, number],
         attributes: {
-          'event.name': 'qwen-code.subagent_execution',
+          'event.name': 'canopy-code.subagent_execution',
           subagent_name: 'Explore',
           status: 'started',
         },
@@ -867,7 +867,7 @@ describe('LogToSpanProcessor', () => {
         body: 'forked agent started',
         hrTime: [2500, 0] as [number, number],
         attributes: {
-          'event.name': 'qwen-code.subagent_execution',
+          'event.name': 'canopy-code.subagent_execution',
           subagent_name: 'dreamAgent',
           status: 'started',
         },
@@ -877,15 +877,15 @@ describe('LogToSpanProcessor', () => {
       await processor.forceFlush();
 
       expect(exportedSpans).toHaveLength(1);
-      expect(exportedSpans[0].name).toBe('qwen-code.subagent_execution');
+      expect(exportedSpans[0].name).toBe('canopy-code.subagent_execution');
     });
 
-    it('still bridges other events normally (e.g. qwen-code.tool_call)', async () => {
+    it('still bridges other events normally (e.g. canopy-code.tool_call)', async () => {
       const logRecord = {
         body: 'tool call',
         hrTime: [3000, 0] as [number, number],
         attributes: {
-          'event.name': 'qwen-code.tool_call',
+          'event.name': 'canopy-code.tool_call',
           tool_name: 'read_file',
         },
       } as unknown as ReadableLogRecord;
@@ -895,7 +895,7 @@ describe('LogToSpanProcessor', () => {
 
       // Sanity check: skip list is narrow — non-listed events still bridge.
       expect(exportedSpans).toHaveLength(1);
-      expect(exportedSpans[0].name).toBe('qwen-code.tool_call');
+      expect(exportedSpans[0].name).toBe('canopy-code.tool_call');
     });
   });
 

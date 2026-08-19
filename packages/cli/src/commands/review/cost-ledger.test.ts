@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -101,8 +101,8 @@ describe('cost-ledger — the spend, from the records already on disk', () => {
       plan,
       project,
       env: {
-        QWEN_CODE_PROJECT_DIR: project,
-        QWEN_CODE_SESSION_ID: SESSION,
+        CANOPY_CODE_PROJECT_DIR: project,
+        CANOPY_CODE_SESSION_ID: SESSION,
       } as NodeJS.ProcessEnv,
     };
   }
@@ -338,7 +338,7 @@ describe('cost-ledger — the spend, from the records already on disk', () => {
   it('throws TranscriptsUnavailable through to the caller when the env is bare', () => {
     const { plan } = fixture();
     expect(() => computeLedger(plan, {} as NodeJS.ProcessEnv)).toThrow(
-      /QWEN_CODE_PROJECT_DIR/,
+      /CANOPY_CODE_PROJECT_DIR/,
     );
   });
 
@@ -1095,7 +1095,7 @@ describe('cost-ledger command boundary — informational, never a failure', () =
   const savedEnv: Record<string, string | undefined> = {};
 
   function setEnv(env: NodeJS.ProcessEnv): void {
-    for (const k of ['QWEN_CODE_PROJECT_DIR', 'QWEN_CODE_SESSION_ID']) {
+    for (const k of ['CANOPY_CODE_PROJECT_DIR', 'CANOPY_CODE_SESSION_ID']) {
       if (!(k in savedEnv)) savedEnv[k] = process.env[k];
       if (env[k] === undefined) delete process.env[k];
       else process.env[k] = env[k];
@@ -1128,7 +1128,7 @@ describe('cost-ledger command boundary — informational, never a failure', () =
     return { plan, project };
   }
 
-  /** Drive the real yargs handler, as `qwen review cost-ledger` does. */
+  /** Drive the real yargs handler, as `canopy review cost-ledger` does. */
   function run(args: Record<string, unknown>): {
     stdout: string;
     stderr: string;
@@ -1165,13 +1165,13 @@ describe('cost-ledger command boundary — informational, never a failure', () =
     setEnv({} as NodeJS.ProcessEnv);
     const { stderr } = run({ plan });
     expect(stderr).toContain('cost-ledger unavailable');
-    expect(stderr).toContain('QWEN_CODE_PROJECT_DIR');
+    expect(stderr).toContain('CANOPY_CODE_PROJECT_DIR');
   });
 
   it('exits 0 and names the plan when the plan is missing', () => {
     setEnv({
-      QWEN_CODE_PROJECT_DIR: '/tmp',
-      QWEN_CODE_SESSION_ID: SESSION,
+      CANOPY_CODE_PROJECT_DIR: '/tmp',
+      CANOPY_CODE_SESSION_ID: SESSION,
     } as NodeJS.ProcessEnv);
     const { stderr } = run({ plan: '/nonexistent/plan.json' });
     expect(stderr).toContain('cost-ledger unavailable');
@@ -1187,8 +1187,8 @@ describe('cost-ledger command boundary — informational, never a failure', () =
     const { plan, project } = fixture();
     rmSync(join(project, 'chats', `${SESSION}.jsonl`));
     setEnv({
-      QWEN_CODE_PROJECT_DIR: project,
-      QWEN_CODE_SESSION_ID: SESSION,
+      CANOPY_CODE_PROJECT_DIR: project,
+      CANOPY_CODE_SESSION_ID: SESSION,
     } as NodeJS.ProcessEnv);
     const { stdout, stderr } = run({ plan });
     expect(stderr).toContain('cost-ledger unavailable');
@@ -1205,10 +1205,10 @@ describe('cost-ledger command boundary — informational, never a failure', () =
     const start = new Date('2026-08-03T10:00:00Z');
     utimesSync(plan, start, start);
     setEnv({
-      QWEN_CODE_PROJECT_DIR: project,
-      QWEN_CODE_SESSION_ID: SESSION,
+      CANOPY_CODE_PROJECT_DIR: project,
+      CANOPY_CODE_SESSION_ID: SESSION,
     } as NodeJS.ProcessEnv);
-    // A pipe whose reader left (`qwen … | head`): the write throws. All
+    // A pipe whose reader left (`canopy … | head`): the write throws. All
     // three terminal writes — the unavailable warning, the could-not-write
     // warning, and the ledger block — must absorb it; the review must never
     // fail on its own accounting, including the accounting of a reader that
@@ -1292,8 +1292,8 @@ describe('cost-ledger command boundary — informational, never a failure', () =
       ].join('\n'),
     );
     setEnv({
-      QWEN_CODE_PROJECT_DIR: project,
-      QWEN_CODE_SESSION_ID: SESSION,
+      CANOPY_CODE_PROJECT_DIR: project,
+      CANOPY_CODE_SESSION_ID: SESSION,
     } as NodeJS.ProcessEnv);
     const out = join(project, 'archive', 'nested', 'ledger.json');
     const { stdout } = run({ plan, out });
@@ -1330,8 +1330,8 @@ describe('cost-ledger command boundary — informational, never a failure', () =
       }),
     );
     setEnv({
-      QWEN_CODE_PROJECT_DIR: project,
-      QWEN_CODE_SESSION_ID: SESSION,
+      CANOPY_CODE_PROJECT_DIR: project,
+      CANOPY_CODE_SESSION_ID: SESSION,
     } as NodeJS.ProcessEnv);
     const blocked = join(project, 'blocked');
     writeFileSync(blocked, 'a file where the archive directory would go');
@@ -1376,8 +1376,8 @@ describe('cost-ledger — a resumed run bills the whole review', () => {
       plan,
       project,
       env: {
-        QWEN_CODE_PROJECT_DIR: project,
-        QWEN_CODE_SESSION_ID: SESSION,
+        CANOPY_CODE_PROJECT_DIR: project,
+        CANOPY_CODE_SESSION_ID: SESSION,
       } as NodeJS.ProcessEnv,
     };
   }
@@ -1386,17 +1386,17 @@ describe('cost-ledger — a resumed run bills the whole review', () => {
   function runLedger(plan: string): void {
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0' },
+      { CANOPY_CODE_SESSION_ID: 'S0' },
       Date.parse('2026-08-03T10:00:30Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
     recordResume(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
   }
@@ -1490,22 +1490,22 @@ describe('cost-ledger — a resumed run bills the whole review', () => {
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0' },
+      { CANOPY_CODE_SESSION_ID: 'S0' },
       Date.parse('2026-08-03T10:00:30Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0b' },
+      { CANOPY_CODE_SESSION_ID: 'S0b' },
       Date.parse('2026-08-03T10:05:00Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
     recordResume(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
 
@@ -1533,22 +1533,22 @@ describe('cost-ledger — a resumed run bills the whole review', () => {
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0' },
+      { CANOPY_CODE_SESSION_ID: 'S0' },
       Date.parse('2026-08-03T10:00:30Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0b' },
+      { CANOPY_CODE_SESSION_ID: 'S0b' },
       Date.parse('2026-08-03T10:05:00Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
     recordResume(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse('2026-08-03T10:09:00Z'),
     );
 
@@ -1727,8 +1727,8 @@ describe('cost-ledger — prior-session bounds, faults and wall time', () => {
       plan,
       project,
       env: {
-        QWEN_CODE_PROJECT_DIR: project,
-        QWEN_CODE_SESSION_ID: SESSION,
+        CANOPY_CODE_PROJECT_DIR: project,
+        CANOPY_CODE_SESSION_ID: SESSION,
       } as NodeJS.ProcessEnv,
     };
   }
@@ -1741,17 +1741,17 @@ describe('cost-ledger — prior-session bounds, faults and wall time', () => {
     const plan = join(project, 'plan.json');
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: 'S0' },
+      { CANOPY_CODE_SESSION_ID: 'S0' },
       Date.parse('2026-08-03T10:00:30Z'),
     );
     appendRunSession(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse(resumedAt),
     );
     recordResume(
       plan,
-      { QWEN_CODE_SESSION_ID: SESSION },
+      { CANOPY_CODE_SESSION_ID: SESSION },
       Date.parse(resumedAt),
     );
   }

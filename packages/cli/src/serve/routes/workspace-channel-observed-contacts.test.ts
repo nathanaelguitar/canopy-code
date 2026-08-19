@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,22 +38,22 @@ function registry(runtimes: WorkspaceRuntime[]): WorkspaceRegistry {
 }
 
 describe('workspace observed channel contact routes', () => {
-  let qwenHome: string;
-  let previousQwenHome: string | undefined;
+  let canopyHome: string;
+  let previousCanopyHome: string | undefined;
 
   beforeEach(async () => {
-    previousQwenHome = process.env['QWEN_HOME'];
-    qwenHome = await fsp.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-observed-contact-routes-'),
+    previousCanopyHome = process.env['QWEN_HOME'];
+    canopyHome = await fsp.mkdtemp(
+      path.join(os.tmpdir(), 'canopy-observed-contact-routes-'),
     );
-    process.env['QWEN_HOME'] = qwenHome;
+    process.env['QWEN_HOME'] = canopyHome;
   });
 
   afterEach(async () => {
     vi.restoreAllMocks();
-    if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = previousQwenHome;
-    await fsp.rm(qwenHome, { recursive: true, force: true });
+    if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = previousCanopyHome;
+    await fsp.rm(canopyHome, { recursive: true, force: true });
   });
 
   it('returns complete direct users and observed group/topic membership', async () => {
@@ -328,7 +328,7 @@ describe('workspace observed channel contact routes', () => {
     });
     expect(JSON.stringify(response.body)).not.toContain(filePath);
     expect(stderr).toHaveBeenCalledWith(
-      'qwen serve: observed channel contacts unavailable.\n',
+      'canopy serve: observed channel contacts unavailable.\n',
     );
   });
 });

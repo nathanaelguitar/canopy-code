@@ -15,13 +15,13 @@ export const UPDATE_RELAUNCH_EXIT_CODE = 43;
 
 export const UPDATE_COMPLETE_EXIT_CODE = 44;
 
-export const SKIP_UPDATE_CHECK_ENV_VAR = 'QWEN_CODE_SKIP_UPDATE_CHECK_ONCE';
+export const SKIP_UPDATE_CHECK_ENV_VAR = 'CANOPY_CODE_SKIP_UPDATE_CHECK_ONCE';
 
-export const CUSTOM_SANDBOX_IMAGE_ENV_VAR = 'QWEN_CODE_CUSTOM_SANDBOX_IMAGE';
+export const CUSTOM_SANDBOX_IMAGE_ENV_VAR = 'CANOPY_CODE_CUSTOM_SANDBOX_IMAGE';
 
-export const HOST_UPDATE_RELAUNCH_ENV_VAR = 'QWEN_CODE_HOST_UPDATE_RELAUNCH';
+export const HOST_UPDATE_RELAUNCH_ENV_VAR = 'CANOPY_CODE_HOST_UPDATE_RELAUNCH';
 
-export const UPDATE_ON_EXIT_MESSAGE = 'qwen-code:update-on-exit';
+export const UPDATE_ON_EXIT_MESSAGE = 'canopy-code:update-on-exit';
 
 /**
  * Exits the process with a special code to signal that the parent process should relaunch it.

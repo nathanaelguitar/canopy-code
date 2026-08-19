@@ -298,7 +298,7 @@ describe('GeminiChat', async () => {
       isolatedChat.setSessionStartContext('Ctx2');
 
       expect(isolatedChat['generationConfig'].systemInstruction).toBe(
-        'Base instruction\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</qwen:session-start-context>',
+        'Base instruction\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</canopy:session-start-context>',
       );
     });
 
@@ -318,7 +318,7 @@ describe('GeminiChat', async () => {
       isolatedChat.setSessionStartContext('Ctx2');
 
       expect(isolatedChat['generationConfig'].systemInstruction).toBe(
-        'Base instruction\n\n---\n\nUser memory\n\n---\n\nAppended rule\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</qwen:session-start-context>',
+        'Base instruction\n\n---\n\nUser memory\n\n---\n\nAppended rule\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</canopy:session-start-context>',
       );
     });
 
@@ -340,7 +340,7 @@ describe('GeminiChat', async () => {
       isolatedChat.setSessionStartContext('Ctx2');
 
       expect(isolatedChat['generationConfig'].systemInstruction).toBe(
-        'Base content instruction\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</qwen:session-start-context>',
+        'Base content instruction\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx2\n</canopy:session-start-context>',
       );
     });
 
@@ -360,7 +360,7 @@ describe('GeminiChat', async () => {
       );
 
       expect(isolatedChat['generationConfig'].systemInstruction).toBe(
-        'Base instruction\n\n<qwen:session-start-context hidden="true">\nSessionStart additional context:\nSync ctx\n</qwen:session-start-context>',
+        'Base instruction\n\n<canopy:session-start-context hidden="true">\nSessionStart additional context:\nSync ctx\n</canopy:session-start-context>',
       );
     });
 
@@ -382,7 +382,7 @@ describe('GeminiChat', async () => {
         'Legitimate content',
       );
       expect(isolatedChat['generationConfig'].systemInstruction).toContain(
-        '<qwen:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</qwen:session-start-context>',
+        '<canopy:session-start-context hidden="true">\nSessionStart additional context:\nCtx1\n</canopy:session-start-context>',
       );
     });
   });
@@ -413,7 +413,7 @@ describe('GeminiChat', async () => {
 
       expect(mockAcquireSleepInhibitor).toHaveBeenCalledWith(
         mockConfig,
-        'Qwen Code is streaming a model response',
+        'Canopy Code is streaming a model response',
       );
       expect(mockSleepInhibitorRelease).toHaveBeenCalledTimes(1);
     });
@@ -1474,7 +1474,7 @@ describe('GeminiChat', async () => {
           event.type === StreamEventType.CHUNK &&
           event.value.functionCalls?.length,
       );
-      expect(preparation?.callId).toBe('call-1__qwen_dup_2');
+      expect(preparation?.callId).toBe('call-1__canopy_dup_2');
       expect(
         functionCall?.type === StreamEventType.CHUNK
           ? functionCall.value.functionCalls?.[0]?.id
@@ -5150,8 +5150,8 @@ describe('GeminiChat', async () => {
       expect(requestConfig.maxOutputTokens).toBe(32_000);
     });
 
-    it('uses QWEN_CODE_MAX_OUTPUT_TOKENS as the ceiling when set', async () => {
-      process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'] = '12000';
+    it('uses CANOPY_CODE_MAX_OUTPUT_TOKENS as the ceiling when set', async () => {
+      process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'] = '12000';
       try {
         vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
           authType: AuthType.USE_GEMINI,
@@ -5197,7 +5197,7 @@ describe('GeminiChat', async () => {
         ).mock.calls[0][0].config as { maxOutputTokens?: number };
         expect(requestConfig.maxOutputTokens).toBe(12_000);
       } finally {
-        delete process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'];
+        delete process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'];
       }
     });
 
@@ -6473,7 +6473,7 @@ describe('GeminiChat', async () => {
     });
 
     it('does not enter the fallback chain in unattended retry mode', async () => {
-      vi.stubEnv('QWEN_CODE_UNATTENDED_RETRY', '1');
+      vi.stubEnv('CANOPY_CODE_UNATTENDED_RETRY', '1');
       try {
         vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
           authType: AuthType.USE_GEMINI,

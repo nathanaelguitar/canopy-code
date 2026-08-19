@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,13 +21,13 @@
 /**
  * Vendor extension namespace. ACP reserves any `_`-prefixed method for
  * extensions (the ONLY hard rule); the spec's `_zed.dev/…` example shows a
- * domain-style segment by convention, but `qwen` is distinctive enough that
- * we use the shorter bare form `_qwen/…`. Vendor data on standard messages
- * goes under `_meta` keyed by the same name (`_meta: { "qwen": … }`).
+ * domain-style segment by convention, but `canopy` is distinctive enough that
+ * we use the shorter bare form `_canopy/…`. Vendor data on standard messages
+ * goes under `_meta` keyed by the same name (`_meta: { "canopy": … }`).
  */
-export const QWEN_METHOD_NS = '_qwen/';
+export const CANOPY_METHOD_NS = '_canopy/';
 /** Key for vendor `_meta` blocks (capabilities + per-message data). */
-export const QWEN_META_KEY = 'qwen';
+export const CANOPY_META_KEY = 'canopy';
 
 export type JsonRpcId = number | string;
 

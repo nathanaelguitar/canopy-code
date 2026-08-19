@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,12 +20,12 @@ import {
   createDisabledChannelWorkerSupervisor,
   createBoundChannelDeliveryHandler,
   resolveRuntimeStartupTimeoutMs,
-  runQwenServe,
+  runCanopyServe,
   type RunHandle,
   subSessionConcurrencyCapsFromSettings,
   validatePolicyConfig,
   waitForRuntimeStartingForShutdown,
-} from './run-qwen-serve.js';
+} from './run-canopy-serve.js';
 import { isBrowserAutomationMcpAvailable } from './cdp-mcp-command.js';
 import { loadServeFastPathEnvironment } from './fast-path-settings.js';
 import { loadEnvironment } from '../config/environment.js';
@@ -47,7 +47,7 @@ import type {
   BridgeDaemonStatusSnapshot,
   HttpAcpBridge,
 } from '@qwen-code/acp-bridge/bridgeTypes';
-import * as qwenCore from '@qwen-code/qwen-code-core';
+import * as canopyCore from '@canopy-code/canopy-code-core';
 import * as serverModule from './server.js';
 import * as webShellResolver from './web-shell-resolver.js';
 import * as webShellStatic from './web-shell-static.js';
@@ -75,14 +75,14 @@ import { getDeferredRuntimeRequestTiming } from './server/request-helpers.js';
 import type { WorkspaceFileSystemFactory } from './fs/workspace-file-system.js';
 import { ConversationWorkspace } from './conversations/conversation-workspace.js';
 
-const originalTestRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+const originalTestRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
 const isolatedTestRuntimeDir = fs.realpathSync(
   fs.mkdtempSync(path.join(os.tmpdir(), 'qws-run-serve-tests-')),
 );
-process.env['QWEN_RUNTIME_DIR'] = isolatedTestRuntimeDir;
+process.env['CANOPY_RUNTIME_DIR'] = isolatedTestRuntimeDir;
 
 afterEach(() => {
-  process.env['QWEN_RUNTIME_DIR'] = isolatedTestRuntimeDir;
+  process.env['CANOPY_RUNTIME_DIR'] = isolatedTestRuntimeDir;
   // Unconditional: a test that pins host memory but rejects before its
   // try/finally cleanup would otherwise leak the figure into later
   // memory-budget tests.
@@ -91,9 +91,9 @@ afterEach(() => {
 
 afterAll(() => {
   if (originalTestRuntimeDir === undefined) {
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
   } else {
-    process.env['QWEN_RUNTIME_DIR'] = originalTestRuntimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = originalTestRuntimeDir;
   }
   fs.rmSync(isolatedTestRuntimeDir, { recursive: true, force: true });
 });
@@ -503,7 +503,7 @@ function writeWebShellFixture(workspaceDir: string): string {
 async function startDeferredDaemon(
   workspace: string,
   overrides: {
-    serveOptions?: Partial<Parameters<typeof runQwenServe>[0]>;
+    serveOptions?: Partial<Parameters<typeof runCanopyServe>[0]>;
     createBridge?: () => HttpAcpBridge;
   } = {},
 ) {
@@ -515,7 +515,7 @@ async function startDeferredDaemon(
         : makeRuntimeBridge();
       return bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>;
     });
-  const handle = await runQwenServe(
+  const handle = await runCanopyServe(
     {
       port: 0,
       hostname: '127.0.0.1',
@@ -608,15 +608,15 @@ vi.mock('./channel-worker-manager.js', async (importOriginal) => {
 describe('workspace skill settings persistence', () => {
   let handle: RunHandle | undefined;
   let workspace = '';
-  let qwenHome = '';
-  let previousQwenHome: string | undefined;
+  let canopyHome = '';
+  let previousCanopyHome: string | undefined;
 
   afterEach(async () => {
     await handle?.close();
     if (workspace) fs.rmSync(workspace, { recursive: true, force: true });
-    if (qwenHome) fs.rmSync(qwenHome, { recursive: true, force: true });
-    if (previousQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = previousQwenHome;
+    if (canopyHome) fs.rmSync(canopyHome, { recursive: true, force: true });
+    if (previousCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = previousCanopyHome;
     settingsRuntime.resetHomeEnvBootstrapForTesting();
     vi.restoreAllMocks();
   });
@@ -625,21 +625,21 @@ describe('workspace skill settings persistence', () => {
     workspace = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-settings-')),
     );
-    qwenHome = fs.realpathSync(
+    canopyHome = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-home-')),
     );
-    previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     settingsRuntime.resetHomeEnvBootstrapForTesting();
-    fs.mkdirSync(path.join(workspace, '.qwen'), { recursive: true });
+    fs.mkdirSync(path.join(workspace, '.canopy'), { recursive: true });
     fs.writeFileSync(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({
         skills: { disabled: ['orphan', ' ReViEw ', 'review'] },
       }),
     );
     fs.writeFileSync(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         skills: {
           disabled: ['locked-skill'],
@@ -659,7 +659,7 @@ describe('workspace skill settings persistence', () => {
       persistDisabledSkills = args[2]?.persistDisabledSkills;
       return originalCreateServeApp(...args);
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -710,7 +710,7 @@ describe('workspace skill settings persistence', () => {
     });
 
     const saved = JSON.parse(
-      fs.readFileSync(path.join(workspace, '.qwen', 'settings.json'), 'utf8'),
+      fs.readFileSync(path.join(workspace, '.canopy', 'settings.json'), 'utf8'),
     ) as { skills: { disabled: string[]; enabled: string[] } };
     expect(saved.skills.disabled).toEqual(['orphan', 'alpha', 'beta']);
     expect(saved.skills.enabled).toEqual(['opt-in-skill']);
@@ -723,21 +723,21 @@ describe('workspace skill settings persistence', () => {
     workspace = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-dual-')),
     );
-    qwenHome = fs.realpathSync(
+    canopyHome = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-dual-home-')),
     );
-    previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     settingsRuntime.resetHomeEnvBootstrapForTesting();
-    fs.mkdirSync(path.join(workspace, '.qwen'), { recursive: true });
+    fs.mkdirSync(path.join(workspace, '.canopy'), { recursive: true });
     fs.writeFileSync(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({
         skills: { disabled: ['dual-skill'] },
       }),
     );
     fs.writeFileSync(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         skills: { defaultDisabled: ['dual-skill'] },
       }),
@@ -759,7 +759,7 @@ describe('workspace skill settings persistence', () => {
       persistDisabledTools = args[2]?.persistDisabledTools;
       return originalCreateServeApp(...args);
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -785,7 +785,7 @@ describe('workspace skill settings persistence', () => {
     });
 
     const saved = JSON.parse(
-      fs.readFileSync(path.join(workspace, '.qwen', 'settings.json'), 'utf8'),
+      fs.readFileSync(path.join(workspace, '.canopy', 'settings.json'), 'utf8'),
     ) as { skills: { disabled?: string[]; enabled: string[] } };
     expect(saved.skills.disabled).toBeUndefined();
     expect(saved.skills.enabled).toEqual(['dual-skill']);
@@ -814,19 +814,19 @@ describe('workspace skill settings persistence', () => {
     workspace = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-batch-')),
     );
-    qwenHome = fs.realpathSync(
+    canopyHome = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-skill-batch-home-')),
     );
-    previousQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = qwenHome;
+    previousCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = canopyHome;
     settingsRuntime.resetHomeEnvBootstrapForTesting();
-    fs.mkdirSync(path.join(workspace, '.qwen'), { recursive: true });
+    fs.mkdirSync(path.join(workspace, '.canopy'), { recursive: true });
     fs.writeFileSync(
-      path.join(workspace, '.qwen', 'settings.json'),
+      path.join(workspace, '.canopy', 'settings.json'),
       JSON.stringify({ skills: { disabled: ['orphan'] } }),
     );
     fs.writeFileSync(
-      path.join(qwenHome, 'settings.json'),
+      path.join(canopyHome, 'settings.json'),
       JSON.stringify({
         skills: {
           disabled: ['locked-skill'],
@@ -845,7 +845,7 @@ describe('workspace skill settings persistence', () => {
       persistDisabledSkillsBatch = args[2]?.persistDisabledSkillsBatch;
       return originalCreateServeApp(...args);
     });
-    handle = await runQwenServe(
+    handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -901,7 +901,7 @@ describe('workspace skill settings persistence', () => {
     expect(setValues).toHaveBeenCalledOnce();
 
     const savedAfterDisable = JSON.parse(
-      fs.readFileSync(path.join(workspace, '.qwen', 'settings.json'), 'utf8'),
+      fs.readFileSync(path.join(workspace, '.canopy', 'settings.json'), 'utf8'),
     ) as { skills: { disabled: string[]; enabled?: string[] } };
     expect(savedAfterDisable.skills.disabled).toEqual([
       'orphan',
@@ -910,7 +910,7 @@ describe('workspace skill settings persistence', () => {
     ]);
     expect(savedAfterDisable.skills.enabled).toBeUndefined();
     const savedUser = JSON.parse(
-      fs.readFileSync(path.join(qwenHome, 'settings.json'), 'utf8'),
+      fs.readFileSync(path.join(canopyHome, 'settings.json'), 'utf8'),
     ) as { skills: { disabled: string[]; enabled?: string[] } };
     expect(savedUser.skills.disabled).toEqual(['locked-skill']);
     expect(savedUser.skills.enabled).toBeUndefined();
@@ -957,7 +957,7 @@ describe('workspace skill settings persistence', () => {
     expect(setValues).toHaveBeenCalledTimes(3);
 
     const savedAfterEnable = JSON.parse(
-      fs.readFileSync(path.join(workspace, '.qwen', 'settings.json'), 'utf8'),
+      fs.readFileSync(path.join(workspace, '.canopy', 'settings.json'), 'utf8'),
     ) as { skills: { disabled: string[]; enabled: string[] } };
     expect(savedAfterEnable.skills.disabled).toEqual(['review', 'alpha']);
     expect(savedAfterEnable.skills.enabled).toEqual(['opt-in']);
@@ -986,12 +986,12 @@ describe('workspace skill settings persistence', () => {
 /**
  * #4297 fold-in 7 (deepseek S1, addresses #3262690842). Lock the
  * `context.fileName` extraction logic so a regression doesn't
- * silently re-enable the P2-1 bug (init writes default `QWEN.md`
+ * silently re-enable the P2-1 bug (init writes default `CANOPY.md`
  * even when the workspace configured `AGENTS.md` etc.). The four
  * branches the suggestion called out are exercised explicitly here;
- * the runQwenServe boot path itself stays integration-tested
+ * the runCanopyServe boot path itself stays integration-tested
  * end-to-end via the daemon-process tests in
- * `integration-tests/cli/qwen-serve-routes.test.ts`.
+ * `integration-tests/cli/canopy-serve-routes.test.ts`.
  */
 describe('extractContextFilename (#4297 fold-in 7 P2-1 helper)', () => {
   it('returns a trimmed string when given a non-empty string', () => {
@@ -1244,10 +1244,10 @@ describe('validatePolicyConfig (#4335 boot validation)', () => {
 
 /**
  * Integration test: verify daemon logger is initialized and written to
- * during `runQwenServe` boot + shutdown. Uses a fake bridge to avoid
- * spawning real `qwen --acp` child processes.
+ * during `runCanopyServe` boot + shutdown. Uses a fake bridge to avoid
+ * spawning real `canopy --acp` child processes.
  */
-describe('runQwenServe daemon logger wiring', () => {
+describe('runCanopyServe daemon logger wiring', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -1261,7 +1261,7 @@ describe('runQwenServe daemon logger wiring', () => {
     const workspace = tmpDir;
     const debugDir = path.join(tmpDir, 'debug');
 
-    // Minimal fake bridge satisfying the shape runQwenServe expects.
+    // Minimal fake bridge satisfying the shape runCanopyServe expects.
     const fakeBridge: HttpAcpBridge = {
       spawnOrAttach: vi.fn(),
       shutdown: vi.fn().mockResolvedValue(undefined),
@@ -1275,13 +1275,13 @@ describe('runQwenServe daemon logger wiring', () => {
     } as unknown as HttpAcpBridge;
 
     // Point daemon logger at our temp debug dir
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    const originalScope = process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
-    delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    const originalScope = process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
+    delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
 
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -1344,30 +1344,32 @@ describe('runQwenServe daemon logger wiring', () => {
       expect(suppressedIndex).toBeGreaterThanOrEqual(0);
       expect(stoppedIndex).toBeGreaterThan(suppressedIndex);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
       if (originalScope === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+        delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
       } else {
-        process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = originalScope;
+        process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = originalScope;
       }
     }
   }, 10_000);
 });
 
-describe('runQwenServe telemetry validation', () => {
+describe('runCanopyServe telemetry validation', () => {
   let tmpDir: string;
   const originalSensitiveSpanAttributeMaxLengthEnv =
-    process.env['QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'];
+    process.env['CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'];
 
   afterEach(() => {
     vi.restoreAllMocks();
     if (originalSensitiveSpanAttributeMaxLengthEnv === undefined) {
-      delete process.env['QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'];
+      delete process.env[
+        'CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'
+      ];
     } else {
-      process.env['QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'] =
+      process.env['CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'] =
         originalSensitiveSpanAttributeMaxLengthEnv;
     }
     if (tmpDir) {
@@ -1377,9 +1379,9 @@ describe('runQwenServe telemetry validation', () => {
 
   it('wraps invalid daemon telemetry configuration as FatalConfigError', async () => {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-tv-')));
-    process.env['QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'] = '';
+    process.env['CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH'] = '';
 
-    const run = runQwenServe({
+    const run = runCanopyServe({
       port: 0,
       hostname: '127.0.0.1',
       mode: 'http-bridge',
@@ -1387,7 +1389,7 @@ describe('runQwenServe telemetry validation', () => {
       maxSessions: 1,
     });
 
-    await expect(run).rejects.toThrow(qwenCore.FatalConfigError);
+    await expect(run).rejects.toThrow(canopyCore.FatalConfigError);
     await expect(run).rejects.toThrow(/Invalid telemetry configuration:/);
   });
 
@@ -1397,7 +1399,7 @@ describe('runQwenServe telemetry validation', () => {
     const secondary = path.join(tmpDir, 'secondary');
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -1415,7 +1417,7 @@ describe('runQwenServe telemetry validation', () => {
         return bridge;
       });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -1478,7 +1480,7 @@ describe('runQwenServe telemetry validation', () => {
           content: `runtime-${index}`,
           sessionId: `session-static-${index}`,
           _meta: {
-            'qwen-code/tool-write-origin': {
+            'canopy-code/tool-write-origin': {
               version: 1,
               source: 'write_file',
             },
@@ -1515,7 +1517,7 @@ describe('runQwenServe telemetry validation', () => {
     );
     const workspace = path.join(tmpDir, 'workspace');
     fs.mkdirSync(workspace);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -1537,7 +1539,7 @@ describe('runQwenServe telemetry validation', () => {
         }) as never,
     } satisfies WorkspaceFileSystemFactory;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -1559,7 +1561,7 @@ describe('runQwenServe telemetry validation', () => {
           content: 'must-not-write',
           sessionId: 'session-injected-primary',
           _meta: {
-            'qwen-code/tool-write-origin': {
+            'canopy-code/tool-write-origin': {
               version: 1,
               source: 'write_file',
             },
@@ -1578,7 +1580,7 @@ describe('runQwenServe telemetry validation', () => {
     );
     const workspace = path.join(tmpDir, 'workspace');
     fs.mkdirSync(workspace);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -1602,7 +1604,7 @@ describe('runQwenServe telemetry validation', () => {
       return originalCreateWorkspaceService(deps);
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -1621,9 +1623,9 @@ describe('runQwenServe telemetry validation', () => {
       ).json()) as { features: string[] };
       expect(before.features).not.toContain('workspace_voice_transcription');
 
-      fs.mkdirSync(path.join(workspace, '.qwen'));
+      fs.mkdirSync(path.join(workspace, '.canopy'));
       fs.writeFileSync(
-        path.join(workspace, '.qwen', 'settings.json'),
+        path.join(workspace, '.canopy', 'settings.json'),
         JSON.stringify({
           modelProviders: {
             openai: [
@@ -1658,7 +1660,7 @@ describe('runQwenServe telemetry validation', () => {
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
     const secondaryCwd = canonicalizeWorkspace(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -1703,7 +1705,7 @@ describe('runQwenServe telemetry validation', () => {
         'constrainedMemory',
       )
       .mockReturnValue(0);
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -1797,7 +1799,7 @@ describe('runQwenServe telemetry validation', () => {
         content: 'first-generation',
         sessionId: 'session-dynamic-first',
         _meta: {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },
@@ -1852,7 +1854,7 @@ describe('runQwenServe telemetry validation', () => {
           content: 'must-not-write',
           sessionId: 'session-dynamic-closed',
           _meta: {
-            'qwen-code/tool-write-origin': {
+            'canopy-code/tool-write-origin': {
               version: 1,
               source: 'write_file',
             },
@@ -1889,7 +1891,7 @@ describe('runQwenServe telemetry validation', () => {
         content: 'second-generation',
         sessionId: 'session-dynamic-second',
         _meta: {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },
@@ -1946,7 +1948,7 @@ describe('runQwenServe telemetry validation', () => {
     const secondary = path.join(tmpDir, 'secondary');
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -1981,7 +1983,7 @@ describe('runQwenServe telemetry validation', () => {
         throw new Error('workspace service construction failed');
       });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2044,7 +2046,7 @@ describe('runQwenServe telemetry validation', () => {
       workspaceServiceRuntime,
       'createDaemonWorkspaceService',
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -2075,7 +2077,7 @@ describe('runQwenServe telemetry validation', () => {
       effective: { state: 'trusted' },
     } as ReturnType<typeof trustedFoldersRuntime.getWorkspaceTrustStatus>);
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2157,7 +2159,7 @@ describe('runQwenServe telemetry validation', () => {
           typeof acpBridge.createAcpSessionBridge
         >,
       );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -2187,7 +2189,7 @@ describe('runQwenServe telemetry validation', () => {
           },
         }) as ReturnType<typeof trustedFoldersRuntime.getWorkspaceTrustStatus>,
     );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2217,12 +2219,12 @@ describe('runQwenServe telemetry validation', () => {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
     const primary = path.join(tmpDir, 'primary');
     fs.mkdirSync(primary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2250,13 +2252,13 @@ describe('runQwenServe telemetry validation', () => {
   it('uses a daemon-scoped telemetry service instance id', async () => {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-tv-')));
     const initializeTelemetry = vi
-      .spyOn(qwenCore, 'initializeTelemetry')
+      .spyOn(canopyCore, 'initializeTelemetry')
       .mockResolvedValue(undefined);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2287,19 +2289,19 @@ describe('runQwenServe telemetry validation', () => {
   it('awaits telemetry initialization before daemon metrics', async () => {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-tm-')));
     const callOrder: string[] = [];
-    vi.spyOn(qwenCore, 'initializeTelemetry').mockImplementation(async () => {
+    vi.spyOn(canopyCore, 'initializeTelemetry').mockImplementation(async () => {
       callOrder.push('telemetry-start');
       await Promise.resolve();
       callOrder.push('telemetry-resolved');
     });
-    vi.spyOn(qwenCore, 'initializeDaemonMetrics').mockImplementation(() => {
+    vi.spyOn(canopyCore, 'initializeDaemonMetrics').mockImplementation(() => {
       callOrder.push('daemon-metrics');
     });
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: true,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2326,12 +2328,12 @@ describe('runQwenServe telemetry validation', () => {
 });
 
 /**
- * Boot validation for the embedded `runQwenServe` API: a non-finite
+ * Boot validation for the embedded `runCanopyServe` API: a non-finite
  * `permissionResponseTimeoutMs` (e.g. config- or NaN-derived) must fail
  * loud rather than reach the bridge, where it would be treated as the
  * "disabled" sentinel and silently drop the permission deadline.
  */
-describe('runQwenServe permissionResponseTimeoutMs validation', () => {
+describe('runCanopyServe permissionResponseTimeoutMs validation', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -2349,12 +2351,12 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
     } as unknown as HttpAcpBridge;
 
     // Keep the daemon logger inside the temp dir so the boot path before
-    // the validation throw doesn't write into the real ~/.qwen.
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    // the validation throw doesn't write into the real ~/.canopy.
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -2373,9 +2375,9 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
       expect(log).toContain('daemon startup failed');
       expect(log).not.toContain('daemon stopped');
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -2387,8 +2389,8 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
       shutdown: vi.fn().mockResolvedValue(undefined),
       killAllSync: vi.fn(),
     } as unknown as HttpAcpBridge;
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     const stderr = vi
       .spyOn(process.stderr, 'write')
       .mockImplementation((chunk) => {
@@ -2400,7 +2402,7 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
 
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -2414,9 +2416,9 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
       ).rejects.toThrow(/permissionResponseTimeoutMs/);
     } finally {
       stderr.mockRestore();
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
 
@@ -2433,7 +2435,7 @@ describe('runQwenServe permissionResponseTimeoutMs validation', () => {
  * depends on `childHeapMode`, which defaults to `observe` and sizes nothing.
  * The only boot-time behavior is rejecting an out-of-range flag value.
  */
-describe('runQwenServe memory budget', () => {
+describe('runCanopyServe memory budget', () => {
   let tmpDirs: string[] = [];
 
   afterEach(() => {
@@ -2453,7 +2455,7 @@ describe('runQwenServe memory budget', () => {
 
   it('reports the resolved budget over HTTP without sizing any child', async () => {
     const dir = makeTmpDir();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2633,11 +2635,11 @@ describe('runQwenServe memory budget', () => {
 
   it('rejects a budget below the documented minimum', async () => {
     const dir = makeTmpDir();
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = dir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = dir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -2656,8 +2658,8 @@ describe('runQwenServe memory budget', () => {
         ),
       ).rejects.toThrow(/memoryBudgetMb/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
-      if (origEnv !== undefined) process.env['QWEN_RUNTIME_DIR'] = origEnv;
+      delete process.env['CANOPY_RUNTIME_DIR'];
+      if (origEnv !== undefined) process.env['CANOPY_RUNTIME_DIR'] = origEnv;
     }
   });
 
@@ -2670,7 +2672,7 @@ describe('runQwenServe memory budget', () => {
         stderrWrites.push(String(chunk));
         return true;
       });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2710,7 +2712,7 @@ describe('runQwenServe memory budget', () => {
         stderrWrites.push(String(chunk));
         return true;
       });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2752,7 +2754,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2808,7 +2810,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2857,7 +2859,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2908,7 +2910,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -2958,7 +2960,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -3009,7 +3011,7 @@ describe('runQwenServe memory budget', () => {
             typeof acpBridge.createAcpSessionBridge
           >,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -3069,7 +3071,7 @@ describe('runQwenServe memory budget', () => {
   });
 });
 
-describe('runQwenServe initializeTimeoutMs validation', () => {
+describe('runCanopyServe initializeTimeoutMs validation', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -3086,11 +3088,11 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
       killAllSync: vi.fn(),
     } as unknown as HttpAcpBridge;
 
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3103,9 +3105,9 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
         ),
       ).rejects.toThrow(/initializeTimeoutMs/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3118,11 +3120,11 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
       killAllSync: vi.fn(),
     } as unknown as HttpAcpBridge;
 
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3135,9 +3137,9 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
         ),
       ).rejects.toThrow(/initializeTimeoutMs/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3150,11 +3152,11 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
       killAllSync: vi.fn(),
     } as unknown as HttpAcpBridge;
 
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3167,9 +3169,9 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
         ),
       ).rejects.toThrow(/initializeTimeoutMs/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3182,15 +3184,15 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
       .mockReturnValue(
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
 
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -3213,9 +3215,9 @@ describe('runQwenServe initializeTimeoutMs validation', () => {
         await handle.close();
       }
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3328,7 +3330,7 @@ dfOrXxrzy0bEsqEN1JpFwcVI4sUXm/JQSxO6mI5osX1e9qGF3p12aK6fWrPwaj1T
 -----END PRIVATE KEY-----
 `;
 
-describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
+describe('runCanopyServe TLS (--tls-cert / --tls-key)', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -3352,11 +3354,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-tls-')),
     );
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3369,9 +3371,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/--tls-cert and --tls-key must be provided together/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3380,11 +3382,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-tls-')),
     );
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3398,9 +3400,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/Failed to read --tls-cert/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3414,11 +3416,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     );
     const certPath = path.join(tmpDir, 'cert.pem');
     fs.writeFileSync(certPath, TEST_TLS_CERT);
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3432,9 +3434,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/Failed to read --tls-key/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3449,11 +3451,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     const keyPath = path.join(tmpDir, 'key.pem');
     fs.writeFileSync(certPath, TEST_TLS_CERT_EXPIRED);
     fs.writeFileSync(keyPath, TEST_TLS_KEY_EXPIRED);
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3467,9 +3469,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/expired on/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3485,11 +3487,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     const keyPath = path.join(tmpDir, 'key.pem');
     fs.writeFileSync(certPath, 'not a real certificate');
     fs.writeFileSync(keyPath, TEST_TLS_KEY);
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3503,9 +3505,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/is not a valid certificate/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3522,11 +3524,11 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     const keyPath = path.join(tmpDir, 'key.pem');
     fs.writeFileSync(certPath, TEST_TLS_CERT);
     fs.writeFileSync(keyPath, TEST_TLS_KEY_EXPIRED);
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3540,9 +3542,9 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
         ),
       ).rejects.toThrow(/could not be loaded/);
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   });
@@ -3557,10 +3559,10 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
     fs.writeFileSync(keyPath, TEST_TLS_KEY);
 
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockReturnValue(
-      new Promise<qwenCore.ResolvedTelemetrySettings>((resolve) => {
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockReturnValue(
+      new Promise<canopyCore.ResolvedTelemetrySettings>((resolve) => {
         resolveTelemetry = resolve;
       }),
     );
@@ -3581,7 +3583,7 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -3623,7 +3625,7 @@ describe('runQwenServe TLS (--tls-cert / --tls-key)', () => {
   });
 });
 
-describe('runQwenServe pre-listen bridge option validation', () => {
+describe('runCanopyServe pre-listen bridge option validation', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -3663,7 +3665,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
       });
 
       await expect(
-        runQwenServe({
+        runCanopyServe({
           port: 0,
           hostname: '127.0.0.1',
           mode: 'http-bridge',
@@ -3671,7 +3673,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
           [optionName]: value,
         }),
       ).rejects.toThrow(message);
-      expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+      expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
     },
   );
 
@@ -3693,7 +3695,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
       });
 
       await expect(
-        runQwenServe({
+        runCanopyServe({
           port: 0,
           hostname: '127.0.0.1',
           mode: 'http-bridge',
@@ -3702,7 +3704,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
           [optionName]: value,
         }),
       ).rejects.toThrow(message);
-      expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+      expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
     },
   );
 
@@ -3721,7 +3723,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
     });
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -3731,7 +3733,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
         { bridge: makeRuntimeBridge() },
       ),
     ).rejects.toThrow(/Injected bridge dependencies/);
-    expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+    expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
   });
 
   it.each(['root', 'child', 'missing-child', 'alias'] as const)(
@@ -3771,7 +3773,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
       });
 
       await expect(
-        runQwenServe(
+        runCanopyServe(
           {
             port: 0,
             hostname: '127.0.0.1',
@@ -3781,7 +3783,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
           { liveConversationWorkspace },
         ),
       ).rejects.toThrow(/reserved for Conversations/);
-      expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+      expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
     },
   );
 
@@ -3797,7 +3799,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
     process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'] = 'ambient-secret';
 
     await expect(
-      runQwenServe({
+      runCanopyServe({
         port: 0,
         hostname: '127.0.0.1',
         mode: 'http-bridge',
@@ -3805,9 +3807,9 @@ describe('runQwenServe pre-listen bridge option validation', () => {
         externalToolGuard: {
           mode: 'optional',
         },
-      } as unknown as Parameters<typeof runQwenServe>[0]),
+      } as unknown as Parameters<typeof runCanopyServe>[0]),
     ).rejects.toThrow(/externalToolGuard/);
-    expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+    expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
     expect(process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN']).toBeUndefined();
   });
 
@@ -3822,7 +3824,7 @@ describe('runQwenServe pre-listen bridge option validation', () => {
     });
 
     await expect(
-      runQwenServe({
+      runCanopyServe({
         port: 0,
         hostname: '127.0.0.1',
         mode: 'http-bridge',
@@ -3834,11 +3836,11 @@ describe('runQwenServe pre-listen bridge option validation', () => {
         },
       }),
     ).rejects.toThrow(/loopback/);
-    expect(stdoutWrites.join('')).not.toContain('qwen serve listening on');
+    expect(stdoutWrites.join('')).not.toContain('canopy serve listening on');
   });
 });
 
-describe('runQwenServe session reaper timeout validation', () => {
+describe('runCanopyServe session reaper timeout validation', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -3866,10 +3868,10 @@ describe('runQwenServe session reaper timeout validation', () => {
     value: number,
   ) {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-rt-')));
-    const origEnv = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const origEnv = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
-      return await runQwenServe(
+      return await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -3881,9 +3883,9 @@ describe('runQwenServe session reaper timeout validation', () => {
         { bridge: makeFakeBridge() },
       );
     } finally {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
       if (origEnv !== undefined) {
-        process.env['QWEN_RUNTIME_DIR'] = origEnv;
+        process.env['CANOPY_RUNTIME_DIR'] = origEnv;
       }
     }
   }
@@ -3915,7 +3917,7 @@ describe('runQwenServe session reaper timeout validation', () => {
   );
 });
 
-describe('runQwenServe runtime startup failures', () => {
+describe('runCanopyServe runtime startup failures', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -3927,34 +3929,34 @@ describe('runQwenServe runtime startup failures', () => {
 
   async function readBrowserMcpFeatureFlagsForEnv(
     raw: string | undefined,
-    origin = 'chrome-extension://qwen-test-extension',
+    origin = 'chrome-extension://canopy-test-extension',
     cdpMcpCommand?: string,
   ) {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-fail-')),
     );
     const originalClientMcpOverWs =
-      process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+      process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
     const originalCdpTunnelOverWs =
-      process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
-    const originalCdpMcpCommand = process.env['QWEN_CDP_MCP_COMMAND'];
+      process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
+    const originalCdpMcpCommand = process.env['CANOPY_CDP_MCP_COMMAND'];
     if (raw === undefined) {
-      delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
-      delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+      delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
+      delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
     } else {
-      process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'] = raw;
-      process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'] = raw;
+      process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'] = raw;
+      process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'] = raw;
     }
     if (cdpMcpCommand === undefined) {
-      delete process.env['QWEN_CDP_MCP_COMMAND'];
+      delete process.env['CANOPY_CDP_MCP_COMMAND'];
     } else {
-      process.env['QWEN_CDP_MCP_COMMAND'] = cdpMcpCommand;
+      process.env['CANOPY_CDP_MCP_COMMAND'] = cdpMcpCommand;
     }
     vi.spyOn(acpBridge, 'createAcpSessionBridge').mockImplementation(() => {
       throw new Error('runtime boom');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -3977,19 +3979,21 @@ describe('runQwenServe runtime startup failures', () => {
         .features;
     } finally {
       if (originalClientMcpOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'] = originalClientMcpOverWs;
+        process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'] =
+          originalClientMcpOverWs;
       }
       if (originalCdpTunnelOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'] = originalCdpTunnelOverWs;
+        process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'] =
+          originalCdpTunnelOverWs;
       }
       if (originalCdpMcpCommand === undefined) {
-        delete process.env['QWEN_CDP_MCP_COMMAND'];
+        delete process.env['CANOPY_CDP_MCP_COMMAND'];
       } else {
-        process.env['QWEN_CDP_MCP_COMMAND'] = originalCdpMcpCommand;
+        process.env['CANOPY_CDP_MCP_COMMAND'] = originalCdpMcpCommand;
       }
       await handle.close();
     }
@@ -4029,7 +4033,7 @@ describe('runQwenServe runtime startup failures', () => {
         reconciledBridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4093,7 +4097,7 @@ describe('runQwenServe runtime startup failures', () => {
         throw new Error('replacement failed');
       });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4109,7 +4113,7 @@ describe('runQwenServe runtime startup failures', () => {
       await handle.runtimeReady;
       vi.mocked(bootBridge.preheat).mockClear();
       currentSnapshot = untrustedSnapshot;
-      qwenCore.ideContextStore.set({
+      canopyCore.ideContextStore.set({
         workspaceState: { isTrusted: false },
       });
       await vi.waitFor(() =>
@@ -4121,7 +4125,7 @@ describe('runQwenServe runtime startup failures', () => {
       );
       expect(bootBridge.preheat).not.toHaveBeenCalled();
     } finally {
-      qwenCore.ideContextStore.clear();
+      canopyCore.ideContextStore.clear();
       await handle.close();
     }
   });
@@ -4177,7 +4181,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4193,12 +4197,12 @@ describe('runQwenServe runtime startup failures', () => {
       await handle.runtimeReady;
       expect(disposeWorkspace).toBeDefined();
       currentSnapshot = untrustedSnapshot;
-      qwenCore.ideContextStore.set({
+      canopyCore.ideContextStore.set({
         workspaceState: { isTrusted: false },
       });
       await vi.waitFor(() => expect(disposeWorkspace).toHaveBeenCalledOnce());
     } finally {
-      qwenCore.ideContextStore.clear();
+      canopyCore.ideContextStore.clear();
       await handle.close();
     }
   });
@@ -4212,7 +4216,7 @@ describe('runQwenServe runtime startup failures', () => {
     });
 
     await expect(
-      runQwenServe({
+      runCanopyServe({
         port: 0,
         hostname: '127.0.0.1',
         mode: 'http-bridge',
@@ -4233,7 +4237,7 @@ describe('runQwenServe runtime startup failures', () => {
     });
 
     await expect(
-      runQwenServe({
+      runCanopyServe({
         port,
         hostname: '127.0.0.1',
         mode: 'http-bridge',
@@ -4285,8 +4289,8 @@ describe('runQwenServe runtime startup failures', () => {
   it('advertises browser automation MCP when the external CDP adapter command is set', async () => {
     const features = await readBrowserMcpFeatureFlagsForEnv(
       undefined,
-      'chrome-extension://qwen-test-extension',
-      '/opt/qwen-cdp-mcp-adapter',
+      'chrome-extension://canopy-test-extension',
+      '/opt/canopy-cdp-mcp-adapter',
     );
 
     expect(features).toContain('cdp_tunnel_over_ws');
@@ -4298,7 +4302,7 @@ describe('runQwenServe runtime startup failures', () => {
     const features = await readBrowserMcpFeatureFlagsForEnv(
       undefined,
       'https://example.com',
-      '/opt/qwen-cdp-mcp-adapter',
+      '/opt/canopy-cdp-mcp-adapter',
     );
 
     expect(features).not.toContain('browser_automation_mcp');
@@ -4321,11 +4325,11 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-child-env-')),
     );
     const originalClientMcpOverWs =
-      process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+      process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
     const originalCdpTunnelOverWs =
-      process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
-    delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
-    delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+      process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
+    delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
+    delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
     const bridge = makeRuntimeBridge();
     const createBridge = vi
       .spyOn(acpBridge, 'createAcpSessionBridge')
@@ -4333,7 +4337,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4341,7 +4345,7 @@ describe('runQwenServe runtime startup failures', () => {
         workspace: tmpDir,
         maxSessions: 1,
         serveWebShell: false,
-        allowOrigins: ['chrome-extension://qwen-test-extension'],
+        allowOrigins: ['chrome-extension://canopy-test-extension'],
       },
       { resolveOnListen: true },
     );
@@ -4355,7 +4359,7 @@ describe('runQwenServe runtime startup failures', () => {
           }
         | undefined;
       expect(bridgeOptions?.childEnvOverrides).toMatchObject({
-        QWEN_SERVE_CDP_TUNNEL_OVER_WS: '1',
+        CANOPY_SERVE_CDP_TUNNEL_OVER_WS: '1',
         QWEN_CODE_PRIVATE_EXTERNAL_TOOL_GUARD: 'required-v1',
       });
       // No external provider is configured in this test: the child must see
@@ -4386,14 +4390,16 @@ describe('runQwenServe runtime startup failures', () => {
       ).resolves.toMatchObject({ allowed: false });
     } finally {
       if (originalClientMcpOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'] = originalClientMcpOverWs;
+        process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'] =
+          originalClientMcpOverWs;
       }
       if (originalCdpTunnelOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'] = originalCdpTunnelOverWs;
+        process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'] =
+          originalCdpTunnelOverWs;
       }
       await handle.close();
     }
@@ -4436,7 +4442,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4449,7 +4455,7 @@ describe('runQwenServe runtime startup failures', () => {
           endpoint: `http://127.0.0.1:${port}`,
           token: 'guard-token',
         },
-      } as Parameters<typeof runQwenServe>[0],
+      } as Parameters<typeof runCanopyServe>[0],
       { resolveOnListen: true },
     );
 
@@ -4517,13 +4523,13 @@ describe('runQwenServe runtime startup failures', () => {
     const secondary = path.join(tmpDir, 'secondary');
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
-    const originalScope = process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+    const originalScope = process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
     if (launchScope === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+      delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
     } else {
-      process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = launchScope;
+      process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = launchScope;
     }
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -4554,7 +4560,7 @@ describe('runQwenServe runtime startup failures', () => {
       },
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4574,15 +4580,15 @@ describe('runQwenServe runtime startup failures', () => {
       expect(workspaceRegistry?.list()).toHaveLength(2);
       for (const runtime of workspaceRegistry?.list() ?? []) {
         expect(
-          runtime.env.effectiveEnv?.['QWEN_CODE_MEMORY_PROJECT_SCOPE'],
+          runtime.env.effectiveEnv?.['CANOPY_CODE_MEMORY_PROJECT_SCOPE'],
         ).toBe(expectedScope);
       }
-      expect(process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE']).toBe(launchScope);
+      expect(process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE']).toBe(launchScope);
     } finally {
       if (originalScope === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'];
+        delete process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'];
       } else {
-        process.env['QWEN_CODE_MEMORY_PROJECT_SCOPE'] = originalScope;
+        process.env['CANOPY_CODE_MEMORY_PROJECT_SCOPE'] = originalScope;
       }
       await handle.close();
     }
@@ -4592,16 +4598,16 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-env-reload-')),
     );
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_RUNTIME_DIR'];
-    const originalBase = process.env['QWEN_TEST_BOOT_BASE'];
-    const originalLeak = process.env['QWEN_TEST_RELOAD_LEAK'];
-    const originalRemoved = process.env['QWEN_TEST_REMOVED_FROM_DOTENV'];
-    process.env['QWEN_TEST_BOOT_BASE'] = 'base';
-    process.env['QWEN_TEST_REMOVED_FROM_DOTENV'] = 'stale';
-    delete process.env['QWEN_TEST_RELOAD_LEAK'];
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
+    const originalBase = process.env['CANOPY_TEST_BOOT_BASE'];
+    const originalLeak = process.env['CANOPY_TEST_RELOAD_LEAK'];
+    const originalRemoved = process.env['CANOPY_TEST_REMOVED_FROM_DOTENV'];
+    process.env['CANOPY_TEST_BOOT_BASE'] = 'base';
+    process.env['CANOPY_TEST_REMOVED_FROM_DOTENV'] = 'stale';
+    delete process.env['CANOPY_TEST_RELOAD_LEAK'];
 
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -4616,17 +4622,17 @@ describe('runQwenServe runtime startup failures', () => {
                 : '.runtime-boot',
             },
             env: {
-              QWEN_TEST_RUNTIME_VALUE: runtimeMounted ? 'reloaded' : 'boot',
+              CANOPY_TEST_RUNTIME_VALUE: runtimeMounted ? 'reloaded' : 'boot',
             },
           },
         }) as unknown as ReturnType<typeof settingsRuntime.loadSettings>,
     );
     vi.spyOn(settingsRuntime, 'reloadEnvironment').mockImplementation(() => {
-      process.env['QWEN_TEST_RELOAD_LEAK'] = 'workspace-a';
-      delete process.env['QWEN_TEST_REMOVED_FROM_DOTENV'];
+      process.env['CANOPY_TEST_RELOAD_LEAK'] = 'workspace-a';
+      delete process.env['CANOPY_TEST_REMOVED_FROM_DOTENV'];
       return {
-        updatedKeys: ['QWEN_TEST_RELOAD_LEAK'],
-        removedKeys: ['QWEN_TEST_REMOVED_FROM_DOTENV'],
+        updatedKeys: ['CANOPY_TEST_RELOAD_LEAK'],
+        removedKeys: ['CANOPY_TEST_REMOVED_FROM_DOTENV'],
       };
     });
     vi.spyOn(trustedFoldersRuntime, 'getWorkspaceTrustStatus').mockReturnValue({
@@ -4662,7 +4668,7 @@ describe('runQwenServe runtime startup failures', () => {
       },
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4684,10 +4690,12 @@ describe('runQwenServe runtime startup failures', () => {
       expect(workspace).toBeDefined();
       expect(primaryRuntimeEnv?.effectiveEnv).toBeDefined();
       const capturedRuntimeEnv = primaryRuntimeEnv!.effectiveEnv!;
-      expect(capturedRuntimeEnv['QWEN_TEST_RUNTIME_VALUE']).toBe('boot');
+      expect(capturedRuntimeEnv['CANOPY_TEST_RUNTIME_VALUE']).toBe('boot');
       const pinnedRuntimeBaseDir = path.join(tmpDir, '.runtime-boot');
       expect(primaryRuntime?.sessionRuntimeBaseDir).toBe(pinnedRuntimeBaseDir);
-      expect(capturedRuntimeEnv['QWEN_RUNTIME_DIR']).toBe(pinnedRuntimeBaseDir);
+      expect(capturedRuntimeEnv['CANOPY_RUNTIME_DIR']).toBe(
+        pinnedRuntimeBaseDir,
+      );
 
       await workspace!.reload({
         route: 'POST /workspace/reload',
@@ -4695,35 +4703,39 @@ describe('runQwenServe runtime startup failures', () => {
       });
 
       const reloadBaseEnv = buildRuntimeEnvironment.mock.calls.at(-1)?.[2];
-      expect(reloadBaseEnv?.['QWEN_TEST_BOOT_BASE']).toBe('base');
-      expect(reloadBaseEnv?.['QWEN_TEST_REMOVED_FROM_DOTENV']).toBe('stale');
-      expect(reloadBaseEnv?.['QWEN_TEST_RELOAD_LEAK']).toBeUndefined();
+      expect(reloadBaseEnv?.['CANOPY_TEST_BOOT_BASE']).toBe('base');
+      expect(reloadBaseEnv?.['CANOPY_TEST_REMOVED_FROM_DOTENV']).toBe('stale');
+      expect(reloadBaseEnv?.['CANOPY_TEST_RELOAD_LEAK']).toBeUndefined();
       expect(primaryRuntimeEnv!.effectiveEnv).toBe(capturedRuntimeEnv);
-      expect(capturedRuntimeEnv['QWEN_TEST_RUNTIME_VALUE']).toBe('reloaded');
-      expect(capturedRuntimeEnv['QWEN_TEST_REMOVED_FROM_DOTENV']).toBe('stale');
-      expect(capturedRuntimeEnv['QWEN_TEST_RELOAD_LEAK']).toBeUndefined();
+      expect(capturedRuntimeEnv['CANOPY_TEST_RUNTIME_VALUE']).toBe('reloaded');
+      expect(capturedRuntimeEnv['CANOPY_TEST_REMOVED_FROM_DOTENV']).toBe(
+        'stale',
+      );
+      expect(capturedRuntimeEnv['CANOPY_TEST_RELOAD_LEAK']).toBeUndefined();
       expect(primaryRuntime?.sessionRuntimeBaseDir).toBe(pinnedRuntimeBaseDir);
-      expect(capturedRuntimeEnv['QWEN_RUNTIME_DIR']).toBe(pinnedRuntimeBaseDir);
+      expect(capturedRuntimeEnv['CANOPY_RUNTIME_DIR']).toBe(
+        pinnedRuntimeBaseDir,
+      );
     } finally {
       if (originalBase === undefined) {
-        delete process.env['QWEN_TEST_BOOT_BASE'];
+        delete process.env['CANOPY_TEST_BOOT_BASE'];
       } else {
-        process.env['QWEN_TEST_BOOT_BASE'] = originalBase;
+        process.env['CANOPY_TEST_BOOT_BASE'] = originalBase;
       }
       if (originalLeak === undefined) {
-        delete process.env['QWEN_TEST_RELOAD_LEAK'];
+        delete process.env['CANOPY_TEST_RELOAD_LEAK'];
       } else {
-        process.env['QWEN_TEST_RELOAD_LEAK'] = originalLeak;
+        process.env['CANOPY_TEST_RELOAD_LEAK'] = originalLeak;
       }
       if (originalRemoved === undefined) {
-        delete process.env['QWEN_TEST_REMOVED_FROM_DOTENV'];
+        delete process.env['CANOPY_TEST_REMOVED_FROM_DOTENV'];
       } else {
-        process.env['QWEN_TEST_REMOVED_FROM_DOTENV'] = originalRemoved;
+        process.env['CANOPY_TEST_REMOVED_FROM_DOTENV'] = originalRemoved;
       }
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
       await handle.close();
     }
@@ -4733,7 +4745,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-env-fallback-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -4743,7 +4755,7 @@ describe('runQwenServe runtime startup failures', () => {
         ({
           merged: {
             env: {
-              QWEN_TEST_RUNTIME_VALUE: runtimeMounted ? 'reloaded' : 'boot',
+              CANOPY_TEST_RUNTIME_VALUE: runtimeMounted ? 'reloaded' : 'boot',
             },
           },
         }) as unknown as ReturnType<typeof settingsRuntime.loadSettings>,
@@ -4792,7 +4804,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
 
     const logBaseDir = path.join(tmpDir, 'debug');
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4815,7 +4827,7 @@ describe('runQwenServe runtime startup failures', () => {
       expect(workspace).toBeDefined();
       expect(primaryRuntimeEnv?.effectiveEnv).toBeDefined();
       const capturedRuntimeEnv = primaryRuntimeEnv!.effectiveEnv!;
-      expect(capturedRuntimeEnv['QWEN_TEST_RUNTIME_VALUE']).toBe('boot');
+      expect(capturedRuntimeEnv['CANOPY_TEST_RUNTIME_VALUE']).toBe('boot');
 
       failReloadBuild = true;
       await workspace!.reload({
@@ -4824,7 +4836,7 @@ describe('runQwenServe runtime startup failures', () => {
       });
 
       expect(primaryRuntimeEnv!.effectiveEnv).toBe(capturedRuntimeEnv);
-      expect(capturedRuntimeEnv['QWEN_TEST_RUNTIME_VALUE']).toBe('boot');
+      expect(capturedRuntimeEnv['CANOPY_TEST_RUNTIME_VALUE']).toBe('boot');
       expect(primaryRuntimeEnv!.fallbackReason).toBe(
         'runtime env rebuild failed',
       );
@@ -4835,7 +4847,7 @@ describe('runQwenServe runtime startup failures', () => {
         workspaceCwd: tmpDir,
       });
       expect(primaryRuntimeEnv!.effectiveEnv).toBe(capturedRuntimeEnv);
-      expect(capturedRuntimeEnv['QWEN_TEST_RUNTIME_VALUE']).toBe('reloaded');
+      expect(capturedRuntimeEnv['CANOPY_TEST_RUNTIME_VALUE']).toBe('reloaded');
       expect(primaryRuntimeEnv!.fallbackReason).toBeUndefined();
 
       await handle.close();
@@ -4858,11 +4870,11 @@ describe('runQwenServe runtime startup failures', () => {
     );
     const primary = path.join(tmpDir, 'primary');
     const secondary = path.join(tmpDir, 'secondary');
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_RUNTIME_DIR'];
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -4882,8 +4894,8 @@ describe('runQwenServe runtime startup failures', () => {
             },
             env: {
               [isSecondary
-                ? 'QWEN_TEST_SECONDARY_ENV'
-                : 'QWEN_TEST_PRIMARY_ENV']: runtimeMounted
+                ? 'CANOPY_TEST_SECONDARY_ENV'
+                : 'CANOPY_TEST_PRIMARY_ENV']: runtimeMounted
                 ? 'reloaded'
                 : 'boot',
             },
@@ -4892,7 +4904,7 @@ describe('runQwenServe runtime startup failures', () => {
       },
     );
     vi.spyOn(settingsRuntime, 'reloadEnvironment').mockReturnValue({
-      updatedKeys: ['QWEN_TEST_SECONDARY_ENV'],
+      updatedKeys: ['CANOPY_TEST_SECONDARY_ENV'],
       removedKeys: [],
     });
     vi.spyOn(trustedFoldersRuntime, 'getWorkspaceTrustStatus').mockReturnValue({
@@ -4920,7 +4932,7 @@ describe('runQwenServe runtime startup failures', () => {
       },
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -4942,7 +4954,7 @@ describe('runQwenServe runtime startup failures', () => {
       const overlayKeys = env.overlayKeys;
       const envFilePaths = env.envFilePaths;
       const envFileReadFailures = env.envFileReadFailures;
-      expect(env.effectiveEnv?.['QWEN_TEST_SECONDARY_ENV']).toBe('boot');
+      expect(env.effectiveEnv?.['CANOPY_TEST_SECONDARY_ENV']).toBe('boot');
       const pinnedRuntimeBaseDir = path.join(
         secondary,
         '.secondary-runtime-boot',
@@ -4950,7 +4962,9 @@ describe('runQwenServe runtime startup failures', () => {
       expect(secondaryRuntime!.sessionRuntimeBaseDir).toBe(
         pinnedRuntimeBaseDir,
       );
-      expect(env.effectiveEnv?.['QWEN_RUNTIME_DIR']).toBe(pinnedRuntimeBaseDir);
+      expect(env.effectiveEnv?.['CANOPY_RUNTIME_DIR']).toBe(
+        pinnedRuntimeBaseDir,
+      );
 
       await secondaryRuntime!.workspaceService.reload({
         route: 'POST /workspace/reload',
@@ -4960,17 +4974,19 @@ describe('runQwenServe runtime startup failures', () => {
       expect(env.overlayKeys).toBe(overlayKeys);
       expect(env.envFilePaths).toBe(envFilePaths);
       expect(env.envFileReadFailures).toBe(envFileReadFailures);
-      expect(env.effectiveEnv?.['QWEN_TEST_SECONDARY_ENV']).toBe('reloaded');
+      expect(env.effectiveEnv?.['CANOPY_TEST_SECONDARY_ENV']).toBe('reloaded');
       expect(secondaryRuntime!.sessionRuntimeBaseDir).toBe(
         pinnedRuntimeBaseDir,
       );
-      expect(env.effectiveEnv?.['QWEN_RUNTIME_DIR']).toBe(pinnedRuntimeBaseDir);
+      expect(env.effectiveEnv?.['CANOPY_RUNTIME_DIR']).toBe(
+        pinnedRuntimeBaseDir,
+      );
     } finally {
       await handle.close();
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
     }
   });
@@ -5015,7 +5031,7 @@ describe('runQwenServe runtime startup failures', () => {
     const stderrWrite = vi
       .spyOn(process.stderr, 'write')
       .mockImplementation(() => true);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5079,7 +5095,7 @@ describe('runQwenServe runtime startup failures', () => {
       }),
     } as unknown as WorkspaceRegistrationStore;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5154,7 +5170,7 @@ describe('runQwenServe runtime startup failures', () => {
     const stderrWrite = vi
       .spyOn(process.stderr, 'write')
       .mockImplementation(() => true);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5181,7 +5197,7 @@ describe('runQwenServe runtime startup failures', () => {
       read: vi.fn().mockRejectedValue(new Error('store unavailable')),
     } as unknown as WorkspaceRegistrationStore;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5231,7 +5247,7 @@ describe('runQwenServe runtime startup failures', () => {
     const stderrWrite = vi
       .spyOn(process.stderr, 'write')
       .mockImplementation(() => true);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5262,7 +5278,7 @@ describe('runQwenServe runtime startup failures', () => {
       }),
     } as unknown as WorkspaceRegistrationStore;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5306,7 +5322,7 @@ describe('runQwenServe runtime startup failures', () => {
       canonicalizeWorkspace(root),
     );
     const bridgeFsBoundWorkspaces: string[][] = [];
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5352,7 +5368,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
     vi.spyOn(serverModule, 'createServeApp').mockReturnValue(express());
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5390,10 +5406,10 @@ describe('runQwenServe runtime startup failures', () => {
       canonicalizeWorkspace(root),
     );
     const originalIdeWorkspacePath =
-      process.env['QWEN_CODE_IDE_WORKSPACE_PATH'];
-    process.env['QWEN_CODE_IDE_WORKSPACE_PATH'] = JSON.stringify(roots);
+      process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'];
+    process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'] = JSON.stringify(roots);
     const bridgeFsBoundWorkspaces: string[][] = [];
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5433,7 +5449,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
     vi.spyOn(serverModule, 'createServeApp').mockReturnValue(express());
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5455,9 +5471,10 @@ describe('runQwenServe runtime startup failures', () => {
       expect(bridgeFsBoundWorkspaces[0]).toEqual([roots[0], roots[2]]);
     } finally {
       if (originalIdeWorkspacePath === undefined) {
-        delete process.env['QWEN_CODE_IDE_WORKSPACE_PATH'];
+        delete process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'];
       } else {
-        process.env['QWEN_CODE_IDE_WORKSPACE_PATH'] = originalIdeWorkspacePath;
+        process.env['CANOPY_CODE_IDE_WORKSPACE_PATH'] =
+          originalIdeWorkspacePath;
       }
       await handle.close();
     }
@@ -5475,7 +5492,7 @@ describe('runQwenServe runtime startup failures', () => {
       canonicalizeWorkspace(root),
     );
     const pathLocks: unknown[] = [];
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5499,7 +5516,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
     vi.spyOn(serverModule, 'createServeApp').mockReturnValue(express());
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5538,7 +5555,7 @@ describe('runQwenServe runtime startup failures', () => {
       canonicalizeWorkspace(root),
     );
     const bridgeFsBoundWorkspaces: string[][] = [];
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5574,7 +5591,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
     vi.spyOn(serverModule, 'createServeApp').mockReturnValue(express());
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5668,22 +5685,23 @@ describe('runQwenServe runtime startup failures', () => {
     ['abc', 120_000],
     [String(Number.MAX_SAFE_INTEGER + 1), 120_000],
   ])(
-    'resolves QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS=%s to %s',
+    'resolves CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS=%s to %s',
     (envValue, expected) => {
-      const originalEnv = process.env['QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
+      const originalEnv =
+        process.env['CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
       try {
         if (envValue === undefined) {
-          delete process.env['QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
+          delete process.env['CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
         } else {
-          process.env['QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'] = envValue;
+          process.env['CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'] = envValue;
         }
 
         expect(resolveRuntimeStartupTimeoutMs(undefined)).toBe(expected);
       } finally {
         if (originalEnv === undefined) {
-          delete process.env['QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
+          delete process.env['CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'];
         } else {
-          process.env['QWEN_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'] = originalEnv;
+          process.env['CANOPY_SERVE_RUNTIME_STARTUP_TIMEOUT_MS'] = originalEnv;
         }
       }
     },
@@ -5694,14 +5712,14 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-starting-route-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockReturnValue(
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockReturnValue(
       telemetryPromise,
     );
     const bridge = makeRuntimeBridge();
@@ -5709,7 +5727,7 @@ describe('runQwenServe runtime startup failures', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5746,14 +5764,14 @@ describe('runQwenServe runtime startup failures', () => {
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockReturnValue(
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockReturnValue(
       telemetryPromise,
     );
     const createBridge = vi
@@ -5766,7 +5784,7 @@ describe('runQwenServe runtime startup failures', () => {
       effective: { state: 'trusted' },
     } as ReturnType<typeof trustedFoldersRuntime.getWorkspaceTrustStatus>);
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5817,7 +5835,7 @@ describe('runQwenServe runtime startup failures', () => {
     );
     const logBaseDir = path.join(tmpDir, 'debug');
     const resolveTelemetrySettings = vi
-      .spyOn(qwenCore, 'resolveTelemetrySettings')
+      .spyOn(canopyCore, 'resolveTelemetrySettings')
       .mockResolvedValue({
         enabled: false,
         sensitiveSpanAttributeMaxLength: 1024 * 1024,
@@ -5829,7 +5847,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5886,7 +5904,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-deep-first-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5897,7 +5915,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5944,7 +5962,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-dedupe-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -5955,7 +5973,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -5998,15 +6016,15 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-route-start-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
     const resolveTelemetrySettings = vi
-      .spyOn(qwenCore, 'resolveTelemetrySettings')
+      .spyOn(canopyCore, 'resolveTelemetrySettings')
       .mockReturnValue(telemetryPromise);
     const bridge = makeRuntimeBridge();
     const createBridge = vi
@@ -6027,7 +6045,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6116,7 +6134,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6410,7 +6428,7 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-deferred-webshell-fail-')),
     );
     writeWebShellFixture(tmpDir);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -6456,13 +6474,13 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-webhook-start-')),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const previousWebhookSecret = process.env['QWEN_DEFERRED_WEBHOOK_SECRET'];
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const previousWebhookSecret = process.env['CANOPY_DEFERRED_WEBHOOK_SECRET'];
     const tempHome = fs.mkdtempSync(
       path.join(os.tmpdir(), 'qws-runtime-webhook-home-'),
     );
     process.env['QWEN_HOME'] = tempHome;
-    process.env['QWEN_DEFERRED_WEBHOOK_SECRET'] = 'global-secret';
+    process.env['CANOPY_DEFERRED_WEBHOOK_SECRET'] = 'global-secret';
     settingsRuntime.resetHomeEnvBootstrapForTesting();
     fs.writeFileSync(
       path.join(tempHome, 'settings.json'),
@@ -6473,7 +6491,7 @@ describe('runQwenServe runtime startup failures', () => {
             webhooks: {
               sources: {
                 'github ci': {
-                  secretEnv: 'QWEN_DEFERRED_WEBHOOK_SECRET',
+                  secretEnv: 'CANOPY_DEFERRED_WEBHOOK_SECRET',
                   targets: {
                     default: {
                       chatId: 'group-1',
@@ -6488,7 +6506,7 @@ describe('runQwenServe runtime startup failures', () => {
       }),
       'utf8',
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -6496,9 +6514,9 @@ describe('runQwenServe runtime startup failures', () => {
       (_settings, _workspace, baseEnv) => ({
         effectiveEnv: Object.freeze({
           ...baseEnv,
-          QWEN_DEFERRED_WEBHOOK_SECRET: 'workspace-secret',
+          CANOPY_DEFERRED_WEBHOOK_SECRET: 'workspace-secret',
         }),
-        overlayKeys: Object.freeze(['QWEN_DEFERRED_WEBHOOK_SECRET']),
+        overlayKeys: Object.freeze(['CANOPY_DEFERRED_WEBHOOK_SECRET']),
         envFilePaths: Object.freeze([]),
         envFileReadFailed: false,
         envFileReadFailures: Object.freeze([]),
@@ -6510,7 +6528,7 @@ describe('runQwenServe runtime startup failures', () => {
       .mockReturnValue(
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6567,7 +6585,7 @@ describe('runQwenServe runtime startup failures', () => {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'workspace-secret',
+            'x-canopy-webhook-secret': 'workspace-secret',
           },
           body: JSON.stringify({
             eventType: 'ci_failed',
@@ -6583,15 +6601,15 @@ describe('runQwenServe runtime startup failures', () => {
     } finally {
       await handle.close();
       fs.rmSync(tempHome, { recursive: true, force: true });
-      if (previousQwenHome === undefined) {
+      if (previousCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = previousQwenHome;
+        process.env['QWEN_HOME'] = previousCanopyHome;
       }
       if (previousWebhookSecret === undefined) {
-        delete process.env['QWEN_DEFERRED_WEBHOOK_SECRET'];
+        delete process.env['CANOPY_DEFERRED_WEBHOOK_SECRET'];
       } else {
-        process.env['QWEN_DEFERRED_WEBHOOK_SECRET'] = previousWebhookSecret;
+        process.env['CANOPY_DEFERRED_WEBHOOK_SECRET'] = previousWebhookSecret;
       }
       settingsRuntime.resetHomeEnvBootstrapForTesting();
     }
@@ -6602,7 +6620,7 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-webhook-auth-')),
     );
     const logBaseDir = path.join(tmpDir, 'debug');
-    const previousQwenHome = process.env['QWEN_HOME'];
+    const previousCanopyHome = process.env['QWEN_HOME'];
     const tempHome = fs.mkdtempSync(
       path.join(os.tmpdir(), 'qws-runtime-webhook-home-'),
     );
@@ -6651,7 +6669,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6677,7 +6695,7 @@ describe('runQwenServe runtime startup failures', () => {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'wrong',
+            'x-canopy-webhook-secret': 'wrong',
           },
           body: JSON.stringify({
             eventType: 'ci_failed',
@@ -6705,10 +6723,10 @@ describe('runQwenServe runtime startup failures', () => {
         await handle.close();
       }
       fs.rmSync(tempHome, { recursive: true, force: true });
-      if (previousQwenHome === undefined) {
+      if (previousCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = previousQwenHome;
+        process.env['QWEN_HOME'] = previousCanopyHome;
       }
       settingsRuntime.resetHomeEnvBootstrapForTesting();
     }
@@ -6718,8 +6736,8 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-webhook-log-')),
     );
-    const previousQwenHome = process.env['QWEN_HOME'];
-    const previousSecret = process.env['QWEN_MISSING_WEBHOOK_SECRET'];
+    const previousCanopyHome = process.env['QWEN_HOME'];
+    const previousSecret = process.env['CANOPY_MISSING_WEBHOOK_SECRET'];
     const tempHome = fs.mkdtempSync(
       path.join(os.tmpdir(), 'qws-runtime-webhook-home-'),
     );
@@ -6728,7 +6746,7 @@ describe('runQwenServe runtime startup failures', () => {
       stderrWrites.push(String(chunk));
       return true;
     });
-    delete process.env['QWEN_MISSING_WEBHOOK_SECRET'];
+    delete process.env['CANOPY_MISSING_WEBHOOK_SECRET'];
     process.env['QWEN_HOME'] = tempHome;
     settingsRuntime.resetHomeEnvBootstrapForTesting();
     fs.writeFileSync(
@@ -6740,7 +6758,7 @@ describe('runQwenServe runtime startup failures', () => {
             webhooks: {
               sources: {
                 'github\nci': {
-                  secretEnv: 'QWEN_MISSING_WEBHOOK_SECRET',
+                  secretEnv: 'CANOPY_MISSING_WEBHOOK_SECRET',
                   targets: {
                     default: {
                       chatId: 'group-1',
@@ -6769,7 +6787,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6793,7 +6811,7 @@ describe('runQwenServe runtime startup failures', () => {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'webhook-secret',
+            'x-canopy-webhook-secret': 'webhook-secret',
           },
           body: JSON.stringify({ eventType: 'ci_failed' }),
         },
@@ -6812,14 +6830,14 @@ describe('runQwenServe runtime startup failures', () => {
       await handle.close();
       fs.rmSync(tempHome, { recursive: true, force: true });
       if (previousSecret === undefined) {
-        delete process.env['QWEN_MISSING_WEBHOOK_SECRET'];
+        delete process.env['CANOPY_MISSING_WEBHOOK_SECRET'];
       } else {
-        process.env['QWEN_MISSING_WEBHOOK_SECRET'] = previousSecret;
+        process.env['CANOPY_MISSING_WEBHOOK_SECRET'] = previousSecret;
       }
-      if (previousQwenHome === undefined) {
+      if (previousCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = previousQwenHome;
+        process.env['QWEN_HOME'] = previousCanopyHome;
       }
       settingsRuntime.resetHomeEnvBootstrapForTesting();
     }
@@ -6836,7 +6854,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6885,7 +6903,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6918,14 +6936,14 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-bootstrap-trailing-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockReturnValue(
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockReturnValue(
       telemetryPromise,
     );
     const bridge = makeRuntimeBridge();
@@ -6935,7 +6953,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -6977,7 +6995,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-route-fail-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -6987,7 +7005,7 @@ describe('runQwenServe runtime startup failures', () => {
         throw new Error('runtime boom');
       });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7028,7 +7046,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7067,7 +7085,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7106,7 +7124,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-close-after-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -7117,7 +7135,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7150,7 +7168,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-reconciler-close-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -7166,7 +7184,7 @@ describe('runQwenServe runtime startup failures', () => {
       return runtimeApp;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7200,7 +7218,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-maintenance-drain-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -7221,7 +7239,7 @@ describe('runQwenServe runtime startup failures', () => {
       return runtimeApp;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7248,7 +7266,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-maintenance-failure-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -7267,7 +7285,7 @@ describe('runQwenServe runtime startup failures', () => {
       return runtimeApp;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7290,15 +7308,15 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-close-running-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
     const resolveTelemetrySettings = vi
-      .spyOn(qwenCore, 'resolveTelemetrySettings')
+      .spyOn(canopyCore, 'resolveTelemetrySettings')
       .mockReturnValue(telemetryPromise);
     const bridge = makeRuntimeBridge();
     const createBridge = vi
@@ -7307,7 +7325,7 @@ describe('runQwenServe runtime startup failures', () => {
         bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7349,15 +7367,15 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-close-late-app-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
     const resolveTelemetrySettings = vi
-      .spyOn(qwenCore, 'resolveTelemetrySettings')
+      .spyOn(canopyCore, 'resolveTelemetrySettings')
       .mockReturnValue(telemetryPromise);
     const bridge = makeRuntimeBridge();
     vi.spyOn(acpBridge, 'createAcpSessionBridge').mockReturnValue(
@@ -7370,7 +7388,7 @@ describe('runQwenServe runtime startup failures', () => {
     const stopWorkspaceGitState = vi.fn();
     const stopSubSession = vi.fn();
     const disposeEventLoopMonitor = vi.fn();
-    vi.spyOn(qwenCore, 'startEventLoopLagMonitor').mockReturnValueOnce({
+    vi.spyOn(canopyCore, 'startEventLoopLagMonitor').mockReturnValueOnce({
       snapshot: () => ({
         meanMs: 0,
         p50Ms: 0,
@@ -7398,7 +7416,7 @@ describe('runQwenServe runtime startup failures', () => {
       return runtimeApp;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7466,7 +7484,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-health-fail-once-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -7476,7 +7494,7 @@ describe('runQwenServe runtime startup failures', () => {
         throw new Error('runtime boom');
       });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7516,13 +7534,13 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-fail-log-')),
     );
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     vi.spyOn(acpBridge, 'createAcpSessionBridge').mockImplementation(() => {
       throw new Error('runtime boom');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7553,9 +7571,9 @@ describe('runQwenServe runtime startup failures', () => {
         await handle.close();
       }
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
     }
   });
@@ -7564,7 +7582,7 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-flush-pending-')),
     );
-    const forceFlushMetrics = vi.spyOn(qwenCore, 'forceFlushMetrics');
+    const forceFlushMetrics = vi.spyOn(canopyCore, 'forceFlushMetrics');
     forceFlushMetrics.mockReturnValue(new Promise<void>(() => {}));
     const bridge = {
       spawnOrAttach: vi.fn(),
@@ -7583,7 +7601,7 @@ describe('runQwenServe runtime startup failures', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7615,30 +7633,31 @@ describe('runQwenServe runtime startup failures', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-queue-wait-')),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
-    const telemetry: ReturnType<typeof qwenCore.createDaemonBridgeTelemetry> = {
-      captureContext() {
-        return undefined;
-      },
-      runWithContext(_captured, fn) {
-        return fn();
-      },
-      withSpan(_operation, _attributes, fn) {
-        return fn();
-      },
-      event: vi.fn(),
-      injectPromptContext(request) {
-        return request;
-      },
-    };
-    vi.spyOn(qwenCore, 'createDaemonBridgeTelemetry').mockReturnValue(
+    const telemetry: ReturnType<typeof canopyCore.createDaemonBridgeTelemetry> =
+      {
+        captureContext() {
+          return undefined;
+        },
+        runWithContext(_captured, fn) {
+          return fn();
+        },
+        withSpan(_operation, _attributes, fn) {
+          return fn();
+        },
+        event: vi.fn(),
+        injectPromptContext(request) {
+          return request;
+        },
+      };
+    vi.spyOn(canopyCore, 'createDaemonBridgeTelemetry').mockReturnValue(
       telemetry,
     );
     const recordPromptQueueWait = vi.spyOn(
-      qwenCore,
+      canopyCore,
       'recordDaemonPromptQueueWait',
     );
     const bridge = makeRuntimeBridge();
@@ -7646,7 +7665,7 @@ describe('runQwenServe runtime startup failures', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7697,14 +7716,14 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-timeout-')),
     );
     let resolveTelemetry:
-      | ((settings: qwenCore.ResolvedTelemetrySettings) => void)
+      | ((settings: canopyCore.ResolvedTelemetrySettings) => void)
       | undefined;
-    const telemetryPromise = new Promise<qwenCore.ResolvedTelemetrySettings>(
+    const telemetryPromise = new Promise<canopyCore.ResolvedTelemetrySettings>(
       (resolve) => {
         resolveTelemetry = resolve;
       },
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockReturnValue(
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockReturnValue(
       telemetryPromise,
     );
     const bridge = {
@@ -7724,7 +7743,7 @@ describe('runQwenServe runtime startup failures', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7767,11 +7786,11 @@ describe('runQwenServe runtime startup failures', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-runtime-fail-')),
     );
     const originalClientMcpOverWs =
-      process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+      process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
     const originalCdpTunnelOverWs =
-      process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
-    delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
-    delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+      process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
+    delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
+    delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
     const boundWorkspace = canonicalizeWorkspace(tmpDir);
     const blockedLogBaseDir = path.join(tmpDir, 'blocked-log-base');
     fs.writeFileSync(blockedLogBaseDir, 'not a directory');
@@ -7779,7 +7798,7 @@ describe('runQwenServe runtime startup failures', () => {
       throw new Error('runtime boom');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -7961,14 +7980,16 @@ describe('runQwenServe runtime startup failures', () => {
       expect(sameOriginBody.daemon).not.toHaveProperty('logPath');
     } finally {
       if (originalClientMcpOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CLIENT_MCP_OVER_WS'] = originalClientMcpOverWs;
+        process.env['CANOPY_SERVE_CLIENT_MCP_OVER_WS'] =
+          originalClientMcpOverWs;
       }
       if (originalCdpTunnelOverWs === undefined) {
-        delete process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'];
+        delete process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'];
       } else {
-        process.env['QWEN_SERVE_CDP_TUNNEL_OVER_WS'] = originalCdpTunnelOverWs;
+        process.env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS'] =
+          originalCdpTunnelOverWs;
       }
       await handle.close();
     }
@@ -7991,7 +8012,7 @@ describe('runQwenServe runtime startup failures', () => {
       throw new Error('runtime boom');
     });
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8032,7 +8053,7 @@ describe('runQwenServe runtime startup failures', () => {
         await handle.close();
       }
 
-      const pinned = await runQwenServe(
+      const pinned = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8085,7 +8106,7 @@ describe('runQwenServe runtime startup failures', () => {
       throw new Error('runtime app boom');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8127,7 +8148,7 @@ describe('runQwenServe runtime startup failures', () => {
       throw new Error('runtime app boom');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8192,7 +8213,7 @@ describe('runQwenServe runtime startup failures', () => {
       return app;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8230,7 +8251,7 @@ describe('runQwenServe runtime startup failures', () => {
       bridge as ReturnType<typeof acpBridge.createAcpSessionBridge>,
     );
     const dispose = vi.fn();
-    vi.spyOn(qwenCore, 'startEventLoopLagMonitor').mockReturnValueOnce({
+    vi.spyOn(canopyCore, 'startEventLoopLagMonitor').mockReturnValueOnce({
       snapshot: () => ({
         meanMs: 0,
         p50Ms: 0,
@@ -8240,7 +8261,7 @@ describe('runQwenServe runtime startup failures', () => {
       dispose,
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8258,7 +8279,7 @@ describe('runQwenServe runtime startup failures', () => {
   });
 });
 
-describe('runQwenServe Web Shell signals on RunHandle', () => {
+describe('runCanopyServe Web Shell signals on RunHandle', () => {
   let tmpDir: string;
 
   afterEach(() => {
@@ -8289,7 +8310,7 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
     experimentalLsp?: boolean;
   }) {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
-    return runQwenServe(
+    return runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8387,7 +8408,7 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       } finally {
         await handle.close();
       }
-      // runQwenServe is a documented embeddable entry point; close() must
+      // runCanopyServe is a documented embeddable entry point; close() must
       // hand the host process its launch environment back.
       expect(process.env['NODE_OPTIONS']).toBe(
         '--import file:///other-checkout/register.mjs',
@@ -8451,12 +8472,12 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   it('scrubs loader vars even when a workspace .env sets DEV=true', async () => {
     const previousDev = process.env['DEV'];
     const previousNodeOptions = process.env['NODE_OPTIONS'];
-    const previousQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    const previousCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     delete process.env['DEV'];
     process.env['NODE_OPTIONS'] =
       '--import file:///other-checkout/register.mjs';
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     fs.writeFileSync(path.join(tmpDir, '.env'), 'DEV=true\n');
     mockCreateSpawnChannelFactoryOptions.length = 0;
     try {
@@ -8466,7 +8487,7 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       expect(process.env['DEV']).toBeUndefined();
       loadServeFastPathEnvironment({ env: { DEV: 'true' } }, tmpDir);
       expect(process.env['DEV']).toBeUndefined();
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8496,10 +8517,10 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       } else {
         process.env['NODE_OPTIONS'] = previousNodeOptions;
       }
-      if (previousQwenRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+      if (previousCanopyRuntimeDir === undefined) {
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousQwenRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousCanopyRuntimeDir;
       }
     }
   });
@@ -8508,15 +8529,15 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   // scrub breadcrumb is additionally persisted to the durable daemon log.
   it('persists the loader env scrub decision in the daemon log', async () => {
     const previousNodeOptions = process.env['NODE_OPTIONS'];
-    const previousQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    const previousCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     process.env['NODE_OPTIONS'] =
       '--import file:///other-checkout/register.mjs';
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
     // Point the daemon log at the temp workspace (mirrors the daemon logger
     // wiring test) so the assertion reads a test-owned file.
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8546,10 +8567,10 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       } else {
         process.env['NODE_OPTIONS'] = previousNodeOptions;
       }
-      if (previousQwenRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+      if (previousCanopyRuntimeDir === undefined) {
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousQwenRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousCanopyRuntimeDir;
       }
     }
   });
@@ -8558,9 +8579,9 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   // and warn-once dedupes any later daemon-side warning for the same
   // file+key, so its rejections are persisted to the durable daemon log.
   it('persists serve fast-path loader key rejections in the daemon log', async () => {
-    const previousQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    const previousCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     fs.writeFileSync(
       path.join(tmpDir, '.env'),
       'NODE_OPTIONS=--max-old-space-size=8192\n',
@@ -8570,7 +8591,7 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       .mockImplementation(() => true);
     try {
       loadServeFastPathEnvironment({}, tmpDir);
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8598,10 +8619,10 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       }
     } finally {
       stderrWrite.mockRestore();
-      if (previousQwenRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+      if (previousCanopyRuntimeDir === undefined) {
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousQwenRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousCanopyRuntimeDir;
       }
     }
   });
@@ -8610,16 +8631,16 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   // settings reloads); boot stderr is gone by then, so fresh loader-key
   // rejections must be mirrored into the durable daemon log.
   it('persists post-boot loader key rejections in the daemon log', async () => {
-    const previousQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    const previousCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     const previousNodeOptions = process.env['NODE_OPTIONS'];
     delete process.env['NODE_OPTIONS'];
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     const stderrWrite = vi
       .spyOn(process.stderr, 'write')
       .mockImplementation(() => true);
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8652,10 +8673,10 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       }
     } finally {
       stderrWrite.mockRestore();
-      if (previousQwenRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+      if (previousCanopyRuntimeDir === undefined) {
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousQwenRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousCanopyRuntimeDir;
       }
       if (previousNodeOptions === undefined) {
         delete process.env['NODE_OPTIONS'];
@@ -8669,13 +8690,13 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   // same process must fall back to stderr instead of writing into the
   // closed daemon log.
   it('falls back to stderr for loader key rejections after close', async () => {
-    const previousQwenRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
+    const previousCanopyRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
     const previousNodeOptions = process.env['NODE_OPTIONS'];
     delete process.env['NODE_OPTIONS'];
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -8716,10 +8737,10 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
       expect(warnings[0]).toContain('NODE_OPTIONS');
       expect(process.env['NODE_OPTIONS']).toBeUndefined();
     } finally {
-      if (previousQwenRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+      if (previousCanopyRuntimeDir === undefined) {
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = previousQwenRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = previousCanopyRuntimeDir;
       }
       if (previousNodeOptions === undefined) {
         delete process.env['NODE_OPTIONS'];
@@ -8729,19 +8750,19 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
     }
   });
 
-  // runQwenServe is a documented embeddable entry point and startup can
+  // runCanopyServe is a documented embeddable entry point and startup can
   // reject after the scrub (malformed deadline env, TLS mismatch,
   // EADDRINUSE...). The close() restore is unreachable on that path, so the
   // catch must hand the host its launch environment back.
   it('restores the launch environment when startup fails after the scrub', async () => {
     const previousNodeOptions = process.env['NODE_OPTIONS'];
-    const previousDeadline = process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'];
+    const previousDeadline = process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'];
     process.env['NODE_OPTIONS'] =
       '--import file:///other-checkout/register.mjs';
-    process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'] = 'not-a-number';
+    process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'] = 'not-a-number';
     try {
       await expect(bootHandle({ serveWebShell: false })).rejects.toThrow(
-        /QWEN_SERVE_PROMPT_DEADLINE_MS/u,
+        /CANOPY_SERVE_PROMPT_DEADLINE_MS/u,
       );
       expect(process.env['NODE_OPTIONS']).toBe(
         '--import file:///other-checkout/register.mjs',
@@ -8753,9 +8774,9 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
         process.env['NODE_OPTIONS'] = previousNodeOptions;
       }
       if (previousDeadline === undefined) {
-        delete process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'];
+        delete process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'];
       } else {
-        process.env['QWEN_SERVE_PROMPT_DEADLINE_MS'] = previousDeadline;
+        process.env['CANOPY_SERVE_PROMPT_DEADLINE_MS'] = previousDeadline;
       }
     }
   });
@@ -8815,7 +8836,7 @@ describe('runQwenServe Web Shell signals on RunHandle', () => {
   });
 });
 
-describe('runQwenServe channel worker supervisor', () => {
+describe('runCanopyServe channel worker supervisor', () => {
   let tmpDir: string | undefined;
 
   afterEach(() => {
@@ -8918,7 +8939,7 @@ describe('runQwenServe channel worker supervisor', () => {
       capturedDeps = args[2];
       return originalCreateServeApp(...args);
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -8978,7 +8999,7 @@ describe('runQwenServe channel worker supervisor', () => {
       capturedDeps = args[2];
       return originalCreateServeApp(...args);
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9021,9 +9042,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-runtime-control-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     const worker = makeWorker({
@@ -9035,7 +9056,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
     const workerFactory = makeReadyWorkerFactory(worker);
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9157,9 +9178,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-runtime-race-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     const worker = makeWorker({
@@ -9171,7 +9192,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
     const workerFactory = makeReadyWorkerFactory(worker);
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9217,9 +9238,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-runtime-fifo-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     let capturedDeps:
@@ -9237,7 +9258,7 @@ describe('runQwenServe channel worker supervisor', () => {
       channels: ['telegram'],
       requestedChannels: ['telegram'],
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9296,7 +9317,7 @@ describe('runQwenServe channel worker supervisor', () => {
         channels: ['telegram'],
       }),
     );
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9338,7 +9359,7 @@ describe('runQwenServe channel worker supervisor', () => {
       }),
     );
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9380,9 +9401,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-runtime-conflict-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     const workerFactory = vi.fn(() =>
@@ -9399,7 +9420,7 @@ describe('runQwenServe channel worker supervisor', () => {
       startedAt: new Date().toISOString(),
       channels: ['telegram'],
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9442,9 +9463,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-runtime-race-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     const workerFactory = vi.fn(() =>
@@ -9460,7 +9481,7 @@ describe('runQwenServe channel worker supervisor', () => {
     pidfile.reserveServeServiceInfo.mockImplementation(() => {
       throw eexist;
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9523,7 +9544,7 @@ describe('runQwenServe channel worker supervisor', () => {
       if (acpHandle) acpHandle.attachServer = attachServer;
       return app;
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9554,9 +9575,9 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-worker-reload-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { telegram: { type: 'telegram' } } }),
     );
     const worker = makeWorker({
@@ -9565,7 +9586,7 @@ describe('runQwenServe channel worker supervisor', () => {
       pid: 1234,
       channels: ['telegram'],
     });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9606,7 +9627,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const secondary = path.join(tmpDir, 'secondary');
     fs.mkdirSync(primary);
     fs.mkdirSync(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -9627,7 +9648,7 @@ describe('runQwenServe channel worker supervisor', () => {
       }),
     );
 
-    const outcome = await runQwenServe(
+    const outcome = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9670,7 +9691,7 @@ describe('runQwenServe channel worker supervisor', () => {
     fs.mkdirSync(secondary);
     const primaryCwd = canonicalizeWorkspace(primary);
     const secondaryCwd = canonicalizeWorkspace(secondary);
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -9707,7 +9728,7 @@ describe('runQwenServe channel worker supervisor', () => {
       }),
       add: vi.fn().mockResolvedValue(true),
     } as unknown as WorkspaceRegistrationStore;
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9767,8 +9788,8 @@ describe('runQwenServe channel worker supervisor', () => {
   });
 
   it('orchestrates, persists, and hot-removes distinct workspace workers', async () => {
-    const previousSharedSecret = process.env['QWEN_SHARED_WEBHOOK_SECRET'];
-    process.env['QWEN_SHARED_WEBHOOK_SECRET'] = 'primary-secret';
+    const previousSharedSecret = process.env['CANOPY_SHARED_WEBHOOK_SECRET'];
+    process.env['CANOPY_SHARED_WEBHOOK_SECRET'] = 'primary-secret';
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-worker-groups-')),
     );
@@ -9783,7 +9804,7 @@ describe('runQwenServe channel worker supervisor', () => {
       webhooks: {
         sources: {
           'github-ci': {
-            secretEnv: 'QWEN_SHARED_WEBHOOK_SECRET',
+            secretEnv: 'CANOPY_SHARED_WEBHOOK_SECRET',
             targets: {
               default: {
                 chatId: 'group-1',
@@ -9794,12 +9815,12 @@ describe('runQwenServe channel worker supervisor', () => {
         },
       },
     };
-    fs.mkdirSync(path.join(secondary, '.qwen'));
+    fs.mkdirSync(path.join(secondary, '.canopy'));
     fs.writeFileSync(
-      path.join(secondary, '.qwen', 'settings.json'),
+      path.join(secondary, '.canopy', 'settings.json'),
       JSON.stringify({ channels: { feishu: secondaryChannelConfig } }),
     );
-    vi.spyOn(qwenCore, 'resolveTelemetrySettings').mockResolvedValue({
+    vi.spyOn(canopyCore, 'resolveTelemetrySettings').mockResolvedValue({
       enabled: false,
       sensitiveSpanAttributeMaxLength: 1024 * 1024,
     });
@@ -9821,12 +9842,12 @@ describe('runQwenServe channel worker supervisor', () => {
       (_settings, workspace, baseEnv) => ({
         effectiveEnv: Object.freeze({
           ...baseEnv,
-          QWEN_SHARED_WEBHOOK_SECRET:
+          CANOPY_SHARED_WEBHOOK_SECRET:
             canonicalizeWorkspace(workspace ?? process.cwd()) === secondaryCwd
               ? 'secondary-secret'
               : 'primary-secret',
         }),
-        overlayKeys: Object.freeze(['QWEN_SHARED_WEBHOOK_SECRET']),
+        overlayKeys: Object.freeze(['CANOPY_SHARED_WEBHOOK_SECRET']),
         envFilePaths: Object.freeze([]),
         envFileReadFailed: false,
         envFileReadFailures: Object.freeze([]),
@@ -9909,7 +9930,7 @@ describe('runQwenServe channel worker supervisor', () => {
       removeByIds,
     } as unknown as WorkspaceRegistrationStore;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -9941,7 +9962,7 @@ describe('runQwenServe channel worker supervisor', () => {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'primary-secret',
+            'x-canopy-webhook-secret': 'primary-secret',
           },
           body: JSON.stringify({ eventType: 'check_failed' }),
         },
@@ -9955,7 +9976,7 @@ describe('runQwenServe channel worker supervisor', () => {
           headers: {
             Authorization: 'Bearer worker-remove-token',
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'secondary-secret',
+            'x-canopy-webhook-secret': 'secondary-secret',
           },
           body: JSON.stringify({
             eventType: 'check_failed',
@@ -10068,7 +10089,7 @@ describe('runQwenServe channel worker supervisor', () => {
           headers: {
             Authorization: 'Bearer worker-remove-token',
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'secondary-secret',
+            'x-canopy-webhook-secret': 'secondary-secret',
           },
           body: JSON.stringify({ eventType: 'check_failed' }),
         },
@@ -10130,7 +10151,7 @@ describe('runQwenServe channel worker supervisor', () => {
           headers: {
             Authorization: 'Bearer worker-remove-token',
             'content-type': 'application/json',
-            'x-qwen-webhook-secret': 'secondary-secret',
+            'x-canopy-webhook-secret': 'secondary-secret',
           },
           body: JSON.stringify({
             eventType: 'check_failed',
@@ -10174,9 +10195,9 @@ describe('runQwenServe channel worker supervisor', () => {
     } finally {
       await handle.close();
       if (previousSharedSecret === undefined) {
-        delete process.env['QWEN_SHARED_WEBHOOK_SECRET'];
+        delete process.env['CANOPY_SHARED_WEBHOOK_SECRET'];
       } else {
-        process.env['QWEN_SHARED_WEBHOOK_SECRET'] = previousSharedSecret;
+        process.env['CANOPY_SHARED_WEBHOOK_SECRET'] = previousSharedSecret;
       }
     }
   });
@@ -10210,7 +10231,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
     const pidfile = makePidfileDeps();
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10284,7 +10305,7 @@ describe('runQwenServe channel worker supervisor', () => {
       .mockImplementation((() => undefined) as never);
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10353,7 +10374,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const existingSigintListeners = new Set(process.rawListeners('SIGINT'));
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
 
-    await runQwenServe(
+    await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10426,7 +10447,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const existingSigintListeners = new Set(process.rawListeners('SIGINT'));
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
 
-    await runQwenServe(
+    await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10500,7 +10521,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const existingSigintListeners = new Set(process.rawListeners('SIGINT'));
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
 
-    await runQwenServe(
+    await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10575,7 +10596,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const existingSigintListeners = new Set(process.rawListeners('SIGINT'));
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10646,7 +10667,7 @@ describe('runQwenServe channel worker supervisor', () => {
       .mockResolvedValueOnce(undefined);
     const pidfile = makePidfileDeps();
     const logPath = path.join(tmpDir, 'debug', 'daemon', 'daemon.log');
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10735,7 +10756,7 @@ describe('runQwenServe channel worker supervisor', () => {
       .mockResolvedValueOnce(undefined);
     const pidfile = makePidfileDeps();
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10789,7 +10810,7 @@ describe('runQwenServe channel worker supervisor', () => {
       pidfile.readServiceInfo.mockReturnValue(null);
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10829,7 +10850,7 @@ describe('runQwenServe channel worker supervisor', () => {
       channels: ['telegram'],
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10865,7 +10886,7 @@ describe('runQwenServe channel worker supervisor', () => {
       throw new Error('disk full');
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10902,7 +10923,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
     let onReady: CreateChannelWorkerSupervisorOptions['onReady'];
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -10946,8 +10967,8 @@ describe('runQwenServe channel worker supervisor', () => {
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-channel-worker-log-')),
     );
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    process.env['QWEN_RUNTIME_DIR'] = tmpDir;
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    process.env['CANOPY_RUNTIME_DIR'] = tmpDir;
     const worker = makeWorker({
       enabled: true,
       state: 'running',
@@ -10958,7 +10979,7 @@ describe('runQwenServe channel worker supervisor', () => {
     let onExit: CreateChannelWorkerSupervisorOptions['onExit'];
 
     try {
-      const handle = await runQwenServe(
+      const handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11012,9 +11033,9 @@ describe('runQwenServe channel worker supervisor', () => {
       expect(logContent).not.toContain('secret-token');
     } finally {
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
     }
   });
@@ -11030,7 +11051,7 @@ describe('runQwenServe channel worker supervisor', () => {
       channels: ['telegram'],
     });
     let workerOptions: CreateChannelWorkerSupervisorOptions | undefined;
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '0.0.0.0',
@@ -11070,7 +11091,7 @@ describe('runQwenServe channel worker supervisor', () => {
       channels: ['telegram'],
     });
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11142,7 +11163,7 @@ describe('runQwenServe channel worker supervisor', () => {
       },
     );
     const pidfile = makePidfileDeps();
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11219,7 +11240,7 @@ describe('runQwenServe channel worker supervisor', () => {
 
     const pidfile = makePidfileDeps();
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11249,7 +11270,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const pidfile = makePidfileDeps();
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11286,7 +11307,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
 
     try {
-      await runQwenServe(
+      await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11333,7 +11354,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const existingSigtermListeners = new Set(process.rawListeners('SIGTERM'));
     let settled = false;
 
-    const running = runQwenServe(
+    const running = runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11417,7 +11438,7 @@ describe('runQwenServe channel worker supervisor', () => {
     });
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11432,7 +11453,7 @@ describe('runQwenServe channel worker supervisor', () => {
           channelServicePidfile: pidfile,
         },
       ),
-    ).rejects.toThrow('Channel service is already running under qwen serve');
+    ).rejects.toThrow('Channel service is already running under canopy serve');
 
     expect(workerFactory).not.toHaveBeenCalled();
     expect(pidfile.reserveServeServiceInfo).not.toHaveBeenCalled();
@@ -11458,7 +11479,7 @@ describe('runQwenServe channel worker supervisor', () => {
       .mockImplementationOnce(() => undefined);
     pidfile.readServiceInfo.mockReturnValueOnce(null).mockReturnValueOnce(null);
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11497,7 +11518,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const pidfile = makePidfileDeps();
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: -1,
           hostname: '127.0.0.1',
@@ -11550,7 +11571,7 @@ describe('runQwenServe channel worker supervisor', () => {
       return testServer;
     }) as unknown as typeof testServer.listen;
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 4170,
         hostname: '127.0.0.1',
@@ -11602,7 +11623,7 @@ describe('runQwenServe channel worker supervisor', () => {
     }) as unknown as typeof testServer.listen;
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 4170,
           hostname: '127.0.0.1',
@@ -11645,7 +11666,7 @@ describe('runQwenServe channel worker supervisor', () => {
     }) as unknown as typeof testServer.listen;
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 4170,
           hostname: '127.0.0.1',
@@ -11687,7 +11708,7 @@ describe('runQwenServe channel worker supervisor', () => {
     }) as unknown as typeof testServer.listen;
 
     await expect(
-      runQwenServe(
+      runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -11722,7 +11743,7 @@ describe('runQwenServe channel worker supervisor', () => {
     const uncaughtExceptionHandler = () => {};
     process.on('uncaughtException', uncaughtExceptionHandler);
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11790,7 +11811,7 @@ describe('runQwenServe channel worker supervisor', () => {
         },
       );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11828,7 +11849,7 @@ describe('runQwenServe channel worker supervisor', () => {
   });
 });
 
-describe('runQwenServe startup observability', () => {
+describe('runCanopyServe startup observability', () => {
   it("names every pre-auth surface in the --allow-origin '*' warning", async () => {
     // This warning is the operator's only notice of what a wildcard origin
     // exposes without a token, so it must enumerate the actual pre-auth
@@ -11846,7 +11867,7 @@ describe('runQwenServe startup observability', () => {
         stderrWrites.push(String(chunk));
         return true;
       });
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11915,7 +11936,7 @@ describe('runQwenServe startup observability', () => {
           processStartedAt?: string;
           listenerReadyAt?: string;
           processToListenMs?: number;
-          runQwenServeToListenMs?: number;
+          runCanopyServeToListenMs?: number;
           preheat?: {
             status?: string;
             durationMs?: number;
@@ -11964,7 +11985,7 @@ describe('runQwenServe startup observability', () => {
       return true;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -11972,7 +11993,7 @@ describe('runQwenServe startup observability', () => {
         workspace: tmpDir,
         maxSessions: 1,
         serveWebShell: false,
-        allowOrigins: ['chrome-extension://qwen-test-extension'],
+        allowOrigins: ['chrome-extension://canopy-test-extension'],
       },
       { bridge: makeFakeBridge() },
     );
@@ -11981,22 +12002,22 @@ describe('runQwenServe startup observability', () => {
       expect(stdoutWrites).toEqual(
         expect.arrayContaining([
           expect.stringMatching(
-            /^qwen serve listening on http:\/\/127\.0\.0\.1:\d+ \(mode=http-bridge, workspace=/,
+            /^canopy serve listening on http:\/\/127\.0\.0\.1:\d+ \(mode=http-bridge, workspace=/,
           ),
         ]),
       );
       expect(stderrWrites.join('')).toMatch(
-        /qwen serve: startup timing: processToListenMs=\d+ runQwenServeToListenMs=\d+/,
+        /canopy serve: startup timing: processToListenMs=\d+ runCanopyServeToListenMs=\d+/,
       );
       expect(stderrWrites.join('')).not.toContain(
-        'qwen serve: client-hosted MCP tools are accepted over the WebSocket without auth.',
+        'canopy serve: client-hosted MCP tools are accepted over the WebSocket without auth.',
       );
 
       expect(await readStartup(handle)).toMatchObject({
         processStartedAt: expect.any(String),
         listenerReadyAt: expect.any(String),
         processToListenMs: expect.any(Number),
-        runQwenServeToListenMs: expect.any(Number),
+        runCanopyServeToListenMs: expect.any(Number),
         preheat: { status: 'external_bridge' },
       });
     } finally {
@@ -12005,8 +12026,8 @@ describe('runQwenServe startup observability', () => {
   });
 
   it('uses boot runtimeOutputDir for daemon logs', async () => {
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_RUNTIME_DIR'];
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-startup-runtime-dir-')),
     );
@@ -12019,7 +12040,7 @@ describe('runQwenServe startup observability', () => {
 
     let handle: RunHandle | undefined;
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -12031,26 +12052,26 @@ describe('runQwenServe startup observability', () => {
         {
           bridge: makeFakeBridge(),
           bootSettings: {
-            advanced: { runtimeOutputDir: '.qwen-runtime' },
+            advanced: { runtimeOutputDir: '.canopy-runtime' },
           },
         },
       );
       const expectedDaemonDir = path.join(
         boundWorkspace,
-        '.qwen-runtime',
+        '.canopy-runtime',
         'debug',
         'daemon',
       );
       expect(stderrWrites.join('')).toContain(
-        `qwen serve: daemon log → ${expectedDaemonDir}`,
+        `canopy serve: daemon log → ${expectedDaemonDir}`,
       );
       expect(fs.existsSync(expectedDaemonDir)).toBe(true);
     } finally {
       await handle?.close();
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
     }
   });
@@ -12066,7 +12087,7 @@ describe('runQwenServe startup observability', () => {
       return true;
     });
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -12084,7 +12105,7 @@ describe('runQwenServe startup observability', () => {
     try {
       const expectedDaemonDir = path.join(logBaseDir, 'daemon');
       expect(stderrWrites.join('')).toContain(
-        `qwen serve: daemon log → ${expectedDaemonDir}`,
+        `canopy serve: daemon log → ${expectedDaemonDir}`,
       );
       expect(fs.existsSync(expectedDaemonDir)).toBe(true);
     } finally {
@@ -12093,21 +12114,21 @@ describe('runQwenServe startup observability', () => {
   });
 
   it('preserves Storage runtime base dir for default exported callers', async () => {
-    const originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    delete process.env['QWEN_RUNTIME_DIR'];
-    qwenCore.Storage.setRuntimeBaseDir(null);
+    const originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
+    canopyCore.Storage.setRuntimeBaseDir(null);
     tmpDir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'qws-startup-storage-dir-')),
     );
-    fs.mkdirSync(path.join(tmpDir, '.qwen'));
+    fs.mkdirSync(path.join(tmpDir, '.canopy'));
     fs.writeFileSync(
-      path.join(tmpDir, '.qwen', 'settings.json'),
+      path.join(tmpDir, '.canopy', 'settings.json'),
       JSON.stringify({
         advanced: { runtimeOutputDir: '.settings-runtime' },
       }),
     );
     const runtimeBaseDir = path.join(tmpDir, 'storage-runtime');
-    qwenCore.Storage.setRuntimeBaseDir(runtimeBaseDir);
+    canopyCore.Storage.setRuntimeBaseDir(runtimeBaseDir);
     const stderrWrites: string[] = [];
     vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
       stderrWrites.push(String(chunk));
@@ -12116,7 +12137,7 @@ describe('runQwenServe startup observability', () => {
 
     let handle: RunHandle | undefined;
     try {
-      handle = await runQwenServe(
+      handle = await runCanopyServe(
         {
           port: 0,
           hostname: '127.0.0.1',
@@ -12129,16 +12150,16 @@ describe('runQwenServe startup observability', () => {
       );
       const expectedDaemonDir = path.join(runtimeBaseDir, 'debug', 'daemon');
       expect(stderrWrites.join('')).toContain(
-        `qwen serve: daemon log → ${expectedDaemonDir}`,
+        `canopy serve: daemon log → ${expectedDaemonDir}`,
       );
       expect(fs.existsSync(expectedDaemonDir)).toBe(true);
     } finally {
       await handle?.close();
-      qwenCore.Storage.setRuntimeBaseDir(null);
+      canopyCore.Storage.setRuntimeBaseDir(null);
       if (originalRuntimeDir === undefined) {
-        delete process.env['QWEN_RUNTIME_DIR'];
+        delete process.env['CANOPY_RUNTIME_DIR'];
       } else {
-        process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+        process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
       }
     }
   });
@@ -12153,7 +12174,7 @@ describe('runQwenServe startup observability', () => {
     });
     const bridge = installInternalBridge(() => preheatPromise);
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',
@@ -12190,7 +12211,7 @@ describe('runQwenServe startup observability', () => {
       Promise.reject(new Error('preheat boom')),
     );
 
-    const handle = await runQwenServe(
+    const handle = await runCanopyServe(
       {
         port: 0,
         hostname: '127.0.0.1',

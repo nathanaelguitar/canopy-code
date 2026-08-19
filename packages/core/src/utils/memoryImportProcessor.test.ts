@@ -147,7 +147,7 @@ describe('memoryImportProcessor', () => {
     it('notifies after importing a file', async () => {
       const content = 'Some content @./test.md more content';
       const basePath = testPath('test', 'path');
-      const parentFile = path.resolve(basePath, 'QWEN.md');
+      const parentFile = path.resolve(basePath, 'CANOPY.md');
       const importedFile = path.resolve(basePath, 'test.md');
       const importedFiles: Array<{
         filePath: string;
@@ -186,7 +186,7 @@ describe('memoryImportProcessor', () => {
     it('keeps imported content when the import notification callback throws', async () => {
       const content = 'Some content @./test.md more content';
       const basePath = testPath('test', 'path');
-      const parentFile = path.resolve(basePath, 'QWEN.md');
+      const parentFile = path.resolve(basePath, 'CANOPY.md');
       const importedContent = '# Imported Content';
 
       mockedFs.access.mockResolvedValue(undefined);
@@ -217,7 +217,7 @@ describe('memoryImportProcessor', () => {
     it('notifies after importing files in flat mode', async () => {
       const content = 'Some content @./test.md more content';
       const basePath = testPath('test', 'path');
-      const parentFile = path.resolve(basePath, 'QWEN.md');
+      const parentFile = path.resolve(basePath, 'CANOPY.md');
       const importedFile = path.resolve(basePath, 'test.md');
       const nestedFile = path.resolve(basePath, 'nested.md');
       const importedFiles: Array<{

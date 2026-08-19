@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -26,7 +26,7 @@ describe('auto-skill curator', () => {
 
   beforeEach(async () => {
     projectRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skill-curator-'),
+      path.join(os.tmpdir(), 'canopy-skill-curator-'),
     );
   });
 
@@ -39,7 +39,12 @@ describe('auto-skill curator', () => {
     source: string,
     modifiedAt: Date,
   ): Promise<string> {
-    const directory = path.join(projectRoot, '.qwen', 'skills', directoryName);
+    const directory = path.join(
+      projectRoot,
+      '.canopy',
+      'skills',
+      directoryName,
+    );
     const manifest = path.join(directory, 'SKILL.md');
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(
@@ -88,7 +93,7 @@ describe('auto-skill curator', () => {
     await runAutoSkillCurator(projectRoot, { now });
 
     await expect(
-      fs.lstat(path.join(projectRoot, '.qwen', 'skill-curator.lock')),
+      fs.lstat(path.join(projectRoot, '.canopy', 'skill-curator.lock')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
@@ -102,7 +107,7 @@ describe('auto-skill curator', () => {
       ).resolves.toMatchObject({ dryRun: false });
       expect(getOnCompromised()).toBeTypeOf('function');
       expect(getLockedFile()).toBe(
-        path.join(projectRoot, '.qwen', 'skill-curator.lock'),
+        path.join(projectRoot, '.canopy', 'skill-curator.lock'),
       );
     } finally {
       lockSpy.mockRestore();
@@ -122,7 +127,12 @@ describe('auto-skill curator', () => {
       // (terminal control-sequence injection). Keep a clean managed skill so the
       // enumeration itself is exercised.
       const maliciousDir = 'auto-skill-[2J[31mevil';
-      const directory = path.join(projectRoot, '.qwen', 'skills', maliciousDir);
+      const directory = path.join(
+        projectRoot,
+        '.canopy',
+        'skills',
+        maliciousDir,
+      );
       await fs.mkdir(directory, { recursive: true });
       const maliciousManifest = path.join(directory, 'SKILL.md');
       await fs.writeFile(
@@ -166,7 +176,7 @@ describe('auto-skill curator', () => {
       const target = await writeSkill('auto-skill-real', 'auto-skill', old);
       const linkedDir = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         'auto-skill-linked',
       );
@@ -206,14 +216,20 @@ describe('auto-skill curator', () => {
       archived: [],
     });
     await expect(
-      fs.access(path.join(projectRoot, '.qwen', 'skill-curator.json')),
+      fs.access(path.join(projectRoot, '.canopy', 'skill-curator.json')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(
-      fs.access(path.join(projectRoot, '.qwen', 'archived-skills')),
+      fs.access(path.join(projectRoot, '.canopy', 'archived-skills')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(
       fs.access(
-        path.join(projectRoot, '.qwen', 'skills', 'auto-skill-old', 'SKILL.md'),
+        path.join(
+          projectRoot,
+          '.canopy',
+          'skills',
+          'auto-skill-old',
+          'SKILL.md',
+        ),
       ),
     ).resolves.toBeUndefined();
   });
@@ -227,7 +243,7 @@ describe('auto-skill curator', () => {
       { name: 'old', level: 'project', filePath: manifest },
       old,
     );
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     const before = await fs.readFile(statePath, 'utf8');
 
     const result = await runAutoSkillCurator(projectRoot, {
@@ -239,7 +255,7 @@ describe('auto-skill curator', () => {
     expect(result.seeded).toEqual([]);
     await expect(fs.readFile(statePath, 'utf8')).resolves.toBe(before);
     await expect(
-      fs.access(path.join(projectRoot, '.qwen', 'archived-skills')),
+      fs.access(path.join(projectRoot, '.canopy', 'archived-skills')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
@@ -257,7 +273,7 @@ describe('auto-skill curator', () => {
     });
     await expect(
       fs.access(
-        path.join(projectRoot, '.qwen', 'skills', 'auto-skill-existing'),
+        path.join(projectRoot, '.canopy', 'skills', 'auto-skill-existing'),
       ),
     ).resolves.toBeUndefined();
     await expect(
@@ -300,7 +316,7 @@ describe('auto-skill curator', () => {
 
     const state = JSON.parse(
       await fs.readFile(
-        path.join(projectRoot, '.qwen', 'skill-curator.json'),
+        path.join(projectRoot, '.canopy', 'skill-curator.json'),
         'utf8',
       ),
     ) as {
@@ -330,7 +346,9 @@ describe('auto-skill curator', () => {
     expect(result.markedStale).toEqual(['auto-skill-stale']);
     expect(result.archived).toEqual([]);
     await expect(
-      fs.access(path.join(projectRoot, '.qwen', 'skills', 'auto-skill-stale')),
+      fs.access(
+        path.join(projectRoot, '.canopy', 'skills', 'auto-skill-stale'),
+      ),
     ).resolves.toBeUndefined();
   });
 
@@ -348,7 +366,7 @@ describe('auto-skill curator', () => {
     );
     const supportFile = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'skills',
       'auto-skill-old',
       'references',
@@ -370,7 +388,7 @@ describe('auto-skill curator', () => {
       fs.readFile(
         path.join(
           projectRoot,
-          '.qwen',
+          '.canopy',
           'archived-skills',
           'auto-skill-old',
           'references',
@@ -421,7 +439,7 @@ describe('auto-skill curator', () => {
       fs.access(
         path.join(
           projectRoot,
-          '.qwen',
+          '.canopy',
           'archived-skills',
           'auto-skill-old',
           'SKILL.md',
@@ -452,7 +470,7 @@ describe('auto-skill curator', () => {
     expect(run.archived).toEqual([]);
     const state = JSON.parse(
       await fs.readFile(
-        path.join(projectRoot, '.qwen', 'skill-curator.json'),
+        path.join(projectRoot, '.canopy', 'skill-curator.json'),
         'utf8',
       ),
     ) as { skills: Record<string, { firstSeenAt: string }> };
@@ -516,7 +534,7 @@ describe('auto-skill curator', () => {
       new Date(now.getTime() - 100 * DAY_MS),
     );
     await fs.writeFile(
-      path.join(projectRoot, '.qwen', 'skill-curator.json'),
+      path.join(projectRoot, '.canopy', 'skill-curator.json'),
       '{broken',
     );
 
@@ -538,13 +556,13 @@ describe('auto-skill curator', () => {
     await runAutoSkillCurator(projectRoot, { now });
     const archivedManifest = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old',
       'SKILL.md',
     );
     await fs.writeFile(
-      path.join(projectRoot, '.qwen', 'skill-curator.json'),
+      path.join(projectRoot, '.canopy', 'skill-curator.json'),
       '{broken',
     );
 
@@ -554,7 +572,13 @@ describe('auto-skill curator', () => {
     await expect(fs.access(archivedManifest)).resolves.toBeUndefined();
     await expect(
       fs.access(
-        path.join(projectRoot, '.qwen', 'skills', 'auto-skill-old', 'SKILL.md'),
+        path.join(
+          projectRoot,
+          '.canopy',
+          'skills',
+          'auto-skill-old',
+          'SKILL.md',
+        ),
       ),
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
@@ -584,7 +608,7 @@ describe('auto-skill curator', () => {
     );
     const archivedDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-collision',
     );
@@ -619,7 +643,7 @@ describe('auto-skill curator', () => {
     );
     const archivedDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-collision',
     );
@@ -684,7 +708,7 @@ describe('auto-skill curator', () => {
       { name: 'legacy', level: 'project', filePath: manifest },
       now,
     );
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     const state = JSON.parse(await fs.readFile(statePath, 'utf8')) as {
       skills: Record<string, { pinned?: boolean }>;
     };
@@ -716,7 +740,7 @@ describe('auto-skill curator', () => {
     const now = new Date('2026-07-27T00:00:00.000Z');
     const outsideDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'outside',
       'auto-skill-evil',
     );
@@ -745,8 +769,8 @@ describe('auto-skill curator', () => {
 
   it('rejects archive directory traversal during restore', async () => {
     const now = new Date('2026-07-27T00:00:00.000Z');
-    const traversalTarget = path.join(projectRoot, '.qwen', 'outside');
-    await fs.mkdir(path.join(projectRoot, '.qwen', 'archived-skills'), {
+    const traversalTarget = path.join(projectRoot, '.canopy', 'outside');
+    await fs.mkdir(path.join(projectRoot, '.canopy', 'archived-skills'), {
       recursive: true,
     });
     await fs.mkdir(traversalTarget, { recursive: true });
@@ -782,7 +806,7 @@ describe('auto-skill curator', () => {
         'auto-skill',
         new Date(now.getTime() - 100 * DAY_MS),
       );
-      const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+      const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
       const external = path.join(projectRoot, 'external-state.json');
       await fs.writeFile(external, JSON.stringify({ version: 1, skills: {} }));
       await fs.symlink(external, statePath);
@@ -802,7 +826,7 @@ describe('auto-skill curator', () => {
       'auto-skill',
       new Date(now.getTime() - 100 * DAY_MS),
     );
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     await fs.mkdir(statePath, { recursive: true });
 
     await expect(
@@ -817,7 +841,7 @@ describe('auto-skill curator', () => {
       'auto-skill',
       new Date(now.getTime() - 100 * DAY_MS),
     );
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     // A regular file just over the 1 MiB read cap.
     await fs.writeFile(
       statePath,
@@ -833,7 +857,7 @@ describe('auto-skill curator', () => {
     const now = new Date('2026-07-27T00:00:00.000Z');
     const archivedDir = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-broken',
     );
@@ -916,7 +940,7 @@ describe('auto-skill curator', () => {
 
     // Make the archive root a file so rename into it fails for the first
     // skill, then fix it so the second succeeds.
-    const archiveRoot = path.join(projectRoot, '.qwen', 'archived-skills');
+    const archiveRoot = path.join(projectRoot, '.canopy', 'archived-skills');
     await fs.mkdir(archiveRoot, { recursive: true });
     // Block rename for auto-skill-a by placing a file at its destination.
     await fs.writeFile(path.join(archiveRoot, 'auto-skill-a'), 'blocker');
@@ -952,8 +976,8 @@ describe('auto-skill curator', () => {
       // Ensure the archive root exists, then remove write permission from the
       // skills root so rename (which needs write on the source parent) fails
       // with EACCES while lstat on the destination still succeeds.
-      const skillsRoot = path.join(projectRoot, '.qwen', 'skills');
-      const archiveRoot = path.join(projectRoot, '.qwen', 'archived-skills');
+      const skillsRoot = path.join(projectRoot, '.canopy', 'skills');
+      const archiveRoot = path.join(projectRoot, '.canopy', 'archived-skills');
       await fs.mkdir(archiveRoot, { recursive: true });
       await fs.chmod(skillsRoot, 0o555);
 
@@ -985,22 +1009,25 @@ describe('auto-skill curator', () => {
     });
 
     // Delete the skill directory by hand.
-    await fs.rm(path.join(projectRoot, '.qwen', 'skills', 'auto-skill-gone'), {
-      recursive: true,
-      force: true,
-    });
+    await fs.rm(
+      path.join(projectRoot, '.canopy', 'skills', 'auto-skill-gone'),
+      {
+        recursive: true,
+        force: true,
+      },
+    );
 
     // Run again — the record should be pruned.
     await runAutoSkillCurator(projectRoot, { now });
 
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     const state = JSON.parse(await fs.readFile(statePath, 'utf8'));
     expect(state.skills['auto-skill-gone']).toBeUndefined();
   });
 
   it('does not create a state file when no auto-skills exist', async () => {
     const now = new Date('2026-07-27T00:00:00.000Z');
-    await fs.mkdir(path.join(projectRoot, '.qwen', 'skills'), {
+    await fs.mkdir(path.join(projectRoot, '.canopy', 'skills'), {
       recursive: true,
     });
 
@@ -1010,7 +1037,7 @@ describe('auto-skill curator', () => {
     if (result.status === 'seeded') {
       expect(result.checked).toBe(0);
     }
-    const statePath = path.join(projectRoot, '.qwen', 'skill-curator.json');
+    const statePath = path.join(projectRoot, '.canopy', 'skill-curator.json');
     await expect(fs.lstat(statePath)).rejects.toThrow();
   });
 

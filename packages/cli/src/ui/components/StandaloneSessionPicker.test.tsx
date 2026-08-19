@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,10 +16,10 @@ import type {
   Config,
   SessionListItem,
   ListSessionsResult,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
-vi.mock('@qwen-code/qwen-code-core', async () => {
-  const actual = await vi.importActual('@qwen-code/qwen-code-core');
+vi.mock('@canopy-code/canopy-code-core', async () => {
+  const actual = await vi.importActual('@canopy-code/canopy-code-core');
   return {
     ...actual,
     getGitBranch: vi.fn().mockReturnValue('main'),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -62,13 +62,13 @@ export type Runtime = 'node' | 'bun' | 'unknown';
  * outbound API connections.
  *
  * This is an opt-in escape hatch for self-hosted / lab environments that use
- * self-signed certificates. Because Qwen Code installs its own undici
+ * self-signed certificates. Because Canopy Code installs its own undici
  * dispatcher (to control timeouts), Node's global `NODE_TLS_REJECT_UNAUTHORIZED`
  * is not automatically honored by that dispatcher — this helper feeds the
  * setting back into the dispatcher's TLS connect options.
  *
  * Sources (any one enables it):
- * - `QWEN_TLS_INSECURE` env var (`1`/`true`/`yes`/`on`, case-insensitive).
+ * - `CANOPY_TLS_INSECURE` env var (`1`/`true`/`yes`/`on`, case-insensitive).
  *   The `--insecure` CLI flag sets this.
  * - `NODE_TLS_REJECT_UNAUTHORIZED=0` (Node convention, for parity)
  *
@@ -78,7 +78,7 @@ export type Runtime = 'node' | 'bun' | 'unknown';
  * @returns true when certificate verification should be skipped
  */
 export function isTlsVerificationDisabled(): boolean {
-  const flag = process.env['QWEN_TLS_INSECURE'];
+  const flag = process.env['CANOPY_TLS_INSECURE'];
   if (flag !== undefined && /^(1|true|yes|on)$/i.test(flag.trim())) {
     return true;
   }
@@ -791,7 +791,7 @@ function buildFetchOptionsWithDispatcher(
     const redactedMessage = redactProxyCredentials(errorMessage);
     const logMessage = `Failed to create proxy dispatcher for ${hostname} (${failureLabel}), falling back to direct connection: ${redactedMessage}`;
     debugLogger.warn(logMessage);
-    // Dual logging: debugLogger writes to ~/.qwen/debug/ (for local debugging),
+    // Dual logging: debugLogger writes to ~/.canopy/debug/ (for local debugging),
     // console.error writes to stderr (captured by container orchestrators and log aggregators).
     // This ensures visibility in production even when debug sessions are inactive.
     // eslint-disable-next-line no-console

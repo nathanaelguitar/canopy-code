@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   TERMINAL_OSC_REGEX,
   TERMINAL_CSI_REGEX,
   TERMINAL_SHIFT_DCS_REGEX,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings, SettingsFile } from '../../config/settings.js';
 import type {
   AsciiArtSource,
@@ -339,7 +339,7 @@ function readArtFile(absolutePath: string): string | undefined {
 /**
  * Banner-specific sanitizer. Re-uses the OSC / CSI / SS2 / SS3 patterns
  * exported from `stripTerminalControlSequences` (in
- * `@qwen-code/qwen-code-core`) so the regexes are authored once, but
+ * `@canopy-code/canopy-code-core`) so the regexes are authored once, but
  * preserves `\n` and `\t` — multi-line / tab-aligned ASCII art needs
  * those, while the shared core helper strips them. The fallback range
  * here matches the core helper's C0/C1/DEL strip but carves out
@@ -449,7 +449,7 @@ function sanitizeSingleLine(
  * Shared with `<Header />` so the renderer doesn't reinvent the same width
  * arithmetic. Tries `large` first, then `small`; returns the first tier
  * that fits in the available width, or `undefined` to signal "hide the
- * logo column entirely (fall back to the default Qwen logo or no logo)".
+ * logo column entirely (fall back to the default Canopy logo or no logo)".
  */
 export function pickAsciiArtTier(
   small: string | undefined,

@@ -20,12 +20,12 @@ import type {
   ToolMcpConfirmationDetails,
   Config,
   EditorType,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   IdeClient,
   ToolConfirmationOutcome,
   buildHumanReadableRuleLabel,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { RadioSelectItem } from '../shared/RadioButtonSelect.js';
 import { RadioButtonSelect } from '../shared/RadioButtonSelect.js';
 import { MaxSizedBox, MINIMUM_MAX_HEIGHT } from '../shared/MaxSizedBox.js';
@@ -124,7 +124,7 @@ export const ToolConfirmationMessage: React.FC<
     if (confirmationDetails.type !== 'plan') return;
     setPlanViewError(null);
     const openPlan = async () => {
-      const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-plan-'));
+      const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-plan-'));
       const planPath = path.join(dir, 'plan.md');
       await fs.writeFile(planPath, confirmationDetails.plan);
       await launchEditor(planPath);

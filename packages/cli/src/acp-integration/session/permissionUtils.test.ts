@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { ToolConfirmationOutcome } from '@qwen-code/qwen-code-core';
+import { ToolConfirmationOutcome } from '@canopy-code/canopy-code-core';
 import {
   buildPermissionRequestContent,
   interactionMetaFields,
@@ -149,8 +149,8 @@ describe('permissionUtils', () => {
           onConfirm: async () => undefined,
         }),
       ).toEqual({
-        qwenInteractionKind: 'user_question',
-        qwenQuestions: questions,
+        canopyInteractionKind: 'user_question',
+        canopyQuestions: questions,
       });
     });
 

@@ -146,7 +146,7 @@ describe('runSideQuery', () => {
     });
 
     it('adds the configured output language to JSON side queries', async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), 'qwen-side-query-'));
+      const dir = await mkdtemp(path.join(tmpdir(), 'canopy-side-query-'));
       try {
         const outputLanguagePath = path.join(dir, 'output-language.md');
         await writeFile(outputLanguagePath, '请始终用中文回答用户可见文本。');
@@ -181,7 +181,7 @@ describe('runSideQuery', () => {
     });
 
     it('skips output language when skipOutputLanguagePreference is true', async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), 'qwen-side-query-'));
+      const dir = await mkdtemp(path.join(tmpdir(), 'canopy-side-query-'));
       try {
         const outputLanguagePath = path.join(dir, 'output-language.md');
         await writeFile(outputLanguagePath, '请始终用中文回答用户可见文本。');
@@ -456,7 +456,7 @@ describe('runSideQuery', () => {
     });
 
     it('adds the configured output language to text side queries', async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), 'qwen-side-query-'));
+      const dir = await mkdtemp(path.join(tmpdir(), 'canopy-side-query-'));
       try {
         const outputLanguagePath = path.join(dir, 'output-language.md');
         await writeFile(outputLanguagePath, 'Respond in Spanish.');

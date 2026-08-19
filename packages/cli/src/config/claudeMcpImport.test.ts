@@ -53,10 +53,10 @@ describe('claude MCP import', () => {
         mcpServers: options.workspaceMcpServers,
       }),
     };
-    const userFile = path.join(homeDir, '.qwen', 'settings.json');
+    const userFile = path.join(homeDir, '.canopy', 'settings.json');
     const workspaceFile = options?.inHome
       ? userFile
-      : path.join(projectDir, '.qwen', 'settings.json');
+      : path.join(projectDir, '.canopy', 'settings.json');
     const mergedMcpServers =
       options?.mergedMcpServers ??
       (options?.userMcpServers || options?.workspaceMcpServers
@@ -123,7 +123,7 @@ describe('claude MCP import', () => {
     );
   });
 
-  it('normalizes Claude transport types into Qwen URL fields', () => {
+  it('normalizes Claude transport types into Canopy URL fields', () => {
     writeJson(path.join(homeDir, '.claude.json'), {
       mcpServers: {
         httpServer: { type: 'http', url: 'https://example.com/mcp' },
@@ -141,7 +141,7 @@ describe('claude MCP import', () => {
       homeDir,
     });
 
-    // Claude's `type` discriminator is dropped on every transport (qwen reserves
+    // Claude's `type` discriminator is dropped on every transport (canopy reserves
     // `type` for 'sdk'): http→httpUrl, sse→url, stdio keeps command only.
     expect(settings.setValue).toHaveBeenCalledWith(
       SettingScope.User,

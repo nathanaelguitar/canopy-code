@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   hashDaemonWorkspace,
   Storage,
   type DurableCronTask,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { DaemonLogger } from './daemon-logger.js';
 import type { DaemonTrustPolicySnapshot } from '../config/daemon-trust-policy.js';
 import type {
@@ -422,7 +422,7 @@ export interface ServeAppDeps {
    * Enables resident management of scheduled-task-owned sessions: a periodic
    * keepalive (so their schedulers aren't idle-reaped) and a boot-time
    * rehydration (so they re-arm after a restart). Opt-in — only the real
-   * long-running daemon (`runQwenServe`) sets it. Tests and direct embeds
+   * long-running daemon (`runCanopyServe`) sets it. Tests and direct embeds
    * leave it off so `createServeApp` neither spawns sessions on boot nor holds
    * a heartbeat timer.
    */
@@ -430,7 +430,7 @@ export interface ServeAppDeps {
   /**
    * Directory of the built Web Shell SPA (`index.html` + `assets/`). When
    * set (and `opts.serveWebShell !== false`), `createServeApp` mounts the
-   * UI at the daemon root before `bearerAuth`. Production `runQwenServe`
+   * UI at the daemon root before `bearerAuth`. Production `runCanopyServe`
    * resolves this via `resolveWebShellDir()` and injects it here; direct
    * embeds / tests opt in by passing a fixture dir, so the default
    * `createServeApp` (no injection) stays API-only and existing route tests
@@ -438,15 +438,15 @@ export interface ServeAppDeps {
    */
   webShellDir?: string;
   /**
-   * Qwen Code version advertised to web/SDK clients. Production passes the
+   * Canopy Code version advertised to web/SDK clients. Production passes the
    * resolved CLI package version; tests/direct embeds may omit it.
    */
-  qwenCodeVersion?: string;
+  canopyCodeVersion?: string;
   /**
    * Pre-canonicalized workspace path. When supplied, `createServeApp`
    * skips its own `canonicalizeWorkspace` call (which would issue a
    * redundant `realpathSync.native` syscall — idempotent, but a hot
-   * boot-time stat we can avoid). `runQwenServe` passes this after
+   * boot-time stat we can avoid). `runCanopyServe` passes this after
    * its own boot-time canonicalize so the value used by
    * `/capabilities`, the `POST /session` cwd fallback, and the
    * bridge are all the SAME canonical form. Callers that haven't
@@ -467,20 +467,20 @@ export interface ServeAppDeps {
   /**
    * Device-flow auth registry. Tests inject a fake; production callers
    * omit this and `createServeApp` constructs a default wired to the
-   * shipped Qwen provider, the bridge's `publishWorkspaceEvent`,
+   * shipped Canopy provider, the bridge's `publishWorkspaceEvent`,
    * and a stderr audit sink.
    */
   deviceFlowRegistry?: DeviceFlowRegistry;
   maxExtensionOperationHistory?: number;
   /**
    * Extra device-flow providers for tests / future extensions.
-   * Production builds register only `QwenOAuthDeviceFlowProvider`;
+   * Production builds register only `CanopyOAuthDeviceFlowProvider`;
    * passing extra entries here registers them in addition.
    */
   deviceFlowProviders?: DeviceFlowProvider[];
   /**
    * Installs an LLM auth provider by applying the same provider install plan
-   * used by interactive `/auth`. Production `runQwenServe` injects a
+   * used by interactive `/auth`. Production `runCanopyServe` injects a
    * settings-backed implementation; tests/direct embeds may omit it, in which
    * case the route reports `not_implemented`.
    */
@@ -567,7 +567,7 @@ export interface ServeAppDeps {
   /**
    * Reverse tool channel (issue #5626, Phase 2). Shared sender registry that
    * bridges the daemon WS (per-connection `ClientMcpRegistrar`) and the ACP
-   * child's `client_mcp/message` ext-method. `runQwenServe` constructs ONE and
+   * child's `client_mcp/message` ext-method. `runCanopyServe` constructs ONE and
    * passes the SAME instance here AND to its `createAcpSessionBridge` call (as
    * `clientMcpSender: registry.lookup`) so the bridge that answers the child
    * and the WS provider that registers senders agree. When omitted (the
@@ -619,8 +619,8 @@ export interface ServeAppDeps {
 }
 
 /**
- * Build the Express app for `qwen serve`. Pure function — no side effects on
- * the network or process; `runQwenServe` does the listen/signal handling.
+ * Build the Express app for `canopy serve`. Pure function — no side effects on
+ * the network or process; `runCanopyServe` does the listen/signal handling.
  *
  * `getPort` is invoked lazily by the host-allowlist middleware so callers
  * binding to port 0 (ephemeral) can supply the actual port after `listen()`
@@ -635,14 +635,14 @@ export interface ServeAppDeps {
  * verify that `opts.workspace` exists or is a directory — it
  * canonicalizes via `canonicalizeWorkspace`, which falls back to
  * `path.resolve` on ENOENT so the app boots even against a missing
- * path. `runQwenServe` is the production entry point and DOES
+ * path. `runCanopyServe` is the production entry point and DOES
  * perform the `fs.statSync` + `isDirectory()` boot-loud check before
  * calling this function. Tests inject synthetic paths (`/work/bound`
  * etc.) on purpose: they want to exercise the route layer's
  * canonicalization and `workspace_mismatch` translation without
  * needing a real directory on disk. If a future entry point binds
  * `createServeApp` directly to user input, it MUST replicate the
- * `runQwenServe` validation (or call into a shared helper if one is
+ * `runCanopyServe` validation (or call into a shared helper if one is
  * extracted) — otherwise a non-existent `--workspace` would boot
  * a "healthy"-looking daemon whose every spawn fails with cryptic
  * child-process ENOENT.
@@ -740,13 +740,13 @@ export function createServeApp(
   // direct callers of `createServeApp` (tests, embeds) get the same
   // cap they configured via `ServeOptions`. Previously the default
   // bridge silently fell back to `DEFAULT_MAX_SESSIONS` (32) and
-  // only the `runQwenServe` path piped the option through.
+  // only the `runCanopyServe` path piped the option through.
   //
   // The primary workspace value advertised on `/capabilities`, used for the
   // `POST /session` cwd fallback, AND passed into the primary bridge must be
   // the SAME canonical form.
   // `deps.boundWorkspace` is the pre-canonicalized fast-path from
-  // `runQwenServe`; when omitted we canonicalize ourselves.
+  // `runCanopyServe`; when omitted we canonicalize ourselves.
   const injectedWorkspaceRegistry = deps.workspaceRegistry;
   const boundWorkspace =
     injectedWorkspaceRegistry?.primary.workspaceCwd ??
@@ -814,7 +814,7 @@ export function createServeApp(
   ) {
     warnedDefaultTrust = true;
     process.stderr.write(
-      'qwen serve: createServeApp default fsFactory uses trusted=false ' +
+      'canopy serve: createServeApp default fsFactory uses trusted=false ' +
         '— agent ACP writeTextFile calls will reject with untrusted_workspace. ' +
         'Inject deps.fsFactory (with explicit trust) or deps.bridge to override.\n',
     );
@@ -832,7 +832,7 @@ export function createServeApp(
     opts.enableSessionShell === true && tokenConfigured;
   // Reverse tool channel (issue #5626, Phase 2). Process-scoped registry that
   // bridges the daemon WS (per-connection `ClientMcpRegistrar`) and the ACP
-  // child's `client_mcp/message` ext-method. Prefer the registry `runQwenServe`
+  // child's `client_mcp/message` ext-method. Prefer the registry `runCanopyServe`
   // already wired into its injected bridge (`deps.clientMcpSenderRegistry`) so
   // the bridge that answers the child and the WS provider share ONE map.
   // Standalone `createServeApp` (no injected bridge) builds its own and wires
@@ -1131,7 +1131,7 @@ export function createServeApp(
     createDaemonWorkspaceService({
       boundWorkspace,
       isWorkspaceTrusted: isPrimaryWorkspaceTrusted,
-      contextFilename: deps.contextFilename ?? 'QWEN.md',
+      contextFilename: deps.contextFilename ?? 'CANOPY.md',
       statusProvider,
       workspaceProvidersStatusProvider: createWorkspaceProvidersStatusProvider({
         ...(primaryEffectiveEnv ? { env: primaryEffectiveEnv } : {}),
@@ -1674,7 +1674,7 @@ export function createServeApp(
   // request gets the same 403 envelope the `denyBrowserOriginCors` wall
   // returned, so the no-`--allow-origin` posture is unchanged, and there is
   // one middleware to reason about instead of two interchangeable ones.
-  // Pattern parsing happens in `run-qwen-serve.ts` for validation; here we
+  // Pattern parsing happens in `run-canopy-serve.ts` for validation; here we
   // still keep the wildcard/no-token invariant for embedded callers that
   // construct the app directly.
   const parsedAllowOrigins = parseAllowOriginPatterns(opts.allowOrigins ?? []);
@@ -1732,7 +1732,7 @@ export function createServeApp(
   // routes win over the shell. Exact `/session/:id` document navigations are
   // mounted here too because a browser refresh cannot attach the bearer header
   // before the shell loads. The assets dir is resolved by the caller
-  // (runQwenServe) and injected via deps.webShellDir; `--no-web` sets
+  // (runCanopyServe) and injected via deps.webShellDir; `--no-web` sets
   // opts.serveWebShell=false to opt out.
   const webShellDir =
     opts.serveWebShell !== false ? deps.webShellDir : undefined;
@@ -1877,7 +1877,7 @@ export function createServeApp(
     workspace: primaryWorkspace,
     daemonLog,
     startup: deps.startup,
-    qwenCodeVersion: deps.qwenCodeVersion,
+    canopyCodeVersion: deps.canopyCodeVersion,
     getAcpHandle: () => acpHandleRef.current,
     getRateLimiter: () => rateLimiter,
     getRestSseActive: getActiveSseCount,
@@ -1908,7 +1908,7 @@ export function createServeApp(
     });
   }
   registerCapabilitiesRoutes(app, {
-    qwenCodeVersion: deps.qwenCodeVersion,
+    canopyCodeVersion: deps.canopyCodeVersion,
     mode: opts.mode,
     currentServeFeatures,
     boundWorkspace: primaryBoundWorkspace,
@@ -2691,7 +2691,7 @@ export function createServeApp(
             registerScheduledTaskAuthorizations(runtime.workspaceCwd, tasks),
           onError: (sessionId, err) => {
             process.stderr.write(
-              `qwen serve: failed to rehydrate scheduled-task session ${sessionId}: ${
+              `canopy serve: failed to rehydrate scheduled-task session ${sessionId}: ${
                 err instanceof Error ? err.message : String(err)
               }\n`,
             );
@@ -2704,7 +2704,7 @@ export function createServeApp(
         }),
       ).catch((err) => {
         process.stderr.write(
-          `qwen serve: unexpected scheduled-task rehydration failure: ${
+          `canopy serve: unexpected scheduled-task rehydration failure: ${
             err instanceof Error ? err.message : String(err)
           }\n`,
         );
@@ -2740,7 +2740,7 @@ export function createServeApp(
 
     // Park a combined stop fn on `app.locals` (same pattern as `fsFactory` /
     // `boundWorkspace` / `acpHandle` above) so the shutdown sequence in
-    // run-qwen-serve.ts can invoke it without threading it back through the
+    // run-canopy-serve.ts can invoke it without threading it back through the
     // createServeApp return type. Stopping all is idempotent per keepalive.
     (
       app.locals as { stopScheduledTaskKeepalive?: () => void }
@@ -2784,7 +2784,7 @@ export function createServeApp(
 
   // Official ACP Streamable HTTP transport (RFD #721) mounted at `/acp`
   // alongside the REST surface, sharing this same `bridge` instance.
-  // Additive + toggleable (`QWEN_SERVE_ACP_HTTP=0` opts out).
+  // Additive + toggleable (`CANOPY_SERVE_ACP_HTTP=0` opts out).
   // See `docs/design/daemon-acp-http/README.md` for the dual-transport
   // decision. Mounted AFTER the REST routes (distinct path, no overlap)
   // and BEFORE the final error handler so malformed `/acp` bodies still
@@ -2805,7 +2805,7 @@ export function createServeApp(
     token: opts.token,
     // The WS upgrade bypasses Express middleware, so it needs the same
     // listener-scoped credentials the REST gate uses — otherwise the
-    // `qwen-bearer.*` subprotocol would be a way around the scoping.
+    // `canopy-bearer.*` subprotocol would be a way around the scoping.
     credentials,
     // Mirror the REST CORS allowlist onto the WS CSRF wall so an
     // explicitly permitted origin (e.g. the extension's
@@ -2863,7 +2863,7 @@ export function createServeApp(
                   ws.close(4003, 'Live Voice is disabled.');
                   return;
                 }
-                const header = req.headers['x-qwen-live-nonce'];
+                const header = req.headers['x-canopy-live-nonce'];
                 liveCoordinator.attachHost(
                   ws,
                   typeof header === 'string' ? header : undefined,
@@ -2895,7 +2895,7 @@ export function createServeApp(
   // Local Control: the LAN listener serves THIS app, so the service is built
   // here where the credential store and the CORS allowlist it has to mutate
   // both live. Published on `app.locals` alongside `acpHandle` — the same
-  // channel `runQwenServe` already uses to reach into the constructed app for
+  // channel `runCanopyServe` already uses to reach into the constructed app for
   // lifecycle work (drain, dispose).
   const localControlService = new LocalControlService({
     app,

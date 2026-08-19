@@ -256,7 +256,7 @@ describe('useSlashCompletion', () => {
         createTestCommand({
           name: 'help',
           altNames: ['?'],
-          description: 'for help on Qwen Code',
+          description: 'for help on Canopy Code',
         }),
       ];
       const { result } = renderHook(() =>
@@ -443,7 +443,7 @@ describe('useSlashCompletion', () => {
         createTestCommand({
           name: 'help',
           altNames: ['?'],
-          description: 'for help on Qwen Code',
+          description: 'for help on Canopy Code',
         }),
       ];
       const recentCommands = new Map([

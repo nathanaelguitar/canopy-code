@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,8 +31,8 @@ import {
   worktreeBranchForSlug,
   writeWorktreeSession,
   writeWorktreeSessionMarker,
-} from '@qwen-code/qwen-code-core';
-import type { Config, WorktreeSession } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { Config, WorktreeSession } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('WORKTREE_STARTUP');
 
@@ -128,9 +128,9 @@ export async function setupStartupWorktree(
   }
 
   // Refuse nested creation: launching with --worktree from inside an existing
-  // worktree creates `<otherRepo>/.qwen/worktrees/<slug>/`, which is rarely
+  // worktree creates `<otherRepo>/.canopy/worktrees/<slug>/`, which is rarely
   // what the user wants and corrupts ownership tracking.
-  if (/[\\/]\.qwen[\\/]worktrees[\\/]/.test(launchCwd)) {
+  if (/[\\/]\.canopy[\\/]worktrees[\\/]/.test(launchCwd)) {
     return {
       ok: false,
       error: `--worktree: cannot start a new worktree from inside another worktree (cwd: ${launchCwd}). Run from the main checkout.`,
@@ -197,8 +197,8 @@ export async function setupStartupWorktree(
       : undefined;
 
   // Re-attach to an existing worktree instead of erroring out. Common
-  // case: user did `qwen --worktree foo` previously, exited with Keep,
-  // and now runs `qwen --resume <sid> --worktree foo` to continue. The
+  // case: user did `canopy --worktree foo` previously, exited with Keep,
+  // and now runs `canopy --resume <sid> --worktree foo` to continue. The
   // directory + branch are already on disk; we just chdir into them.
   //
   // `getRegisteredWorktreeBranch` returns the worktree's HEAD commit
@@ -474,7 +474,7 @@ export function buildStartupWorktreeNotice(
     return (
       `${base}\n` +
       `Note: --worktree overrode the resumed session's previous worktree "${override.overriddenSlug}". ` +
-      `That worktree directory was left intact; re-attach with \`qwen --worktree ${override.overriddenSlug}\` if needed.`
+      `That worktree directory was left intact; re-attach with \`canopy --worktree ${override.overriddenSlug}\` if needed.`
     );
   }
   return base;

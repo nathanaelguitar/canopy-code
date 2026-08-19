@@ -324,7 +324,7 @@ describe('ShellExecutionService', () => {
   };
 
   describe('child environment sanitization (#6601)', () => {
-    it('strips Qwen-internal daemon secrets from the pty child env while keeping user vars and third-party credentials', async () => {
+    it('strips Canopy-internal daemon secrets from the pty child env while keeping user vars and third-party credentials', async () => {
       // Replace (not mutate in place): this file restores process.env by
       // reference in afterEach, so in-place keys would leak to later tests.
       process.env = {
@@ -349,7 +349,7 @@ describe('ShellExecutionService', () => {
       expect(spawnEnv['PATH']).toContain('/usr/bin');
       expect(spawnEnv['GH_TOKEN']).toBe('gh-abc');
       // The shell tool's own marker is still applied on top.
-      expect(spawnEnv['QWEN_CODE']).toBe('1');
+      expect(spawnEnv['CANOPY_CODE']).toBe('1');
     });
   });
 
@@ -2325,7 +2325,7 @@ describe('ShellExecutionService child_process fallback', () => {
   };
 
   describe('child environment sanitization (#6601)', () => {
-    it('strips Qwen-internal daemon secrets from the child_process env while keeping user vars and third-party credentials', async () => {
+    it('strips Canopy-internal daemon secrets from the child_process env while keeping user vars and third-party credentials', async () => {
       // Replace (not mutate in place): this file restores process.env by
       // reference in afterEach, so in-place keys would leak to later tests.
       process.env = {
@@ -2351,7 +2351,7 @@ describe('ShellExecutionService child_process fallback', () => {
       expect(spawnEnv['PATH']).toContain('/usr/bin');
       expect(spawnEnv['GH_TOKEN']).toBe('gh-abc');
       // The shell tool's own marker is still applied on top.
-      expect(spawnEnv['QWEN_CODE']).toBe('1');
+      expect(spawnEnv['CANOPY_CODE']).toBe('1');
     });
   });
 

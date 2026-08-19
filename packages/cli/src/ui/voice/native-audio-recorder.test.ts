@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -162,7 +162,7 @@ describe('createNativeAudioRecorder', () => {
     const recorder = createNativeAudioRecorder({
       loadBackend: () => {
         throw new Error(
-          "Cannot find package '@qwen-code/audio-capture' imported from /qwen/dist/cli.js",
+          "Cannot find package '@qwen-code/audio-capture' imported from /canopy/dist/cli.js",
         );
       },
     });
@@ -170,7 +170,9 @@ describe('createNativeAudioRecorder', () => {
     await expect(recorder.start()).rejects.toThrow(
       /mirror or private registry/,
     );
-    await expect(recorder.start()).rejects.toThrow(/@qwen-code\/audio-capture/);
+    await expect(recorder.start()).rejects.toThrow(
+      /@canopy-code\/audio-capture/,
+    );
   });
 
   it.each(['ERR_MODULE_NOT_FOUND', 'MODULE_NOT_FOUND'])(
@@ -190,7 +192,7 @@ describe('createNativeAudioRecorder', () => {
         /mirror or private registry/,
       );
       await expect(recorder.start()).rejects.toThrow(
-        /@qwen-code\/audio-capture/,
+        /@canopy-code\/audio-capture/,
       );
     },
   );

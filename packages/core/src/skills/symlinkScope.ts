@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,11 +19,11 @@ import * as fs from 'fs/promises';
  * (`f02225226 feat(core): add symlink support for skill manager`) was
  * designed to let users "organize and share skills more flexibly by using
  * symbolic links" — typical layout is one skills repo on disk, with
- * subsets symlinked into `~/.qwen/skills/`. PR #3604 added a containment
+ * subsets symlinked into `~/.canopy/skills/`. PR #3604 added a containment
  * check that rejected any out-of-scope target as a code-execution-vector
  * mitigation; the threat model only fits scenarios where an attacker can
  * write a symlink but **not** a regular file (extremely narrow on a
- * single-user `~/.qwen/skills/`, since write access to the dir lets the
+ * single-user `~/.canopy/skills/`, since write access to the dir lets the
  * attacker drop a real `SKILL.md` directly), so the check was net
  * negative — it broke the supported user-managed-symlink workflow without
  * meaningfully reducing the underlying hooks-as-shell-execution risk.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -127,7 +127,7 @@ export interface ConvertGeminiRequestToAnthropicOptions {
    *
    * Must be gated on the same per-request condition that emits the
    * top-level `thinking` config so disabled-thinking requests don't ship
-   * stray thinking blocks. https://github.com/QwenLM/qwen-code/issues/3786
+   * stray thinking blocks. https://github.com/QwenLM/canopy-code/issues/3786
    */
   injectThinkingOnToolUseTurns?: boolean;
   /**
@@ -417,11 +417,11 @@ export class AnthropicContentConverter {
     // ship the standard per-session shape so they don't see a scope
     // extension they may not recognize.
     // Per-call overrides mirror the request-shape gates in
-    // `convertGeminiRequestToAnthropic` so a qwen-oauth-style hot flip of
+    // `convertGeminiRequestToAnthropic` so a canopy-oauth-style hot flip of
     // `enableCacheControl` (the only field `Config.handleModelChange()`
     // mutates in place without recreating the generator) doesn't leave
     // the tool body and the beta header out of sync. `baseUrl` isn't
-    // hot-mutated — non-qwen-oauth providers recreate the generator on
+    // hot-mutated — non-canopy-oauth providers recreate the generator on
     // refresh — but the same per-call plumbing covers it for free.
     const enableCacheControl =
       options.enableCacheControl ?? this.enableCacheControl;
@@ -1209,7 +1209,7 @@ export class AnthropicContentConverter {
    * Should be paired with `fillMissingThinkingSignatures` running first
    * so that signature-less `thinking` blocks become compliant in place
    * (preserving their original text), and this pass then sees them as
-   * already-satisfying. https://github.com/QwenLM/qwen-code/issues/3786
+   * already-satisfying. https://github.com/QwenLM/canopy-code/issues/3786
    */
   private injectEmptyThinkingOnToolUseTurns(
     messages: AnthropicMessageParam[],

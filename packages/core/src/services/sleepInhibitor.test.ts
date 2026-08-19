@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -102,7 +102,7 @@ describe('SleepInhibitor', () => {
       [
         '--no-ask-password',
         '--what=sleep',
-        '--who=Qwen Code',
+        '--who=Canopy Code',
         '--why=working',
         '--mode=block',
         'sleep',

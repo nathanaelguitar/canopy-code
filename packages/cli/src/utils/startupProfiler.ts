@@ -7,9 +7,9 @@
 /**
  * Lightweight startup performance profiler.
  *
- * Activated by setting QWEN_CODE_PROFILE_STARTUP=1. When enabled, collects
+ * Activated by setting CANOPY_CODE_PROFILE_STARTUP=1. When enabled, collects
  * high-resolution timestamps at key phases of CLI startup and writes a JSON
- * report to ~/.qwen/startup-perf/ on finalization.
+ * report to ~/.canopy/startup-perf/ on finalization.
  *
  * Usage (already wired in index.ts / gemini.tsx):
  *   initStartupProfiler()        — call once at process start to record T0
@@ -18,8 +18,8 @@
  *   finalizeStartupProfile(id)   — call after last checkpoint to write report
  *
  * By default profiles inside the sandbox child process to avoid duplicate
- * reports. `qwen serve` has no sandbox child, so it is profiled directly.
- * Set QWEN_CODE_PROFILE_STARTUP_OUTER=1 to also profile the outer
+ * reports. `canopy serve` has no sandbox child, so it is profiled directly.
+ * Set CANOPY_CODE_PROFILE_STARTUP_OUTER=1 to also profile the outer
  * (pre-sandbox) process for non-serve runs; outer reports are written with an
  * `outer-` filename prefix to keep them separate from sandbox-child reports.
  *
@@ -30,7 +30,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { performance } from 'node:perf_hooks';
 
-import type { StartupEventAttrs } from '@qwen-code/qwen-code-core';
+import type { StartupEventAttrs } from '@canopy-code/canopy-code-core';
 import { isServeFastPathArgv } from './serve-fast-path-argv.js';
 
 interface Checkpoint {
@@ -137,12 +137,12 @@ export function initStartupProfiler(): void {
   // Reset any prior state so the function is idempotent.
   resetStartupProfiler();
 
-  if (process.env['QWEN_CODE_PROFILE_STARTUP'] !== '1') {
+  if (process.env['CANOPY_CODE_PROFILE_STARTUP'] !== '1') {
     return;
   }
 
   const inSandboxChild = !!process.env['SANDBOX'];
-  const outerOptIn = process.env['QWEN_CODE_PROFILE_STARTUP_OUTER'] === '1';
+  const outerOptIn = process.env['CANOPY_CODE_PROFILE_STARTUP_OUTER'] === '1';
   const serveCommand = isServeFastPathArgv(process.argv.slice(2));
 
   // Non-serve outer (pre-sandbox) collection requires an explicit opt-in to
@@ -155,9 +155,9 @@ export function initStartupProfiler(): void {
   enabled = true;
   outerProcess = !inSandboxChild && !serveCommand;
   // Default to capturing heap snapshots at every checkpoint.
-  // Disable with QWEN_CODE_PROFILE_STARTUP_NO_HEAP=1 when measuring the
+  // Disable with CANOPY_CODE_PROFILE_STARTUP_NO_HEAP=1 when measuring the
   // Heisenberg overhead of the heap call itself.
-  captureHeap = process.env['QWEN_CODE_PROFILE_STARTUP_NO_HEAP'] !== '1';
+  captureHeap = process.env['CANOPY_CODE_PROFILE_STARTUP_NO_HEAP'] !== '1';
   finalized = false;
   processUptimeAtT0Ms = Math.round(process.uptime() * 1000 * 100) / 100;
   t0 = performance.now();
@@ -336,7 +336,7 @@ export function finalizeStartupProfile(sessionId?: string): void {
   }
 
   try {
-    const dir = path.join(os.homedir(), '.qwen', 'startup-perf');
+    const dir = path.join(os.homedir(), '.canopy', 'startup-perf');
     fs.mkdirSync(dir, { recursive: true });
 
     const prefix = report.outerProcess ? 'outer-' : '';

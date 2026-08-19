@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -66,7 +66,7 @@ vi.mock('../../config/settings.js', async (importOriginal) => {
     // The production call carries `{ skipWorkspaceSettings: true }` — the
     // attribution switch resolves from operator scopes only. A caller that
     // forgets the flag reads the workspace-polluted view below instead, and
-    // the handler assertions redden: a repository's `.qwen/settings.json`
+    // the handler assertions redden: a repository's `.canopy/settings.json`
     // must not control it.
     loadSettings: vi.fn((...callArgs: unknown[]) => {
       const opts = callArgs[1] as
@@ -113,7 +113,7 @@ let DIFF_HASH: string;
 beforeEach(() => {
   reviewSettingsMock.mockReturnValue({});
   dir = mkdtempSync(join(tmpdir(), 'compose-cov-'));
-  ENV = { QWEN_CODE_PROJECT_DIR: dir, QWEN_CODE_SESSION_ID: 'S1' };
+  ENV = { CANOPY_CODE_PROJECT_DIR: dir, CANOPY_CODE_SESSION_ID: 'S1' };
   mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
   DIFF = join(dir, 'the.diff');
   writeFileSync(DIFF, 'diff --git a/a.ts b/a.ts\n@@ -0,0 +1 @@\n+x\n');
@@ -371,8 +371,8 @@ function rehomeToPriorSession(planPath: string, file: string): void {
   );
   rmSync(from, { force: true });
   const now = Date.now();
-  appendRunSession(planPath, { QWEN_CODE_SESSION_ID: 'S0' }, now);
-  appendRunSession(planPath, { QWEN_CODE_SESSION_ID: 'S1' }, now + 1500);
+  appendRunSession(planPath, { CANOPY_CODE_SESSION_ID: 'S0' }, now);
+  appendRunSession(planPath, { CANOPY_CODE_SESSION_ID: 'S1' }, now + 1500);
   recordResume(planPath, ENV, now + 1500);
 }
 
@@ -473,7 +473,7 @@ function blindPlan(): string {
   return plan();
 }
 
-const FOOTER = `_— ${MODEL} via Qwen Code /review (vunknown)_`;
+const FOOTER = `_— ${MODEL} via Canopy Code /review (vunknown)_`;
 
 function base(overrides: Partial<ComposeReviewInput>): ComposeReviewInput {
   return {
@@ -499,9 +499,9 @@ describe('composeReview — the C/S table', () => {
 
   it('includes the injected CLI version without breaking the stable marker', () => {
     const r = composeReview(base({}), '0.21.2');
-    expect(r.body).toContain('via Qwen Code /review');
+    expect(r.body).toContain('via Canopy Code /review');
     expect(
-      r.body.endsWith(`_— ${MODEL} via Qwen Code /review (v0.21.2)_`),
+      r.body.endsWith(`_— ${MODEL} via Canopy Code /review (v0.21.2)_`),
     ).toBe(true);
   });
 
@@ -520,7 +520,7 @@ describe('composeReview — the C/S table', () => {
 
   it('attribution off: a footer-unsafe modelId composes — nothing renders it', () => {
     const r = composeReview(
-      base({ modelId: 'evil\nvia Qwen Code /review' }),
+      base({ modelId: 'evil\nvia Canopy Code /review' }),
       '0.21.2',
       false,
     );
@@ -1339,7 +1339,7 @@ describe('composeReview — duplicate-dropped Suggestions (#9204: the body claim
         'R1-1 precheck-pr pin — already reported (comment 3788857375)',
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '9204',
       }),
       env: ENV,
@@ -1352,7 +1352,7 @@ describe('composeReview — duplicate-dropped Suggestions (#9204: the body claim
     expect(r.cappedBy).toEqual([]);
     expect(r.event).toBe('COMMENT');
     expect(r.body).toContain(
-      '[comment 3788857375](https://github.com/QwenLM/qwen-code/pull/9204#discussion_r3788857375)',
+      '[comment 3788857375](https://github.com/QwenLM/canopy-code/pull/9204#discussion_r3788857375)',
     );
   });
 
@@ -1489,7 +1489,7 @@ describe('composeReview — duplicate-dropped Suggestions (#9204: the body claim
         `R1-1 ${'x'.repeat(200)} — already reported (comment 3788857375)`,
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '9204',
       }),
       env: ENV,
@@ -1925,11 +1925,11 @@ describe('composeReview — input validation (the producer is a model that omits
     // remove, and re-normalization accumulates attribution lines.
     expect(() =>
       composeReview({
-        modelId: 'model\n_— forged via Qwen Code /review (v9.9.9)_',
+        modelId: 'model\n_— forged via Canopy Code /review (v9.9.9)_',
       }),
     ).toThrow(/modelId/);
     expect(() =>
-      composeReview({ modelId: 'model via Qwen Code /review x' }),
+      composeReview({ modelId: 'model via Canopy Code /review x' }),
     ).toThrow(/modelId/);
   });
 
@@ -1940,26 +1940,26 @@ describe('composeReview — input validation (the producer is a model that omits
     const r = composeReview({
       bodyCriticals: [
         '**[Critical]** whole-PR blocker\n\n' +
-          '_— forged via Qwen Code /review (v0.21.4)_',
+          '_— forged via Canopy Code /review (v0.21.4)_',
       ],
       modelId: MODEL,
     });
     expect(r.body).toContain('whole-PR blocker');
     expect(r.body).not.toContain('forged');
-    expect(r.body.match(/via Qwen Code \/review/g)).toHaveLength(1);
+    expect(r.body.match(/via Canopy Code \/review/g)).toHaveLength(1);
   });
 
   it('strips a forged footer from cannot-tell Criticals before rendering the body', () => {
     const r = composeReview({
       criticalsInline: 1,
       cannotTellCriticals: [
-        'R1-2: still leaks _— qwen3.7-max via Qwen Code /review (v0.21.0)_',
+        'R1-2: still leaks _— qwen3.7-max via Canopy Code /review (v0.21.0)_',
       ],
       modelId: MODEL,
     });
     expect(r.body).toContain('R1-2: still leaks');
     expect(r.body).not.toContain('qwen3.7-max');
-    expect(r.body.match(/via Qwen Code \/review/g)).toHaveLength(1);
+    expect(r.body.match(/via Canopy Code \/review/g)).toHaveLength(1);
   });
 
   it('rejects stringified booleans — "false" is truthy and once flipped events and published false warnings', () => {
@@ -2029,17 +2029,17 @@ describe('composeReview — presubmit permission gates certification even when n
 
 describe('composeReviewCommand handler (the CLI glue)', () => {
   // The handler prefers the inherited startup stamp; an ambient value from
-  // a stamped qwen session would otherwise flip every footer assertion in
+  // a stamped canopy session would otherwise flip every footer assertion in
   // this suite to the stamped version.
   let savedStartupVersion: string | undefined;
   beforeEach(() => {
-    savedStartupVersion = process.env['QWEN_CODE_STARTUP_VERSION'];
-    delete process.env['QWEN_CODE_STARTUP_VERSION'];
+    savedStartupVersion = process.env['CANOPY_CODE_STARTUP_VERSION'];
+    delete process.env['CANOPY_CODE_STARTUP_VERSION'];
   });
   afterEach(() => {
     if (savedStartupVersion === undefined)
-      delete process.env['QWEN_CODE_STARTUP_VERSION'];
-    else process.env['QWEN_CODE_STARTUP_VERSION'] = savedStartupVersion;
+      delete process.env['CANOPY_CODE_STARTUP_VERSION'];
+    else process.env['CANOPY_CODE_STARTUP_VERSION'] = savedStartupVersion;
   });
 
   it('reads --input, counts the drafted comments, and writes the result JSON to --out', async () => {
@@ -2068,7 +2068,7 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
     expect(written.event).toBe('COMMENT');
     expect(written.body).toContain('Suggestions are inline.');
     expect(
-      written.body.endsWith(`_— ${MODEL} via Qwen Code /review (v0.21.2)_`),
+      written.body.endsWith(`_— ${MODEL} via Canopy Code /review (v0.21.2)_`),
     ).toBe(true);
   });
 
@@ -2096,7 +2096,7 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
       // No plan in this minimal state, so the coverage gate caps the body —
       // the assertion is on what the wiring leg controls: the footer.
       expect(written.body).not.toBe('');
-      expect(written.body).not.toContain('via Qwen Code /review');
+      expect(written.body).not.toContain('via Canopy Code /review');
       expect(written.body).not.toContain(MODEL);
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -2114,8 +2114,8 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
     const outPath = join(dir, 'composed.json');
     writeFileSync(inputPath, JSON.stringify({ modelId: MODEL }), 'utf8');
     writeFileSync(commentsPath, '[]', 'utf8');
-    const inherited = process.env['QWEN_CODE_STARTUP_VERSION'];
-    process.env['QWEN_CODE_STARTUP_VERSION'] = '0.21.1';
+    const inherited = process.env['CANOPY_CODE_STARTUP_VERSION'];
+    process.env['CANOPY_CODE_STARTUP_VERSION'] = '0.21.1';
     try {
       await runComposeReviewCommand({
         input: inputPath,
@@ -2126,12 +2126,12 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
         readFileSync(outPath, 'utf8'),
       ) as ComposeReviewResult;
       expect(
-        written.body.endsWith(`_— ${MODEL} via Qwen Code /review (v0.21.1)_`),
+        written.body.endsWith(`_— ${MODEL} via Canopy Code /review (v0.21.1)_`),
       ).toBe(true);
     } finally {
       if (inherited === undefined)
-        delete process.env['QWEN_CODE_STARTUP_VERSION'];
-      else process.env['QWEN_CODE_STARTUP_VERSION'] = inherited;
+        delete process.env['CANOPY_CODE_STARTUP_VERSION'];
+      else process.env['CANOPY_CODE_STARTUP_VERSION'] = inherited;
       rmSync(dir, { recursive: true, force: true });
     }
   });
@@ -2457,15 +2457,18 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
         inputPath,
         JSON.stringify({
           planPath,
-          env: { QWEN_CODE_PROJECT_DIR: forged, QWEN_CODE_SESSION_ID: 'S1' },
+          env: {
+            CANOPY_CODE_PROJECT_DIR: forged,
+            CANOPY_CODE_SESSION_ID: 'S1',
+          },
           modelId: MODEL,
         }),
       );
       const commentsPath = join(dir, 'comments.json');
       writeFileSync(commentsPath, '[]', 'utf8');
       const outPath = join(dir, 'out.json');
-      const prevProj = process.env['QWEN_CODE_PROJECT_DIR'];
-      delete process.env['QWEN_CODE_PROJECT_DIR']; // real env cannot find transcripts
+      const prevProj = process.env['CANOPY_CODE_PROJECT_DIR'];
+      delete process.env['CANOPY_CODE_PROJECT_DIR']; // real env cannot find transcripts
       try {
         await runComposeReviewCommand({
           input: inputPath,
@@ -2473,8 +2476,9 @@ describe('composeReviewCommand handler (the CLI glue)', () => {
           out: outPath,
         });
       } finally {
-        if (prevProj === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-        else process.env['QWEN_CODE_PROJECT_DIR'] = prevProj;
+        if (prevProj === undefined)
+          delete process.env['CANOPY_CODE_PROJECT_DIR'];
+        else process.env['CANOPY_CODE_PROJECT_DIR'] = prevProj;
       }
       const written = JSON.parse(
         readFileSync(outPath, 'utf8'),
@@ -2605,8 +2609,8 @@ describe('coverage is recomputed, never accepted', () => {
       // Transcripts unreadable: the coverage AND verification reasons both
       // interpolate an error message — with an em-dash of their own.
       env: {
-        QWEN_CODE_PROJECT_DIR: join(dir, 'nowhere — missing'),
-        QWEN_CODE_SESSION_ID: 'S1',
+        CANOPY_CODE_PROJECT_DIR: join(dir, 'nowhere — missing'),
+        CANOPY_CODE_SESSION_ID: 'S1',
       },
       unreviewedDimensions: [
         'coverage — could not read the transcripts — echoed back by the caller',
@@ -2917,7 +2921,7 @@ describe('coverage is recomputed, never accepted', () => {
     expect(r.body).toContain('never named the diff file');
     expect(r.body).not.toContain('agent-prompt');
     expect(r.remediation.join(' ')).toContain(
-      '"${QWEN_CODE_CLI:-qwen}" review agent-prompt',
+      '"${CANOPY_CODE_CLI:-canopy}" review agent-prompt',
     );
     expect(r.remediation.join(' ')).toMatch(/do not relaunch the old prompt/);
     // Blind agents read nothing, so the chunks they owned are also chunks
@@ -2962,7 +2966,7 @@ describe('coverage is recomputed, never accepted', () => {
     // The FIX names the run's REAL plan path — a `<plan>` placeholder pasted
     // literally parses as a shell redirection.
     expect(r.remediation.join(' ')).toContain(
-      `"\${QWEN_CODE_CLI:-qwen}" review agent-prompt --plan '${p}' --roster`,
+      `"\${CANOPY_CODE_CLI:-canopy}" review agent-prompt --plan '${p}' --roster`,
     );
   });
 
@@ -3032,10 +3036,10 @@ describe('coverage is recomputed, never accepted', () => {
     const commentsPath = join(dir, 'comments.json');
     writeFileSync(commentsPath, '[]', 'utf8');
 
-    const prevDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    const prevSession = process.env['QWEN_CODE_SESSION_ID'];
-    process.env['QWEN_CODE_PROJECT_DIR'] = ENV['QWEN_CODE_PROJECT_DIR'];
-    process.env['QWEN_CODE_SESSION_ID'] = ENV['QWEN_CODE_SESSION_ID'];
+    const prevDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    const prevSession = process.env['CANOPY_CODE_SESSION_ID'];
+    process.env['CANOPY_CODE_PROJECT_DIR'] = ENV['CANOPY_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_SESSION_ID'] = ENV['CANOPY_CODE_SESSION_ID'];
     try {
       vi.mocked(writeStderrLine).mockClear();
       vi.mocked(writeStdoutLine).mockClear();
@@ -3069,10 +3073,11 @@ describe('coverage is recomputed, never accepted', () => {
         .find((l) => l.startsWith('Verdict:'));
       expect(parsedOut.verdictLine).toBe(printedVerdict);
     } finally {
-      if (prevDir === undefined) delete process.env['QWEN_CODE_PROJECT_DIR'];
-      else process.env['QWEN_CODE_PROJECT_DIR'] = prevDir;
-      if (prevSession === undefined) delete process.env['QWEN_CODE_SESSION_ID'];
-      else process.env['QWEN_CODE_SESSION_ID'] = prevSession;
+      if (prevDir === undefined) delete process.env['CANOPY_CODE_PROJECT_DIR'];
+      else process.env['CANOPY_CODE_PROJECT_DIR'] = prevDir;
+      if (prevSession === undefined)
+        delete process.env['CANOPY_CODE_SESSION_ID'];
+      else process.env['CANOPY_CODE_SESSION_ID'] = prevSession;
     }
   });
 
@@ -3086,8 +3091,8 @@ describe('coverage is recomputed, never accepted', () => {
       suggestionsInline: 0,
       planPath: coveredPlan(),
       env: {
-        QWEN_CODE_PROJECT_DIR: join(dir, 'no-such-project'),
-        QWEN_CODE_SESSION_ID: 'S1',
+        CANOPY_CODE_PROJECT_DIR: join(dir, 'no-such-project'),
+        CANOPY_CODE_SESSION_ID: 'S1',
       },
       modelId: MODEL,
     });
@@ -3364,8 +3369,8 @@ describe('the Step 4/5 gate — verify and reverse audit must have run (high eff
       criticalsInline: 1,
       planPath: coveredPlan(),
       env: {
-        QWEN_CODE_PROJECT_DIR: join(dir, 'nowhere'),
-        QWEN_CODE_SESSION_ID: 'S1',
+        CANOPY_CODE_PROJECT_DIR: join(dir, 'nowhere'),
+        CANOPY_CODE_SESSION_ID: 'S1',
       },
       modelId: MODEL,
     });
@@ -3722,7 +3727,7 @@ describe('bilingual body — recovered from the live PR when the plan omits the 
     const p = coveredPlan();
     const parsed = JSON.parse(readFileSync(p, 'utf8'));
     delete parsed.prDescriptionHasHan;
-    parsed.ownerRepo = 'QwenLM/qwen-code';
+    parsed.ownerRepo = 'CanopyLM/canopy-code';
     parsed.prNumber = '7686';
     writeFileSync(p, JSON.stringify(parsed));
     const old = new Date(2020, 0, 1);
@@ -3779,7 +3784,7 @@ describe('bilingual body — recovered from the live PR when the plan omits the 
     const p = coveredPlan();
     const parsed = JSON.parse(readFileSync(p, 'utf8'));
     parsed.prDescriptionHasHan = false;
-    parsed.ownerRepo = 'QwenLM/qwen-code';
+    parsed.ownerRepo = 'CanopyLM/canopy-code';
     parsed.prNumber = '7686';
     writeFileSync(p, JSON.stringify(parsed));
     const old = new Date(2020, 0, 1);
@@ -3843,7 +3848,7 @@ describe('bilingual body — recovered from the live PR when the plan omits the 
       'view',
       '7686',
       '--repo',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       '--json',
       'body',
     );
@@ -3911,7 +3916,7 @@ describe('scriptLintGate — the deterministic gate reads the report', () => {
     writeFileSync(
       p,
       JSON.stringify({
-        worktreePath: '.qwen/tmp/review-pr-1',
+        worktreePath: '.canopy/tmp/review-pr-1',
         diffPathAbsolute: freshDiff.path,
         files: [{ path: 'deploy.sh', kind: 'source', addedLines: 3 }],
         ...over,
@@ -3921,7 +3926,7 @@ describe('scriptLintGate — the deterministic gate reads the report', () => {
   }
   function writeReport(
     report: Record<string, unknown>,
-    name = 'qwen-review-script-lint.json',
+    name = 'canopy-review-script-lint.json',
   ): void {
     writeFileSync(
       join(dir, name),
@@ -4186,7 +4191,7 @@ describe('scriptLintGate — the deterministic gate reads the report', () => {
 
   it('derives the pr-numbered report name from the plan', () => {
     const p = writePlan({ prNumber: '42' });
-    writeReport(withFinding(finding()), 'qwen-review-pr-42-script-lint.json');
+    writeReport(withFinding(finding()), 'canopy-review-pr-42-script-lint.json');
     expect(scriptLintGate(p).criticals).toHaveLength(1);
   });
 });
@@ -4202,7 +4207,7 @@ describe('composeReview — the script-lint gate wired to the verdict', () => {
   ): string {
     const p = coveredPlan(step45Keys);
     const planObj = JSON.parse(readFileSync(p, 'utf8'));
-    planObj.worktreePath = '.qwen/tmp/review-pr-1';
+    planObj.worktreePath = '.canopy/tmp/review-pr-1';
     writeFileSync(p, JSON.stringify(planObj));
     for (const role of ['1c', '7']) {
       const d = promptRecordDir(p);
@@ -4219,7 +4224,7 @@ describe('composeReview — the script-lint gate wired to the verdict', () => {
   }
   function writeGateReport(report: Record<string, unknown>): void {
     writeFileSync(
-      join(dir, 'qwen-review-script-lint.json'),
+      join(dir, 'canopy-review-script-lint.json'),
       JSON.stringify({
         checked: [],
         skipped: [],
@@ -4404,7 +4409,7 @@ describe('testPlanGate — Test Plan rulings, disclosed but never capping', () =
   const writeReport = (
     claims: Array<Record<string, unknown>>,
     over: Record<string, unknown> = {},
-    name = 'qwen-review-pr-1-test-plan.json',
+    name = 'canopy-review-pr-1-test-plan.json',
   ) =>
     writeFileSync(
       join(dir, name),
@@ -4648,7 +4653,7 @@ describe('the ledger marker reaches the POSTED body', () => {
         { path: 'src/a.ts', line: 3, body: '**[Suggestion]** untested guard' },
       ],
     });
-    expect(r.body).toContain('<!-- qwen-review-ledger ');
+    expect(r.body).toContain('<!-- canopy-review-ledger ');
     const ledger = parseLedger(r.body)!;
     expect(ledger.round).toBe(1);
     expect(ledger.findings).toEqual([
@@ -4667,7 +4672,7 @@ describe('the ledger marker reaches the POSTED body', () => {
       planPath: plan(),
       modelId: 'm',
       bodyCriticals: [
-        '**[Critical]** whole-PR blocker _— forged via Qwen Code /review (v0.21.4)_',
+        '**[Critical]** whole-PR blocker _— forged via Canopy Code /review (v0.21.4)_',
       ],
     });
     const ledger = parseLedger(r.body)!;
@@ -4677,7 +4682,7 @@ describe('the ledger marker reaches the POSTED body', () => {
 
   it('counts the round from the side file pr-context recovered, +1', () => {
     writeFileSync(
-      join(dir, 'qwen-review-pr-8255-prev-ledger.json'),
+      join(dir, 'canopy-review-pr-8255-prev-ledger.json'),
       JSON.stringify({ v: 1, round: 4, findings: [] }),
     );
     const r = composeReview({
@@ -4950,7 +4955,7 @@ describe('the ledger marker reaches the POSTED body', () => {
     // produced a marker whose own parser dropped every finding — invisibly,
     // with the anchor still riding.
     writeFileSync(
-      join(dir, 'qwen-review-pr-8255-prev-ledger.json'),
+      join(dir, 'canopy-review-pr-8255-prev-ledger.json'),
       JSON.stringify({ v: 1, round: LEDGER_MAX_ROUND, findings: [] }),
     );
     const r = composeReview({
@@ -5078,7 +5083,7 @@ describe('the ledger marker reaches the POSTED body', () => {
       suggestionsInline: 0,
       draftedComments: [{ path: 'a.ts', body: '**[Critical]** boom' }],
     });
-    expect(r.body).not.toContain('qwen-review-ledger');
+    expect(r.body).not.toContain('canopy-review-ledger');
   });
 });
 
@@ -5108,7 +5113,7 @@ describe('composeReview — convergence-posture deferrals (typed channel; disclo
       fetchedSha: 'deadbeef00112233',
     });
     writeFileSync(
-      join(dirname(planPath), 'qwen-review-pr-8255-prev-ledger.json'),
+      join(dirname(planPath), 'canopy-review-pr-8255-prev-ledger.json'),
       JSON.stringify({ v: 1, round: 5, findings: [] }),
     );
     const r = composeReview({
@@ -5506,7 +5511,7 @@ describe('composeReview — convergence-posture deferrals (typed channel; disclo
       fetchedSha: 'deadbeef00112233',
     });
     writeFileSync(
-      join(dirname(planPath), 'qwen-review-pr-8255-prev-ledger.json'),
+      join(dirname(planPath), 'canopy-review-pr-8255-prev-ledger.json'),
       JSON.stringify({ v: 1, round: 2, findings: [] }),
     );
     const r = composeReview({
@@ -5534,7 +5539,7 @@ describe('composeReview — the findings file tag check', () => {
   // findings file itself and caps on any surviving tag.
 
   function findingsFile(content: string): string {
-    const f = join(dir, 'qwen-review-findings.md');
+    const f = join(dir, 'canopy-review-findings.md');
     writeFileSync(f, content);
     return f;
   }
@@ -5737,17 +5742,17 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
         'issue-level comment 5199834809 (author review) — body truncated',
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
       modelId: MODEL,
     });
     expect(r.body).toContain(
-      '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855)',
+      '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855)',
     );
     expect(r.body).toContain(
-      '[issue-level comment 5199834809](https://github.com/QwenLM/qwen-code/pull/8388#issuecomment-5199834809)',
+      '[issue-level comment 5199834809](https://github.com/QwenLM/canopy-code/pull/8388#issuecomment-5199834809)',
     );
   });
 
@@ -5795,10 +5800,10 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
   it('leaves an already-linked entry untouched — never nests a second link', () => {
     const r = composeReview({
       cannotTellCriticals: [
-        '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855) — body truncated',
+        '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855) — body truncated',
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
@@ -5806,7 +5811,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     });
     // Byte-identical passthrough: the model linked it itself.
     expect(r.body).toContain(
-      '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855) — body truncated',
+      '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855) — body truncated',
     );
     expect(r.body).not.toContain('[[comment');
   });
@@ -5898,7 +5903,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     const r = composeReview({
       cannotTellCriticals: ['comment 12345 (a.ts) — body truncated'],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
@@ -5917,7 +5922,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     const r = composeReview({
       cannotTellCriticals: ['comment 12345 (a.ts) — body truncated'],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
@@ -5939,14 +5944,14 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
         'Issue-level comment 5199834809 (author review) — body truncated',
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
       modelId: MODEL,
     });
     expect(r.body).toContain(
-      '[Issue-level comment 5199834809](https://github.com/QwenLM/qwen-code/pull/8388#issuecomment-5199834809)',
+      '[Issue-level comment 5199834809](https://github.com/QwenLM/canopy-code/pull/8388#issuecomment-5199834809)',
     );
   });
 
@@ -5954,7 +5959,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     const r = composeReview({
       cannotTellCriticals: ['comment 3733696855 (a.ts) — body truncated'],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
         host: 'ghe.example.com/evil',
       }),
@@ -5962,7 +5967,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
       modelId: MODEL,
     });
     expect(r.body).toContain(
-      '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855)',
+      '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855)',
     );
     expect(r.body).not.toContain('ghe.example.com/evil');
   });
@@ -6033,7 +6038,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
       const r = composeReview({
         cannotTellCriticals: ['comment 12345 (a.ts) — body truncated'],
         planPath: coveredPlan(undefined, {
-          ownerRepo: 'QwenLM/qwen-code',
+          ownerRepo: 'CanopyLM/canopy-code',
           prNumber: '8388',
         }),
         env: ENV,
@@ -6049,14 +6054,14 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     const r = composeReview({
       cannotTellCriticals: ['comment 3733696855 (a.ts) — body truncated'],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
       modelId: MODEL,
     });
     expect(r.body).toContain(
-      '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855)',
+      '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855)',
     );
   });
 
@@ -6071,7 +6076,7 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
         '**Issue-level comment** — by @alice (comment 5199834809) — full text unfetchable',
       ],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: '8388',
       }),
       env: ENV,
@@ -6102,14 +6107,14 @@ describe('composeReview — unresolved-Critical rendering (#8388 readability)', 
     const r = composeReview({
       cannotTellCriticals: ['comment 3733696855 (a.ts) — body truncated'],
       planPath: coveredPlan(undefined, {
-        ownerRepo: 'QwenLM/qwen-code',
+        ownerRepo: 'CanopyLM/canopy-code',
         prNumber: 8388,
       }),
       env: ENV,
       modelId: MODEL,
     });
     expect(r.body).toContain(
-      '[comment 3733696855](https://github.com/QwenLM/qwen-code/pull/8388#discussion_r3733696855)',
+      '[comment 3733696855](https://github.com/QwenLM/canopy-code/pull/8388#discussion_r3733696855)',
     );
   });
 
@@ -6154,7 +6159,7 @@ describe('composeReview — a resumed run is continuity, not a coverage gap', ()
         'Resumed run (not a gap): 1 agent result(s) from the interrupted ' +
         'earlier attempt were re-certified from the harness records and ' +
         'counted as reviewed.\n\n' +
-        '_— test-model via Qwen Code /review (vunknown)_',
+        '_— test-model via Canopy Code /review (vunknown)_',
     );
     expect(r.body).not.toContain('Not reviewed: review continuity');
     expect(r.body).not.toContain('Partially reviewed');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * Serve-side adapter that satisfies `@qwen-code/acp-bridge`'s
  * `BridgeFileSystem` interface by routing delegated ACP `writeTextFile` /
  * `readTextFile` requests through the `WorkspaceFileSystem`. Production
- * `qwen serve` keeps text reads in the same-host child and delegates final ACP
+ * `canopy serve` keeps text reads in the same-host child and delegates final ACP
  * `writeTextFile` content writes through this adapter. A daemon-owned adapter
  * may opt into the narrow same-host built-in-tool write route; the default
  * remains workspace-scoped. The read path remains a fail-closed boundary for
@@ -59,7 +59,7 @@ import type {
   WriteTextFileResponse,
 } from '@agentclientprotocol/sdk';
 import type { BridgeFileSystem } from '@qwen-code/acp-bridge';
-import { parseToolWriteOriginMeta } from '@qwen-code/qwen-code-core/toolWriteOrigin';
+import { parseToolWriteOriginMeta } from '@canopy-code/canopy-code-core/toolWriteOrigin';
 import type {
   WorkspaceFileSystemFactory,
   RequestContext,
@@ -96,7 +96,7 @@ function buildAuditContext(
 
 /**
  * Adapter factory. Pass the existing `WorkspaceFileSystemFactory`
- * (the same instance `createServeApp` / `runQwenServe` build for
+ * (the same instance `createServeApp` / `runCanopyServe` build for
  * HTTP fs routes) — delegated operations share the same `fsAuditEmit` channel
  * + trust gate snapshot.
  */

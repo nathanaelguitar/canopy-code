@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -15,7 +15,7 @@ import {
 import { getPendingSkillsRoot } from '../skills/skill-paths.js';
 
 async function makeSkill(root: string, name: string, body = 'hi') {
-  const dir = path.join(root, '.qwen', 'skills', `auto-skill-${name}`);
+  const dir = path.join(root, '.canopy', 'skills', `auto-skill-${name}`);
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(
     path.join(dir, 'SKILL.md'),
@@ -76,7 +76,7 @@ describe('pendingSkills', () => {
   });
 
   it('parses an empty description as empty, not the next YAML line', async () => {
-    const dir = path.join(root, '.qwen', 'skills', 'auto-skill-empty');
+    const dir = path.join(root, '.canopy', 'skills', 'auto-skill-empty');
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(
       path.join(dir, 'SKILL.md'),
@@ -88,7 +88,7 @@ describe('pendingSkills', () => {
   });
 
   it('strips surrounding quotes from a quoted description', async () => {
-    const dir = path.join(root, '.qwen', 'skills', 'auto-skill-quoted');
+    const dir = path.join(root, '.canopy', 'skills', 'auto-skill-quoted');
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(
       path.join(dir, 'SKILL.md'),
@@ -147,7 +147,7 @@ describe('pendingSkills', () => {
 
   it('ignores touched paths whose skill dir no longer exists (edited existing skill)', async () => {
     const pending = await stageSkillDirs(
-      [path.join(root, '.qwen', 'skills', 'auto-skill-x', 'SKILL.md')],
+      [path.join(root, '.canopy', 'skills', 'auto-skill-x', 'SKILL.md')],
       root,
     );
     expect(pending).toHaveLength(0);

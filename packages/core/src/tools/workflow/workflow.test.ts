@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,7 +72,7 @@ describe('WorkflowTool', () => {
     // a rename on the runtime side fails here too — a hardcoded literal
     // would only have caught a description-side typo, and the model would
     // go on telling users to set a variable nothing reads.
-    // `QWEN_CODE_MAX_WORKFLOW_SECONDS` has no exported constant
+    // `CANOPY_CODE_MAX_WORKFLOW_SECONDS` has no exported constant
     // (`workflow-sandbox.ts` reads it inline), so it stays a literal.
     for (const anchor of [
       'min(16, cpus-2)',
@@ -80,7 +80,7 @@ describe('WorkflowTool', () => {
       MAX_WORKFLOW_CONCURRENCY_ENV,
       WORKFLOW_SUBAGENT_MAX_TURNS_ENV,
       WORKFLOW_SUBAGENT_MAX_MINUTES_ENV,
-      'QWEN_CODE_MAX_WORKFLOW_SECONDS',
+      'CANOPY_CODE_MAX_WORKFLOW_SECONDS',
       'resumeFromRunId',
       '/workflows',
       'node:vm sandbox',
@@ -127,7 +127,7 @@ describe('WorkflowTool', () => {
     // a location, "runs a saved workflow" leaves the model no way to reach
     // one: `workflow('<name>')` is a blind guess and `scriptPath` wants an
     // absolute path it cannot construct.
-    expect(description).toContain('.qwen/workflows');
+    expect(description).toContain('.canopy/workflows');
   });
 
   // The tool description is not the only model-visible copy of the caps —
@@ -361,7 +361,7 @@ describe('WorkflowTool', () => {
     await expect(run(false)).resolves.toEqual(await run(undefined));
   });
 
-  // A headless run (`qwen --prompt`, CI, a cron job) has no TUI, no approval
+  // A headless run (`canopy --prompt`, CI, a cron job) has no TUI, no approval
   // bridge, and a closed stdin. `getDefaultPermission()` is 'ask', which the
   // scheduler resolves against the run's approval mode — but nothing INSIDE
   // the tool or the runner may reach for interactivity, or the foreground
@@ -495,7 +495,7 @@ describe('WorkflowTool', () => {
     });
   });
 
-  // PR #4947 R2 T8 (qwen-code-ci-bot): pipeline() through WorkflowTool
+  // PR #4947 R2 T8 (canopy-code-ci-bot): pipeline() through WorkflowTool
   // exercises a vm wrapper path that is structurally distinct from parallel's
   // single-argument call — pipeline uses `callPipeline.apply(null, arguments)`
   // and `[items].concat(stages)` to spread the variadic stage list
@@ -1023,8 +1023,8 @@ describe('WorkflowTool', () => {
 
   it('P5 R1 #10: capped banner shape (`total !== null`) — was untested', async () => {
     const { config } = configWithRegistry();
-    const originalEnv = process.env['QWEN_CODE_MAX_TOKENS_PER_WORKFLOW'];
-    process.env['QWEN_CODE_MAX_TOKENS_PER_WORKFLOW'] = '50000';
+    const originalEnv = process.env['CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW'];
+    process.env['CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW'] = '50000';
     try {
       const tool = new WorkflowTool(config, { dispatch: async () => 'ok' });
       const result = await tool
@@ -1038,9 +1038,9 @@ describe('WorkflowTool', () => {
       expect(display).not.toMatch(/Workflows have no per-run token cap/);
     } finally {
       if (originalEnv === undefined) {
-        delete process.env['QWEN_CODE_MAX_TOKENS_PER_WORKFLOW'];
+        delete process.env['CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW'];
       } else {
-        process.env['QWEN_CODE_MAX_TOKENS_PER_WORKFLOW'] = originalEnv;
+        process.env['CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW'] = originalEnv;
       }
     }
   });

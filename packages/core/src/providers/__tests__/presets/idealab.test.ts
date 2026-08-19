@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -25,14 +25,14 @@ describe('idealabProvider', () => {
     const plan = buildInstallPlan(idealabProvider, {
       baseUrl: 'https://idealab.alibaba-inc.com/api/openai/v1',
       apiKey: 'sk-idealab',
-      modelIds: ['Qwen3.6-Plus-DogFooding', 'bailian/deepseek-v4-pro'],
+      modelIds: ['Canopy3.6-Plus-DogFooding', 'bailian/deepseek-v4-pro'],
     });
 
     const models = plan.modelProviders?.[0]?.models;
     expect(models).toHaveLength(2);
     expect(models?.[0]).toMatchObject({
-      id: 'Qwen3.6-Plus-DogFooding',
-      name: '[Idealab] Qwen3.6-Plus-DogFooding',
+      id: 'Canopy3.6-Plus-DogFooding',
+      name: '[Idealab] Canopy3.6-Plus-DogFooding',
       generationConfig: { contextWindowSize: 1000000 },
     });
     expect(models?.[1]).toMatchObject({
@@ -81,14 +81,14 @@ describe('idealabProvider', () => {
     const plan = buildInstallPlan(idealabProvider, {
       baseUrl: 'https://idealab.alibaba-inc.com/api/openai/v1',
       apiKey: 'sk-idealab',
-      modelIds: ['Qwen3.6-Plus-DogFooding', 'some-new-model'],
+      modelIds: ['Canopy3.6-Plus-DogFooding', 'some-new-model'],
     });
 
     const models = plan.modelProviders?.[0]?.models;
     expect(models).toHaveLength(2);
     expect(models?.[0]).toMatchObject({
-      id: 'Qwen3.6-Plus-DogFooding',
-      name: '[Idealab] Qwen3.6-Plus-DogFooding',
+      id: 'Canopy3.6-Plus-DogFooding',
+      name: '[Idealab] Canopy3.6-Plus-DogFooding',
     });
     expect(models?.[1]).toMatchObject({
       id: 'some-new-model',
@@ -100,7 +100,7 @@ describe('idealabProvider', () => {
   it('includes all four predefined models', () => {
     expect(idealabProvider.models).toHaveLength(4);
     expect(idealabProvider.models?.map((m) => m.id)).toEqual([
-      'Qwen3.6-Plus-DogFooding',
+      'Canopy3.6-Plus-DogFooding',
       'bailian/deepseek-v4-pro',
       'bailian/deepseek-v4-flash',
       'bailian/kimi-k2.6',

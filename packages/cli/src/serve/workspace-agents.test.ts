@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import {
   vi,
   type MockInstance,
 } from 'vitest';
-import { QWEN_DIR, Storage } from '@qwen-code/qwen-code-core';
+import { CANOPY_DIR, Storage } from '@canopy-code/canopy-code-core';
 import { createMutationGate } from './auth.js';
 import type { AcpSessionBridge } from './acp-session-bridge.js';
 import type { BridgeEvent } from '@qwen-code/acp-bridge/eventBus';
@@ -123,11 +123,11 @@ function buildApp(opts: {
     boundWorkspace: opts.boundWorkspace,
     mutate,
     parseClientId: (req, res) => {
-      const raw = req.get('x-qwen-client-id');
+      const raw = req.get('x-canopy-client-id');
       if (raw === undefined || raw === '') return undefined;
       if (raw.length > 128 || !/^[A-Za-z0-9._:-]+$/.test(raw)) {
         res.status(400).json({
-          error: '`X-Qwen-Client-Id` must be a non-empty token',
+          error: '`X-Canopy-Client-Id` must be a non-empty token',
           code: 'invalid_client_id',
         });
         return null;
@@ -159,21 +159,21 @@ describe('workspace agents routes', () => {
   let tmp: string;
   let workspace: string;
   let globalDir: string;
-  let getGlobalQwenDirSpy: MockInstance<typeof Storage.getGlobalQwenDir>;
+  let getGlobalCanopyDirSpy: MockInstance<typeof Storage.getGlobalCanopyDir>;
 
   beforeEach(async () => {
-    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-serve-agents-'));
+    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-serve-agents-'));
     workspace = path.join(tmp, 'workspace');
     globalDir = path.join(tmp, 'global');
     await fs.mkdir(workspace, { recursive: true });
     await fs.mkdir(globalDir, { recursive: true });
-    getGlobalQwenDirSpy = vi
-      .spyOn(Storage, 'getGlobalQwenDir')
+    getGlobalCanopyDirSpy = vi
+      .spyOn(Storage, 'getGlobalCanopyDir')
       .mockReturnValue(globalDir);
   });
 
   afterEach(async () => {
-    getGlobalQwenDirSpy.mockRestore();
+    getGlobalCanopyDirSpy.mockRestore();
     await fs.rm(tmp, { recursive: true, force: true });
   });
 
@@ -182,7 +182,7 @@ describe('workspace agents routes', () => {
   }
 
   it('lists built-in agents alongside on-disk project agents', async () => {
-    const projectAgentsDir = path.join(workspace, QWEN_DIR, 'agents');
+    const projectAgentsDir = path.join(workspace, CANOPY_DIR, 'agents');
     await fs.mkdir(projectAgentsDir, { recursive: true });
     await fs.writeFile(
       path.join(projectAgentsDir, 'reviewer.md'),
@@ -273,7 +273,7 @@ describe('workspace agents routes', () => {
   });
 
   it('restores selected MCP server secrets before writing an agent', async () => {
-    const settingsDir = path.join(workspace, QWEN_DIR);
+    const settingsDir = path.join(workspace, CANOPY_DIR);
     await fs.mkdir(settingsDir, { recursive: true });
     await fs.writeFile(
       path.join(settingsDir, 'settings.json'),
@@ -312,7 +312,7 @@ describe('workspace agents routes', () => {
       PRIVATE_TOKEN: '__redacted__',
     });
     const onDisk = await fs.readFile(
-      path.join(workspace, QWEN_DIR, 'agents', 'private-agent.md'),
+      path.join(workspace, CANOPY_DIR, 'agents', 'private-agent.md'),
       'utf8',
     );
     expect(onDisk).toContain('PRIVATE_TOKEN: secret-value');
@@ -423,7 +423,7 @@ describe('workspace agents routes', () => {
     // serve the stale cache from the first call and silently miss
     // the new entry — diverging from the detail route, which always
     // re-reads disk.
-    const projectAgentsDir = path.join(workspace, QWEN_DIR, 'agents');
+    const projectAgentsDir = path.join(workspace, CANOPY_DIR, 'agents');
     await fs.mkdir(projectAgentsDir, { recursive: true });
     await fs.writeFile(
       path.join(projectAgentsDir, 'fresh-out-of-band.md'),
@@ -516,7 +516,7 @@ describe('workspace agents routes', () => {
   });
 
   it('matches frontmatter name case-insensitively', async () => {
-    const projectAgentsDir = path.join(workspace, QWEN_DIR, 'agents');
+    const projectAgentsDir = path.join(workspace, CANOPY_DIR, 'agents');
     await fs.mkdir(projectAgentsDir, { recursive: true });
     await fs.writeFile(
       path.join(projectAgentsDir, 'casey.md'),
@@ -558,7 +558,7 @@ describe('workspace agents routes', () => {
 
     // File was actually written.
     const onDisk = await fs.readFile(
-      path.join(workspace, QWEN_DIR, 'agents', 'tester.md'),
+      path.join(workspace, CANOPY_DIR, 'agents', 'tester.md'),
       'utf8',
     );
     expect(onDisk).toContain('name: tester');
@@ -591,7 +591,7 @@ describe('workspace agents routes', () => {
     expect(res.status).toBe(503);
     expect(res.body.code).toBe('workspace_runtime_unavailable');
     await expect(
-      fs.access(path.join(workspace, QWEN_DIR, 'agents', 'blocked-agent.md')),
+      fs.access(path.join(workspace, CANOPY_DIR, 'agents', 'blocked-agent.md')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     expect(bridge.events).toEqual([]);
   });
@@ -769,12 +769,12 @@ describe('workspace agents routes', () => {
     expect(res.body.code).toBe('token_required');
   });
 
-  it('rejects 400 invalid_client_id for unknown X-Qwen-Client-Id', async () => {
+  it('rejects 400 invalid_client_id for unknown X-Canopy-Client-Id', async () => {
     const bridge = buildBridgeStub({ knownIds: ['client_known'] });
     const app = buildApp({ bridge, boundWorkspace: workspace });
     const res = await request(app)
       .post('/workspace/agents')
-      .set('X-Qwen-Client-Id', 'client_stranger')
+      .set('X-Canopy-Client-Id', 'client_stranger')
       .send({
         name: 'a-name',
         description: 'a description longer than ten chars',
@@ -800,7 +800,7 @@ describe('workspace agents routes', () => {
     // version must NOT exist (would otherwise be unfindable via
     // case-insensitive lookup).
     const onDisk = await fs.readFile(
-      path.join(workspace, QWEN_DIR, 'agents', 'trimmed-name.md'),
+      path.join(workspace, CANOPY_DIR, 'agents', 'trimmed-name.md'),
       'utf8',
     );
     expect(onDisk).toContain('name: trimmed-name');
@@ -938,7 +938,7 @@ describe('workspace agents routes', () => {
     // Create with a stamped client id.
     const createRes = await request(app)
       .post('/workspace/agents')
-      .set('X-Qwen-Client-Id', 'client_audit')
+      .set('X-Canopy-Client-Id', 'client_audit')
       .send({
         name: 'audited',
         description: 'a description longer than ten chars',
@@ -950,7 +950,7 @@ describe('workspace agents routes', () => {
     // Update with the same client id.
     const updateRes = await request(app)
       .post('/workspace/agents/audited')
-      .set('X-Qwen-Client-Id', 'client_audit')
+      .set('X-Canopy-Client-Id', 'client_audit')
       .send({ description: 'a NEW description longer than ten chars' });
     expect(updateRes.status).toBe(200);
     expect(updateRes.body.changed).toBe(true);
@@ -958,7 +958,7 @@ describe('workspace agents routes', () => {
     // Delete with the same client id.
     const deleteRes = await request(app)
       .delete('/workspace/agents/audited')
-      .set('X-Qwen-Client-Id', 'client_audit');
+      .set('X-Canopy-Client-Id', 'client_audit');
     expect(deleteRes.status).toBe(204);
 
     const events = (bridge as unknown as { events: RecordedEvent[] }).events;
@@ -1090,7 +1090,7 @@ describe('workspace agents routes', () => {
 
     // Project file gone; user file still exists.
     await expect(
-      fs.access(path.join(workspace, QWEN_DIR, 'agents', 'scoped-delete.md')),
+      fs.access(path.join(workspace, CANOPY_DIR, 'agents', 'scoped-delete.md')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(
       fs.access(path.join(globalDir, 'agents', 'scoped-delete.md')),
@@ -1135,7 +1135,7 @@ describe('workspace agents routes', () => {
 
     // Project-level definition is untouched.
     const projectFile = await fs.readFile(
-      path.join(workspace, QWEN_DIR, 'agents', 'scoped-update.md'),
+      path.join(workspace, CANOPY_DIR, 'agents', 'scoped-update.md'),
       'utf8',
     );
     expect(projectFile).toContain('a description longer than ten chars');

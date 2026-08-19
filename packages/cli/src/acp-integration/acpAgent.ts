@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,8 +24,8 @@ import {
   getDefaultBaseUrlForProtocol,
   getDefaultModelIds,
   getScopedEnvContents,
-  QwenOAuth2Event,
-  qwenOAuth2Events,
+  CanopyOAuth2Event,
+  canopyOAuth2Events,
   resolveBaseUrl,
   MCP_BUDGET_WARN_FRACTION,
   MCPServerConfig,
@@ -125,7 +125,7 @@ import {
   type WorkspaceRememberContextMode,
   type ChatRecord,
   type ToolInvocationGuard,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
@@ -396,7 +396,7 @@ import {
 } from './generation.js';
 
 const debugLogger = createDebugLogger('ACP_AGENT');
-const QWEN_ACP_LOCAL_READ_ROOTS_ENV = 'QWEN_ACP_LOCAL_READ_ROOTS';
+const CANOPY_ACP_LOCAL_READ_ROOTS_ENV = 'CANOPY_ACP_LOCAL_READ_ROOTS';
 const POSIX_TMP_LOCAL_READ_ROOT = '/tmp';
 // Must be less than SESSION_BTW_TIMEOUT_MS (60s) in bridge.ts so the child
 // aborts before the bridge's backstop timer fires.
@@ -452,7 +452,7 @@ function createAcpSessionProfiler(
     const durationMs = Math.round((performance.now() - start) * 100) / 100;
     if (Number.isFinite(durationMs) && durationMs >= 0) {
       setAttribute(
-        `qwen-code.daemon.${attributePrefix}.${stage}_ms`,
+        `canopy-code.daemon.${attributePrefix}.${stage}_ms`,
         durationMs,
       );
     }
@@ -460,7 +460,7 @@ function createAcpSessionProfiler(
   const recordFailure = (stage: AcpSessionProfileStage): void => {
     if (failedStage !== undefined) return;
     failedStage = stage;
-    setAttribute(`qwen-code.daemon.${attributePrefix}.failed_stage`, stage);
+    setAttribute(`canopy-code.daemon.${attributePrefix}.failed_stage`, stage);
   };
 
   return {
@@ -528,7 +528,7 @@ function workspaceMemoryErrorData(
 
 const SESSION_WRITER_MESSAGES = {
   session_writer_conflict:
-    'This session is already open in another Qwen process.',
+    'This session is already open in another Canopy process.',
   session_writer_lost: 'Write ownership for this session was lost.',
   session_transcript_changed:
     'The session transcript changed outside its active writer.',
@@ -628,7 +628,7 @@ const logWorkspaceMemoryExtractionError =
   createWorkspaceMemoryExtractionErrorLogger(debugLogger);
 
 function parseAcpLocalReadRootsEnv(
-  raw = process.env[QWEN_ACP_LOCAL_READ_ROOTS_ENV],
+  raw = process.env[CANOPY_ACP_LOCAL_READ_ROOTS_ENV],
 ): string[] {
   if (!raw) return [];
 
@@ -776,7 +776,7 @@ function mapSessionRestoreRequestError(
   }
   if (error instanceof SessionTranscriptPageTooLargeError) {
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.envelope_limit_reason',
+      'canopy-code.daemon.session_restore.envelope_limit_reason',
       'bytes',
     );
     return new RequestError(-32012, error.message, {
@@ -788,7 +788,7 @@ function mapSessionRestoreRequestError(
   }
   if (error instanceof HistoryReplayLimitError) {
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.envelope_limit_reason',
+      'canopy-code.daemon.session_restore.envelope_limit_reason',
       error.reason,
     );
     return new RequestError(-32012, error.message, {
@@ -1057,7 +1057,7 @@ function hasFailedDisplayStatus(
  *
  * Drift detection: `AUTH_PREFLIGHT_AUDITED_AUTH_TYPES` below lists every
  * `AuthType` enum value that has been triaged for this map (either keyed
- * here, or explicitly waived for non-env-based auth like qwen-oauth). The
+ * here, or explicitly waived for non-env-based auth like canopy-oauth). The
  * paired test `AUTH_PREFLIGHT_AUDITED_AUTH_TYPES covers every AuthType`
  * walks the public enum and fails CI when core adds a new auth method
  * without a deliberate decision here.
@@ -1077,10 +1077,10 @@ export const AUTH_PREFLIGHT_ENV_KEYS: Readonly<
  * waived rather than a missing entry.
  */
 export const AUTH_PREFLIGHT_WAIVED_AUTH_TYPES: ReadonlySet<string> = new Set([
-  'qwen-oauth',
+  'canopy-oauth',
 ]);
 
-type QwenMemorySettings = {
+type CanopyMemorySettings = {
   enableManagedAutoMemory: boolean;
   enableManagedAutoDream: boolean;
   enableAutoSkill: boolean;
@@ -1089,13 +1089,13 @@ type QwenMemorySettings = {
   enableTeamMemorySync: boolean;
 };
 
-type QwenMemoryPaths = {
+type CanopyMemoryPaths = {
   userMemoryFile: string;
   projectMemoryFile: string;
   autoMemoryDir: string;
 };
 
-type QwenSkillInstallRequest = {
+type CanopySkillInstallRequest = {
   id: string;
   slug: string;
   name: string;
@@ -1104,24 +1104,24 @@ type QwenSkillInstallRequest = {
   scope: 'global';
 };
 
-type QwenSkillDeleteRequest = {
+type CanopySkillDeleteRequest = {
   slug: string;
   scope: 'global';
 };
 
-type QwenSkillSetEnabledRequest = {
+type CanopySkillSetEnabledRequest = {
   slug: string;
   enabled: boolean;
   scope: 'global' | 'project';
 };
 
-type QwenManagedSkillFile = {
+type CanopyManagedSkillFile = {
   skillDir: string;
   skillFile: string;
   content: string;
 };
 
-const PROJECT_SKILL_DIRS = ['.qwen', '.agents'] as const;
+const PROJECT_SKILL_DIRS = ['.canopy', '.agents'] as const;
 const SKILLS_DIR = 'skills';
 
 type DownloadedSkillFile = {
@@ -1141,12 +1141,12 @@ type GitHubBlobSkillUrl = {
   filePath: string;
 };
 
-type QwenSettingsScope = 'user' | 'workspace';
-type QwenSettingValue = string | number | boolean | string[] | undefined;
-type QwenMcpTransport = 'stdio' | 'http' | 'sse';
-type QwenHookEvent = HookEventName;
+type CanopySettingsScope = 'user' | 'workspace';
+type CanopySettingValue = string | number | boolean | string[] | undefined;
+type CanopyMcpTransport = 'stdio' | 'http' | 'sse';
+type CanopyHookEvent = HookEventName;
 
-type QwenCoreSettingKey =
+type CanopyCoreSettingKey =
   | 'model.name'
   | 'fastModel'
   | 'general.outputLanguage'
@@ -1162,7 +1162,7 @@ type QwenCoreSettingKey =
   | 'general.gitCoAuthor.pr'
   | 'general.defaultFileEncoding'
   | 'context.fileFiltering.respectGitIgnore'
-  | 'context.fileFiltering.respectQwenIgnore'
+  | 'context.fileFiltering.respectCanopyIgnore'
   | 'context.fileFiltering.enableFuzzySearch'
   | 'memory.enableManagedAutoMemory'
   | 'memory.enableManagedAutoDream'
@@ -1172,8 +1172,8 @@ type QwenCoreSettingKey =
   | 'memory.enableTeamMemorySync'
   | 'disableAllHooks';
 
-type QwenMcpServerConfig = {
-  transport: QwenMcpTransport;
+type CanopyMcpServerConfig = {
+  transport: CanopyMcpTransport;
   command?: string;
   args?: string[];
   cwd?: string;
@@ -1189,7 +1189,7 @@ type QwenMcpServerConfig = {
   extensionName?: string;
 };
 
-type QwenHookConfig = {
+type CanopyHookConfig = {
   type: 'command' | 'http';
   command?: string;
   url?: string;
@@ -1205,13 +1205,13 @@ type QwenHookConfig = {
   shell?: 'bash' | 'powershell';
 };
 
-type QwenHookDefinition = {
+type CanopyHookDefinition = {
   matcher?: string;
   sequential?: boolean;
-  hooks: QwenHookConfig[];
+  hooks: CanopyHookConfig[];
 };
 
-const QWEN_CORE_SETTING_DEFINITIONS = {
+const CANOPY_CORE_SETTING_DEFINITIONS = {
   'model.name': { type: 'string' },
   fastModel: { type: 'string' },
   'general.outputLanguage': { type: 'string' },
@@ -1236,7 +1236,7 @@ const QWEN_CORE_SETTING_DEFINITIONS = {
     values: ['utf-8', 'utf-8-bom'],
   },
   'context.fileFiltering.respectGitIgnore': { type: 'boolean' },
-  'context.fileFiltering.respectQwenIgnore': { type: 'boolean' },
+  'context.fileFiltering.respectCanopyIgnore': { type: 'boolean' },
   'context.fileFiltering.enableFuzzySearch': { type: 'boolean' },
   'memory.enableManagedAutoMemory': { type: 'boolean' },
   'memory.enableManagedAutoDream': { type: 'boolean' },
@@ -1246,7 +1246,7 @@ const QWEN_CORE_SETTING_DEFINITIONS = {
   'memory.enableTeamMemorySync': { type: 'boolean' },
   disableAllHooks: { type: 'boolean' },
 } as const satisfies Record<
-  QwenCoreSettingKey,
+  CanopyCoreSettingKey,
   {
     type: 'string' | 'number' | 'boolean' | 'enum';
     min?: number;
@@ -1254,13 +1254,13 @@ const QWEN_CORE_SETTING_DEFINITIONS = {
   }
 >;
 
-const QWEN_CORE_SETTING_KEYS = Object.keys(
-  QWEN_CORE_SETTING_DEFINITIONS,
-) as QwenCoreSettingKey[];
+const CANOPY_CORE_SETTING_KEYS = Object.keys(
+  CANOPY_CORE_SETTING_DEFINITIONS,
+) as CanopyCoreSettingKey[];
 
-const QWEN_HOOK_EVENTS = Object.values(HookEventName) as QwenHookEvent[];
+const CANOPY_HOOK_EVENTS = Object.values(HookEventName) as CanopyHookEvent[];
 
-const DEFAULT_QWEN_MEMORY_SETTINGS: QwenMemorySettings = {
+const DEFAULT_CANOPY_MEMORY_SETTINGS: CanopyMemorySettings = {
   enableManagedAutoMemory: true,
   enableManagedAutoDream: true,
   enableAutoSkill: false,
@@ -1269,18 +1269,18 @@ const DEFAULT_QWEN_MEMORY_SETTINGS: QwenMemorySettings = {
   enableTeamMemorySync: false,
 };
 
-const QWEN_MEMORY_SETTING_KEYS = [
+const CANOPY_MEMORY_SETTING_KEYS = [
   'enableManagedAutoMemory',
   'enableManagedAutoDream',
   'enableAutoSkill',
   'autoSkillConfirm',
   'enableTeamMemory',
   'enableTeamMemorySync',
-] as const satisfies ReadonlyArray<keyof QwenMemorySettings>;
+] as const satisfies ReadonlyArray<keyof CanopyMemorySettings>;
 
-function normalizeQwenMemorySettings(value: unknown): QwenMemorySettings {
+function normalizeCanopyMemorySettings(value: unknown): CanopyMemorySettings {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return { ...DEFAULT_QWEN_MEMORY_SETTINGS };
+    return { ...DEFAULT_CANOPY_MEMORY_SETTINGS };
   }
 
   const record = value as Record<string, unknown>;
@@ -1288,27 +1288,27 @@ function normalizeQwenMemorySettings(value: unknown): QwenMemorySettings {
     enableManagedAutoMemory:
       typeof record['enableManagedAutoMemory'] === 'boolean'
         ? record['enableManagedAutoMemory']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.enableManagedAutoMemory,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.enableManagedAutoMemory,
     enableManagedAutoDream:
       typeof record['enableManagedAutoDream'] === 'boolean'
         ? record['enableManagedAutoDream']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.enableManagedAutoDream,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.enableManagedAutoDream,
     enableAutoSkill:
       typeof record['enableAutoSkill'] === 'boolean'
         ? record['enableAutoSkill']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.enableAutoSkill,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.enableAutoSkill,
     autoSkillConfirm:
       typeof record['autoSkillConfirm'] === 'boolean'
         ? record['autoSkillConfirm']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.autoSkillConfirm,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.autoSkillConfirm,
     enableTeamMemory:
       typeof record['enableTeamMemory'] === 'boolean'
         ? record['enableTeamMemory']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.enableTeamMemory,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.enableTeamMemory,
     enableTeamMemorySync:
       typeof record['enableTeamMemorySync'] === 'boolean'
         ? record['enableTeamMemorySync']
-        : DEFAULT_QWEN_MEMORY_SETTINGS.enableTeamMemorySync,
+        : DEFAULT_CANOPY_MEMORY_SETTINGS.enableTeamMemorySync,
   };
 }
 
@@ -1344,7 +1344,7 @@ function readRequiredString(value: unknown, fieldName: string): string {
   return stringValue;
 }
 
-// Skill slugs are used to build filesystem paths under `<globalQwenDir>/skills`.
+// Skill slugs are used to build filesystem paths under `<globalCanopyDir>/skills`.
 // The character allowlist below already excludes `/` and `\`, but `.` and `..`
 // would still slip through and let `path.join` traverse out of the skills dir
 // (e.g. slug `..` resolves to the global config dir). Reject them explicitly.
@@ -1363,7 +1363,7 @@ function validateSkillSlug(slug: string): void {
 
 function readSkillInstallRequest(
   params: Record<string, unknown>,
-): QwenSkillInstallRequest {
+): CanopySkillInstallRequest {
   const skillParams = toRecord(params['skill']);
   const input = Object.keys(skillParams).length > 0 ? skillParams : params;
   const slug = readRequiredString(input['slug'], 'skill.slug');
@@ -1393,7 +1393,7 @@ function readSkillInstallRequest(
 
 function readSkillSlugRequest(
   params: Record<string, unknown>,
-): QwenSkillDeleteRequest {
+): CanopySkillDeleteRequest {
   const skillParams = toRecord(params['skill']);
   const input = Object.keys(skillParams).length > 0 ? skillParams : params;
   const slug = readRequiredString(input['slug'], 'skill.slug');
@@ -1412,7 +1412,7 @@ function readSkillSlugRequest(
 
 function readSkillSetEnabledRequest(
   params: Record<string, unknown>,
-): QwenSkillSetEnabledRequest {
+): CanopySkillSetEnabledRequest {
   const skillParams = toRecord(params['skill']);
   const input = Object.keys(skillParams).length > 0 ? skillParams : params;
   const slug = readRequiredString(input['slug'], 'skill.slug');
@@ -1872,7 +1872,7 @@ async function downloadGitHubSkillDirectoryFromArchive(
   )}`;
   const response = await fetchAllowedGitHub(archiveUrl, {
     headers: {
-      'User-Agent': 'qwen-code',
+      'User-Agent': 'canopy-code',
     },
   });
   if (!response.ok) {
@@ -1913,7 +1913,7 @@ async function fetchGitHubDirectoryItems(
   const response = await fetchAllowedGitHub(apiUrl, {
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'qwen-code',
+      'User-Agent': 'canopy-code',
     },
   });
   if (!response.ok) {
@@ -2066,7 +2066,7 @@ function resolveSkillInstallPath(
 
 // Builds the per-skill directory and asserts (defense-in-depth, on top of
 // validateSkillSlug) that it stays strictly under the managed skills root, so a
-// crafted slug can never make install/delete operate on `<globalQwenDir>` itself.
+// crafted slug can never make install/delete operate on `<globalCanopyDir>` itself.
 function resolveManagedSkillDir(skillsBaseDir: string, slug: string): string {
   const root = path.resolve(skillsBaseDir);
   const skillDir = path.resolve(skillsBaseDir, slug);
@@ -2261,7 +2261,7 @@ function readExistingProviderConfig(
 }
 
 // Resolves the raw, stored API key for a provider for server-side use only
-// (never serialized to the client). Used so `qwen/providers/connect` can keep
+// (never serialized to the client). Used so `canopy/providers/connect` can keep
 // the existing key when the client updates other fields without resubmitting it.
 function resolveExistingProviderApiKey(
   config: ProviderConfig,
@@ -2387,8 +2387,8 @@ function readProviderConnectScope(value: unknown): SettingScope | undefined {
 
 function getNestedSettingValue(
   source: Record<string, unknown>,
-  key: QwenCoreSettingKey,
-): QwenSettingValue {
+  key: CanopyCoreSettingKey,
+): CanopySettingValue {
   let current: unknown = source;
   for (const segment of key.split('.')) {
     if (!current || typeof current !== 'object' || Array.isArray(current)) {
@@ -2402,16 +2402,16 @@ function getNestedSettingValue(
     typeof current === 'boolean' ||
     Array.isArray(current)
   ) {
-    return current as QwenSettingValue;
+    return current as CanopySettingValue;
   }
   return undefined;
 }
 
 function readCoreSettingValues(
   source: Record<string, unknown>,
-): Partial<Record<QwenCoreSettingKey, QwenSettingValue>> {
-  const values: Partial<Record<QwenCoreSettingKey, QwenSettingValue>> = {};
-  for (const key of QWEN_CORE_SETTING_KEYS) {
+): Partial<Record<CanopyCoreSettingKey, CanopySettingValue>> {
+  const values: Partial<Record<CanopyCoreSettingKey, CanopySettingValue>> = {};
+  for (const key of CANOPY_CORE_SETTING_KEYS) {
     const value = getNestedSettingValue(source, key);
     if (value !== undefined) {
       values[key] = value;
@@ -2421,10 +2421,10 @@ function readCoreSettingValues(
 }
 
 export function normalizeCoreSettingValue(
-  key: QwenCoreSettingKey,
+  key: CanopyCoreSettingKey,
   value: unknown,
-): QwenSettingValue {
-  const definition = QWEN_CORE_SETTING_DEFINITIONS[key];
+): CanopySettingValue {
+  const definition = CANOPY_CORE_SETTING_DEFINITIONS[key];
   switch (definition.type) {
     case 'boolean':
       if (typeof value !== 'boolean') {
@@ -2520,7 +2520,7 @@ function normalizeOptionalNumber(value: unknown): number | undefined {
   return numberValue;
 }
 
-function normalizeMcpServerConfig(value: unknown): QwenMcpServerConfig {
+function normalizeMcpServerConfig(value: unknown): CanopyMcpServerConfig {
   const input = toRecord(value);
   const transport = input['transport'];
   if (transport !== 'stdio' && transport !== 'http' && transport !== 'sse') {
@@ -2530,7 +2530,7 @@ function normalizeMcpServerConfig(value: unknown): QwenMcpServerConfig {
     );
   }
 
-  const server: QwenMcpServerConfig = { transport };
+  const server: CanopyMcpServerConfig = { transport };
   const description = input['description'];
   if (typeof description === 'string' && description.trim()) {
     server.description = description.trim();
@@ -2572,7 +2572,7 @@ function normalizeMcpServerConfig(value: unknown): QwenMcpServerConfig {
 }
 
 function toStoredMcpServerConfig(
-  server: QwenMcpServerConfig,
+  server: CanopyMcpServerConfig,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const key of [
@@ -2599,7 +2599,7 @@ function toStoredMcpServerConfig(
   return result;
 }
 
-function toMcpServerConfig(value: unknown): QwenMcpServerConfig | undefined {
+function toMcpServerConfig(value: unknown): CanopyMcpServerConfig | undefined {
   const server = toRecord(value);
   if (typeof server['httpUrl'] === 'string') {
     return {
@@ -2694,7 +2694,7 @@ function restoreSecretRecord(
 // Hooks carry the same secret classes as MCP servers — command-hook `env`
 // (tokens passed to scripts) and http-hook `headers` (auth). Mask them in the
 // settings response and restore them on write, mirroring the MCP scheme.
-function redactHookSecrets(hook: QwenHookDefinition): QwenHookDefinition {
+function redactHookSecrets(hook: CanopyHookDefinition): CanopyHookDefinition {
   return {
     ...hook,
     hooks: hook.hooks.map((config) => ({
@@ -2708,9 +2708,9 @@ function redactHookSecrets(hook: QwenHookDefinition): QwenHookDefinition {
 }
 
 function restoreRedactedHookSecrets(
-  hook: QwenHookDefinition,
+  hook: CanopyHookDefinition,
   prior: Record<string, unknown>,
-): QwenHookDefinition {
+): CanopyHookDefinition {
   const priorHooks = Array.isArray(prior['hooks'])
     ? (prior['hooks'] as unknown[])
     : [];
@@ -2738,11 +2738,11 @@ function restoreRedactedHookSecrets(
 
 function readMcpServers(
   source: Record<string, unknown>,
-  scope: QwenSettingsScope | 'extension',
+  scope: CanopySettingsScope | 'extension',
 ): Array<{
   name: string;
-  scope: QwenSettingsScope | 'extension';
-  server: QwenMcpServerConfig;
+  scope: CanopySettingsScope | 'extension';
+  server: CanopyMcpServerConfig;
 }> {
   const servers = toRecord(source['mcpServers']);
   return Object.entries(servers)
@@ -2767,20 +2767,20 @@ function readMcpServers(
         entry,
       ): entry is {
         name: string;
-        scope: QwenSettingsScope | 'extension';
-        server: QwenMcpServerConfig;
+        scope: CanopySettingsScope | 'extension';
+        server: CanopyMcpServerConfig;
       } => !!entry,
     );
 }
 
-function isHookEvent(value: unknown): value is QwenHookEvent {
+function isHookEvent(value: unknown): value is CanopyHookEvent {
   return (
     typeof value === 'string' &&
-    QWEN_HOOK_EVENTS.includes(value as QwenHookEvent)
+    CANOPY_HOOK_EVENTS.includes(value as CanopyHookEvent)
   );
 }
 
-function normalizeHookConfig(value: unknown): QwenHookConfig {
+function normalizeHookConfig(value: unknown): CanopyHookConfig {
   const input = toRecord(value);
   const type = input['type'];
   if (type !== 'command' && type !== 'http') {
@@ -2789,7 +2789,7 @@ function normalizeHookConfig(value: unknown): QwenHookConfig {
       'Hook type must be command or http',
     );
   }
-  const config: QwenHookConfig = { type };
+  const config: CanopyHookConfig = { type };
   if (type === 'command') {
     const command = input['command'];
     if (typeof command !== 'string' || !command.trim()) {
@@ -2824,7 +2824,7 @@ function normalizeHookConfig(value: unknown): QwenHookConfig {
   return config;
 }
 
-function normalizeHookDefinition(value: unknown): QwenHookDefinition {
+function normalizeHookDefinition(value: unknown): CanopyHookDefinition {
   const input = toRecord(value);
   const hooks = input['hooks'];
   if (!Array.isArray(hooks) || hooks.length === 0) {
@@ -2833,7 +2833,7 @@ function normalizeHookDefinition(value: unknown): QwenHookDefinition {
       'Hook definition requires at least one hook',
     );
   }
-  const definition: QwenHookDefinition = {
+  const definition: CanopyHookDefinition = {
     hooks: hooks.map(normalizeHookConfig),
   };
   if (typeof input['matcher'] === 'string') {
@@ -2847,24 +2847,24 @@ function normalizeHookDefinition(value: unknown): QwenHookDefinition {
 
 function readHooks(
   source: Record<string, unknown>,
-  scope: QwenSettingsScope | 'extension',
+  scope: CanopySettingsScope | 'extension',
   extensionName?: string,
 ): Array<{
-  event: QwenHookEvent;
-  scope: QwenSettingsScope | 'extension';
+  event: CanopyHookEvent;
+  scope: CanopySettingsScope | 'extension';
   index: number;
-  hook: QwenHookDefinition;
+  hook: CanopyHookDefinition;
   extensionName?: string;
 }> {
   const hooksRoot = toRecord(source['hooks']);
   const entries: Array<{
-    event: QwenHookEvent;
-    scope: QwenSettingsScope | 'extension';
+    event: CanopyHookEvent;
+    scope: CanopySettingsScope | 'extension';
     index: number;
-    hook: QwenHookDefinition;
+    hook: CanopyHookDefinition;
     extensionName?: string;
   }> = [];
-  for (const event of QWEN_HOOK_EVENTS) {
+  for (const event of CANOPY_HOOK_EVENTS) {
     const eventHooks = hooksRoot[event];
     if (!Array.isArray(eventHooks)) continue;
     eventHooks.forEach((hookValue, index) => {
@@ -2898,7 +2898,7 @@ function toSettingsScope(scope: unknown): SettingScope {
 
 function readScopeSettings(
   settings: LoadedSettings,
-  scope: QwenSettingsScope,
+  scope: CanopySettingsScope,
 ): Record<string, unknown> {
   return settings.forScope(toSettingsScope(scope)).settings as Record<
     string,
@@ -2923,13 +2923,13 @@ async function resolvePreferredMemoryFile(
   return path.join(dir, fallbackFilename);
 }
 
-async function resolveQwenMemoryPaths(params: {
+async function resolveCanopyMemoryPaths(params: {
   cwd: string;
   projectRoot: string;
-}): Promise<QwenMemoryPaths> {
-  const fallbackFilename = getAllGeminiMdFilenames()[0] ?? 'QWEN.md';
+}): Promise<CanopyMemoryPaths> {
+  const fallbackFilename = getAllGeminiMdFilenames()[0] ?? 'CANOPY.md';
   const userMemoryFile = await resolvePreferredMemoryFile(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     fallbackFilename,
   );
   const projectMemoryFile = await resolvePreferredMemoryFile(
@@ -2953,7 +2953,7 @@ async function resolveQwenMemoryPaths(params: {
 /**
  * Reverse tool channel (issue #5626, Phase 2). Deliver one JSON-RPC MCP frame
  * for a client-hosted (extension) MCP server UP to the parent serve process
- * over the `qwen/control/client_mcp/message` ext-method, returning the
+ * over the `canopy/control/client_mcp/message` ext-method, returning the
  * client-hosted server's correlated reply. Shared by the bootstrap
  * (workspace-level) sender in `runAcpAgent` and the per-session sender
  * (`buildClientMcpSender`).
@@ -3286,7 +3286,7 @@ export async function runAcpAgent(
     },
   });
 
-  let agentInstance: QwenAgent | undefined;
+  let agentInstance: CanopyAgent | undefined;
   let connection: AgentSideConnection;
   markAcpStartup('transportSetupStart');
   try {
@@ -3370,7 +3370,7 @@ export async function runAcpAgent(
             externalProviderAttached: externalToolGuardProviderAttached,
           })
         : undefined;
-      agentInstance = new QwenAgent(
+      agentInstance = new CanopyAgent(
         config,
         settings,
         argv,
@@ -3495,7 +3495,7 @@ export async function runAcpAgent(
           ];
         });
         writeStderrLineSafe(
-          'qwen --acp: managed session writer shutdown failed; a writer lock may be retained for safety. ' +
+          'canopy --acp: managed session writer shutdown failed; a writer lock may be retained for safety. ' +
             'Verify that no previous writer is running before manual cleanup.' +
             (retainedLockPaths.length > 0
               ? ` Candidate lock paths: ${retainedLockPaths.join(', ')}`
@@ -3646,7 +3646,7 @@ export function toHttpServer(
 }
 
 /**
- * Parse `QWEN_SERVE_MCP_POOL_TRANSPORTS` env var. Comma-separated list
+ * Parse `CANOPY_SERVE_MCP_POOL_TRANSPORTS` env var. Comma-separated list
  * e.g. "stdio,websocket,http". Falls back to `POOLED_TRANSPORTS_DEFAULT`
  * on missing / malformed input. Unknown transport names are silently dropped.
  */
@@ -3673,7 +3673,7 @@ function parsePooledTransports(
 }
 
 /**
- * Parse `QWEN_SERVE_MCP_POOL_DRAIN_MS` env var. Default 30000ms.
+ * Parse `CANOPY_SERVE_MCP_POOL_DRAIN_MS` env var. Default 30000ms.
  * Bounded to [1000, 600000] (1s-10min).
  */
 function parsePoolDrainMs(envValue: string | undefined): number {
@@ -3683,7 +3683,7 @@ function parsePoolDrainMs(envValue: string | undefined): number {
   const trimmed = envValue.trim();
   if (!/^\d+$/.test(trimmed)) {
     process.stderr.write(
-      `qwen serve: QWEN_SERVE_MCP_POOL_DRAIN_MS=${JSON.stringify(envValue)} ` +
+      `canopy serve: CANOPY_SERVE_MCP_POOL_DRAIN_MS=${JSON.stringify(envValue)} ` +
         `is not a valid integer; using default 30000ms.\n`,
     );
     return 30_000;
@@ -3702,8 +3702,8 @@ function parsePoolDrainMs(envValue: string | undefined): number {
 export function createWorkspaceMcpBudget(
   onEvent: (event: McpBudgetEvent) => void,
 ): WorkspaceMcpBudget | undefined {
-  const rawBudget = process.env['QWEN_SERVE_MCP_CLIENT_BUDGET'];
-  const rawMode = process.env['QWEN_SERVE_MCP_BUDGET_MODE'];
+  const rawBudget = process.env['CANOPY_SERVE_MCP_CLIENT_BUDGET'];
+  const rawMode = process.env['CANOPY_SERVE_MCP_BUDGET_MODE'];
   // Match `McpClientManager.readBudgetFromEnv`'s parsing exactly: only plain
   // decimal digits set a budget. A loose `Number(...)` would silently accept
   // `0x10`=16, `1e2`=100, and `1.0`=1 (all pass `isInteger`); the strict
@@ -3717,7 +3717,7 @@ export function createWorkspaceMcpBudget(
       budget = parsed;
     } else {
       process.stderr.write(
-        `qwen serve: ignoring invalid QWEN_SERVE_MCP_CLIENT_BUDGET=` +
+        `canopy serve: ignoring invalid CANOPY_SERVE_MCP_CLIENT_BUDGET=` +
           `'${rawBudget}' (expected positive integer); ` +
           `MCP budget enforcement disabled for this child.\n`,
       );
@@ -3796,7 +3796,7 @@ function isOwnerOnlyDirectory(stats: Stats): boolean {
   return (stats.mode & 0o077) === 0;
 }
 
-class QwenAgent implements Agent {
+class CanopyAgent implements Agent {
   private sessions: Map<string, Session> = new Map();
   private readonly historyMutationTails = new Map<string, Promise<void>>();
   private readonly startingSessionIds = new Set<string>();
@@ -3859,7 +3859,7 @@ class QwenAgent implements Agent {
    * Workspace-shared MCP transport pool. Eagerly constructed; lazy
    * w.r.t. actual MCP work — spawns nothing until `pool.acquire`.
    *
-   * `undefined` when `QWEN_SERVE_NO_MCP_POOL=1` (kill switch); sessions
+   * `undefined` when `CANOPY_SERVE_NO_MCP_POOL=1` (kill switch); sessions
    * then fall back to per-session McpClient spawn.
    */
   private readonly mcpPool?: McpTransportPool;
@@ -4765,9 +4765,9 @@ class QwenAgent implements Agent {
     private readonly externalToolGuardProviderAttached = false,
   ) {
     // Pool kill switch via env var so operators can A/B compare or
-    // roll back without rebuilding. `run-qwen-serve.ts` sets this when
+    // roll back without rebuilding. `run-canopy-serve.ts` sets this when
     // `--no-mcp-pool` is passed at daemon startup.
-    if (process.env['QWEN_SERVE_NO_MCP_POOL'] === '1') {
+    if (process.env['CANOPY_SERVE_NO_MCP_POOL'] === '1') {
       this.mcpPool = undefined;
       this.workspaceMcpBudget = undefined;
     } else {
@@ -4787,10 +4787,10 @@ class QwenAgent implements Agent {
         // wiring; pool-mode discoverAllMcpToolsViaPool delegates SDK
         // MCP to that bypass.
         pooledTransports: parsePooledTransports(
-          process.env['QWEN_SERVE_MCP_POOL_TRANSPORTS'],
+          process.env['CANOPY_SERVE_MCP_POOL_TRANSPORTS'],
         ),
         drainDelayMs: parsePoolDrainMs(
-          process.env['QWEN_SERVE_MCP_POOL_DRAIN_MS'],
+          process.env['CANOPY_SERVE_MCP_POOL_DRAIN_MS'],
         ),
         budget: this.workspaceMcpBudget,
       });
@@ -4840,7 +4840,7 @@ class QwenAgent implements Agent {
    * fire-and-forget.
    */
   private broadcastBudgetEvent(event: McpBudgetEvent): void {
-    // The QwenAgent's `this.connection` is the single ACP channel to
+    // The CanopyAgent's `this.connection` is the single ACP channel to
     // the daemon. The daemon's bridge `bridgeClient.extNotification`
     // resolves the per-session SSE bus from the `sessionId` field of
     // each notification — so we send N notifications (one per active
@@ -4853,7 +4853,7 @@ class QwenAgent implements Agent {
     const sessionIds = Array.from(this.sessions.keys());
     for (const sid of sessionIds) {
       void this.connection
-        .extNotification('qwen/notify/session/mcp-budget-event', {
+        .extNotification('canopy/notify/session/mcp-budget-event', {
           v: 1,
           sessionId: sid,
           // Tag workspace-scoped events so SDK reducers can branch.
@@ -4911,8 +4911,8 @@ class QwenAgent implements Agent {
     const response: InitializeResponse = {
       protocolVersion: PROTOCOL_VERSION,
       agentInfo: {
-        name: 'qwen-code',
-        title: 'Qwen Code',
+        name: 'canopy-code',
+        title: 'Canopy Code',
         version,
       },
       authMethods,
@@ -5023,8 +5023,8 @@ class QwenAgent implements Agent {
       });
     };
 
-    if (method === AuthType.QWEN_OAUTH) {
-      qwenOAuth2Events.once(QwenOAuth2Event.AuthUri, authUriHandler);
+    if (method === AuthType.CANOPY_OAUTH) {
+      canopyOAuth2Events.once(CanopyOAuth2Event.AuthUri, authUriHandler);
     }
 
     await clearCachedCredentialFile();
@@ -5036,8 +5036,8 @@ class QwenAgent implements Agent {
         method,
       );
     } finally {
-      if (method === AuthType.QWEN_OAUTH) {
-        qwenOAuth2Events.off(QwenOAuth2Event.AuthUri, authUriHandler);
+      if (method === AuthType.CANOPY_OAUTH) {
+        canopyOAuth2Events.off(CanopyOAuth2Event.AuthUri, authUriHandler);
       }
     }
   }
@@ -5083,8 +5083,8 @@ class QwenAgent implements Agent {
       const sessionSource = getSessionSource(params);
       const parentContext = extractDaemonTraceContext(params);
       return await withDaemonSpan(
-        'qwen-code.daemon.session_start',
-        { 'qwen-code.daemon.operation': 'acp_session_new' },
+        'canopy-code.daemon.session_start',
+        { 'canopy-code.daemon.operation': 'acp_session_new' },
         async (span) => {
           const profiler = createAcpSessionStartProfiler(span);
           // Per-request settings: session handlers run concurrently, and
@@ -5147,10 +5147,10 @@ class QwenAgent implements Agent {
     const sessionId = normalizeSessionIdForLookup(params.sessionId);
     const parentContext = extractDaemonTraceContext(params);
     return await withDaemonSpan(
-      'qwen-code.daemon.session_restore',
+      'canopy-code.daemon.session_restore',
       {
-        'qwen-code.daemon.operation': 'acp_session_load',
-        'qwen-code.daemon.session_restore.action': 'load',
+        'canopy-code.daemon.operation': 'acp_session_load',
+        'canopy-code.daemon.session_restore.action': 'load',
         'session.id': sessionId,
       },
       async (span) =>
@@ -5221,7 +5221,7 @@ class QwenAgent implements Agent {
               }),
             );
             addDaemonRequestAttribute(
-              'qwen-code.daemon.session_restore.partial_replay',
+              'canopy-code.daemon.session_restore.partial_replay',
               replay.replayError !== undefined,
             );
             if (!bulkReplay) {
@@ -5379,7 +5379,7 @@ class QwenAgent implements Agent {
                   }),
                 );
                 addDaemonRequestAttribute(
-                  'qwen-code.daemon.session_restore.partial_replay',
+                  'canopy-code.daemon.session_restore.partial_replay',
                   replay.replayError !== undefined,
                 );
                 replayEnvelope = {
@@ -5539,10 +5539,10 @@ class QwenAgent implements Agent {
     const sessionId = normalizeSessionIdForLookup(params.sessionId);
     const parentContext = extractDaemonTraceContext(params);
     return await withDaemonSpan(
-      'qwen-code.daemon.session_restore',
+      'canopy-code.daemon.session_restore',
       {
-        'qwen-code.daemon.operation': 'acp_session_resume',
-        'qwen-code.daemon.session_restore.action': 'resume',
+        'canopy-code.daemon.operation': 'acp_session_resume',
+        'canopy-code.daemon.session_restore.action': 'resume',
         'session.id': sessionId,
       },
       async (span) =>
@@ -6326,7 +6326,7 @@ class QwenAgent implements Agent {
         // depending on `debugLogger.debug` operator opt-in (matches
         // the budget-accounting fail-loud pattern below).
         process.stderr.write(
-          `qwen serve: pool snapshot for workspace MCP status failed: ` +
+          `canopy serve: pool snapshot for workspace MCP status failed: ` +
             `${err instanceof Error ? err.message : String(err)}\n`,
         );
       }
@@ -6360,7 +6360,7 @@ class QwenAgent implements Agent {
           // Accounting failure must not crash the snapshot — the per-
           // server data is still useful even without budget overlay.
           process.stderr.write(
-            `qwen serve: getMcpClientAccounting failed: ` +
+            `canopy serve: getMcpClientAccounting failed: ` +
               `${err instanceof Error ? err.message : String(err)}\n`,
           );
         }
@@ -7217,7 +7217,7 @@ class QwenAgent implements Agent {
           status: 'warning',
           errorKind: 'auth_env_error',
           error: 'No auth method configured.',
-          hint: 'Run `qwen` and complete the auth flow, or set a provider env var.',
+          hint: 'Run `canopy` and complete the auth flow, or set a provider env var.',
           detail: { source: 'none', hasToken: false },
         });
       }
@@ -7237,7 +7237,7 @@ class QwenAgent implements Agent {
           hasToken = true;
         }
       }
-      // No env-var registration → either OAuth-style auth (qwen-oauth) or
+      // No env-var registration → either OAuth-style auth (canopy-oauth) or
       // a custom provider whose key is sourced from settings rather than
       // env. If the resolved generation config already contains an apiKey
       // we can report 'ok'; otherwise surface 'unknown' so the SDK
@@ -8037,7 +8037,7 @@ class QwenAgent implements Agent {
   }
 
   private async installSkillFromUrl(
-    request: QwenSkillInstallRequest,
+    request: CanopySkillInstallRequest,
   ): Promise<Record<string, unknown>> {
     const skillManager = this.config.getSkillManager();
     if (!skillManager) {
@@ -8048,7 +8048,7 @@ class QwenAgent implements Agent {
     }
 
     const download = await downloadSkill(request.sourceUrl);
-    const skillsBaseDir = path.join(Storage.getGlobalQwenDir(), 'skills');
+    const skillsBaseDir = path.join(Storage.getGlobalCanopyDir(), 'skills');
     const skillDir = resolveManagedSkillDir(skillsBaseDir, request.slug);
     const skillFile = path.join(skillDir, 'SKILL.md');
     const parsed = skillManager.parseSkillContent(
@@ -8101,7 +8101,7 @@ class QwenAgent implements Agent {
   }
 
   private async deleteGlobalSkill(
-    request: QwenSkillDeleteRequest,
+    request: CanopySkillDeleteRequest,
   ): Promise<Record<string, unknown>> {
     const skillManager = this.config.getSkillManager();
     if (!skillManager) {
@@ -8127,11 +8127,11 @@ class QwenAgent implements Agent {
     // Guard the recursive delete: readManagedSkillFile's generic fallback can
     // resolve skillDir from listSkills() to an arbitrary path. Only ever remove
     // the directory that directly contains the SKILL.md we just validated, and
-    // never a filesystem root or the global Qwen dir itself, so a malformed
+    // never a filesystem root or the global Canopy dir itself, so a malformed
     // skill entry can't trigger a destructive rm of a shared/parent directory.
     const resolvedSkillDir = path.resolve(skillDir);
     const resolvedSkillFile = path.resolve(skillFile);
-    const globalDir = path.resolve(Storage.getGlobalQwenDir());
+    const globalDir = path.resolve(Storage.getGlobalCanopyDir());
     const isDedicatedSkillDir =
       resolvedSkillFile === path.join(resolvedSkillDir, 'SKILL.md');
     if (
@@ -8155,24 +8155,24 @@ class QwenAgent implements Agent {
 
   private async readManagedSkillFile(
     slug: string,
-    scope: QwenSkillSetEnabledRequest['scope'],
+    scope: CanopySkillSetEnabledRequest['scope'],
     skillManager: NonNullable<ReturnType<Config['getSkillManager']>>,
     cwd?: string,
-  ): Promise<QwenManagedSkillFile> {
+  ): Promise<CanopyManagedSkillFile> {
     if (scope === 'global') {
-      const qwenSkillDir = resolveManagedSkillDir(
-        path.join(Storage.getGlobalQwenDir(), 'skills'),
+      const canopySkillDir = resolveManagedSkillDir(
+        path.join(Storage.getGlobalCanopyDir(), 'skills'),
         slug,
       );
-      const qwenSkillFile = path.join(qwenSkillDir, 'SKILL.md');
-      const qwenContent = await fs
-        .readFile(qwenSkillFile, 'utf8')
+      const canopySkillFile = path.join(canopySkillDir, 'SKILL.md');
+      const canopyContent = await fs
+        .readFile(canopySkillFile, 'utf8')
         .catch(() => undefined);
-      if (qwenContent !== undefined) {
+      if (canopyContent !== undefined) {
         return {
-          skillDir: qwenSkillDir,
-          skillFile: qwenSkillFile,
-          content: qwenContent,
+          skillDir: canopySkillDir,
+          skillFile: canopySkillFile,
+          content: canopyContent,
         };
       }
     }
@@ -8215,7 +8215,7 @@ class QwenAgent implements Agent {
     slug: string,
     cwd: string,
     skillManager: NonNullable<ReturnType<Config['getSkillManager']>>,
-  ): Promise<QwenManagedSkillFile | undefined> {
+  ): Promise<CanopyManagedSkillFile | undefined> {
     const projectRoot = path.resolve(cwd);
     for (const configDir of PROJECT_SKILL_DIRS) {
       const baseDir = path.join(projectRoot, configDir, SKILLS_DIR);
@@ -8240,7 +8240,7 @@ class QwenAgent implements Agent {
   }
 
   private async setGlobalSkillEnabled(
-    request: QwenSkillSetEnabledRequest,
+    request: CanopySkillSetEnabledRequest,
     cwd?: string,
   ): Promise<Record<string, unknown>> {
     const skillManager = this.config.getSkillManager();
@@ -8460,7 +8460,7 @@ class QwenAgent implements Agent {
         const settings = loadSettings(cwd);
         this.settings = settings;
         return {
-          settings: normalizeQwenMemorySettings(settings.merged.memory),
+          settings: normalizeCanopyMemorySettings(settings.merged.memory),
         };
       }
       case 'qwen/settings/setMemory': {
@@ -8469,7 +8469,7 @@ class QwenAgent implements Agent {
         // other settings mutation handlers, instead of writing through the
         // possibly-stale cached `this.settings` and reading it back.
         const settings = loadSettings(cwd);
-        for (const key of QWEN_MEMORY_SETTING_KEYS) {
+        for (const key of CANOPY_MEMORY_SETTING_KEYS) {
           if (updates[key] === undefined) continue;
           if (typeof updates[key] !== 'boolean') {
             throw RequestError.invalidParams(
@@ -8481,7 +8481,7 @@ class QwenAgent implements Agent {
         }
         this.settings = settings;
         return {
-          settings: normalizeQwenMemorySettings(settings.merged.memory),
+          settings: normalizeCanopyMemorySettings(settings.merged.memory),
         };
       }
       case 'qwen/settings/getPath': {
@@ -8493,7 +8493,7 @@ class QwenAgent implements Agent {
             ? params['projectRoot']
             : cwd;
         return {
-          paths: await resolveQwenMemoryPaths({ cwd, projectRoot }),
+          paths: await resolveCanopyMemoryPaths({ cwd, projectRoot }),
         };
       }
       case SERVE_STATUS_EXT_METHODS.workspaceMcp:
@@ -9294,7 +9294,7 @@ class QwenAgent implements Agent {
           // clearing so a misconfigured settings file is loud.
           if (mergedDisabled !== undefined && !Array.isArray(mergedDisabled)) {
             process.stderr.write(
-              `qwen serve: MCP restart for ${JSON.stringify(serverName)}: ` +
+              `canopy serve: MCP restart for ${JSON.stringify(serverName)}: ` +
                 `tools.disabled has unexpected type ${typeof mergedDisabled}; ` +
                 `clearing disabled set — check settings.json. ` +
                 `Expected an array of strings.\n`,
@@ -9308,7 +9308,7 @@ class QwenAgent implements Agent {
           // Settings load failures are non-fatal — fall through with
           // the existing in-memory snapshot.
           process.stderr.write(
-            `qwen serve: MCP restart for ${JSON.stringify(serverName)} ` +
+            `canopy serve: MCP restart for ${JSON.stringify(serverName)} ` +
               `could not refresh disabledTools from merged settings ` +
               `(${err instanceof Error ? err.message : String(err)}); ` +
               `proceeding with the bootstrap snapshot — recently toggled ` +
@@ -11702,15 +11702,15 @@ class QwenAgent implements Agent {
         const key = params['key'];
         if (
           typeof key !== 'string' ||
-          !QWEN_CORE_SETTING_KEYS.includes(key as QwenCoreSettingKey)
+          !CANOPY_CORE_SETTING_KEYS.includes(key as CanopyCoreSettingKey)
         ) {
           throw RequestError.invalidParams(
             undefined,
-            'Unsupported Qwen setting key',
+            'Unsupported Canopy setting key',
           );
         }
         const settings = loadSettings(cwd);
-        const settingKey = key as QwenCoreSettingKey;
+        const settingKey = key as CanopyCoreSettingKey;
         const normalizedValue = normalizeCoreSettingValue(
           settingKey,
           params['value'],
@@ -12202,7 +12202,7 @@ class QwenAgent implements Agent {
    * `McpClientManager`'s `sendSdkMcpMessage` callback. Client-hosted
    * (extension) MCP servers are registered SDK-type, so the manager routes
    * their JSON-RPC through this callback. We forward each frame UP to the
-   * parent serve process via the `qwen/control/client_mcp/message` ext-method;
+   * parent serve process via the `canopy/control/client_mcp/message` ext-method;
    * the parent's `BridgeClient.extMethod` hands it to the per-WS-connection
    * `ClientMcpRegistrar`, which carries it down the daemon WS to the extension
    * and returns the correlated response (the `payload` field). All SDK-type
@@ -12577,7 +12577,7 @@ class QwenAgent implements Agent {
         // Fire-and-forget. `.catch` suppresses unhandled rejections
         // and logs at debug level for operator visibility.
         void this.connection
-          .extNotification('qwen/notify/session/mcp-budget-event', {
+          .extNotification('canopy/notify/session/mcp-budget-event', {
             v: 1,
             sessionId: sid,
             ...event,
@@ -12642,7 +12642,7 @@ class QwenAgent implements Agent {
     if (!selectedType) {
       throw RequestError.authRequired(
         { authMethods: pickAuthMethodsForAuthRequired() },
-        'Use Qwen Code CLI to authenticate first.',
+        'Use Canopy Code CLI to authenticate first.',
       );
     }
 
@@ -12944,7 +12944,7 @@ class QwenAgent implements Agent {
             })),
           ],
           _meta: {
-            'qwenCode/reasoning': {
+            'canopyCode/reasoning': {
               defaultEffort: modelReasoning.defaultEffort,
             },
           },
@@ -12999,8 +12999,8 @@ class QwenAgent implements Agent {
         .getAllConfiguredModels()
         .filter(
           (model) =>
-            model.authType !== AuthType.QWEN_OAUTH ||
-            currentAuthType === AuthType.QWEN_OAUTH,
+            model.authType !== AuthType.CANOPY_OAUTH ||
+            currentAuthType === AuthType.CANOPY_OAUTH,
         ),
     );
   }

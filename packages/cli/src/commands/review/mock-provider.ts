@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review mock-provider`: an OpenAI-compatible endpoint the review can
+// `canopy review mock-provider`: an OpenAI-compatible endpoint the review can
 // drive the real product against, and a JSONL record of every request it saw.
 //
 // Measured across 94 hand-written mock servers in this repo's own verification
@@ -267,10 +267,10 @@ export function chunk(
   finish: string | null = null,
 ): Record<string, unknown> {
   return {
-    id: 'chatcmpl-qwen-review-mock',
+    id: 'chatcmpl-canopy-review-mock',
     object: 'chat.completion.chunk',
     created: Math.floor(Date.now() / 1000),
-    model: 'qwen-review-mock',
+    model: 'canopy-review-mock',
     choices: [{ index: 0, delta, finish_reason: finish }],
   };
 }
@@ -328,10 +328,10 @@ export function completionFor(reply: MockReply): Record<string, unknown> {
         }
       : { role: 'assistant', content: 'text' in reply ? reply.text : '' };
   return {
-    id: 'chatcmpl-qwen-review-mock',
+    id: 'chatcmpl-canopy-review-mock',
     object: 'chat.completion',
     created: Math.floor(Date.now() / 1000),
-    model: 'qwen-review-mock',
+    model: 'canopy-review-mock',
     choices: [
       {
         index: 0,
@@ -369,10 +369,10 @@ export function anthropicStream(reply: MockReply): string {
   };
   let out = sseEvent('message_start', {
     message: {
-      id: 'msg_qwen_review_mock',
+      id: 'msg_canopy_review_mock',
       type: 'message',
       role: 'assistant',
-      model: 'qwen-review-mock',
+      model: 'canopy-review-mock',
       content: [],
       stop_reason: null,
       usage,
@@ -437,10 +437,10 @@ export function anthropicMessage(reply: MockReply): Record<string, unknown> {
         ]
       : [{ type: 'text', text: 'text' in reply ? reply.text : '' }];
   return {
-    id: 'msg_qwen_review_mock',
+    id: 'msg_canopy_review_mock',
     type: 'message',
     role: 'assistant',
-    model: 'qwen-review-mock',
+    model: 'canopy-review-mock',
     content,
     stop_reason: 'tool' in reply ? 'tool_use' : 'end_turn',
     stop_sequence: null,
@@ -606,7 +606,7 @@ export async function startMockProvider(
           res.end(
             JSON.stringify({
               object: 'list',
-              data: [{ id: 'qwen-review-mock', object: 'model' }],
+              data: [{ id: 'canopy-review-mock', object: 'model' }],
             }),
           );
           return;

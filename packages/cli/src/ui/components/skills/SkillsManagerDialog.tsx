@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  *
  * Skills enable/disable dialog (`/skills`).
@@ -29,7 +29,7 @@ import type {
   Config,
   SkillConfig,
   SkillLevel,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../../config/settings.js';
 import { SettingScope } from '../../../config/settings.js';
 import {
@@ -296,7 +296,7 @@ export function SkillsManagerDialog({
         {
           type: MessageType.ERROR,
           text: t(
-            'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.qwen/settings.json directly to manage skills at user scope.',
+            'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.canopy/settings.json directly to manage skills at user scope.',
           ),
         },
         Date.now(),

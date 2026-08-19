@@ -19,7 +19,7 @@ const mockLoadSettings = vi.hoisted(() => vi.fn());
 const mockWriteStdoutLine = vi.hoisted(() => vi.fn());
 const mockWriteStderrLine = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   ExtensionManager: vi.fn().mockImplementation(() => ({
     installExtension: mockInstallExtension,
     refreshCache: mockRefreshCache,
@@ -459,14 +459,14 @@ describe('handleInstall', () => {
     });
     mockInstallExtension.mockRejectedValue(
       new Error(
-        'Extension archive is missing a supported extension manifest. Expected qwen-extension.json, gemini-extension.json, .claude-plugin/marketplace.json, or .claude-plugin/plugin.json at the archive root, or inside a single top-level extension directory.',
+        'Extension archive is missing a supported extension manifest. Expected canopy-extension.json, gemini-extension.json, .claude-plugin/marketplace.json, or .claude-plugin/plugin.json at the archive root, or inside a single top-level extension directory.',
       ),
     );
 
     await handleInstall({ source: 'owner/repo' });
 
     expect(mockWriteStderrLine).toHaveBeenCalledWith(
-      'Extension archive is missing a supported extension manifest. Expected qwen-extension.json, gemini-extension.json, .claude-plugin/marketplace.json, or .claude-plugin/plugin.json at the archive root, or inside a single top-level extension directory.',
+      'Extension archive is missing a supported extension manifest. Expected canopy-extension.json, gemini-extension.json, .claude-plugin/marketplace.json, or .claude-plugin/plugin.json at the archive root, or inside a single top-level extension directory.',
     );
     expect(processSpy).toHaveBeenCalledWith(1);
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,7 +27,7 @@ const execFileAsync = promisify(execFile);
 export interface MemoryDiagnostics {
   timestamp: string;
   sessionId?: string;
-  qwenVersion?: string;
+  canopyVersion?: string;
   uptimeSeconds: number;
   memoryUsage: NodeJS.MemoryUsage;
   v8HeapStats: V8HeapStats;
@@ -96,7 +96,7 @@ export interface MemoryRisk {
 export interface MemoryDiagnosticsOptions {
   now?: () => Date;
   sessionId?: string;
-  qwenVersion?: string;
+  canopyVersion?: string;
   memoryUsage?: () => NodeJS.MemoryUsage;
   heapStatistics?: () => v8.HeapInfo;
   heapSpaceStatistics?: () => v8.HeapSpaceInfo[];
@@ -153,7 +153,7 @@ export async function collectMemoryDiagnostics(
   const diagnostics = {
     timestamp: now().toISOString(),
     sessionId: options.sessionId,
-    qwenVersion: options.qwenVersion,
+    canopyVersion: options.canopyVersion,
     uptimeSeconds,
     memoryUsage,
     v8HeapStats: mapHeapStats(heapStatistics),

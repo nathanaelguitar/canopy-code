@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   stripTerminalControlSequences,
   type ChatRecord,
   type SessionService,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   SessionArchivedError,
   SessionNotFoundError,
@@ -576,7 +576,7 @@ export class LiveTaskService {
     );
     return {
       id: session.sessionId,
-      kind: 'qwen',
+      kind: 'canopy',
       projectId:
         runtime.provenance === 'live-conversation' ? null : runtime.workspaceId,
       hostId: 'local',
@@ -623,7 +623,7 @@ export class LiveTaskService {
       schemaVersion: 1,
       thread: {
         id: threadId,
-        kind: 'qwen',
+        kind: 'canopy',
         hostId: 'local',
         title,
         preview:

@@ -13,7 +13,7 @@ import {
   createDebugLogger,
   getSubagentsRootDir,
   resolveOpenAILogDir,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import { DEFAULT_OPENAI_LOG_RETENTION_DAYS } from '../../config/settingsSchema.js';
 import {
@@ -34,7 +34,7 @@ const RECURRING_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const RECENT_INTERACTION_MS = 60 * 1000;
 
 // Catch-up: if the marker is older than this, the user has either not run
-// qwen for a while or every session has been < 10 min — either way we have
+// canopy for a while or every session has been < 10 min — either way we have
 // a backlog to sweep, so shorten the first-pass delay. 7 days is "long
 // enough that occasional short sessions don't trigger it, short enough that
 // the typical sporadic user still gets periodic cleanup".
@@ -98,11 +98,11 @@ async function getFirstPassDelay(
   config: Config,
   settings: LoadedSettings,
 ): Promise<number> {
-  const qwenDir = Storage.getGlobalQwenDir();
-  const markerPaths = [join(qwenDir, FILE_HISTORY_MARKER)];
+  const canopyDir = Storage.getGlobalCanopyDir();
+  const markerPaths = [join(canopyDir, FILE_HISTORY_MARKER)];
   const openaiTarget = getOpenAILogCleanupTarget(config, settings);
   if (openaiTarget) {
-    markerPaths.push(getOpenAILogsMarkerPath(qwenDir, openaiTarget.logDir));
+    markerPaths.push(getOpenAILogsMarkerPath(canopyDir, openaiTarget.logDir));
   }
   const catchUpStates = await Promise.all(markerPaths.map(needsCatchUp));
   return catchUpStates.some(Boolean)
@@ -119,23 +119,23 @@ async function needsCatchUp(markerPath: string): Promise<boolean> {
   }
 }
 
-function getSubagentMarkerPath(qwenDir: string, projectDir: string): string {
+function getSubagentMarkerPath(canopyDir: string, projectDir: string): string {
   const projectKey = createHash('sha256')
     .update(projectDir)
     .digest('hex')
     .slice(0, 16);
-  return join(qwenDir, `${SUBAGENT_MARKER}-${projectKey}`);
+  return join(canopyDir, `${SUBAGENT_MARKER}-${projectKey}`);
 }
 
 // OpenAI logs live per-CWD by default but become a single shared dir when
 // openAILoggingDir is configured — key the marker on the resolved log dir
 // so both layouts throttle correctly.
-function getOpenAILogsMarkerPath(qwenDir: string, logDir: string): string {
+function getOpenAILogsMarkerPath(canopyDir: string, logDir: string): string {
   const logDirKey = createHash('sha256')
     .update(logDir)
     .digest('hex')
     .slice(0, 16);
-  return join(qwenDir, `${OPENAI_LOGS_MARKER}-${logDirKey}`);
+  return join(canopyDir, `${OPENAI_LOGS_MARKER}-${logDirKey}`);
 }
 
 interface OpenAILogCleanupTarget {
@@ -198,7 +198,7 @@ export function startNonInteractiveOpenAILogHousekeeping(
     if (!target || nonInteractiveJobs.has(target.logDir)) return;
 
     const markerPath = getOpenAILogsMarkerPath(
-      Storage.getGlobalQwenDir(),
+      Storage.getGlobalCanopyDir(),
       target.logDir,
     );
     const job: NonInteractiveOpenAILogJob = {
@@ -433,13 +433,13 @@ async function runHousekeeping(
   // active session uses a brand-new sessionId/dir, so it's never aliased
   // against any sweep target. Not a bug — slightly conservative is fine.
   const currentSessionId = config.getSessionId();
-  const qwenDir = Storage.getGlobalQwenDir();
+  const canopyDir = Storage.getGlobalCanopyDir();
 
   await runThrottledOnce(
     {
       name: 'file-history-cleanup',
-      markerPath: join(qwenDir, FILE_HISTORY_MARKER),
-      lockPath: join(qwenDir, FILE_HISTORY_MARKER + '.lock'),
+      markerPath: join(canopyDir, FILE_HISTORY_MARKER),
+      lockPath: join(canopyDir, FILE_HISTORY_MARKER + '.lock'),
     },
     async () => {
       const r = await cleanupOldFileHistoryBackups({
@@ -458,7 +458,7 @@ async function runHousekeeping(
   // optional chain keeps housekeeping best-effort if a caller doesn't.
   const projectDir = config.storage?.getProjectDir?.();
   if (projectDir) {
-    const markerPath = getSubagentMarkerPath(qwenDir, projectDir);
+    const markerPath = getSubagentMarkerPath(canopyDir, projectDir);
     await runThrottledOnce(
       {
         name: 'subagent-cleanup',
@@ -485,7 +485,7 @@ async function runHousekeeping(
   if (openaiTarget) {
     await runOpenAILogCleanup(
       openaiTarget,
-      getOpenAILogsMarkerPath(qwenDir, openaiTarget.logDir),
+      getOpenAILogsMarkerPath(canopyDir, openaiTarget.logDir),
     );
   }
 }

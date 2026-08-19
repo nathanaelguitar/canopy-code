@@ -1,11 +1,11 @@
 ---
 name: coordinate
-description: Coordinate up to three Qwen Code teammates with enforced read-only workers, an optional worktree-pinned writer, shared tasks, peer messages, and existing Agent View tabs. Invoke explicitly with /coordinate.
+description: Coordinate up to three Canopy Code teammates with enforced read-only workers, an optional worktree-pinned writer, shared tasks, peer messages, and existing Agent View tabs. Invoke explicitly with /coordinate.
 argument-hint: '<goal>'
 disable-model-invocation: true
 ---
 
-# Coordinate Qwen Code Teammates
+# Coordinate Canopy Code Teammates
 
 Act as the team leader. Decompose the goal, keep task ownership clear, reconcile disagreements, and deliver the final result.
 
@@ -38,7 +38,7 @@ After synthesis, send each still-active teammate a `shutdown_request`, then dele
 
 The existing Agent View tabs show teammate conversations, messages, status, and approvals. Do not create another roster, session manager, or terminal UI.
 
-If the Agent Team tools are unavailable, say that `experimental.agentTeam` must be enabled and Qwen Code restarted. Ordinary subagents are an acceptable fallback for parallel research, but describe them accurately: they report only to the leader and cannot collaborate as a team.
+If the Agent Team tools are unavailable, say that `experimental.agentTeam` must be enabled and Canopy Code restarted. Ordinary subagents are an acceptable fallback for parallel research, but describe them accurately: they report only to the leader and cannot collaborate as a team.
 
 ## Keep coordination bounded
 

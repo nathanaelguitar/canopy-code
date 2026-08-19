@@ -18,7 +18,7 @@ import type {
 import { buildRuntimeFetchOptions } from '../../../utils/runtimeFetchOptions.js';
 import { createDebugLogger } from '../../../utils/debugLogger.js';
 import {
-  isQwenFamilyWireModel,
+  isCanopyFamilyWireModel,
   isTieredEffortWireModel,
 } from '../../modalityDefaults.js';
 import { DefaultOpenAICompatibleProvider } from './default.js';
@@ -32,7 +32,7 @@ export type DashScopeThinkingKnobSelection = {
 };
 
 /**
- * Select the effective tiered-Qwen thinking knob using the same layer and
+ * Select the effective tiered-Canopy thinking knob using the same layer and
  * same-layer precedence as the request builder. Keeping this decision shared
  * lets UI reporters describe the value that will actually reach the wire.
  */
@@ -182,7 +182,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
   ): boolean {
     const { authType, baseUrl } = contentGeneratorConfig;
 
-    if (authType === AuthType.QWEN_OAUTH) return true;
+    if (authType === AuthType.CANOPY_OAUTH) return true;
     if (!baseUrl) return true;
 
     const normalizedBaseUrl = baseUrl.endsWith('/')
@@ -269,7 +269,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
 
   override buildHeaders(): Record<string, string | undefined> {
     const version = this.cliConfig.getCliVersion() || 'unknown';
-    const userAgent = `QwenCode/${version} (${process.platform}; ${process.arch})`;
+    const userAgent = `CanopyCode/${version} (${process.platform}; ${process.arch})`;
     const { authType, customHeaders } = this.contentGeneratorConfig;
     const defaultHeaders = {
       'User-Agent': userAgent,
@@ -359,23 +359,23 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     // Apply output token limits using parent class logic.
     const requestWithTokenLimits = this.applyOutputTokenLimit(request);
 
-    const isTieredQwenModel = isTieredEffortWireModel(
+    const isTieredCanopyModel = isTieredEffortWireModel(
       this.resolveWireModel(request.model),
     );
-    const extraBody = isTieredQwenModel
+    const extraBody = isTieredCanopyModel
       ? withoutNullishThinkingKnobs(this.contentGeneratorConfig.extra_body)
       : this.contentGeneratorConfig.extra_body;
 
-    // qwen3.8-max accepts the unified effort tiers directly. Older qwen hybrid
+    // qwen3.8-max accepts the unified effort tiers directly. Older canopy hybrid
     // models still expose only the on/off `enable_thinking` switch. User
     // extra_body wins (merged last); the disable path (reasoning: false) is
     // handled upstream in the pipeline.
-    const qwenEffortConfig = this.buildQwenEffortConfig(request.model);
+    const canopyEffortConfig = this.buildCanopyEffortConfig(request.model);
     const rawRequestParams = requestWithTokenLimits as unknown as Record<
       string,
       unknown
     >;
-    const requestParams = isTieredQwenModel
+    const requestParams = isTieredCanopyModel
       ? withoutNullishThinkingKnobs(rawRequestParams)!
       : rawRequestParams;
     // A request-level reasoning_effort (samplingParams) beats the config
@@ -383,20 +383,21 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     // without this copy the tier would clobber the request-level override.
     if (
       'reasoning_effort' in requestParams &&
-      'reasoning_effort' in qwenEffortConfig
+      'reasoning_effort' in canopyEffortConfig
     ) {
-      qwenEffortConfig['reasoning_effort'] = requestParams['reasoning_effort'];
+      canopyEffortConfig['reasoning_effort'] =
+        requestParams['reasoning_effort'];
     }
-    const hasQwenEffortConfig = Object.keys(qwenEffortConfig).length > 0;
-    // qwen3.8 rejects reasoning_effort with thinking_budget. Resolve the
+    const hasCanopyEffortConfig = Object.keys(canopyEffortConfig).length > 0;
+    // canopy3.8 rejects reasoning_effort with thinking_budget. Resolve the
     // highest-priority layer once; when both fields are explicit in that
     // layer, reasoning_effort keeps the pre-existing provider behavior.
-    const selectedThinkingKnob = isTieredQwenModel
+    const selectedThinkingKnob = isTieredCanopyModel
       ? selectDashScopeThinkingKnob(
           this.resolveWireModel(request.model),
           extraBody,
           requestParams,
-          qwenEffortConfig['reasoning_effort'],
+          canopyEffortConfig['reasoning_effort'],
         )
       : undefined;
 
@@ -408,7 +409,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
       const dashscopeExtras: Record<string, unknown> = {
         vl_high_resolution_images: true,
         preserve_thinking: true,
-        ...qwenEffortConfig,
+        ...canopyEffortConfig,
       };
       const visionResult: Record<string, unknown> = {
         ...requestParams,
@@ -417,10 +418,10 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
         ...(this.buildMetadata(userPromptId) || {}),
         ...dashscopeExtras,
       };
-      // DashScope qwen models use top-level effort fields, not the OpenAI-style
+      // DashScope canopy models use top-level effort fields, not the OpenAI-style
       // nested `reasoning` object the pipeline injects from /effort. Drop it so
       // we don't ship two competing knobs. User extra_body still wins.
-      if (hasQwenEffortConfig && 'reasoning' in visionResult) {
+      if (hasCanopyEffortConfig && 'reasoning' in visionResult) {
         delete visionResult['reasoning'];
       }
       return this.mergeExtraBodyAndResolveKnobs(
@@ -435,7 +436,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     // extra_body wins (merged last).
     const dashscopeExtras: Record<string, unknown> = {
       preserve_thinking: true,
-      ...qwenEffortConfig,
+      ...canopyEffortConfig,
     };
     const result: Record<string, unknown> = {
       ...requestParams, // Preserve all original parameters including sampling params and adjusted max_tokens
@@ -444,10 +445,10 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
       ...(this.buildMetadata(userPromptId) || {}),
       ...dashscopeExtras,
     };
-    // DashScope qwen models use top-level effort fields, not the OpenAI-style
+    // DashScope canopy models use top-level effort fields, not the OpenAI-style
     // nested `reasoning` object the pipeline injects from /effort. Drop it so
     // we don't ship two competing knobs. User extra_body still wins.
-    if (hasQwenEffortConfig && 'reasoning' in result) {
+    if (hasCanopyEffortConfig && 'reasoning' in result) {
       delete result['reasoning'];
     }
     return this.mergeExtraBodyAndResolveKnobs(
@@ -509,13 +510,13 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
   /**
    * Translate the unified reasoning effort into the wire shape the model
    * accepts. The qwen3.8-max family takes the tiered `reasoning_effort`
-   * directly; older qwen hybrid models expose only the on/off
+   * directly; older canopy hybrid models expose only the on/off
    * `enable_thinking` switch, so the effort ladder collapses to on/off
-   * there. Gated to qwen-family wire models (mirroring the pipeline's
-   * disable gate) so the qwen-specific fields never leak to a non-qwen
+   * there. Gated to canopy-family wire models (mirroring the pipeline's
+   * disable gate) so the canopy-specific fields never leak to a non-canopy
    * model sharing the DashScope endpoint.
    */
-  private buildQwenEffortConfig(
+  private buildCanopyEffortConfig(
     model: string | undefined,
   ): Record<string, unknown> {
     const reasoning = this.contentGeneratorConfig.reasoning;
@@ -526,7 +527,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     if (isTieredEffortWireModel(wireModel)) {
       return { reasoning_effort: reasoning.effort };
     }
-    if (isQwenFamilyWireModel(wireModel)) {
+    if (isCanopyFamilyWireModel(wireModel)) {
       return { enable_thinking: true };
     }
     return {};
@@ -549,11 +550,11 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
    * as the family's canonical disable (`reasoning_effort: 'none'`, preserved
    * by the pipeline's disable strip) rather than silently deleted; a
    * higher-priority `enable_thinking: true` conversely keeps the shipping
-   * tier. Older qwen
+   * tier. Older canopy
    * hybrids read `enable_thinking` / `thinking_budget`, not
    * `reasoning_effort`, so when an opaque reasoning_effort override
    * conflicts with a meaningful thinking_budget the inert field goes and
-   * the knobs the model reads survive. Non-qwen models treat
+   * the knobs the model reads survive. Non-canopy models treat
    * `reasoning_effort` as an opaque sampling override and keep every knob.
    */
   private dropConflictingThinkingKnobs(
@@ -562,7 +563,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     selectedThinkingKnob?: DashScopeThinkingKnobSelection,
   ): string[] {
     const wireModel = this.resolveWireModel(model);
-    if (!isQwenFamilyWireModel(wireModel)) {
+    if (!isCanopyFamilyWireModel(wireModel)) {
       return [];
     }
     const isTieredEffortModel = isTieredEffortWireModel(wireModel);
@@ -586,7 +587,7 @@ export class DashScopeOpenAICompatibleProvider extends DefaultOpenAICompatiblePr
     if (typeof effort !== 'string') {
       return [];
     }
-    // `none` is a real disable only for the tiered family. On legacy Qwen
+    // `none` is a real disable only for the tiered family. On legacy Canopy
     // models reasoning_effort is opaque, so preserve the meaningful budget
     // and drop the inert field just like any other effort value.
     if (isTieredEffortModel && effort === 'none') {

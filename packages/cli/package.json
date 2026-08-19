@@ -1,16 +1,16 @@
 {
-  "name": "@qwen-code/qwen-code",
+  "name": "@canopy-code/canopy-code",
   "version": "0.21.11",
-  "description": "Qwen Code",
+  "description": "Canopy Code",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/QwenLM/qwen-code.git"
+    "url": "git+https://github.com/QwenLM/canopy-code.git"
   },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "qwen": "dist/index.js"
+    "canopy": "dist/index.js"
   },
   "exports": {
     ".": {
@@ -56,7 +56,7 @@
     "@qwen-code/channel-telegram": "file:../channels/telegram",
     "@qwen-code/channel-wecom": "file:../channels/wecom",
     "@qwen-code/channel-weixin": "file:../channels/weixin",
-    "@qwen-code/qwen-code-core": "file:../core",
+    "@canopy-code/canopy-code-core": "file:../core",
     "@qwen-code/sdk": "file:../sdk-typescript",
     "@qwen-code/web-templates": "file:../web-templates",
     "ansi-regex": "^6.2.2",

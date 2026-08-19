@@ -6,16 +6,19 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getExtensionManager, extensionToOutputString } from './utils.js';
-import type { Extension, ExtensionManager } from '@qwen-code/qwen-code-core';
+import type {
+  Extension,
+  ExtensionManager,
+} from '@canopy-code/canopy-code-core';
 
 const mockRefreshCache = vi.fn();
 const mockExtensionManagerInstance = {
   refreshCache: mockRefreshCache,
 };
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     ExtensionManager: vi
@@ -66,7 +69,7 @@ describe('getExtensionManager', () => {
   });
 
   it('should use current working directory as workspace', async () => {
-    const { ExtensionManager } = await import('@qwen-code/qwen-code-core');
+    const { ExtensionManager } = await import('@canopy-code/canopy-code-core');
 
     await getExtensionManager();
 

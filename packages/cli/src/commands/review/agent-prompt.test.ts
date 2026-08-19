@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -78,7 +78,7 @@ import {
 } from './lib/prompt-record.js';
 
 const PLAN = {
-  diffPathAbsolute: '/abs/.qwen/tmp/qwen-review-pr-6771-diff.txt',
+  diffPathAbsolute: '/abs/.canopy/tmp/canopy-review-pr-6771-diff.txt',
   chunks: [
     {
       id: 13,
@@ -1415,7 +1415,7 @@ describe('--roster — every prompt the plan requires, in one call', () => {
           diffLines: 5000,
           worktreePath: dir,
           prNumber: '6771',
-          ownerRepo: 'QwenLM/qwen-code',
+          ownerRepo: 'CanopyLM/canopy-code',
           files: [
             {
               path: 'src/big.ts',
@@ -1629,7 +1629,7 @@ describe('--roster — every prompt the plan requires, in one call', () => {
     // must be there, not just 400 lines back in SKILL.md.
     const dir = mkdtempSync(join(tmpdir(), 'ap-roster-wt-'));
     try {
-      const wt = '.qwen/tmp/review-pr-9999';
+      const wt = '.canopy/tmp/review-pr-9999';
       const plan = join(dir, 'plan.json');
       writeFileSync(
         plan,
@@ -2190,8 +2190,8 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
   const PR_PLAN = {
     ...PLAN,
     prNumber: '6766',
-    ownerRepo: 'QwenLM/qwen-code',
-    worktreePath: '.qwen/tmp/review-pr-6766',
+    ownerRepo: 'CanopyLM/canopy-code',
+    worktreePath: '.canopy/tmp/review-pr-6766',
     // A real merge base is `git merge-base` output: a full sha. The old
     // 6-char fixture sat below git's own abbreviation floor, so it
     // modelled a value the pipeline cannot produce.
@@ -2485,7 +2485,7 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
         incremental: {
           since: 'a'.repeat(40),
           effective: true,
-          diffBase: 'abc123; touch /tmp/qwen-review-pwned',
+          diffBase: 'abc123; touch /tmp/canopy-review-pwned',
         },
       },
       '7',
@@ -2494,7 +2494,7 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     expect(injected).toContain(
       '--base bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     );
-    expect(injected).not.toContain('touch /tmp/qwen-review-pwned');
+    expect(injected).not.toContain('touch /tmp/canopy-review-pwned');
     // …and the SAME payload in the FALLBACK source. `mergeBaseSha` reaches
     // the identical unquoted interpolation on every non-incremental round —
     // the common case — so shape-checking only the anchor left the wider door
@@ -2536,9 +2536,9 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
   it('pins Agent 7 to the PR worktree and hands it the test-efficacy probe', () => {
     const planPath = resolve('/tmp/plan.json');
     const p = buildRoleBrief(PR_PLAN, '7', { planPath });
-    expect(p).toContain('.qwen/tmp/review-pr-6766');
+    expect(p).toContain('.canopy/tmp/review-pr-6766');
     expect(p).toContain(
-      `"\${QWEN_CODE_CLI:-qwen}" review test-efficacy ${planPath}`,
+      `"\${CANOPY_CODE_CLI:-canopy}" review test-efficacy ${planPath}`,
     );
     expect(p).toContain('--base bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
     // All three finding kinds are named, or the agent meets a `mutant-survived`
@@ -2555,50 +2555,50 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     expect(p).toContain('skippedForControl');
     expect(p).toContain('neither validated nor refuted');
     expect(p).toContain('mutants.note');
-    // No bare executable `qwen` anywhere in this brief. Agent 7 is the one
+    // No bare executable `canopy` anywhere in this brief. Agent 7 is the one
     // SUBAGENT that shells out to the review CLI — the one call site neither the
     // SKILL.md sweep nor check-coverage's stderr hints can reach — and its shell
-    // gets QWEN_CODE_CLI exactly as the orchestrator's does. On the machine that
+    // gets CANOPY_CODE_CLI exactly as the orchestrator's does. On the machine that
     // motivated the variable, an unprefixed `build-test` resolves to a global old
     // enough to lack the subcommand entirely, wedging the agent between its
     // mandate (no hand-run builds) and a command that does not exist.
-    expect(p).not.toMatch(/^qwen review /m);
+    expect(p).not.toMatch(/^canopy review /m);
   });
 
   it('gives Agent 7 ABSOLUTE paths — its cwd is the worktree, not the repo', () => {
     // `worktreePath` and the plan path are repo-relative in the report, and this
     // agent's working directory IS the worktree — so `--worktree
-    // .qwen/tmp/review-pr-6766` resolves to `<worktree>/.qwen/tmp/review-pr-6766`,
+    // .canopy/tmp/review-pr-6766` resolves to `<worktree>/.canopy/tmp/review-pr-6766`,
     // which does not exist. Watched live: Agent 7 of a real 29-agent run spent its
     // time running `find … -name "*6457*fetch*"`, hunting for a plan it had been
     // handed a path to that could not resolve from where it was standing.
     const planPath = join(absTmp, 'plan.json');
     const p = buildRoleBrief(PR_PLAN, '7', { planPath });
     expect(p).toContain(
-      `"\${QWEN_CODE_CLI:-qwen}" review test-efficacy ${planPath}`,
+      `"\${CANOPY_CODE_CLI:-canopy}" review test-efficacy ${planPath}`,
     );
     expect(p).toContain(`--worktree ${resolve(PR_PLAN.worktreePath)}`);
-    expect(p).not.toMatch(/--worktree \.qwen/);
+    expect(p).not.toMatch(/--worktree \.canopy/);
     expect(p).toContain(
-      `--out ${join(absTmp, 'qwen-review-pr-6766-efficacy.json')}`,
+      `--out ${join(absTmp, 'canopy-review-pr-6766-efficacy.json')}`,
     );
   });
 
   it('hands Agent 7 the build-test command with absolute --plan/--worktree/--out', () => {
     const planPath = join(absTmp, 'plan.json');
     const p = buildRoleBrief(PR_PLAN, '7', { planPath });
-    expect(p).toContain('"${QWEN_CODE_CLI:-qwen}" review build-test');
+    expect(p).toContain('"${CANOPY_CODE_CLI:-canopy}" review build-test');
     expect(p).toContain(`--plan ${planPath}`);
     expect(p).toContain(`--worktree ${resolve(PR_PLAN.worktreePath)}`);
-    expect(p).not.toMatch(/--plan \.qwen/);
+    expect(p).not.toMatch(/--plan \.canopy/);
     expect(p).toContain(
-      `--out ${join(absTmp, 'qwen-review-pr-6766-build-test.json')}`,
+      `--out ${join(absTmp, 'canopy-review-pr-6766-build-test.json')}`,
     );
   });
 
   it('never emits a literal "undefined" in the build-test --out filename', () => {
     // `prNumber` is typed `unknown` and can be absent. Without the guard, the
-    // filename resolves to `qwen-review-pr-undefined-build-test.json` — a report the
+    // filename resolves to `canopy-review-pr-undefined-build-test.json` — a report the
     // agent writes and downstream never finds. With a worktree but no PR number the
     // block still emits (a re-review can lack the number), just with the stable local
     // name — never an interpolated `undefined`.
@@ -2608,7 +2608,9 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
       planPath: join(absTmp, 'plan.json'),
     });
     expect(p).not.toContain('undefined');
-    expect(p).toContain(`--out ${join(absTmp, 'qwen-review-build-test.json')}`);
+    expect(p).toContain(
+      `--out ${join(absTmp, 'canopy-review-build-test.json')}`,
+    );
   });
 
   it('emits a build-test block for a LOCAL review (no worktree, no PR number)', () => {
@@ -2618,7 +2620,7 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     const local = { ...PLAN }; // PLAN has no prNumber / worktreePath
     const planPath = join(absTmp, 'local-plan.json');
     const p = buildRoleBrief(local, '7', { planPath });
-    expect(p).toContain('"${QWEN_CODE_CLI:-qwen}" review build-test');
+    expect(p).toContain('"${CANOPY_CODE_CLI:-canopy}" review build-test');
     expect(p).toContain(`--plan ${planPath}`);
     expect(p).toContain(`--worktree ${resolve('.')}`);
     expect(p).not.toContain('undefined');
@@ -2670,24 +2672,26 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     expect(resumeBlock[0]).toContain('review build-test');
     expect(resumeBlock[0]).toContain(`--plan ${resolve('/abs/tmp/plan.json')}`);
     expect(resumeBlock[0]).toContain(
-      `--out ${join(resolve('/abs/tmp'), 'qwen-review-pr-6766-build-test.json')}`,
+      `--out ${join(resolve('/abs/tmp'), 'canopy-review-pr-6766-build-test.json')}`,
     );
   });
 
   it('welds the PR into Agent 0 — an unqualified number judges the wrong issue', () => {
-    const planPath = join(resolve('/x'), 'qwen-review-pr-6766-fetch.json');
+    const planPath = join(resolve('/x'), 'canopy-review-pr-6766-fetch.json');
     const p = buildRoleBrief(PR_PLAN, '0', { planPath });
     expect(p).toContain('#6766');
-    expect(p).toContain('QwenLM/qwen-code');
-    expect(p).toContain(join(resolve('/x'), 'qwen-review-pr-6766-context.md'));
+    expect(p).toContain('CanopyLM/canopy-code');
+    expect(p).toContain(
+      join(resolve('/x'), 'canopy-review-pr-6766-context.md'),
+    );
     // The evidence fetch is the welded issue-context command, not a gh prose line.
-    // The full wrapper is pinned: without `"${QWEN_CODE_CLI:-qwen}" review`
+    // The full wrapper is pinned: without `"${CANOPY_CODE_CLI:-canopy}" review`
     // the emitted text is an unrunnable bare subcommand name.
     expect(p).toContain(
-      '"${QWEN_CODE_CLI:-qwen}" review issue-context 6766 --repo QwenLM/qwen-code',
+      '"${CANOPY_CODE_CLI:-canopy}" review issue-context 6766 --repo CanopyLM/canopy-code',
     );
     expect(p).toContain(
-      join(resolve('/x'), 'qwen-review-pr-6766-issue-context.md'),
+      join(resolve('/x'), 'canopy-review-pr-6766-issue-context.md'),
     );
     expect(p).not.toContain('gh pr view');
     // The empty scope is a complete answer, and it needs evidence to be one.
@@ -2697,12 +2701,12 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
   });
 
   it('welds --host into the Agent 0 command when the plan carries an Enterprise host', () => {
-    const planPath = join(resolve('/x'), 'qwen-review-pr-6766-fetch.json');
+    const planPath = join(resolve('/x'), 'canopy-review-pr-6766-fetch.json');
     const p = buildRoleBrief({ ...PR_PLAN, host: 'ghe.example.com' }, '0', {
       planPath,
     });
     expect(p).toContain(
-      '"${QWEN_CODE_CLI:-qwen}" review issue-context 6766 --repo QwenLM/qwen-code --host ghe.example.com',
+      '"${CANOPY_CODE_CLI:-canopy}" review issue-context 6766 --repo CanopyLM/canopy-code --host ghe.example.com',
     );
   });
 
@@ -2710,7 +2714,7 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     // The weld must not drop a padded host to null: fetch-pr records the raw
     // `--host` flag, and a GHE review whose host is padded would otherwise
     // lose `--host` and fetch issue evidence from github.com's same-named repo.
-    const planPath = join(resolve('/x'), 'qwen-review-pr-6766-fetch.json');
+    const planPath = join(resolve('/x'), 'canopy-review-pr-6766-fetch.json');
     const p = buildRoleBrief({ ...PR_PLAN, host: ' ghe.example.com ' }, '0', {
       planPath,
     });
@@ -2721,15 +2725,15 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
   it('shell-quotes the evidence path (spaces/apostrophes in workspace paths)', () => {
     const planPath = join(
       resolve("/x's proj"),
-      'qwen-review-pr-6766-fetch.json',
+      'canopy-review-pr-6766-fetch.json',
     );
     const p = buildRoleBrief(PR_PLAN, '0', { planPath });
-    const quoted = `'${join(resolve("/x's proj"), 'qwen-review-pr-6766-issue-context.md').replace(/'/g, "'\\''")}'`;
+    const quoted = `'${join(resolve("/x's proj"), 'canopy-review-pr-6766-issue-context.md').replace(/'/g, "'\\''")}'`;
     expect(p).toContain(`--out ${quoted}`);
   });
 
   it('rejects a tampered plan before welding (pr / ownerRepo / host)', () => {
-    const planPath = join(resolve('/x'), 'qwen-review-pr-6766-fetch.json');
+    const planPath = join(resolve('/x'), 'canopy-review-pr-6766-fetch.json');
     expect(() =>
       buildRoleBrief({ ...PR_PLAN, prNumber: '6766; touch /tmp/pwned' }, '0', {
         planPath,
@@ -2773,7 +2777,7 @@ describe('buildRoleBrief — every agent, not just the territory ones', () => {
     ).toThrow(/whitespace-only/);
     // Regression guard (R8-1): fetch-pr writes `host: null` unconditionally
     // for a same-repo github.com plan — null must be tolerated, not throw.
-    const planPath2 = join(resolve('/x'), 'qwen-review-pr-6766-fetch.json');
+    const planPath2 = join(resolve('/x'), 'canopy-review-pr-6766-fetch.json');
     expect(() =>
       buildRoleBrief({ ...PR_PLAN, host: null }, '0', { planPath: planPath2 }),
     ).not.toThrow();
@@ -3102,7 +3106,7 @@ describe('path rules — they arrive where they belong, and nowhere else', () =>
 // does not write these prompts any more.
 describe('lightweight mode — the diff, and nothing else', () => {
   const LIGHT = { ...PLAN }; // no worktreePath, no untrackedFiles → diff-only
-  const LOCAL = { ...PLAN, worktreePath: '.qwen/tmp/review-pr-1' };
+  const LOCAL = { ...PLAN, worktreePath: '.canopy/tmp/review-pr-1' };
 
   it('tells a code-reviewing agent there is no tree to read', () => {
     expect(buildRoleBrief(LIGHT, '1a')).toContain(
@@ -3821,11 +3825,11 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     utimesSync(plan, old, old);
     findings = join(dir, 'findings.md');
     writeFileSync(findings, '');
-    for (const k of ['QWEN_CODE_PROJECT_DIR', 'QWEN_CODE_SESSION_ID']) {
+    for (const k of ['CANOPY_CODE_PROJECT_DIR', 'CANOPY_CODE_SESSION_ID']) {
       SAVED[k] = process.env[k];
     }
-    process.env['QWEN_CODE_PROJECT_DIR'] = dir;
-    process.env['QWEN_CODE_SESSION_ID'] = 'S1';
+    process.env['CANOPY_CODE_PROJECT_DIR'] = dir;
+    process.env['CANOPY_CODE_SESSION_ID'] = 'S1';
     mkdirSync(join(dir, 'subagents', 'S1'), { recursive: true });
   });
   afterEach(() => {
@@ -4174,7 +4178,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // but the round must say why nothing can retire.
     answerRound(1, { 13: DRY, 14: DRY, 15: YIELD });
     answerRound(2, { 13: DRY, 14: DRY, 15: YIELD });
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
 
     const out = runRound(3);
 
@@ -4633,7 +4637,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // The history says "converged" — but without the harness's records it is
     // unreadable, and an unreadable history must degrade to today's
     // behaviour: every territory audited.
-    delete process.env['QWEN_CODE_PROJECT_DIR'];
+    delete process.env['CANOPY_CODE_PROJECT_DIR'];
     const out = runRound(3);
     expect(process.exitCode).toBeUndefined();
     expect(out).toContain('3 auditors required this round — one per chunk.');
@@ -4675,7 +4679,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // 5 on a history it cannot read.
     answerRound(1, { 13: DRY, 14: DRY, 15: DRY });
     answerRound(2, { 13: DRY, 14: DRY, 15: DRY });
-    delete process.env['QWEN_CODE_PROJECT_DIR'];
+    delete process.env['CANOPY_CODE_PROJECT_DIR'];
     (writeStdoutLine as unknown as Mock).mockClear();
     (agentPromptCommand.handler as (a: unknown) => void)({
       plan,
@@ -4904,7 +4908,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // refusing it — and the round says why nothing can retire.
     answerRound(1, { 13: DRY, 14: DRY, 15: YIELD });
     answerRound(2, { 13: DRY, 14: DRY, 15: YIELD });
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
 
     (writeStdoutLine as unknown as Mock).mockClear();
     (writeStderrLine as unknown as Mock).mockClear();
@@ -4937,7 +4941,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // chunk, against the catch's own rationale.
     answerRound(1, { 13: DRY, 14: DRY, 15: YIELD });
     answerRound(2, { 13: DRY, 14: DRY, 15: YIELD });
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     (writeStderrLine as unknown as Mock).mockImplementation(() => {
       throw new Error('write EPIPE');
     });
@@ -4978,7 +4982,7 @@ describe('per-chunk retirement — cold territories stop costing a round', () =>
     // the chunk still builds when stderr is gone.
     answerRound(1, { 13: DRY, 14: DRY, 15: YIELD });
     answerRound(2, { 13: DRY, 14: DRY, 15: YIELD });
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     (writeStderrLine as unknown as Mock).mockImplementation(() => {
       throw new Error('write EPIPE');
     });
@@ -5086,7 +5090,7 @@ describe('the tool budget in the briefs', () => {
     ...PLAN,
     // Role 0 refuses to build without a PR to check issues against.
     prNumber: '6771',
-    ownerRepo: 'QwenLM/qwen-code',
+    ownerRepo: 'CanopyLM/canopy-code',
     files: [
       {
         path: 'big.ts',

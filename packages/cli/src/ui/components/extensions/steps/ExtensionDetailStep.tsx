@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   getExtensionDisplayName,
   getExtensionDescription,
   type Extension,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t, getCurrentLanguage } from '../../../../i18n/index.js';
 
 interface ExtensionDetailStepProps {

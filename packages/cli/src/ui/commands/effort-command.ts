@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   applyReasoningEffort,
   normalizeReasoningEffort,
   REASONING_EFFORT_TIERS,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { formatEffortChangeMessage } from './effort-utils.js';
 
 const TIER_LIST = REASONING_EFFORT_TIERS.join(', ');

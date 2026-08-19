@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,7 +47,7 @@ export type TaskKind = 'agent' | 'shell' | 'monitor' | 'workflow';
 
 /**
  * Lifecycle states a task can occupy. `paused` and `cancelled` are
- * qwen-code extensions used for resumable agents and explicit user
+ * canopy-code extensions used for resumable agents and explicit user
  * cancellation; not every kind uses every state (shells and monitors
  * never `paused`, for example).
  */

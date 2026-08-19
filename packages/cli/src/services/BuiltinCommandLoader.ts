@@ -6,7 +6,7 @@
 
 import type { ICommandLoader } from './types.js';
 import type { SlashCommand } from '../ui/commands/types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import { aboutCommand } from '../ui/commands/aboutCommand.js';
 import { advisorCommand } from '../ui/commands/advisor-command.js';
 import { tasksCommand } from '../ui/commands/tasksCommand.js';
@@ -42,7 +42,7 @@ import { historyCommand } from '../ui/commands/historyCommand.js';
 import { hooksCommand } from '../ui/commands/hooksCommand.js';
 import { ideCommand } from '../ui/commands/ideCommand.js';
 import { importConfigCommand } from '../ui/commands/importConfigCommand.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { initCommand } from '../ui/commands/initCommand.js';
 import { languageCommand } from '../ui/commands/languageCommand.js';
 import { mcpCommand } from '../ui/commands/mcpCommand.js';
@@ -81,7 +81,7 @@ const builtinDebugLogger = createDebugLogger('BUILTIN_COMMAND_LOADER');
 
 /**
  * Loads the core, hard-coded slash commands that are an integral part
- * of the Qwen Code application.
+ * of the Canopy Code application.
  */
 export class BuiltinCommandLoader implements ICommandLoader {
   constructor(private config: Config | null) {}
@@ -113,7 +113,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       agentsCommand,
       tasksCommand,
       // Gated behind isWorkflowsEnabled — feature flag honors
-      // QWEN_CODE_ENABLE_WORKFLOWS (opt-in) and QWEN_CODE_DISABLE_WORKFLOWS
+      // CANOPY_CODE_ENABLE_WORKFLOWS (opt-in) and CANOPY_CODE_DISABLE_WORKFLOWS
       // (kill switch). When the flag is off the command vanishes entirely
       // from typeahead and help, matching the established convention for
       // experimental builtins.

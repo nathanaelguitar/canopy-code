@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -55,7 +55,7 @@ describe('createSoxRecorder', () => {
   it('records mono 16k wav audio with sox and returns the file bytes', async () => {
     const child = new FakeChildProcess();
     mocks.spawn.mockReturnValue(child);
-    mocks.mkdtemp.mockResolvedValue('/tmp/qwen-voice-abc');
+    mocks.mkdtemp.mockResolvedValue('/tmp/canopy-voice-abc');
     mocks.readFile.mockResolvedValue(Buffer.from([1, 2, 3]));
 
     const recorder = createSoxRecorder();
@@ -69,7 +69,7 @@ describe('createSoxRecorder', () => {
       '1',
       '-b',
       '16',
-      path.join('/tmp/qwen-voice-abc', 'recording.wav'),
+      path.join('/tmp/canopy-voice-abc', 'recording.wav'),
     ]);
     const stopPromise = recorder.stop();
     expect(child.kill).toHaveBeenCalledWith('SIGINT');
@@ -79,7 +79,7 @@ describe('createSoxRecorder', () => {
       data: Buffer.from([1, 2, 3]),
       mimeType: 'audio/wav',
     });
-    expect(mocks.rm).toHaveBeenCalledWith('/tmp/qwen-voice-abc', {
+    expect(mocks.rm).toHaveBeenCalledWith('/tmp/canopy-voice-abc', {
       recursive: true,
       force: true,
     });
@@ -88,7 +88,7 @@ describe('createSoxRecorder', () => {
   it('rejects promptly when sox closed before stop is requested', async () => {
     const child = new FakeChildProcess();
     mocks.spawn.mockReturnValue(child);
-    mocks.mkdtemp.mockResolvedValue('/tmp/qwen-voice-abc');
+    mocks.mkdtemp.mockResolvedValue('/tmp/canopy-voice-abc');
 
     const recorder = createSoxRecorder();
     await startRecorder(recorder);
@@ -104,7 +104,7 @@ describe('createSoxRecorder', () => {
     ]);
 
     await expect(stopResult).resolves.toMatch(/^rejected:/);
-    expect(mocks.rm).toHaveBeenCalledWith('/tmp/qwen-voice-abc', {
+    expect(mocks.rm).toHaveBeenCalledWith('/tmp/canopy-voice-abc', {
       recursive: true,
       force: true,
     });
@@ -113,7 +113,7 @@ describe('createSoxRecorder', () => {
   it('includes sox stderr when recording fails', async () => {
     const child = new FakeChildProcess();
     mocks.spawn.mockReturnValue(child);
-    mocks.mkdtemp.mockResolvedValue('/tmp/qwen-voice-abc');
+    mocks.mkdtemp.mockResolvedValue('/tmp/canopy-voice-abc');
 
     const recorder = createSoxRecorder();
     await startRecorder(recorder);
@@ -128,7 +128,7 @@ describe('createSoxRecorder', () => {
   it('caps captured sox stderr used in failure messages', async () => {
     const child = new FakeChildProcess();
     mocks.spawn.mockReturnValue(child);
-    mocks.mkdtemp.mockResolvedValue('/tmp/qwen-voice-abc');
+    mocks.mkdtemp.mockResolvedValue('/tmp/canopy-voice-abc');
 
     const recorder = createSoxRecorder();
     await startRecorder(recorder);
@@ -143,7 +143,7 @@ describe('createSoxRecorder', () => {
   it('explains how to fix a missing sox executable', async () => {
     const child = new FakeChildProcess();
     mocks.spawn.mockReturnValue(child);
-    mocks.mkdtemp.mockResolvedValue('/tmp/qwen-voice-abc');
+    mocks.mkdtemp.mockResolvedValue('/tmp/canopy-voice-abc');
 
     const recorder = createSoxRecorder();
     const startPromise = Promise.resolve(recorder.start());
@@ -161,7 +161,7 @@ describe('createSoxRecorder', () => {
     await expect(startResult).resolves.toBe(
       'rejected:SoX is not installed or not on PATH. Install SoX and try again.',
     );
-    expect(mocks.rm).toHaveBeenCalledWith('/tmp/qwen-voice-abc', {
+    expect(mocks.rm).toHaveBeenCalledWith('/tmp/canopy-voice-abc', {
       recursive: true,
       force: true,
     });

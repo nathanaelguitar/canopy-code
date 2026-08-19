@@ -10,7 +10,7 @@
  */
 
 import path from 'node:path';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { t } from '../i18n/index.js';
 import type {
   CommandContext,

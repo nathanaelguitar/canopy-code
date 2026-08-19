@@ -209,7 +209,7 @@ export const findLastSafeSplitPoint = (
  * continuous line numbering. Namespaced to avoid colliding with real info
  * strings.
  */
-const START_LINE_DIRECTIVE_RE = /\s*\bqwen-code:start-line=(\d+)\b/;
+const START_LINE_DIRECTIVE_RE = /\s*\bcanopy-code:start-line=(\d+)\b/;
 
 /**
  * Parses a fenced code block's info string into its language (first token, with
@@ -294,7 +294,7 @@ export const splitFencedMarkdown = (
   const baseInfo = fence.infoString
     .replace(START_LINE_DIRECTIVE_RE, '')
     .replace(/\s+$/, '');
-  const directive = `qwen-code:start-line=${tailStart}`;
+  const directive = `canopy-code:start-line=${tailStart}`;
   // A language-less fence has no base info, so omit the separating space to
   // avoid a stray leading space in the re-opened fence's info string.
   const reopeningFence = `${fence.delimiter}${

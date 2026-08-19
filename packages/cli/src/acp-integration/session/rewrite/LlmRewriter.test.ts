@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { TurnContent, MessageRewriteConfig } from './types.js';
 
 // Track runSideQuery calls so each test can assert on the options the
@@ -15,7 +15,7 @@ const mockGenerateContent = vi.fn();
 // Mock core to avoid Vite https resolution issue. runSideQuery is stubbed
 // to forward the caller's options into mockGenerateContent so existing
 // assertions on call args still apply.
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   createDebugLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

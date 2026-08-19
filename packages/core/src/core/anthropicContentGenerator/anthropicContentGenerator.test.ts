@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -85,7 +85,7 @@ const importConverter = async (): Promise<{
 }> => import('./converter.js');
 
 describe('AnthropicContentGenerator', () => {
-  const MAX_OUTPUT_TOKENS_ENV = 'QWEN_CODE_MAX_OUTPUT_TOKENS';
+  const MAX_OUTPUT_TOKENS_ENV = 'CANOPY_CODE_MAX_OUTPUT_TOKENS';
   let mockConfig: Config;
   let anthropicState: {
     constructorOptions?: Record<string, unknown>;
@@ -170,9 +170,9 @@ describe('AnthropicContentGenerator', () => {
     expect(anthropicState.constructorOptions?.['apiKey']).toBeNull();
   });
 
-  it('uses QwenCode identity + apiKey auth when baseURL is api.anthropic.com', async () => {
+  it('uses CanopyCode identity + apiKey auth when baseURL is api.anthropic.com', async () => {
     // Anthropic-native baseURL: keep the SDK-default `x-api-key` auth and
-    // a truthful `QwenCode` User-Agent (no `x-app` header) so usage isn't
+    // a truthful `CanopyCode` User-Agent (no `x-app` header) so usage isn't
     // misattributed to Claude CLI in Anthropic's logs/quotas.
     const { AnthropicContentGenerator } = await importGenerator();
     void new AnthropicContentGenerator(
@@ -190,7 +190,7 @@ describe('AnthropicContentGenerator', () => {
 
     const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
       {}) as Record<string, string>;
-    expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+    expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
     expect(headers['User-Agent']).not.toContain('claude-cli');
     expect(headers['x-app']).toBeUndefined();
     expect(anthropicState.constructorOptions?.['apiKey']).toBe('test-key');
@@ -213,7 +213,7 @@ describe('AnthropicContentGenerator', () => {
 
     const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
       {}) as Record<string, string>;
-    expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+    expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
     expect(headers['x-app']).toBeUndefined();
     expect(anthropicState.constructorOptions?.['apiKey']).toBe('test-key');
     expect(anthropicState.constructorOptions?.['authToken']).toBeNull();
@@ -278,7 +278,7 @@ describe('AnthropicContentGenerator', () => {
 
     const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
       {}) as Record<string, string>;
-    expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+    expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
     expect(headers['x-app']).toBeUndefined();
     expect(anthropicState.constructorOptions?.['apiKey']).toBe('test-key');
     expect(anthropicState.constructorOptions?.['authToken']).toBeNull();
@@ -362,7 +362,7 @@ describe('AnthropicContentGenerator', () => {
     );
     const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
       {}) as Record<string, string>;
-    expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+    expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
     expect(headers['x-app']).toBeUndefined();
     expect(anthropicState.constructorOptions?.['apiKey']).toBe('test-key');
     expect(anthropicState.constructorOptions?.['authToken']).toBeNull();
@@ -424,7 +424,7 @@ describe('AnthropicContentGenerator', () => {
     it('suppresses ANTHROPIC_API_KEY back-fill on the proxy branch (prevents credential leak)', async () => {
       // Scenario: user runs Claude Code in the same shell so
       // ANTHROPIC_API_KEY is exported with their real Anthropic key, and
-      // separately configures qwen-code with an IdeaLab proxy + IdeaLab
+      // separately configures canopy-code with an IdeaLab proxy + IdeaLab
       // token. Pre-fix, the SDK's destructuring default would back-fill
       // `apiKey` from the env, then the auth resolver would prefer it
       // over our `authToken` and ship `X-Api-Key: <real Anthropic key>`
@@ -480,7 +480,7 @@ describe('AnthropicContentGenerator', () => {
     it('applies proxy identity when ANTHROPIC_BASE_URL env points to a proxy and config.baseUrl is unset', async () => {
       // Symmetric concern: pre-fix, `isAnthropicNativeBaseUrl` only read
       // `config.baseUrl`, so a user who set ANTHROPIC_BASE_URL only via
-      // env (leaving qwen-code's baseUrl unset) had the SDK route to the
+      // env (leaving canopy-code's baseUrl unset) had the SDK route to the
       // proxy while our predicate thought it was Anthropic-native — wrong
       // UA, wrong auth shape, and the cache-scope beta + scope:'global'
       // shipped to a proxy that likely doesn't recognize them.
@@ -528,7 +528,7 @@ describe('AnthropicContentGenerator', () => {
       );
       const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
         {}) as Record<string, string>;
-      expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+      expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
       expect(headers['x-app']).toBeUndefined();
       expect(anthropicState.constructorOptions?.['apiKey']).toBe('config-key');
       expect(anthropicState.constructorOptions?.['authToken']).toBeNull();
@@ -536,7 +536,7 @@ describe('AnthropicContentGenerator', () => {
 
     it('config.baseUrl wins over ANTHROPIC_BASE_URL when both are set', async () => {
       // Mirror the SDK's own resolution: explicit config beats env. A
-      // user who deliberately points qwen-code at api.anthropic.com
+      // user who deliberately points canopy-code at api.anthropic.com
       // shouldn't have a stray ANTHROPIC_BASE_URL silently flip them
       // onto the proxy path.
       process.env['ANTHROPIC_BASE_URL'] = 'https://idealab.example/anthropic';
@@ -555,7 +555,7 @@ describe('AnthropicContentGenerator', () => {
       );
       const headers = (anthropicState.constructorOptions?.['defaultHeaders'] ||
         {}) as Record<string, string>;
-      expect(headers['User-Agent']).toContain('QwenCode/1.2.3');
+      expect(headers['User-Agent']).toContain('CanopyCode/1.2.3');
       expect(headers['x-app']).toBeUndefined();
       expect(anthropicState.constructorOptions?.['apiKey']).toBe('config-key');
       expect(anthropicState.constructorOptions?.['authToken']).toBeNull();
@@ -1204,12 +1204,12 @@ describe('AnthropicContentGenerator', () => {
 
       // defaultHeaders carries User-Agent and customHeaders (not beta).
       // baseConfig now targets api.anthropic.com, so this asserts the
-      // Anthropic-native UA (QwenCode) — the claude-cli identity bundle
+      // Anthropic-native UA (CanopyCode) — the claude-cli identity bundle
       // is covered by the proxy-baseURL tests at the top of the suite.
       const defaultHeaders = (anthropicState.constructorOptions?.[
         'defaultHeaders'
       ] || {}) as Record<string, string>;
-      expect(defaultHeaders['User-Agent']).toContain('QwenCode/1.2.3');
+      expect(defaultHeaders['User-Agent']).toContain('CanopyCode/1.2.3');
       expect(defaultHeaders['X-Custom']).toBe('v1');
       expect(defaultHeaders['anthropic-beta']).toBeUndefined();
 
@@ -2647,7 +2647,7 @@ describe('AnthropicContentGenerator', () => {
         );
       });
 
-      it('ignores malformed QWEN_CODE_MAX_OUTPUT_TOKENS values', async () => {
+      it('ignores malformed CANOPY_CODE_MAX_OUTPUT_TOKENS values', async () => {
         const { AnthropicContentGenerator } = await importGenerator();
 
         for (const envValue of ['1.5', '2k', 'abc']) {
@@ -2683,7 +2683,7 @@ describe('AnthropicContentGenerator', () => {
         }
       });
 
-      it('respects a valid QWEN_CODE_MAX_OUTPUT_TOKENS value', async () => {
+      it('respects a valid CANOPY_CODE_MAX_OUTPUT_TOKENS value', async () => {
         const { AnthropicContentGenerator } = await importGenerator();
         process.env[MAX_OUTPUT_TOKENS_ENV] = '9000';
         anthropicState.createImpl.mockResolvedValue({
@@ -2891,7 +2891,7 @@ describe('AnthropicContentGenerator', () => {
     });
   });
 
-  // https://github.com/QwenLM/qwen-code/issues/3786 — DeepSeek's
+  // https://github.com/QwenLM/canopy-code/issues/3786 — DeepSeek's
   // anthropic-compatible API rejects requests in thinking mode when a prior
   // assistant turn carrying `tool_use` omits a thinking block. Plain-text
   // assistant turns without thinking are accepted unchanged.

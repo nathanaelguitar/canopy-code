@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -58,16 +58,16 @@ vi.mock('node:fs', async (importOriginal) => {
 });
 
 // Mock Storage from core
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     Storage: {
-      getGlobalQwenDir: vi.fn().mockReturnValue('/mock/.qwen'),
+      getGlobalCanopyDir: vi.fn().mockReturnValue('/mock/.canopy'),
       getGlobalSettingsPath: vi
         .fn()
-        .mockReturnValue('/mock/.qwen/settings.json'),
+        .mockReturnValue('/mock/.canopy/settings.json'),
     },
   };
 });
@@ -1082,7 +1082,7 @@ describe('languageCommand', () => {
       vi.mocked(i18n.detectSystemLanguage).mockReturnValue('en');
       vi.mocked(fs.readFileSync).mockReturnValue(
         `# Output language preference: English
-<!-- qwen-code:llm-output-language: English -->
+<!-- canopy-code:llm-output-language: English -->
 `,
       );
 
@@ -1095,7 +1095,7 @@ describe('languageCommand', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(
         `# Output language preference: English
-<!-- qwen-code:llm-output-language: English -->
+<!-- canopy-code:llm-output-language: English -->
 `,
       );
 

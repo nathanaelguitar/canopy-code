@@ -10,7 +10,7 @@ import os from 'node:os';
 import { ToolNames } from '../tools/tool-names.js';
 import process from 'node:process';
 import { isGitRepository } from '../utils/gitUtils.js';
-import { QWEN_DIR } from '../config/storage.js';
+import { CANOPY_DIR } from '../config/storage.js';
 import type { GenerateContentConfig } from '@google/genai';
 import { InputFormat } from '../output/types.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
@@ -85,25 +85,25 @@ function getInteractiveInteractionModePrompt(): {
 
 /**
  * Default leading identity sentence of the core system prompt.
- * Factored out so `QWEN_SYSTEM_IDENTITY_MD` can replace this single unit
+ * Factored out so `CANOPY_SYSTEM_IDENTITY_MD` can replace this single unit
  * without fragile splicing of the large base-prompt template.
  */
 function getDefaultCoreIdentitySentence(role: string): string {
-  return `You are Qwen Code, ${role} developed by Alibaba Group, specializing in software engineering tasks. Your primary goal is to help users safely and efficiently, adhering strictly to the following instructions and utilizing your available tools.`;
+  return `You are Canopy Code, ${role} developed by Alibaba Group, specializing in software engineering tasks. Your primary goal is to help users safely and efficiently, adhering strictly to the following instructions and utilizing your available tools.`;
 }
 
 /**
- * Resolve an opt-in identity override from `QWEN_SYSTEM_IDENTITY_MD`.
+ * Resolve an opt-in identity override from `CANOPY_SYSTEM_IDENTITY_MD`.
  *
  * This is a **trusted distributor-level** system-prompt fragment: the file is
  * inserted verbatim as the leading identity paragraph of the default core
  * prompt (not a sanitized branding field). Only a real file path enables it
- * (unlike `QWEN_SYSTEM_MD`, there is no default identity file, so switch
+ * (unlike `CANOPY_SYSTEM_MD`, there is no default identity file, so switch
  * values like `1`/`true` are ignored). Missing files, empty/whitespace-only
  * files, and path-resolution failures fail loud.
  */
 function resolveCoreIdentityOverride(): string | null {
-  const rawEnv = process.env['QWEN_SYSTEM_IDENTITY_MD'];
+  const rawEnv = process.env['CANOPY_SYSTEM_IDENTITY_MD'];
   const trimmed = rawEnv?.trim();
   // Unset or whitespace → no override.
   if (!trimmed) {
@@ -118,7 +118,7 @@ function resolveCoreIdentityOverride(): string | null {
 
   // Env was set to a path-like value but resolution produced no path
   // (e.g. `~/...` when `os.homedir()` fails). Do not silently fall back to
-  // the default Qwen identity when an explicit override was configured.
+  // the default Canopy identity when an explicit override was configured.
   if (!resolution.value) {
     throw new Error(`failed to resolve system identity path '${trimmed}'`);
   }
@@ -255,12 +255,14 @@ export function getCoreSystemPrompt(
   appendInstruction?: string,
   interactionMode: SystemPromptInteractionMode = 'interactive',
 ): string {
-  // if QWEN_SYSTEM_MD is set (and not 0|false), override system prompt from file
-  // default path is .qwen/system.md (project-level), can be overridden via QWEN_SYSTEM_MD
+  // if CANOPY_SYSTEM_MD is set (and not 0|false), override system prompt from file
+  // default path is .canopy/system.md (project-level), can be overridden via CANOPY_SYSTEM_MD
   let systemMdEnabled = false;
-  let systemMdPath = path.resolve(path.join(QWEN_DIR, 'system.md'));
+  let systemMdPath = path.resolve(path.join(CANOPY_DIR, 'system.md'));
   // Resolve the environment variable to get either a path or a switch value.
-  const systemMdResolution = resolvePathFromEnv(process.env['QWEN_SYSTEM_MD']);
+  const systemMdResolution = resolvePathFromEnv(
+    process.env['CANOPY_SYSTEM_MD'],
+  );
 
   // Proceed only if the environment variable is set and is not disabled.
   if (systemMdResolution.value && !systemMdResolution.isDisabled) {
@@ -278,15 +280,15 @@ export function getCoreSystemPrompt(
   }
 
   const interaction = getInteractionModePrompt(interactionMode);
-  // A QWEN_SYSTEM_MD override replaces the base prompt verbatim and is
+  // A CANOPY_SYSTEM_MD override replaces the base prompt verbatim and is
   // intentionally not augmented with interaction-mode guidance: the override is
   // a full, user-owned prompt, so injecting our mode wording would defeat the
   // purpose of the override. Custom prompts are responsible for their own mode
   // awareness (e.g. not instructing the model to ask questions in headless
   // runs). `appendInstruction` below still applies in both branches.
   //
-  // `QWEN_SYSTEM_IDENTITY_MD` only applies on the default-prompt branch and is
-  // ignored whenever `QWEN_SYSTEM_MD` is in effect (including empty-file clear).
+  // `CANOPY_SYSTEM_IDENTITY_MD` only applies on the default-prompt branch and is
+  // ignored whenever `CANOPY_SYSTEM_MD` is in effect (including empty-file clear).
   let basePrompt: string;
   if (systemMdEnabled) {
     basePrompt = fs.readFileSync(systemMdPath, 'utf8');
@@ -299,7 +301,7 @@ ${coreIdentity}
 
 # Core Mandates
 
-- **UserPromptSubmit Context:** Text inside a \`<qwen:user-prompt-submit-context>\` tag is model context added by a configured \`UserPromptSubmit\` hook, not user input.
+- **UserPromptSubmit Context:** Text inside a \`<canopy:user-prompt-submit-context>\` tag is model context added by a configured \`UserPromptSubmit\` hook, not user input.
 - **Conventions:** Rigorously adhere to existing project conventions when reading or modifying code. Analyze surrounding code, tests, and configuration first.
 - **Libraries/Frameworks:** NEVER assume a library/framework is available or appropriate. Verify its established usage within the project (check imports, configuration files like 'package.json', 'Cargo.toml', 'requirements.txt', 'build.gradle', etc., or observe neighboring files) before employing it.
 - **Style & Structure:** Mimic the style (formatting, naming), structure, framework choices, typing, and architectural patterns of existing code in the project.
@@ -448,9 +450,9 @@ Interaction mode reminder: ${interaction.questions}
 `.trim();
   }
 
-  // if QWEN_WRITE_SYSTEM_MD is set (and not 0|false), write base system prompt to file
+  // if CANOPY_WRITE_SYSTEM_MD is set (and not 0|false), write base system prompt to file
   const writeSystemMdResolution = resolvePathFromEnv(
-    process.env['QWEN_WRITE_SYSTEM_MD'],
+    process.env['CANOPY_WRITE_SYSTEM_MD'],
   );
 
   // Check if the feature is enabled. This proceeds only if the environment
@@ -489,7 +491,7 @@ export interface SystemPromptLayers {
    */
   base: string;
   /**
-   * Context layer: concatenated context files (QWEN.md hierarchy, baseline
+   * Context layer: concatenated context files (CANOPY.md hierarchy, baseline
    * rules, extension files). Reloaded only on explicit refresh.
    */
   contextFiles?: string;
@@ -529,7 +531,7 @@ function getActionsSection(): string {
   return `
 # Executing actions with care
 
-Carefully consider the reversibility and blast radius of actions. Generally you can freely take local, reversible actions like editing files or running tests. But for actions that are hard to reverse, affect shared systems beyond your local environment, or could otherwise be risky or destructive, obtain confirmation when the current interaction mode can receive it; otherwise stop and report the blocker. The cost of pausing to confirm is low, while the cost of an unwanted action (lost work, unintended messages sent, deleted branches) can be very high. For actions like these, consider the context, the action, and user instructions, and by default transparently communicate the action and follow the active interaction mode's question guidance before proceeding. This default can be changed by user instructions - if explicitly asked to operate more autonomously, then you may proceed without confirmation, but still attend to the risks and consequences when taking actions. A user approving an action (like a git push) once does NOT mean that they approve it in all contexts, so unless actions are authorized in advance in durable instructions like QWEN.md files, obtain confirmation only when the current interaction mode can receive it; otherwise report the blocker. Authorization stands for the scope specified, not beyond. Match the scope of your actions to what was actually requested.
+Carefully consider the reversibility and blast radius of actions. Generally you can freely take local, reversible actions like editing files or running tests. But for actions that are hard to reverse, affect shared systems beyond your local environment, or could otherwise be risky or destructive, obtain confirmation when the current interaction mode can receive it; otherwise stop and report the blocker. The cost of pausing to confirm is low, while the cost of an unwanted action (lost work, unintended messages sent, deleted branches) can be very high. For actions like these, consider the context, the action, and user instructions, and by default transparently communicate the action and follow the active interaction mode's question guidance before proceeding. This default can be changed by user instructions - if explicitly asked to operate more autonomously, then you may proceed without confirmation, but still attend to the risks and consequences when taking actions. A user approving an action (like a git push) once does NOT mean that they approve it in all contexts, so unless actions are authorized in advance in durable instructions like CANOPY.md files, obtain confirmation only when the current interaction mode can receive it; otherwise report the blocker. Authorization stands for the scope specified, not beyond. Match the scope of your actions to what was actually requested.
 
 Examples of the kind of risky actions that warrant user confirmation:
 - Destructive operations: deleting files/branches, dropping database tables, killing processes, rm -rf, overwriting uncommitted changes
@@ -713,7 +715,7 @@ To help you check their settings, I can read their contents. Which one would you
 </example>
 `.trim();
 
-const qwenCoderToolCallExamples = `
+const canopyCoderToolCallExamples = `
 # Examples (Illustrating Tone and Workflow)
 <example>
 user: 1 + 2
@@ -882,7 +884,7 @@ I found the following 'app.config' files:
 To help you check their settings, I can read their contents. Which one would you like to start with, or should I read all of them?
 </example>
 `.trim();
-const qwenVlToolCallExamples = `
+const canopyVlToolCallExamples = `
 # Examples (Illustrating Tone and Workflow)
 <example>
 user: 1 + 2
@@ -1067,20 +1069,20 @@ To help you check their settings, I can read their contents. Which one would you
 
 function getToolCallExamples(model?: string): string {
   // Check for environment variable override first
-  const toolCallStyle = process.env['QWEN_CODE_TOOL_CALL_STYLE'];
+  const toolCallStyle = process.env['CANOPY_CODE_TOOL_CALL_STYLE'];
   if (toolCallStyle) {
     switch (toolCallStyle.toLowerCase()) {
       case 'qwen-coder':
-        return qwenCoderToolCallExamples;
+        return canopyCoderToolCallExamples;
       case 'qwen-vl':
-        return qwenVlToolCallExamples;
+        return canopyVlToolCallExamples;
       case 'gemma4':
         return gemma4ToolCallExamples;
       case 'general':
         return generalToolCallExamples;
       default:
         debugLogger.warn(
-          `Unknown QWEN_CODE_TOOL_CALL_STYLE value: ${toolCallStyle}. Using model-based detection.`,
+          `Unknown CANOPY_CODE_TOOL_CALL_STYLE value: ${toolCallStyle}. Using model-based detection.`,
         );
         break;
     }
@@ -1090,15 +1092,15 @@ function getToolCallExamples(model?: string): string {
   if (model && model.length < 100) {
     // Match qwen*-coder patterns (e.g., qwen3-coder, qwen2.5-coder, qwen-coder)
     if (/qwen[^-]*-coder/i.test(model)) {
-      return qwenCoderToolCallExamples;
+      return canopyCoderToolCallExamples;
     }
     // Match qwen*-vl patterns (e.g., qwen-vl, qwen2-vl, qwen3-vl)
     if (/qwen[^-]*-vl/i.test(model)) {
-      return qwenVlToolCallExamples;
+      return canopyVlToolCallExamples;
     }
     // Match coder-model pattern (same as qwen3-coder)
     if (/coder-model/i.test(model)) {
-      return qwenCoderToolCallExamples;
+      return canopyCoderToolCallExamples;
     }
     if (/gemma[-_]?4/i.test(model)) {
       return gemma4ToolCallExamples;
@@ -1224,13 +1226,13 @@ type InsightPromptType =
   | 'at_a_glance';
 
 const INSIGHT_PROMPTS: Record<InsightPromptType, string> = {
-  analysis: `Analyze this Qwen Code session and extract structured facets.
+  analysis: `Analyze this Canopy Code session and extract structured facets.
 
 CRITICAL GUIDELINES:
 
 1. **goal_categories**: Count ONLY what the USER explicitly asked for.
-   - DO NOT count Qwen's autonomous codebase exploration
-   - DO NOT count work Qwen decided to do on its own
+   - DO NOT count Canopy's autonomous codebase exploration
+   - DO NOT count work Canopy decided to do on its own
    - ONLY count when user says "can you...", "please...", "I need...", "let's...
    - POSSIBLE CATEGORIES (but be open to others that appear in the data):
       - bug_fix
@@ -1249,7 +1251,7 @@ CRITICAL GUIDELINES:
    - "this is broken", "I give up" → frustrated
 
 3. **friction_counts**: Be specific about what went wrong.
-   - misunderstood_request: Qwen interpreted incorrectly
+   - misunderstood_request: Canopy interpreted incorrectly
    - wrong_approach: Right goal, wrong solution method
    - buggy_code: Code didn't work correctly
    - user_rejected_action: User said no/stop to a tool call
@@ -1257,7 +1259,7 @@ CRITICAL GUIDELINES:
 
 4. If very short or just warmup, use warmup_minimal for goal_category`,
 
-  impressive_workflows: `Analyze this Qwen Code usage data and identify what's working well for this user. Use second person ("you").
+  impressive_workflows: `Analyze this Canopy Code usage data and identify what's working well for this user. Use second person ("you").
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
@@ -1269,18 +1271,18 @@ Call respond_in_schema function with A VALID JSON OBJECT as argument:
 
 Include 3 impressive workflows.`,
 
-  project_areas: `Analyze this Qwen Code usage data and identify project areas.
+  project_areas: `Analyze this Canopy Code usage data and identify project areas.
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
   "areas": [
-    {"name": "Area name", "session_count": N, "description": "2-3 sentences about what was worked on and how Qwen Code was used."}
+    {"name": "Area name", "session_count": N, "description": "2-3 sentences about what was worked on and how Canopy Code was used."}
   ]
 }
 
 Include 4-5 areas. Skip internal QC operations.`,
 
-  future_opportunities: `Analyze this Qwen Code usage data and identify future opportunities.
+  future_opportunities: `Analyze this Canopy Code usage data and identify future opportunities.
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
@@ -1292,7 +1294,7 @@ Call respond_in_schema function with A VALID JSON OBJECT as argument:
 
 Include 3 opportunities. Think BIG - autonomous workflows, parallel agents, iterating against tests.`,
 
-  friction_points: `Analyze this Qwen Code usage data and identify friction points for this user. Use second person ("you").
+  friction_points: `Analyze this Canopy Code usage data and identify friction points for this user. Use second person ("you").
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
@@ -1304,7 +1306,7 @@ Call respond_in_schema function with A VALID JSON OBJECT as argument:
 
 Include 3 friction categories with 2 examples each.`,
 
-  memorable_moment: `Analyze this Qwen Code usage data and find a memorable moment.
+  memorable_moment: `Analyze this Canopy Code usage data and find a memorable moment.
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
@@ -1314,16 +1316,16 @@ Call respond_in_schema function with A VALID JSON OBJECT as argument:
 
 Find something genuinely interesting or amusing from the session summaries.`,
 
-  improvements: `Analyze this Qwen Code usage data and suggest improvements.
+  improvements: `Analyze this Canopy Code usage data and suggest improvements.
 
 ## QC FEATURES REFERENCE (pick from these for features_to_try):
-1. **MCP Servers**: Connect Qwen to external tools, databases, and APIs via Model Context Protocol.
-   - How to use: Run \`qwen mcp add --transport http <server-name> <http-url>\`
+1. **MCP Servers**: Connect Canopy to external tools, databases, and APIs via Model Context Protocol.
+   - How to use: Run \`canopy mcp add --transport http <server-name> <http-url>\`
    - Good for: database queries, Slack integration, GitHub issue lookup, connecting to internal APIs
-   - Example: "To connect to GitHub, run \`qwen mcp add --header "Authorization: Bearer your_github_mcp_pat" --transport http github https://api.githubcopilot.com/mcp/\` and set the AUTHORIZATION header with your PAT. Then you can ask Qwen to query issues, PRs, or repos."
+   - Example: "To connect to GitHub, run \`canopy mcp add --header "Authorization: Bearer your_github_mcp_pat" --transport http github https://api.githubcopilot.com/mcp/\` and set the AUTHORIZATION header with your PAT. Then you can ask Canopy to query issues, PRs, or repos."
 
 2. **Custom Skills**: Reusable prompts you define as markdown files that run with a single /command.
-   - How to use: Create \`.qwen/skills/commit/SKILL.md\` with instructions. Then type \`/commit\` to run it.
+   - How to use: Create \`.canopy/skills/commit/SKILL.md\` with instructions. Then type \`/commit\` to run it.
    - Good for: repetitive workflows - /commit, /review, /test, /deploy, /pr, or complex multi-step workflows
    - SKILL.md format:
     \`\`\`
@@ -1346,18 +1348,18 @@ Find something genuinely interesting or amusing from the session summaries.`,
     - If the user didn't specify a branch, default to the current branch.
     \`\`\`
 
-3. **Headless Mode**: Run Qwen non-interactively from scripts and CI/CD.
-   - How to use: \`qwen -p "fix lint errors"\`
+3. **Headless Mode**: Run Canopy non-interactively from scripts and CI/CD.
+   - How to use: \`canopy -p "fix lint errors"\`
    - Good for: CI/CD integration, batch code fixes, automated reviews
 
-4. **Task Agents**: Qwen spawns focused sub-agents for complex exploration or parallel work.
-   - How to use: Qwen auto-invokes when helpful, or ask "use an agent to explore X"
+4. **Task Agents**: Canopy spawns focused sub-agents for complex exploration or parallel work.
+   - How to use: Canopy auto-invokes when helpful, or ask "use an agent to explore X"
    - Good for: codebase exploration, understanding complex systems
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
-  "Qwen_md_additions": [
-    {"addition": "A specific line or block to add to QWEN.md based on workflow patterns. E.g., 'Always run tests after modifying auth-related files'", "why": "1 sentence explaining why this would help based on actual sessions", "prompt_scaffold": "Instructions for where to add this in QWEN.md. E.g., 'Add under ## Testing section'"}
+  "Canopy_md_additions": [
+    {"addition": "A specific line or block to add to CANOPY.md based on workflow patterns. E.g., 'Always run tests after modifying auth-related files'", "why": "1 sentence explaining why this would help based on actual sessions", "prompt_scaffold": "Instructions for where to add this in CANOPY.md. E.g., 'Add under ## Testing section'"}
   ],
   "features_to_try": [
     {"feature": "Feature name from QC FEATURES REFERENCE above", "one_liner": "What it does", "why_for_you": "Why this would help YOU based on your sessions", "example_code": "Actual command or config to copy"}
@@ -1367,28 +1369,28 @@ Call respond_in_schema function with A VALID JSON OBJECT as argument:
   ]
 }
 
-IMPORTANT for Qwen_md_additions: PRIORITIZE instructions that appear MULTIPLE TIMES in the user data. If user told Qwen the same thing in 2+ sessions (e.g., 'always run tests', 'use TypeScript'), that's a PRIME candidate - they shouldn't have to repeat themselves.
+IMPORTANT for Canopy_md_additions: PRIORITIZE instructions that appear MULTIPLE TIMES in the user data. If user told Canopy the same thing in 2+ sessions (e.g., 'always run tests', 'use TypeScript'), that's a PRIME candidate - they shouldn't have to repeat themselves.
 
 IMPORTANT for features_to_try: Pick 2-3 from the QC FEATURES REFERENCE above. Include 2-3 items for each category.`,
 
-  interaction_style: `Analyze this Qwen Code usage data and describe the user's interaction style.
+  interaction_style: `Analyze this Canopy Code usage data and describe the user's interaction style.
 
 Call respond_in_schema function with A VALID JSON OBJECT as argument:
 {
-  "narrative": "2-3 paragraphs analyzing HOW the user interacts with Qwen Code. Use second person 'you'. Describe patterns: iterate quickly vs detailed upfront specs? Interrupt often or let Qwen run? Include specific examples. Use **bold** for key insights.",
+  "narrative": "2-3 paragraphs analyzing HOW the user interacts with Canopy Code. Use second person 'you'. Describe patterns: iterate quickly vs detailed upfront specs? Interrupt often or let Canopy run? Include specific examples. Use **bold** for key insights.",
   "key_pattern": "One sentence summary of most distinctive interaction style"
 }
 `,
 
-  at_a_glance: `You're writing an "At a Glance" summary for a Qwen Code usage insights report for Qwen Code users. The goal is to help them understand their usage and improve how they can use Qwen better, especially as models improve.
+  at_a_glance: `You're writing an "At a Glance" summary for a Canopy Code usage insights report for Canopy Code users. The goal is to help them understand their usage and improve how they can use Canopy better, especially as models improve.
 
 Use this 4-part structure:
 
-1. **What's working** - What is the user's unique style of interacting with Qwen and what are some impactful things they've done? You can include one or two details, but keep it high level since things might not be fresh in the user's memory. Don't be fluffy or overly complimentary. Also, don't focus on the tool calls they use.
+1. **What's working** - What is the user's unique style of interacting with Canopy and what are some impactful things they've done? You can include one or two details, but keep it high level since things might not be fresh in the user's memory. Don't be fluffy or overly complimentary. Also, don't focus on the tool calls they use.
 
-2. **What's hindering you** - Split into (a) Qwen's fault (misunderstandings, wrong approaches, bugs) and (b) user-side friction (not providing enough context, environment issues -- ideally more general than just one project). Be honest but constructive.
+2. **What's hindering you** - Split into (a) Canopy's fault (misunderstandings, wrong approaches, bugs) and (b) user-side friction (not providing enough context, environment issues -- ideally more general than just one project). Be honest but constructive.
 
-3. **Quick wins to try** - Specific Qwen Code features they could try from the examples below, or a workflow technique if you think it's really compelling. (Avoid stuff like "Ask Qwen to confirm before taking actions" or "Type out more context up front" which are less compelling.)
+3. **Quick wins to try** - Specific Canopy Code features they could try from the examples below, or a workflow technique if you think it's really compelling. (Avoid stuff like "Ask Canopy to confirm before taking actions" or "Type out more context up front" which are less compelling.)
 
 4. **Ambitious workflows for better models** - As we move to much more capable models over the next 3-6 months, what should they prepare for? What workflows that seem impossible now will become possible? Draw from the appropriate section below.
 

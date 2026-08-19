@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * @fileoverview P7b-A3: the "save this run as a reusable workflow" overlay
  * shown inside the `/workflows` detail view. The user names the workflow,
  * toggles project/user scope, and the run's verbatim script is written to
- * `.qwen/workflows/<name>.js`. A name collision prompts for overwrite.
+ * `.canopy/workflows/<name>.js`. A name collision prompts for overwrite.
  *
  * Self-contained: it owns a single `useKeypress` (a minimal inline name
  * editor — workflow names are short kebab-case strings, so the full readline
@@ -24,7 +24,7 @@ import {
   type SavedWorkflowSource,
   saveWorkflowScript,
   validateWorkflowName,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useKeypress, type Key } from '../../hooks/useKeypress.js';
 import { theme } from '../../semantic-colors.js';
 import { t } from '../../../i18n/index.js';

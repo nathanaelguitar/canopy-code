@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { atomicWriteFile, Storage } from '@qwen-code/qwen-code-core';
+import { atomicWriteFile, Storage } from '@canopy-code/canopy-code-core';
 import type {
   AgentViewActivityFile,
   AgentViewLaunchFile,
@@ -45,7 +45,7 @@ interface StoreOptions {
 export function getAgentViewStorePaths(
   options: StoreOptions = {},
 ): AgentViewStorePaths {
-  const globalDir = options.globalDir ?? Storage.getGlobalQwenDir();
+  const globalDir = options.globalDir ?? Storage.getGlobalCanopyDir();
   const daemonDir = path.join(globalDir, 'daemon');
   return {
     globalDir,

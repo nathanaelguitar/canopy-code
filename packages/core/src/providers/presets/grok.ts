@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -19,7 +19,7 @@ export const grokProvider: ProviderConfig = {
   envKey: GROK_ENV_KEY,
   // xAI's API follows the standard OpenAI format. Grok models reason by
   // default (grok-4.5 exposes an optional reasoning_effort knob, default
-  // high) and have no Qwen-style enable_thinking toggle, so the preset
+  // high) and have no Canopy-style enable_thinking toggle, so the preset
   // carries only each model's context window.
   models: [
     { id: 'grok-4.5', contextWindowSize: 500000 },

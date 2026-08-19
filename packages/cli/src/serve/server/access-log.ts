@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -154,7 +154,10 @@ export function installAccessLogMiddleware(
         const sessionId = sessionMatch?.[1]
           ? truncateUtf8(sessionMatch[1], SESSION_ID_MAX_BYTES)
           : undefined;
-        const rawClientId = firstRawHeader(req.rawHeaders, 'x-qwen-client-id');
+        const rawClientId = firstRawHeader(
+          req.rawHeaders,
+          'x-canopy-client-id',
+        );
         const clientId = rawClientId
           ? truncateUtf8(rawClientId, CLIENT_ID_MAX_BYTES)
           : undefined;

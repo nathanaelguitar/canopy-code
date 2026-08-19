@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -67,9 +67,9 @@ describe('SessionReferenceService', () => {
               { text: 'expanded model prompt' },
               {
                 text: [
-                  '<qwen:user-prompt-submit-context>',
+                  '<canopy:user-prompt-submit-context>',
                   'hook-only context',
-                  '</qwen:user-prompt-submit-context>',
+                  '</canopy:user-prompt-submit-context>',
                 ].join('\n'),
               },
             ],

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,8 @@ import type {
 } from '../tools/tools.js';
 import { canonicalToolName } from '../tools/tool-names.js';
 
-export const TOOL_RESULT_BOUNDARY_EVENT_NAME = 'qwen-code.tool_result.boundary';
+export const TOOL_RESULT_BOUNDARY_EVENT_NAME =
+  'canopy-code.tool_result.boundary';
 export const TOOL_RESULT_BOUNDARY_JSON_BYTE_THRESHOLD = 65_536;
 export const TOOL_RESULT_BOUNDARY_LOG_LIMIT = 50;
 export const TOOL_RESULT_BOUNDARY_LOG_WINDOW_MS = 60_000;

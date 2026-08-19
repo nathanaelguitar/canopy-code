@@ -17,9 +17,9 @@ export * from './permissions/index.js';
 
 // Model configuration
 export {
-  DEFAULT_QWEN_MODEL,
-  DEFAULT_QWEN_FLASH_MODEL,
-  DEFAULT_QWEN_EMBEDDING_MODEL,
+  DEFAULT_CANOPY_MODEL,
+  DEFAULT_CANOPY_FLASH_MODEL,
+  DEFAULT_CANOPY_EMBEDDING_MODEL,
   MAINLINE_CODER_MODEL,
 } from './config/models.js';
 export {
@@ -42,7 +42,7 @@ export {
   type ModelSwitchMetadata,
   MODEL_GENERATION_CONFIG_FIELDS,
   type OnModelChangeCallback,
-  QWEN_OAUTH_MODELS,
+  CANOPY_OAUTH_MODELS,
   resolveModelConfig,
   type ResolvedModelConfig,
   validateModelConfig,
@@ -151,7 +151,7 @@ export * from './services/session-organization-service.js';
 // Backward-compatible type re-exports for tool classes removed from eager loading.
 // These preserve TypeScript type compatibility for downstream consumers.
 // Note: runtime value imports (e.g. `new EditTool(...)`) must use the direct
-// module path (e.g. `@qwen-code/qwen-code-core/dist/tools/edit.js`) as these
+// module path (e.g. `@canopy-code/canopy-code-core/dist/tools/edit.js`) as these
 // classes are now lazy-loaded and are not exported as values from the package root.
 export type { EditTool, EditToolParams } from './tools/edit.js';
 export type {
@@ -416,7 +416,7 @@ export * from './memory/refresh.js';
 export * from './memory/dream.js';
 export * from './memory/learn-skill-agent.js';
 // Issue : write helper for hierarchical context files,
-// re-exported so the `qwen serve` daemon can mutate workspace memory
+// re-exported so the `canopy serve` daemon can mutate workspace memory
 // via `POST /workspace/memory` without depending on internal paths.
 export * from './memory/writeContextFile.js';
 
@@ -480,7 +480,7 @@ export { hashMcpServerConfig } from './mcp/configHash.js';
 // Telemetry
 // ============================================================================
 
-export { QwenLogger } from './telemetry/qwen-logger/qwen-logger.js';
+export { CanopyLogger } from './telemetry/canopy-logger/canopy-logger.js';
 export * from './telemetry/index.js';
 export {
   logAuth,
@@ -565,10 +565,10 @@ export * from './utils/github-prs.js';
 export * from './utils/ignorePatterns.js';
 export * from './utils/invocation-context.js';
 export {
-  DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES,
-  QwenIgnoreParser,
-} from './utils/qwenIgnoreParser.js';
-export type { QwenIgnoreFilter } from './utils/qwenIgnoreParser.js';
+  DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES,
+  CanopyIgnoreParser,
+} from './utils/canopy-ignore-parser.js';
+export type { CanopyIgnoreFilter } from './utils/canopy-ignore-parser.js';
 export * from './utils/jsonl-utils.js';
 export * from './utils/memoryDiagnostics.js';
 export * from './utils/tool-result-retention.js';
@@ -630,7 +630,7 @@ export * from './utils/sideQuery.js';
 // OAuth & Authentication
 // ============================================================================
 
-export * from './qwen/qwenOAuth2.js';
+export * from './canopy/canopy-oauth2.js';
 
 // ============================================================================
 // Message Bus Types

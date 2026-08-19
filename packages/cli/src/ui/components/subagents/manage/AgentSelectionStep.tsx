@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { theme } from '../../../semantic-colors.js';
 import { ICON } from '../../../constants.js';
 import { useKeypress } from '../../../hooks/useKeypress.js';
 import { keyMatchers, Command } from '../../../keyMatchers.js';
-import { type SubagentConfig } from '@qwen-code/qwen-code-core';
+import { type SubagentConfig } from '@canopy-code/canopy-code-core';
 import { t } from '../../../../i18n/index.js';
 
 interface NavigationState {

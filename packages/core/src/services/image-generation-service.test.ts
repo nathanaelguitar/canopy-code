@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -102,7 +102,7 @@ describe('generateImage', () => {
       baseUrl: 'https://images.example.com/api/v1',
       apiKey: 'secret',
       model: 'qwen-image-2.0',
-      prompt: 'A Qwen Code poster',
+      prompt: 'A Canopy Code poster',
       size: '1536*864',
       signal: new AbortController().signal,
       fetchFn,
@@ -132,7 +132,7 @@ describe('generateImage', () => {
         messages: [
           {
             role: 'user',
-            content: [{ text: 'A Qwen Code poster' }],
+            content: [{ text: 'A Canopy Code poster' }],
           },
         ],
       },

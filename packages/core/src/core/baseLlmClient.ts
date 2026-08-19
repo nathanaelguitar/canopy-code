@@ -301,7 +301,7 @@ export class BaseLlmClient {
         signal: abortSignal,
         heartbeatFn: (info) => {
           process.stderr.write(
-            `[qwen-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
+            `[canopy-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
           );
         },
         onRetry: (info) => {
@@ -456,7 +456,7 @@ export class BaseLlmClient {
         signal: abortSignal,
         heartbeatFn: (info) => {
           process.stderr.write(
-            `[qwen-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
+            `[canopy-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
           );
         },
         onRetry: (info) => {
@@ -616,7 +616,7 @@ export class BaseLlmClient {
   /**
    * Resolve a model across all authTypes. Handles the case where the target
    * model is registered under a different authType than the main model
-   * (e.g. main=QWEN_OAUTH, fast=USE_ANTHROPIC).
+   * (e.g. main=CANOPY_OAUTH, fast=USE_ANTHROPIC).
    */
   private resolveModelAcrossAuthTypes(
     model: string,
@@ -637,7 +637,7 @@ export class BaseLlmClient {
     }
 
     const allAuthTypes: AuthType[] = [
-      AuthType.QWEN_OAUTH,
+      AuthType.CANOPY_OAUTH,
       AuthType.USE_OPENAI,
       AuthType.USE_VERTEX_AI,
       AuthType.USE_ANTHROPIC,

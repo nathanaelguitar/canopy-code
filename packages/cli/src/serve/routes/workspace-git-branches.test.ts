@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -163,7 +163,7 @@ function git(cwd: string, ...args: string[]): string {
 
 function makeRepo(): string {
   const dir = fs.realpathSync(
-    fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitbranch-route-')),
+    fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitbranch-route-')),
   );
   tmpRoots.push(dir);
   git(dir, 'init', '-q');
@@ -230,7 +230,7 @@ describe('workspace Git branch routes against a real repo (R10 #2)', () => {
   it('classifies a pull with no tracking information as no_upstream', async () => {
     const dir = makeRepo();
     const remote = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitbranch-remote-')),
+      fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitbranch-remote-')),
     );
     tmpRoots.push(remote);
     git(remote, 'init', '-q', '--bare');
@@ -247,7 +247,7 @@ describe('workspace Git branch routes against a real repo (R10 #2)', () => {
 
   it('does not misclassify a non-dirty error when the workspace path contains "dirty"', async () => {
     const parent = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-dirty-utils-')),
+      fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-dirty-utils-')),
     );
     tmpRoots.push(parent);
     const dir = path.join(parent, 'dirty-project');

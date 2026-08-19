@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   CUSTOM_API_KEY_ENV_PREFIX,
   buildInstallPlan,
   shouldShowStep,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 // Re-import generateCustomEnvKey from the relative source path so the new
 // hash-suffix format is exercised even before dist/ is rebuilt.
 import { generateCustomEnvKey } from '../../presets/custom-provider.js';

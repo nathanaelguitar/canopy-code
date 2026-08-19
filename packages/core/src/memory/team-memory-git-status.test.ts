@@ -18,7 +18,7 @@ function git(cwd: string, ...args: string[]): void {
 
 function initRepo(label: string): string {
   const dir = fs.mkdtempSync(
-    path.join(os.tmpdir(), `qwen-gitstatus-${label}-`),
+    path.join(os.tmpdir(), `canopy-gitstatus-${label}-`),
   );
   git(dir, 'init', '--initial-branch=main');
   git(dir, 'config', 'user.email', `${label}@example.com`);
@@ -45,7 +45,9 @@ describe('getTeamMemoryShareabilityWarning', () => {
   });
 
   it('warns when there is no git repository', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitstatus-nogit-'));
+    const dir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-gitstatus-nogit-'),
+    );
     cleanup.push(dir);
     const warning = getTeamMemoryShareabilityWarning(dir);
     expect(warning).toContain('not inside a git repository');
@@ -55,20 +57,20 @@ describe('getTeamMemoryShareabilityWarning', () => {
   it('warns when a directory-form .gitignore swallows the team dir', () => {
     const repo = initRepo('ignored');
     cleanup.push(repo);
-    // The common pitfall: ignoring `.qwen/` (directory form) makes git skip the
+    // The common pitfall: ignoring `.canopy/` (directory form) makes git skip the
     // folder entirely, so memories are silently never tracked.
-    fs.writeFileSync(path.join(repo, '.gitignore'), '.qwen/\n');
+    fs.writeFileSync(path.join(repo, '.gitignore'), '.canopy/\n');
     const warning = getTeamMemoryShareabilityWarning(repo);
     expect(warning).toContain('git-ignored');
   });
 
-  it('returns null when .qwen/* re-includes the team dir', () => {
+  it('returns null when .canopy/* re-includes the team dir', () => {
     const repo = initRepo('reinclude');
     cleanup.push(repo);
     // The file-glob form CAN be escaped by a re-include below it.
     fs.writeFileSync(
       path.join(repo, '.gitignore'),
-      '.qwen/*\n!.qwen/team-memory/\n!.qwen/team-memory/**\n',
+      '.canopy/*\n!.canopy/team-memory/\n!.canopy/team-memory/**\n',
     );
     expect(getTeamMemoryShareabilityWarning(repo)).toBeNull();
   });
@@ -81,7 +83,7 @@ describe('getTeamMemoryShareabilityWarning', () => {
     // alone (pre-fix) would wrongly report this as shareable.
     fs.writeFileSync(
       path.join(repo, '.gitignore'),
-      '.qwen/team-memory/*.md\n!.qwen/team-memory/MEMORY.md\n',
+      '.canopy/team-memory/*.md\n!.canopy/team-memory/MEMORY.md\n',
     );
     const warning = getTeamMemoryShareabilityWarning(repo);
     expect(warning).toContain('git-ignored');

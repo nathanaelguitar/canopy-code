@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * postCompactAttachments — pure builders for the message blocks injected
- * AFTER the summary in a compacted history. Replaces qwen-code's tail-
+ * AFTER the summary in a compacted history. Replaces canopy-code's tail-
  * preservation model (split-point + last 30%) with claude-code's
  * "summary + restored attachments" model.
  *
@@ -148,7 +148,7 @@ export interface ExtractedImage {
 /**
  * Walk a single content's parts in REVERSE and return every image part
  * it carries — both top-level `inlineData` (user-pasted images) and
- * images nested inside `functionResponse.parts` (qwen-code's tool-media
+ * images nested inside `functionResponse.parts` (canopy-code's tool-media
  * carrier; see coreToolScheduler.convertToFunctionResponse). Reverse
  * order means the last-emitted image is treated as the most recent.
  *
@@ -577,14 +577,14 @@ export interface ComposePostCompactOptions {
    * Max recent files to restore. Defaults to
    * `POST_COMPACT_MAX_FILES_TO_RESTORE`. Configurable via
    * `chatCompression.maxRecentFilesToRetain` (env
-   * `QWEN_COMPACT_MAX_RECENT_FILES`).
+   * `CANOPY_COMPACT_MAX_RECENT_FILES`).
    */
   maxFiles?: number;
   /**
    * Max recent images to restore. Defaults to
    * `POST_COMPACT_MAX_IMAGES_TO_RESTORE`. Configurable via
    * `chatCompression.maxRecentImagesToRetain` (env
-   * `QWEN_COMPACT_MAX_RECENT_IMAGES`).
+   * `CANOPY_COMPACT_MAX_RECENT_IMAGES`).
    */
   maxImages?: number;
   /**

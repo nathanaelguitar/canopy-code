@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,8 +10,8 @@ import type {
   Config,
   GoalSnapshotV2,
   ServerGeminiStreamEvent,
-} from '@qwen-code/qwen-code-core';
-import { GeminiEventType } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { GeminiEventType } from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 import { StreamJsonOutputAdapter } from './StreamJsonOutputAdapter.js';
 import {

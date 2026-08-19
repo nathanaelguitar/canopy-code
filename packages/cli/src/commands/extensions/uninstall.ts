@@ -7,7 +7,7 @@
 import type { CommandModule } from 'yargs';
 import { getErrorMessage } from '../../utils/errors.js';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
-import { ExtensionManager } from '@qwen-code/qwen-code-core';
+import { ExtensionManager } from '@canopy-code/canopy-code-core';
 import {
   requestConsentNonInteractive,
   requestConsentOrFail,

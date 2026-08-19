@@ -40,7 +40,7 @@ import { statusCommand } from './status.js';
 async function invokeStatus(argv: Record<string, unknown> = {}): Promise<void> {
   const handler = statusCommand.handler;
   if (!handler) throw new Error('status handler missing');
-  await handler({ _: [], $0: 'qwen', ...argv } as never);
+  await handler({ _: [], $0: 'canopy', ...argv } as never);
 }
 
 beforeEach(() => {
@@ -68,7 +68,7 @@ describe('statusCommand', () => {
     await expect(invokeStatus()).rejects.toThrow('process.exit: 0');
 
     expect(mockWriteStdoutLine).toHaveBeenCalledWith(
-      'Channel service: managed by qwen serve (PID 1234)',
+      'Channel service: managed by canopy serve (PID 1234)',
     );
     expect(mockWriteStdoutLine).toHaveBeenCalledWith('Worker PID:      5678');
   });
@@ -88,7 +88,7 @@ describe('statusCommand', () => {
     await expect(invokeStatus()).rejects.toThrow('process.exit: 0');
 
     expect(mockWriteStdoutLine).toHaveBeenCalledWith(
-      'Channel service: managed by qwen serve (PID 1234)',
+      'Channel service: managed by canopy serve (PID 1234)',
     );
     expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
       expect.stringContaining('Worker PID:'),

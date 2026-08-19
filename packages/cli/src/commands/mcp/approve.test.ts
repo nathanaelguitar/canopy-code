@@ -24,7 +24,7 @@ import {
 } from '../../config/mcpApprovals.js';
 import { loadProjectMcpServers } from '../../config/mcpJson.js';
 
-describe('qwen mcp approve / reject', () => {
+describe('canopy mcp approve / reject', () => {
   let dir: string;
   let cwdSpy: ReturnType<typeof vi.spyOn>;
 
@@ -37,14 +37,14 @@ describe('qwen mcp approve / reject', () => {
   ) => {
     await (cmd.handler as (a: Record<string, unknown>) => Promise<void>)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       ...argv,
     });
   };
 
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-approve-'));
-    process.env['QWEN_CODE_MCP_APPROVALS_PATH'] = path.join(
+    process.env['CANOPY_CODE_MCP_APPROVALS_PATH'] = path.join(
       dir,
       MCP_APPROVALS_FILENAME,
     );
@@ -54,7 +54,7 @@ describe('qwen mcp approve / reject', () => {
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
     resetMcpApprovalsForTesting();
     cwdSpy.mockRestore();
     fs.rmSync(dir, { recursive: true, force: true });
@@ -73,10 +73,10 @@ describe('qwen mcp approve / reject', () => {
   };
 
   const writeWorkspaceSettings = (servers: Record<string, unknown>) => {
-    const qwenDir = path.join(dir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
+    const canopyDir = path.join(dir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
     fs.writeFileSync(
-      path.join(qwenDir, 'settings.json'),
+      path.join(canopyDir, 'settings.json'),
       JSON.stringify({ mcpServers: servers }),
     );
   };
@@ -84,7 +84,7 @@ describe('qwen mcp approve / reject', () => {
   /** Read the persisted approval status straight off disk (scope-agnostic). */
   const persistedStatus = (name: string): string | undefined => {
     const raw = fs.readFileSync(
-      process.env['QWEN_CODE_MCP_APPROVALS_PATH']!,
+      process.env['CANOPY_CODE_MCP_APPROVALS_PATH']!,
       'utf-8',
     );
     return JSON.parse(raw)[dir]?.[name]?.status;
@@ -105,7 +105,7 @@ describe('qwen mcp approve / reject', () => {
     expect(output()).toContain('Approved MCP server "slack"');
   });
 
-  it('approves a workspace .qwen/settings.json server', async () => {
+  it('approves a workspace .canopy/settings.json server', async () => {
     writeWorkspaceSettings({ ws: { command: 'node', args: ['ws.js'] } });
 
     await run(approveCommand, { name: 'ws', all: false });

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export const DEFAULT_CONTEXT_FILENAME = 'QWEN.md';
+export const DEFAULT_CONTEXT_FILENAME = 'CANOPY.md';
 export const AGENT_CONTEXT_FILENAME = 'AGENTS.md';
 /**
  * Per-developer, project-scoped context file. Anchored at
- * `<projectRoot>/.qwen/QWEN.local.md`. Intended to be gitignored so each
+ * `<projectRoot>/.canopy/CANOPY.local.md`. Intended to be gitignored so each
  * developer can keep personal instructions (local cluster IDs, account
- * names, paths) without polluting the shared project `QWEN.md` or the
- * global `~/.qwen/QWEN.md`.
+ * names, paths) without polluting the shared project `CANOPY.md` or the
+ * global `~/.canopy/CANOPY.md`.
  *
  * Unlike `DEFAULT_CONTEXT_FILENAME` / `AGENT_CONTEXT_FILENAME`, this name is
  * NOT part of the hierarchical upward-search list — it is loaded from a
@@ -23,14 +23,14 @@ export const AGENT_CONTEXT_FILENAME = 'AGENTS.md';
  * project root can be found, the slot is skipped — the loader does NOT
  * fall back to cwd, because that would turn a "single fixed slot" into a
  * per-cwd file and (when cwd is the home directory) would collide with
- * the global Qwen dir at `~/.qwen/`.
+ * the global Canopy dir at `~/.canopy/`.
  */
-export const LOCAL_CONTEXT_FILENAME = 'QWEN.local.md';
-export const MEMORY_SECTION_HEADER = '## Qwen Added Memories';
+export const LOCAL_CONTEXT_FILENAME = 'CANOPY.local.md';
+export const MEMORY_SECTION_HEADER = '## Canopy Added Memories';
 
 // This variable will hold the currently configured filename for context files.
-// It defaults to include both QWEN.md and AGENTS.md but can be overridden by setGeminiMdFilename.
-// QWEN.md is first to maintain backward compatibility (used by /init command tool).
+// It defaults to include both CANOPY.md and AGENTS.md but can be overridden by setGeminiMdFilename.
+// CANOPY.md is first to maintain backward compatibility (used by /init command tool).
 let currentGeminiMdFilename: string | string[] = [
   DEFAULT_CONTEXT_FILENAME,
   AGENT_CONTEXT_FILENAME,
@@ -48,7 +48,7 @@ export function setGeminiMdFilename(newFilename: string | string[]): void {
 
 export function getCurrentGeminiMdFilename(): string {
   if (Array.isArray(currentGeminiMdFilename)) {
-    //   (qwen-latest critical, addresses divergence
+    //   (canopy-latest critical, addresses divergence
     // with daemon's `extractContextFilename`): skip empty / whitespace
     // entries so callers that pass `[' ', 'AGENTS.md']` get
     // `'AGENTS.md'` instead of `''`. Without this filter the daemon's

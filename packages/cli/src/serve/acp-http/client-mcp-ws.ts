@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -39,7 +39,7 @@
 import {
   ClientMcpRegistrar,
   type ClientMcpFrame,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 import { isValidServerName } from '../../runtime/validate-server-name.js';
 

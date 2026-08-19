@@ -21,7 +21,7 @@ import {
   getExtensionDisplayName,
   getExtensionDescription,
   isExtensionCommittedWithWarningsError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('EXTENSIONS_COMMAND');
 const EXTENSION_EXPLORE_URL = {

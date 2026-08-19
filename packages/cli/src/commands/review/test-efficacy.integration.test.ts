@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -148,7 +148,7 @@ import fs from 'node:fs';
 const files = process.argv.slice(2).filter((a) => a.includes('.test.'));
 const st = (f) => {
   try {
-    if (fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL')) return 'failed';
+    if (fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL')) return 'failed';
   } catch {}
   return f.includes('skip') ? 'skipped' : 'passed';
 };
@@ -214,7 +214,7 @@ const files = args.slice(2).filter((a) => a.includes('.test.'));
 // survivor scenario in this suite would re-class to inconclusive.
 const st = (f) => {
   try {
-    return fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL')
+    return fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL')
       ? 'failed'
       : 'passed';
   } catch {
@@ -257,9 +257,9 @@ describe('fixture git-config isolation', () => {
     // diff.external killed the per-hunk tests on a persistent CI runner).
     writeFileSync(
       join(gitIsolation.home, '.gitconfig'),
-      '[qwen]\n\tisolation = sentinel\n',
+      '[canopy]\n\tisolation = sentinel\n',
     );
-    expect(git(repo, 'config', '--global', 'qwen.isolation').trim()).toBe(
+    expect(git(repo, 'config', '--global', 'canopy.isolation').trim()).toBe(
       'sentinel',
     );
     expect(process.env['GIT_CONFIG_GLOBAL']).toBe(
@@ -272,8 +272,8 @@ describe('fixture git-config isolation', () => {
     // read a system file even when one is pointed at it.
     expect(process.env['GIT_CONFIG_NOSYSTEM']).toBe('1');
     const sysCfg = join(gitIsolation.home, 'system-gitconfig');
-    writeFileSync(sysCfg, '[qwen]\n\tsystemleak = yes\n');
-    const sys = spawnSync('git', ['config', '--get', 'qwen.systemleak'], {
+    writeFileSync(sysCfg, '[canopy]\n\tsystemleak = yes\n');
+    const sys = spawnSync('git', ['config', '--get', 'canopy.systemleak'], {
       cwd: repo,
       env: { ...process.env, GIT_CONFIG_SYSTEM: sysCfg },
       encoding: 'utf8',
@@ -494,7 +494,7 @@ import fs from 'node:fs';
 const files = process.argv.slice(2).filter((a) => a.includes('.test.'));
 const st = (f) => {
   try {
-    if (fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL')) return [{ status: 'failed' }];
+    if (fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL')) return [{ status: 'failed' }];
   } catch {}
   return path.basename(f) === 'price.test.ts' ? [] : [{ status: 'passed' }];
 };
@@ -714,7 +714,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const files = process.argv.slice(2).filter((a) => a.includes('.test.'));
 const src = fs.readFileSync(path.join(process.cwd(), 'packages/lib/src/f.ts'), 'utf8');
-const ctl = files.some((f) => { try { return fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL'); } catch { return false; } });
+const ctl = files.some((f) => { try { return fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL'); } catch { return false; } });
 const failed = ctl ? 1 : src.includes('state.clear()') ? 0 : 1;
 process.stdout.write(JSON.stringify({
   numPassedTests: failed ? 0 : files.length,
@@ -1060,7 +1060,7 @@ import path from 'node:path';
 const files = process.argv.slice(2).filter((a) => a.includes('.test.'));
 const st = (f) => {
   try {
-    if (fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL')) return 'failed';
+    if (fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL')) return 'failed';
   } catch {}
   return path.basename(f) === 'f.test.ts' ? 'failed' : 'passed';
 };
@@ -1249,7 +1249,7 @@ fs.appendFileSync(${JSON.stringify(runsLog)}, 'run\\n');
 const files = process.argv.slice(2).filter((a) => a.includes('.test.'));
 const status = (f) => {
   try {
-    return fs.readFileSync(f, 'utf8').includes('QWEN-REVIEW-POSITIVE-CONTROL') ? 'failed' : 'passed';
+    return fs.readFileSync(f, 'utf8').includes('CANOPY-REVIEW-POSITIVE-CONTROL') ? 'failed' : 'passed';
   } catch { return 'passed'; }
 };
 const results = files.map((f) => ({

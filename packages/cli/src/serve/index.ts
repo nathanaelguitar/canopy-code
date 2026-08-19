@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,10 +11,10 @@ export {
   type ServeAppLifecycleBindingOptions,
 } from './serve-app-lifecycle.js';
 export {
-  runQwenServe,
+  runCanopyServe,
   type RunHandle,
-  type RunQwenServeDeps,
-} from './run-qwen-serve.js';
+  type RunCanopyServeDeps,
+} from './run-canopy-serve.js';
 export {
   CAPABILITIES_SCHEMA_VERSION,
   STAGE1_FEATURES,

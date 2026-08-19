@@ -18,7 +18,7 @@ describe('checkTeamMemorySecrets', () => {
   const secret = `ghp_${'a'.repeat(36)}`;
 
   beforeEach(() => {
-    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-guard-'));
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-guard-'));
     fs.mkdirSync(path.join(projectRoot, '.git'));
     teamFile = path.join(getTeamAutoMemoryRoot(projectRoot), 'feedback/x.md');
     outsideFile = path.join(projectRoot, 'src/config.ts');

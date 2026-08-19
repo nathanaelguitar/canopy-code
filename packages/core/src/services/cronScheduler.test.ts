@@ -37,7 +37,7 @@ const updateGate = vi.hoisted(() => ({
 }));
 
 // Failure injection for removeCronTasks: the real on-disk failure modes
-// are platform-divergent (POSIX surfaces ENOTDIR for a corrupted .qwen,
+// are platform-divergent (POSIX surfaces ENOTDIR for a corrupted .canopy,
 // Windows reads it as ENOENT → "nothing to remove"), so tests assert the
 // scheduler's contract against an injected rejection instead.
 const removeGate = vi.hoisted(() => ({
@@ -785,7 +785,7 @@ describe('CronScheduler', () => {
   // race a file creation inside the runtime dir → ENOTEMPTY. Settle the
   // chains first; keep rm retries for writes launched outside them (e.g. a
   // probe takeover's lock write). Reset the runtime base only after the
-  // chains settle, so a late write can't escape to the real ~/.qwen.
+  // chains settle, so a late write can't escape to the real ~/.canopy.
   async function removeTmpDir(tmpDir: string): Promise<void> {
     scheduler.destroy();
     const internals = scheduler as unknown as {

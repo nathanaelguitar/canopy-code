@@ -133,7 +133,7 @@ export const Help: React.FC<HelpProps> = ({
 const HelpTabs: React.FC<{ activeTab: HelpTab }> = ({ activeTab }) => (
   <Box flexDirection="row">
     <Text bold color={theme.text.accent}>
-      Qwen Code
+      Canopy Code
     </Text>
     <Text color={theme.text.secondary}> </Text>
     {TAB_DEFS.map(({ tab, labelKey }) => {
@@ -181,7 +181,7 @@ const GeneralHelp: React.FC<{ width: number }> = ({ width }) => {
       <Box marginBottom={1}>
         <Text color={theme.text.primary}>
           {t(
-            'Qwen Code understands your codebase, makes edits with your permission, and executes commands right from your terminal.',
+            'Canopy Code understands your codebase, makes edits with your permission, and executes commands right from your terminal.',
           )}
         </Text>
       </Box>

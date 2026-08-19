@@ -37,7 +37,7 @@ import {
   useVimModeState,
   useVimModeActions,
 } from '../contexts/VimModeContext.js';
-import { createDebugLogger, type Config } from '@qwen-code/qwen-code-core';
+import { createDebugLogger, type Config } from '@canopy-code/canopy-code-core';
 import { useKeypress } from '../hooks/useKeypress.js';
 import {
   isDeletionKey,
@@ -1389,7 +1389,7 @@ export function SettingsDialog({
         showRestartPrompt && (
           <Text color={theme.status.warning}>
             {t(
-              'To see changes, Qwen Code must be restarted. Press r to exit and apply changes now.',
+              'To see changes, Canopy Code must be restarted. Press r to exit and apply changes now.',
             )}
           </Text>
         )}

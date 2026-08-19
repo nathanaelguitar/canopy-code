@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -45,7 +45,7 @@ const mockBuildBtwPrompt = vi.hoisted(() =>
   vi.fn().mockImplementation((q: string) => `<system-reminder>...\n${q}`),
 );
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   BTW_MAX_INPUT_LENGTH: 4096,
   runForkedAgent: mockRunForkedAgent,
   getCacheSafeParams: mockGetCacheSafeParams,

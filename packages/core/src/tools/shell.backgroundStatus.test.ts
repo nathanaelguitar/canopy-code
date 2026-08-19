@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -73,8 +73,8 @@ describe('background shell status sidecar (integration, real spawn)', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = makeTempDir('qwen-bg-status-cwd-');
-    const projectTempDir = makeTempDir('qwen-bg-status-tmp-');
+    cwd = makeTempDir('canopy-bg-status-cwd-');
+    const projectTempDir = makeTempDir('canopy-bg-status-tmp-');
     registry = new BackgroundShellRegistry();
 
     const mockConfig = {

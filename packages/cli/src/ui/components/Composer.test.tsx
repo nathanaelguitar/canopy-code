@@ -31,7 +31,7 @@ vi.mock('../contexts/VimModeContext.js', () => ({
     setVimMode: vi.fn(),
   })),
 }));
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import { StreamingState } from '../types.js';
 
 // Mock child components

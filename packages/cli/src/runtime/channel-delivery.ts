@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
   MAX_CHANNEL_DELIVERY_NAME_LENGTH,
   MAX_CHANNEL_DELIVERY_TARGET_ID_LENGTH,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   ChannelDeliveryError,
   MAX_CHANNEL_DELIVERY_TEXT_LENGTH,

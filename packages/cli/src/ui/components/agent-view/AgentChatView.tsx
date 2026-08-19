@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@
  */
 
 import { Box, Text } from 'ink';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import {
   useAgentViewState,
   useAgentViewActions,
@@ -64,7 +64,7 @@ export const AgentChatView = ({ agentId }: AgentChatViewProps) => {
             Switch to another tab and back to retry rendering this tab.
           </Text>
           <Text color={theme.text.secondary} dimColor>
-            Set QWEN_DEBUG_LOG_FILE=1 and reproduce for a full log.
+            Set CANOPY_DEBUG_LOG_FILE=1 and reproduce for a full log.
           </Text>
         </Box>
       )}

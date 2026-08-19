@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config, DebugLogger } from '@qwen-code/qwen-code-core';
+import type { Config, DebugLogger } from '@canopy-code/canopy-code-core';
 
 export function fireSessionDeleteHook(
   config: Config,

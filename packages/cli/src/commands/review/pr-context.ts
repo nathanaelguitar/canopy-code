@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review pr-context`: fetch a PR's metadata + existing comments and
+// `canopy review pr-context`: fetch a PR's metadata + existing comments and
 // emit a single Markdown file that agents can consume as context.
 //
 // The Markdown is shaped so the calling LLM can pass it to review agents
@@ -22,7 +22,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD } from '@qwen-code/qwen-code-core';
+import { DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD } from '@canopy-code/canopy-code-core';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
 import {
   currentUser,
@@ -49,7 +49,7 @@ import {
  * "Already discussed" section — otherwise a stale table of suggestions would
  * read as settled discussion and suppress still-open findings.
  */
-export const SUMMARY_MARKER = '<!-- qwen-review-suggestion-summary -->';
+export const SUMMARY_MARKER = '<!-- canopy-review-suggestion-summary -->';
 
 export interface PrMetadata {
   title: string;
@@ -153,9 +153,9 @@ function commentBodyCommand(
   const prPart = kind === 'review' ? ` --pr ${n}` : '';
   const hostPart = ctx?.host ? ` --host ${ctx.host}` : '';
   // `\${` escapes to a literal `${`: the emitted text is a shell command the
-  // reader runs, and QWEN_CODE_CLI must expand THERE, not here.
+  // reader runs, and CANOPY_CODE_CLI must expand THERE, not here.
   return (
-    `"\${QWEN_CODE_CLI:-qwen}" review comment-body ${id}` +
+    `"\${CANOPY_CODE_CLI:-canopy}" review comment-body ${id}` +
     ` --kind ${kind}${prPart} --repo ${or}${hostPart}`
   );
 }
@@ -451,7 +451,7 @@ export function findRootId<
 }
 
 /**
- * The exact "no issues found, LGTM" template the qwen-review pipeline
+ * The exact "no issues found, LGTM" template the canopy-review pipeline
  * auto-emits, optionally followed by its model footer — and NOTHING else.
  * Anchored to the end of the body on purpose: a legacy malformed review can
  * OPEN with the LGTM line and carry a relocated `**[Critical]**` blocker
@@ -459,14 +459,14 @@ export function findRootId<
  * file, letting the re-check approve past the blocker.
  */
 export const CANONICAL_LGTM_RE =
-  /^No issues found\.?\s*LGTM!?\s*(?:✅\s*)?(?:_— [^\n]{0,200} via Qwen Code \/review(?: \(v[^\n]{1,100}\))?_\s*)?$/i;
+  /^No issues found\.?\s*LGTM!?\s*(?:✅\s*)?(?:_— [^\n]{0,200} via Canopy Code \/review(?: \(v[^\n]{1,100}\))?_\s*)?$/i;
 
 /**
  * Should this review-level summary be shown to agents?
  *
  * Filters out empty bodies (`COMMENTED` reviews submitted alongside inline
  * comments often have body=""), and the canonical "no issues found, LGTM"
- * template the qwen-review pipeline auto-emits — those carry no review
+ * template the canopy-review pipeline auto-emits — those carry no review
  * content beyond their state, which the agent doesn't need re-told. Only
  * the whole-body template is filtered; any body with more in it is shown.
  */
@@ -1461,7 +1461,7 @@ async function runPrContext(args: PrContextArgs): Promise<void> {
   // recovery threw → round counter kept, age-sensitive `commitId`/`reviewId`
   // stripped.
   persistRecoveredLedger(
-    join(dirname(out), `qwen-review-pr-${prNumber}-prev-ledger.json`),
+    join(dirname(out), `canopy-review-pr-${prNumber}-prev-ledger.json`),
     prevRecovered,
     // Deletion is licensed ONLY by proof of true absence: a CONFIRMED
     // identity, and a non-empty list this run walked in which no submitted

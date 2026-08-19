@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ describe('assertTarArchiveHasNoLinks', () => {
   let root: string;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-tar-safety-'));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-tar-safety-'));
   });
 
   afterEach(async () => {

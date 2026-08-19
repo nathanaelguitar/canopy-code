@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +24,7 @@ import {
 import { theme } from '../semantic-colors.js';
 import { t } from '../../i18n/index.js';
 import type { PendingSkillView } from '../contexts/UIStateContext.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 type Choice = 'keep' | 'discard' | 'keepAll' | 'discardAll' | 'turnOff';
 

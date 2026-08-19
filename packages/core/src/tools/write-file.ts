@@ -736,12 +736,12 @@ function getRecordArtifactWorkspacePath(
   }
   // The daemon's file-read route resolves workspacePath against the
   // original workspace root, not the session cwd. When the session
-  // runs inside a worktree (<root>/.qwen/worktrees/<slug>), anchor
+  // runs inside a worktree (<root>/.canopy/worktrees/<slug>), anchor
   // the relative path at the workspace root so artifact previews
   // resolve correctly.
   const targetDir = config.getTargetDir();
   const wtMatch = targetDir.match(
-    /^(.+)[\\/]\.qwen[\\/]worktrees[\\/][^\\/]+$/,
+    /^(.+)[\\/]\.canopy[\\/]worktrees[\\/][^\\/]+$/,
   );
   const baseDir = wtMatch ? wtMatch[1] : targetDir;
   const relativePath = path.relative(baseDir, filePath);

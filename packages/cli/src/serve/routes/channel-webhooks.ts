@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -68,7 +68,7 @@ export function registerChannelWebhookRoutes(
       if (
         typeof secret !== 'string' ||
         secret.length === 0 ||
-        !matchesWebhookSecret(req.get('x-qwen-webhook-secret'), secret)
+        !matchesWebhookSecret(req.get('x-canopy-webhook-secret'), secret)
       ) {
         deps.daemonLog?.warn('channel webhook authentication failed', {
           channelName,

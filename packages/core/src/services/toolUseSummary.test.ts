@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -203,7 +203,7 @@ describe('generateToolUseSummary', () => {
   });
 
   it('returns null when tools array is empty', async () => {
-    const config = makeMockConfig('qwen-fast');
+    const config = makeMockConfig('canopy-fast');
     const result = await generateToolUseSummary({
       config,
       tools: [],
@@ -223,7 +223,7 @@ describe('generateToolUseSummary', () => {
   });
 
   it('returns null when signal is already aborted', async () => {
-    const config = makeMockConfig('qwen-fast');
+    const config = makeMockConfig('canopy-fast');
     const ac = abortController();
     ac.abort();
     const result = await generateToolUseSummary({
@@ -239,7 +239,7 @@ describe('generateToolUseSummary', () => {
       text: 'Searched in auth/',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const result = await generateToolUseSummary({
       config,
@@ -254,7 +254,7 @@ describe('generateToolUseSummary', () => {
 
     const options = generateContentFn.mock.calls[0][0];
 
-    expect(options.model).toBe('qwen-fast');
+    expect(options.model).toBe('canopy-fast');
     expect(options.promptId).toBe('side-query:tool-use-summary');
     expect(options.systemInstruction).toBe(TOOL_USE_SUMMARY_SYSTEM_PROMPT);
 
@@ -270,7 +270,7 @@ describe('generateToolUseSummary', () => {
       text: 'Fixed auth bug',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     await generateToolUseSummary({
       config,
@@ -293,7 +293,7 @@ describe('generateToolUseSummary', () => {
       text: 'Done',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const longText = 'A'.repeat(500);
     await generateToolUseSummary({
@@ -315,7 +315,7 @@ describe('generateToolUseSummary', () => {
       text: '',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const result = await generateToolUseSummary({
       config,
@@ -327,7 +327,7 @@ describe('generateToolUseSummary', () => {
 
   it('returns null when model call throws', async () => {
     const generateContentFn = vi.fn().mockRejectedValue(new Error('API error'));
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const result = await generateToolUseSummary({
       config,
@@ -343,7 +343,7 @@ describe('generateToolUseSummary', () => {
       ac.abort();
       throw new Error('aborted');
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const result = await generateToolUseSummary({
       config,
@@ -358,7 +358,7 @@ describe('generateToolUseSummary', () => {
       text: 'Read file',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const hugeInput = { content: 'x'.repeat(10000) };
     const hugeOutput = 'y'.repeat(10000);
@@ -383,7 +383,7 @@ describe('generateToolUseSummary', () => {
       text: '- "Searched auth/"',
       usage: undefined,
     });
-    const config = makeMockConfig('qwen-fast', generateContentFn);
+    const config = makeMockConfig('canopy-fast', generateContentFn);
 
     const result = await generateToolUseSummary({
       config,

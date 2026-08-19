@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@
  * — kept out of here so the search editor can be reasoned about as a
  * small, append-only buffer with a few escape hatches.
  *
- * Inspired by claude-code's `useSearchInput` but trimmed to qwen's
+ * Inspired by claude-code's `useSearchInput` but trimmed to canopy's
  * current feature set: no cursor movement, no kill ring, no word-wise
  * editing. Adding those later only requires extending this hook —
  * the outer picker stays untouched.

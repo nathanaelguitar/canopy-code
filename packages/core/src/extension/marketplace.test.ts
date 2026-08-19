@@ -433,7 +433,7 @@ describe('parseInstallSource', () => {
       expect(http.get).toHaveBeenCalledWith(
         'http://example.com/marketplace.json',
         {
-          headers: { 'User-Agent': 'qwen-code' },
+          headers: { 'User-Agent': 'canopy-code' },
           signal: expect.any(AbortSignal),
         },
         expect.any(Function),

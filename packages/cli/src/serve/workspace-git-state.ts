@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   watchRepoBranch,
   type GitOperation,
   type GitWorkingTreeStatus,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from './acp-session-bridge.js';
 import { writeStderrLineSafe } from '../utils/stdioHelpers.js';
 
@@ -199,7 +199,7 @@ export class WorkspaceGitState {
       const status = await getGitWorkingTreeStatus(workspaceCwd).catch(
         (err) => {
           writeStderrLineSafe(
-            `qwen serve: git status failed for ${workspaceCwd}: ${err instanceof Error ? err.message : String(err)}`,
+            `canopy serve: git status failed for ${workspaceCwd}: ${err instanceof Error ? err.message : String(err)}`,
           );
           return null;
         },

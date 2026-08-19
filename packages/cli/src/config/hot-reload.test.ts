@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@ import {
   ApprovalMode,
   type Config,
   type MCPServerConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings, Settings } from './settings.js';
 import type {
   SettingsWatcher,
@@ -165,7 +165,7 @@ describe('registerMcpHotReload', () => {
   beforeEach(() => {
     cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'hotreload-'));
     // No .mcp.json in cwd → assembleMcpServers yields only settings + topTier.
-    process.env['QWEN_CODE_MCP_APPROVALS_PATH'] = path.join(
+    process.env['CANOPY_CODE_MCP_APPROVALS_PATH'] = path.join(
       cwd,
       'mcpApprovals.json',
     );
@@ -184,7 +184,7 @@ describe('registerMcpHotReload', () => {
   });
 
   afterEach(() => {
-    delete process.env['QWEN_CODE_MCP_APPROVALS_PATH'];
+    delete process.env['CANOPY_CODE_MCP_APPROVALS_PATH'];
     resetMcpApprovalsForTesting();
     fs.rmSync(cwd, { recursive: true, force: true });
   });

@@ -6,7 +6,7 @@
 
 import { execSync } from 'node:child_process';
 import process from 'node:process';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('THEME_DETECT');
 

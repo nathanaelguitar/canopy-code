@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ vi.mock('./sessions/list.js', () => ({
 vi.mock('./sessions/ps.js', () => ({
   psCommand: {
     command: 'ps',
-    describe: 'List interactive Qwen Code sessions running right now',
+    describe: 'List interactive Canopy Code sessions running right now',
   },
 }));
 
@@ -29,7 +29,7 @@ import yargs from 'yargs';
 describe('sessions command', () => {
   it('should have correct command definition', () => {
     expect(sessionsCommand.command).toBe('sessions');
-    expect(sessionsCommand.describe).toBe('Manage Qwen Code sessions');
+    expect(sessionsCommand.describe).toBe('Manage Canopy Code sessions');
     expect(typeof sessionsCommand.builder).toBe('function');
     expect(typeof sessionsCommand.handler).toBe('function');
   });

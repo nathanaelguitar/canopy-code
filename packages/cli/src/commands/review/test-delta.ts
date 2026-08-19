@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review test-delta`: rerun the PR side's FAILED test commands on the
+// `canopy review test-delta`: rerun the PR side's FAILED test commands on the
 // base tree, and report the failing-file sets' difference — so "pre-existing"
 // becomes a measurement instead of a judgment.
 //
@@ -234,7 +234,7 @@ export function runTestDelta(args: TestDeltaArgs): TestDeltaReport {
   }
   if (!existsSync(baseline)) {
     return empty(
-      `the base tree ${baseline} does not exist — run \`qwen review base-tree\` first`,
+      `the base tree ${baseline} does not exist — run \`canopy review base-tree\` first`,
     );
   }
 
@@ -447,7 +447,7 @@ export const testDeltaCommand: CommandModule = {
       .option('baseline', {
         type: 'string',
         demandOption: true,
-        describe: 'The BUILT base tree from `qwen review base-tree`',
+        describe: 'The BUILT base tree from `canopy review base-tree`',
       })
       .option('pr-worktree', {
         type: 'string',

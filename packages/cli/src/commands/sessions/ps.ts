@@ -1,19 +1,19 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * `qwen sessions ps` — list the interactive Qwen Code sessions running
+ * `canopy sessions ps` — list the interactive Canopy Code sessions running
  * right now.
  *
- * The sibling `qwen sessions list` walks saved transcripts; this walks the
+ * The sibling `canopy sessions list` walks saved transcripts; this walks the
  * live-process registry, so the two answer different questions: "what have
  * I worked on" versus "what is running on this machine at this moment".
  *
  * "Interactive" is a registration fact, not a filter: only the
- * interactive UI registers sessions, so headless runs (`qwen -p`) never
+ * interactive UI registers sessions, so headless runs (`canopy -p`) never
  * appear here.
  */
 
@@ -21,7 +21,7 @@ import type { CommandModule, Argv } from 'yargs';
 import {
   listLiveSessions,
   type SessionRegistryRecord,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import stringWidth from 'string-width';
 import {
   sanitizeTerminalText,
@@ -114,7 +114,7 @@ async function handlePs(argv: PsArgs): Promise<void> {
   }
 
   if (records.length === 0) {
-    writeStdoutLine('No other interactive Qwen Code sessions are running.');
+    writeStdoutLine('No other interactive Canopy Code sessions are running.');
     return;
   }
 
@@ -123,7 +123,7 @@ async function handlePs(argv: PsArgs): Promise<void> {
 
 export const psCommand: CommandModule<unknown, PsArgs> = {
   command: 'ps',
-  describe: 'List interactive Qwen Code sessions running right now',
+  describe: 'List interactive Canopy Code sessions running right now',
   builder: (yargs: Argv) =>
     yargs.option('json', {
       type: 'boolean',

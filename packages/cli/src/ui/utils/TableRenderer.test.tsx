@@ -274,7 +274,7 @@ describe('<TableRenderer />', () => {
     // This is the classic failure case: CJK chars counted as width 1
     // causes column misalignment
     const output = renderTable(
-      ['对比项', 'Claude Code', 'Qwen Code'],
+      ['对比项', 'Claude Code', 'Canopy Code'],
       [
         ['性能', '优秀', '优秀'],
         ['中文支持', '一般', '很好'],
@@ -285,7 +285,7 @@ describe('<TableRenderer />', () => {
 
     expect(output).toContain('对比项');
     expect(output).toContain('Claude Code');
-    expect(output).toContain('Qwen Code');
+    expect(output).toContain('Canopy Code');
     expect(output).toContain('性能');
     expect(output).toContain('中文支持');
     expect(output).toContain('开源');
@@ -505,11 +505,11 @@ describe('<TableRenderer />', () => {
   it('renders markdown links as readable plain text in cells', () => {
     const output = renderTable(
       ['Name', 'Link'],
-      [['Doc', '[Qwen](https://example.com/path)']],
+      [['Doc', '[Canopy](https://example.com/path)']],
       60,
     );
-    expect(output).toContain('Qwen');
-    expect(output).not.toContain('[Qwen](');
+    expect(output).toContain('Canopy');
+    expect(output).not.toContain('[Canopy](');
   });
 
   it('renders inline code and bold text readably in the same cell', () => {
@@ -651,7 +651,7 @@ describe('<TableRenderer />', () => {
 
     it('stops a bare URL before glued-on CJK punctuation', () => {
       enableHyperlinks();
-      const url = 'https://github.com/QwenLM/qwen-code/pull/8742';
+      const url = 'https://github.com/QwenLM/canopy-code/pull/8742';
       const suffix = '（2 commits，等 CI）';
       const output = renderTable(['PR'], [[`PR：${url}${suffix}`]], 100);
       expect(output).toContain(`\x1b]8;;${url}\x07`);

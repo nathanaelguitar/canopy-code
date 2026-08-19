@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import type { Mock } from 'vitest';
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 vi.mock('../telemetry/index.js', () => ({
-  QwenLogger: vi.fn().mockImplementation(() => ({
+  CanopyLogger: vi.fn().mockImplementation(() => ({
     logStartSessionEvent: vi.fn().mockResolvedValue(undefined),
     logEndSessionEvent: vi.fn().mockResolvedValue(undefined),
     shutdown: vi.fn().mockResolvedValue(undefined),
@@ -114,8 +114,8 @@ describe('WorkflowTool registration', () => {
 
   afterEach(() => {
     for (const key of [
-      'QWEN_CODE_ENABLE_WORKFLOWS',
-      'QWEN_CODE_DISABLE_WORKFLOWS',
+      'CANOPY_CODE_ENABLE_WORKFLOWS',
+      'CANOPY_CODE_DISABLE_WORKFLOWS',
     ]) {
       if (originalEnv[key] === undefined) {
         delete process.env[key];
@@ -126,8 +126,8 @@ describe('WorkflowTool registration', () => {
   });
 
   it('is NOT registered when isWorkflowsEnabled() is false', async () => {
-    delete process.env['QWEN_CODE_ENABLE_WORKFLOWS'];
-    delete process.env['QWEN_CODE_DISABLE_WORKFLOWS'];
+    delete process.env['CANOPY_CODE_ENABLE_WORKFLOWS'];
+    delete process.env['CANOPY_CODE_DISABLE_WORKFLOWS'];
     const cfg = new Config({ ...baseParams });
     const registry = await cfg.createToolRegistry(undefined, {
       skipDiscovery: true,
@@ -136,8 +136,8 @@ describe('WorkflowTool registration', () => {
   });
 
   it('is registered when isWorkflowsEnabled() is true', async () => {
-    delete process.env['QWEN_CODE_DISABLE_WORKFLOWS'];
-    process.env['QWEN_CODE_ENABLE_WORKFLOWS'] = '1';
+    delete process.env['CANOPY_CODE_DISABLE_WORKFLOWS'];
+    process.env['CANOPY_CODE_ENABLE_WORKFLOWS'] = '1';
     const cfg = new Config({ ...baseParams });
     const registry = await cfg.createToolRegistry(undefined, {
       skipDiscovery: true,
@@ -145,9 +145,9 @@ describe('WorkflowTool registration', () => {
     expect(registry.getAllToolNames()).toContain(ToolNames.WORKFLOW);
   });
 
-  it('QWEN_CODE_DISABLE_WORKFLOWS=1 overrides enable-via-settings', async () => {
-    process.env['QWEN_CODE_DISABLE_WORKFLOWS'] = '1';
-    delete process.env['QWEN_CODE_ENABLE_WORKFLOWS'];
+  it('CANOPY_CODE_DISABLE_WORKFLOWS=1 overrides enable-via-settings', async () => {
+    process.env['CANOPY_CODE_DISABLE_WORKFLOWS'] = '1';
+    delete process.env['CANOPY_CODE_ENABLE_WORKFLOWS'];
     const cfg = new Config({ ...baseParams });
     cfg.setWorkflowsEnabled(true);
     const registry = await cfg.createToolRegistry(undefined, {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -407,7 +407,7 @@ describe('SessionService - rename and custom title', () => {
         workDir: '/test/project/root',
         hostname: 'host',
         startedAt: 1,
-        qwenVersion: null,
+        canopyVersion: null,
       });
       vi.mocked(getProjectHash).mockImplementation((cwd: string) =>
         cwd === '/test/project/root'

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { CommandModule } from 'yargs';
-import { atomicWriteFileSync } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync } from '@canopy-code/canopy-code-core';
 import {
   closeSync,
   existsSync,
@@ -385,7 +385,7 @@ export function runRepoContext(
       // runs for local and file-path reviews, so scope the remedy.
       throw new Error(
         `repo-context: worktree ${worktreeRoot} is missing — recreate the ` +
-          `review worktree (for PR targets: re-run \`qwen review fetch-pr\`)`,
+          `review worktree (for PR targets: re-run \`canopy review fetch-pr\`)`,
       );
     }
     throw err;

@@ -252,7 +252,7 @@ export async function resolveRelevantAutoMemoryPromptForQuery(
 ): Promise<RelevantAutoMemoryPromptResult> {
   const t0 = Date.now();
   // User-level scan is best-effort: a read failure (EACCES, ELOOP) on
-  // `~/.qwen/memories/` must not cancel the project-level scan, otherwise
+  // `~/.canopy/memories/` must not cancel the project-level scan, otherwise
   // recall returns nothing at all for the rest of the session. Project-
   // level scan failures still bubble — they're the only mandatory side.
   const [projectDocs, userDocs] = await Promise.all([

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import {
   GoalPersistenceUnavailableError,
   type GoalRuntime,
   type GoalSnapshotV2,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { renderPreparedGoalUpdate } from './recovered-goal-update.js';
 
 const hiddenSnapshot: GoalSnapshotV2 = {

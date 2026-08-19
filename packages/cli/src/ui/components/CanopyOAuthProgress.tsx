@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,11 +9,11 @@ import { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import Link from 'ink-link';
 import { theme } from '../semantic-colors.js';
-import type { DeviceAuthorizationData } from '@qwen-code/qwen-code-core';
+import type { DeviceAuthorizationData } from '@canopy-code/canopy-code-core';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { t } from '../../i18n/index.js';
 
-interface QwenOAuthProgressProps {
+interface CanopyOAuthProgressProps {
   onTimeout: () => void;
   onCancel: () => void;
   deviceAuth?: DeviceAuthorizationData;
@@ -33,13 +33,13 @@ function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-export function QwenOAuthProgress({
+export function CanopyOAuthProgress({
   onTimeout,
   onCancel,
   deviceAuth,
   authStatus,
   authMessage,
-}: QwenOAuthProgressProps): React.JSX.Element {
+}: CanopyOAuthProgressProps): React.JSX.Element {
   const defaultTimeout = deviceAuth?.expires_in || 300; // Default 5 minutes
   const [timeRemaining, setTimeRemaining] = useState<number>(defaultTimeout);
   const [dots, setDots] = useState<string>('...');
@@ -93,7 +93,7 @@ export function QwenOAuthProgress({
         width="100%"
       >
         <Text bold color={theme.status.error}>
-          {t('Qwen OAuth Authentication Timeout')}
+          {t('Canopy OAuth Authentication Timeout')}
         </Text>
 
         <Box marginTop={1}>
@@ -127,7 +127,7 @@ export function QwenOAuthProgress({
         width="100%"
       >
         <Text bold color={theme.status.error}>
-          {t('Qwen OAuth Authentication Error')}
+          {t('Canopy OAuth Authentication Error')}
         </Text>
 
         <Box marginTop={1}>
@@ -156,10 +156,10 @@ export function QwenOAuthProgress({
         padding={1}
         width="100%"
       >
-        <Text bold>{t('Qwen OAuth Authentication')}</Text>
+        <Text bold>{t('Canopy OAuth Authentication')}</Text>
 
         <Box marginTop={1} flexDirection="column">
-          <Text>{t('Waiting for Qwen OAuth authentication...')}</Text>
+          <Text>{t('Waiting for Canopy OAuth authentication...')}</Text>
           <Text>
             {t('Time remaining:')} {formatTime(timeRemaining)}
           </Text>
@@ -180,7 +180,7 @@ export function QwenOAuthProgress({
       padding={1}
       width="100%"
     >
-      <Text bold>{t('Qwen OAuth Authentication')}</Text>
+      <Text bold>{t('Canopy OAuth Authentication')}</Text>
 
       <Box marginTop={1}>
         <Text>{t('Please visit this URL to authorize:')}</Text>

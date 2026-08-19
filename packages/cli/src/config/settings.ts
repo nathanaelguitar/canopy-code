@@ -14,11 +14,11 @@ import {
   Storage,
   createDebugLogger,
   stripRuntimeSnapshotPrefix,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   MCPServerConfig,
   McpServerScope,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import stripJsonComments from 'strip-json-comments';
 import { isWorkspaceTrusted } from './trustedFolders.js';
 import { hasOwnModelProviders } from './modelProvidersScope.js';
@@ -91,7 +91,7 @@ function getMergeStrategyForPath(path: string[]): MergeStrategy | undefined {
 export type { Settings, MemoryImportFormat };
 
 // Lazy getters: must NOT be top-level consts. `QWEN_HOME` may be resolved
-// from `~/.env` or `~/.qwen/.env` by `preResolveHomeEnvOverrides()` in
+// from `~/.env` or `~/.canopy/.env` by `preResolveHomeEnvOverrides()` in
 // `loadSettings()`, which runs after this module is imported. A const
 // captured here would freeze the pre-bootstrap value and split state across
 // callers.
@@ -680,7 +680,7 @@ export function createMinimalSettings(): LoadedSettings {
  * tokens / settings / memory is intentionally skipped, but silently starting
  * fresh is a footgun. Returns null when there's nothing to warn about.
  */
-function detectQwenHomeRedirectWithoutMigration(
+function detectCanopyHomeRedirectWithoutMigration(
   activeUserSettingsPath: string,
 ): string | null {
   if (!process.env['QWEN_HOME']) {
@@ -689,28 +689,28 @@ function detectQwenHomeRedirectWithoutMigration(
   // Compute the legacy path by briefly unsetting QWEN_HOME so Storage uses
   // its homedir-based default — same homedir resolution as the rest of the
   // storage layer. try/finally restores the env on any throw.
-  const activeQwenDir = Storage.getGlobalQwenDir();
-  const savedQwenHome = process.env['QWEN_HOME'];
+  const activeCanopyDir = Storage.getGlobalCanopyDir();
+  const savedCanopyHome = process.env['QWEN_HOME'];
   delete process.env['QWEN_HOME'];
-  let legacyQwenDir: string;
+  let legacyCanopyDir: string;
   try {
-    legacyQwenDir = Storage.getGlobalQwenDir();
+    legacyCanopyDir = Storage.getGlobalCanopyDir();
   } finally {
-    process.env['QWEN_HOME'] = savedQwenHome;
+    process.env['QWEN_HOME'] = savedCanopyHome;
   }
-  if (path.resolve(activeQwenDir) === path.resolve(legacyQwenDir)) {
+  if (path.resolve(activeCanopyDir) === path.resolve(legacyCanopyDir)) {
     return null;
   }
   if (fs.existsSync(activeUserSettingsPath)) {
     return null;
   }
-  const legacyUserSettings = path.join(legacyQwenDir, 'settings.json');
+  const legacyUserSettings = path.join(legacyCanopyDir, 'settings.json');
   if (!fs.existsSync(legacyUserSettings)) {
     return null;
   }
   return (
-    `QWEN_HOME points to "${activeQwenDir}" but no settings.json was found there. ` +
-    `Existing config remains at "${legacyQwenDir}" — OAuth tokens, settings, memory, ` +
+    `QWEN_HOME points to "${activeCanopyDir}" but no settings.json was found there. ` +
+    `Existing config remains at "${legacyCanopyDir}" — OAuth tokens, settings, memory, ` +
     `extensions, and skills are not auto-migrated. Copy them manually if you want them ` +
     `to apply at the new location.`
   );
@@ -720,7 +720,7 @@ export const CORRUPTED_SUFFIX = '.corrupted';
 
 /**
  * Load and merge settings from all scopes:
- * System Defaults → User (~/.qwen/settings.json) → Workspace → System.
+ * System Defaults → User (~/.canopy/settings.json) → Workspace → System.
  */
 export interface LoadSettingsOptions {
   consumeCorruptionEnvVars?: boolean;
@@ -737,14 +737,14 @@ export function loadSettings(
     typeof consumeCorruptionEnvVars === 'object'
       ? consumeCorruptionEnvVars
       : { consumeCorruptionEnvVars };
-  // Apply any QWEN_HOME / QWEN_RUNTIME_DIR set in user-level `.env` files
+  // Apply any QWEN_HOME / CANOPY_RUNTIME_DIR set in user-level `.env` files
   // BEFORE any code reads a path derived from them. After this call, the
-  // lazy `getUserSettingsPath()` / `Storage.getGlobalQwenDir()` getters
+  // lazy `getUserSettingsPath()` / `Storage.getGlobalCanopyDir()` getters
   // return the post-bootstrap value.
   preResolveHomeEnvOverrides();
   const userSettingsPath = getUserSettingsPath();
-  const qwenHomeRedirectWarning =
-    detectQwenHomeRedirectWithoutMigration(userSettingsPath);
+  const canopyHomeRedirectWarning =
+    detectCanopyHomeRedirectWithoutMigration(userSettingsPath);
 
   let systemSettings: Settings = {};
   let systemDefaultSettings: Settings = {};
@@ -1076,7 +1076,7 @@ export function loadSettings(
 
   // Collect all migration warnings from all scopes
   const allMigrationWarnings: string[] = [
-    ...(qwenHomeRedirectWarning ? [qwenHomeRedirectWarning] : []),
+    ...(canopyHomeRedirectWarning ? [canopyHomeRedirectWarning] : []),
     ...(systemResult.migrationWarnings ?? []),
     ...(systemDefaultsResult.migrationWarnings ?? []),
     ...(userResult.migrationWarnings ?? []),

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { RunHandle } from './run-qwen-serve.js';
+import type { RunHandle } from './run-canopy-serve.js';
 import { MAX_COMPACTED_REPLAY_MAX_BYTES } from '@qwen-code/acp-bridge/replayWindowLimits';
 import {
   isValidMemoryBudgetMb,
@@ -159,7 +159,7 @@ function getRateLimitValidationError(options: ServeOptions): string | null {
       value !== undefined &&
       (!Number.isFinite(value) || !Number.isInteger(value) || value <= 0)
     ) {
-      return `qwen serve: ${name} must be a positive integer.`;
+      return `canopy serve: ${name} must be a positive integer.`;
     }
   }
   if (
@@ -168,7 +168,7 @@ function getRateLimitValidationError(options: ServeOptions): string | null {
       !Number.isInteger(options.rateLimitWindowMs) ||
       options.rateLimitWindowMs < 1000)
   ) {
-    return 'qwen serve: --rate-limit-window-ms must be an integer >= 1000.';
+    return 'canopy serve: --rate-limit-window-ms must be an integer >= 1000.';
   }
   return null;
 }
@@ -183,14 +183,14 @@ function getServeFastPathValidationError(
       !Number.isInteger(mcpClientBudget) ||
       mcpClientBudget <= 0)
   ) {
-    return 'qwen serve: --mcp-client-budget must be a positive integer.';
+    return 'canopy serve: --mcp-client-budget must be a positive integer.';
   }
 
   if (
     parsed.options.mcpBudgetMode === 'enforce' &&
     mcpClientBudget === undefined
   ) {
-    return 'qwen serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.';
+    return 'canopy serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.';
   }
 
   const maxPendingPromptsPerSession =
@@ -202,7 +202,7 @@ function getServeFastPathValidationError(
       !Number.isInteger(maxPendingPromptsPerSession) ||
       maxPendingPromptsPerSession < 0)
   ) {
-    return 'qwen serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).';
+    return 'canopy serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).';
   }
 
   const compactedReplayMaxBytes = parsed.options.compactedReplayMaxBytes;
@@ -213,7 +213,7 @@ function getServeFastPathValidationError(
       compactedReplayMaxBytes > MAX_COMPACTED_REPLAY_MAX_BYTES)
   ) {
     return (
-      'qwen serve: --compacted-replay-max-bytes must be a positive ' +
+      'canopy serve: --compacted-replay-max-bytes must be a positive ' +
       `safe integer in [1, ${MAX_COMPACTED_REPLAY_MAX_BYTES}].`
     );
   }
@@ -223,7 +223,7 @@ function getServeFastPathValidationError(
     maxJournalEvents !== undefined &&
     (!Number.isSafeInteger(maxJournalEvents) || maxJournalEvents < 1)
   ) {
-    return 'qwen serve: --max-journal-events must be a positive safe integer.';
+    return 'canopy serve: --max-journal-events must be a positive safe integer.';
   }
 
   const maxJournalBytes = parsed.options.maxJournalBytes;
@@ -231,7 +231,7 @@ function getServeFastPathValidationError(
     maxJournalBytes !== undefined &&
     (!Number.isSafeInteger(maxJournalBytes) || maxJournalBytes < 1)
   ) {
-    return 'qwen serve: --max-journal-bytes must be a positive safe integer.';
+    return 'canopy serve: --max-journal-bytes must be a positive safe integer.';
   }
 
   const memoryBudgetMb = parsed.options.memoryBudgetMb;
@@ -259,7 +259,7 @@ export async function waitForServeRuntimeOrExit(
       return;
     }
     writeStderrLine(
-      `qwen serve: runtime startup failed after listener was ready: ${
+      `canopy serve: runtime startup failed after listener was ready: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );
@@ -274,22 +274,22 @@ function applyRateLimitEnvDefaults(
 ): void {
   if (
     options.rateLimit === undefined &&
-    isTruthyEnv(env['QWEN_SERVE_RATE_LIMIT'])
+    isTruthyEnv(env['CANOPY_SERVE_RATE_LIMIT'])
   ) {
     options.rateLimit = true;
   }
   if (options.rateLimit) {
     options.rateLimitPrompt ??= parsePositiveIntegerEnv(
-      env['QWEN_SERVE_RATE_LIMIT_PROMPT'],
+      env['CANOPY_SERVE_RATE_LIMIT_PROMPT'],
     );
     options.rateLimitMutation ??= parsePositiveIntegerEnv(
-      env['QWEN_SERVE_RATE_LIMIT_MUTATION'],
+      env['CANOPY_SERVE_RATE_LIMIT_MUTATION'],
     );
     options.rateLimitRead ??= parsePositiveIntegerEnv(
-      env['QWEN_SERVE_RATE_LIMIT_READ'],
+      env['CANOPY_SERVE_RATE_LIMIT_READ'],
     );
     options.rateLimitWindowMs ??= parsePositiveIntegerEnv(
-      env['QWEN_SERVE_RATE_LIMIT_WINDOW_MS'],
+      env['CANOPY_SERVE_RATE_LIMIT_WINDOW_MS'],
     );
   }
 }
@@ -517,13 +517,13 @@ function emitHeadlessYoloWarning(
 function writeServeWarnings(parsed: ParsedServeFastPath): void {
   if (!parsed.httpBridge) {
     writeStderrLine(
-      'qwen serve: --no-http-bridge (native mode) is not yet implemented; ' +
+      'canopy serve: --no-http-bridge (native mode) is not yet implemented; ' +
         'falling back to http-bridge.',
     );
   }
   if (parsed.options.token) {
     writeStderrLine(
-      'qwen serve: --token is visible in the process command line; ' +
+      'canopy serve: --token is visible in the process command line; ' +
         'prefer the QWEN_SERVER_TOKEN env var for any non-trivial deployment.',
     );
   }
@@ -532,7 +532,7 @@ function writeServeWarnings(parsed: ParsedServeFastPath): void {
   if (mcpClientBudget !== undefined) {
     const resolvedMcpMode = parsed.options.mcpBudgetMode ?? 'warn';
     writeStderrLine(
-      `qwen serve: --mcp-client-budget=${mcpClientBudget} mode=${resolvedMcpMode}` +
+      `canopy serve: --mcp-client-budget=${mcpClientBudget} mode=${resolvedMcpMode}` +
         (resolvedMcpMode === 'enforce'
           ? ' (servers past the cap will be refused at discovery)'
           : resolvedMcpMode === 'warn'
@@ -565,7 +565,7 @@ export async function tryRunServeFastPath(
     );
   } catch (err) {
     writeStderrLine(
-      `qwen serve: fast-path bootstrap failed, falling back to full startup: ${
+      `canopy serve: fast-path bootstrap failed, falling back to full startup: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );
@@ -582,10 +582,10 @@ export async function tryRunServeFastPath(
 
   writeServeWarnings(parsed);
 
-  const { runQwenServe } = await import('./run-qwen-serve.js');
+  const { runCanopyServe } = await import('./run-canopy-serve.js');
   let handle: RunHandle;
   try {
-    handle = await runQwenServe(parsed.options, {
+    handle = await runCanopyServe(parsed.options, {
       ...(settings ? { bootSettings: settings } : {}),
       resolveOnListen: true,
       deferRuntimeUntilFirstHealth: !parsed.open,
@@ -598,7 +598,7 @@ export async function tryRunServeFastPath(
     await maybeOpenWebShellBrowser(handle, parsed.open);
   } catch (err) {
     writeStderrLine(
-      `qwen serve: ${err instanceof Error ? err.message : String(err)}`,
+      `canopy serve: ${err instanceof Error ? err.message : String(err)}`,
     );
     process.exit(1);
   }

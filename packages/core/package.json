@@ -1,10 +1,10 @@
 {
-  "name": "@qwen-code/qwen-code-core",
+  "name": "@canopy-code/canopy-code-core",
   "version": "0.21.11",
-  "description": "Qwen Code Core",
+  "description": "Canopy Code Core",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/QwenLM/qwen-code.git"
+    "url": "git+https://github.com/QwenLM/canopy-code.git"
   },
   "type": "module",
   "main": "dist/index.js",

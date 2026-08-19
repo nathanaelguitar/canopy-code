@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import {
   AgentStatus,
   ArenaEventType,
   AuthType,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { arenaCommand } from './arenaCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 
@@ -22,9 +22,9 @@ const arenaManagerMocks = vi.hoisted(() => ({
   }>,
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
 
   class MockArenaManager {
     emitter = new EventEmitter();

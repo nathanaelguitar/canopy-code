@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ import {
   type SessionGroupColor,
   type SessionGroupPresetColor,
   type SessionArchiveState,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { SessionArtifactInput } from '@qwen-code/acp-bridge/sessionArtifacts';
 import {
   CHANNEL_PROMPT_META_KEY,
@@ -2150,7 +2150,7 @@ export function registerSessionRoutes(
               coordinatorLockHeld,
               onError: ({ phase, sessionId, error }) => {
                 writeStderrLine(
-                  `qwen serve: ${phase}Session failed for ${safeLogValue(sessionId)}: ${safeLogValue(error)}`,
+                  `canopy serve: ${phase}Session failed for ${safeLogValue(sessionId)}: ${safeLogValue(error)}`,
                 );
               },
             }),
@@ -2863,10 +2863,10 @@ export function registerSessionRoutes(
       if (worktreeMeta) {
         try {
           // Compute allowed roots for the sessionCd containment check.
-          // Narrow to <root>/.qwen/worktrees (not the whole repo) so a
-          // symlink .qwen/worktrees/task -> <repo>/src is rejected.
+          // Narrow to <root>/.canopy/worktrees (not the whole repo) so a
+          // symlink .canopy/worktrees/task -> <repo>/src is rejected.
           const createAllowedRoots = [
-            path.join(workspaceCwd, '.qwen', 'worktrees'),
+            path.join(workspaceCwd, '.canopy', 'worktrees'),
           ];
           let createRepoTop: string | null = null;
           try {
@@ -2878,7 +2878,7 @@ export function registerSessionRoutes(
           }
           if (createRepoTop && createRepoTop !== workspaceCwd) {
             createAllowedRoots.push(
-              path.join(createRepoTop, '.qwen', 'worktrees'),
+              path.join(createRepoTop, '.canopy', 'worktrees'),
             );
           }
           await runtime.bridge.changeSessionCwd(session.sessionId, {
@@ -3265,7 +3265,7 @@ export function registerSessionRoutes(
             // Defense-in-depth: resolve symlinks on both the target and
             // the expected worktrees root, then verify containment. This
             // defeats both `..` traversal and symlink escapes (e.g.
-            // .qwen/worktrees/escape -> /etc). The allowed root is always
+            // .canopy/worktrees/escape -> /etc). The allowed root is always
             // derived from the server (never from the sidecar, which is
             // attacker-writable). The canonical realTarget is passed to
             // changeSessionCwd to eliminate the TOCTOU window between
@@ -3275,7 +3275,7 @@ export function registerSessionRoutes(
             // first, then fall back to the git repo top-level.
             let realTarget: string | undefined;
             const candidateRoots = [
-              path.join(workspaceCwd, '.qwen', 'worktrees'),
+              path.join(workspaceCwd, '.canopy', 'worktrees'),
             ];
             try {
               realTarget = fs.realpathSync(sidecar.worktreePath);
@@ -3288,7 +3288,7 @@ export function registerSessionRoutes(
                 // Not a git repo or getRepoTopLevel unavailable.
               }
               if (repoTop && repoTop !== workspaceCwd) {
-                candidateRoots.push(path.join(repoTop, '.qwen', 'worktrees'));
+                candidateRoots.push(path.join(repoTop, '.canopy', 'worktrees'));
               }
               const contained = candidateRoots.some((root) => {
                 try {
@@ -4535,7 +4535,7 @@ export function registerSessionRoutes(
         // SSE resume position from this 202 must also learn the bus epoch so
         // a daemon restart in between is detected (DAEMON-001).
         const eventEpoch = ownerBridge.getSessionEventEpoch(sessionId);
-        addDaemonRequestAttribute('qwen-code.prompt_id', promptId);
+        addDaemonRequestAttribute('canopy-code.prompt_id', promptId);
 
         const abort = new AbortController();
         let responseFinished = false;
@@ -5768,7 +5768,7 @@ export function registerSessionRoutes(
         }
         if (sendSessionOrganizationError(res, err)) return;
         writeStderrLine(
-          `qwen serve: failed to list sessions for workspace ${safeLogValue(
+          `canopy serve: failed to list sessions for workspace ${safeLogValue(
             key,
           )} (options=${safeLogValue(
             JSON.stringify({
@@ -5861,7 +5861,7 @@ export function registerSessionRoutes(
         res.status(200).json(info);
       } catch (err) {
         writeStderrLine(
-          `qwen serve: failed to read session-info for workspace ${safeLogValue(
+          `canopy serve: failed to read session-info for workspace ${safeLogValue(
             key,
           )}: ${safeLogValue(err instanceof Error ? err.message : String(err))}`,
         );

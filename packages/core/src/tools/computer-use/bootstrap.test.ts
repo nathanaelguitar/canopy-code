@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@ describe('runBootstrap', () => {
   let deps: BootstrapDeps;
 
   beforeEach(() => {
-    tmpHome = mkdtempSync(join(tmpdir(), 'qwen-cu-bs-'));
+    tmpHome = mkdtempSync(join(tmpdir(), 'canopy-cu-bs-'));
     daemon = { kill: vi.fn() };
     deps = {
       homeDir: tmpHome,

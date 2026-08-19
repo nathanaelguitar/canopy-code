@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -63,7 +63,7 @@ function makeSettings(workspaceDir: string): LoadedSettings {
   return {
     isTrusted: true,
     workspace: {
-      path: path.join(workspaceDir, '.qwen', 'settings.json'),
+      path: path.join(workspaceDir, '.canopy', 'settings.json'),
       settings: {},
     },
     merged: {},
@@ -91,9 +91,9 @@ describe('buildVoiceKeyterms race checks', () => {
 
   it('does not read a keyterms file swapped in before open', () => {
     workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'voice-keyterms-'));
-    const qwenDir = path.join(workspaceDir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
-    const target = path.join(qwenDir, 'voice-keyterms.txt');
+    const canopyDir = path.join(workspaceDir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
+    const target = path.join(canopyDir, 'voice-keyterms.txt');
     fs.writeFileSync(target, 'SafeTerm\n');
 
     raceState.target = fs.realpathSync(target);
@@ -109,9 +109,9 @@ describe('buildVoiceKeyterms race checks', () => {
 
   it('does not read a keyterms file rewritten in place before open', () => {
     workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'voice-keyterms-'));
-    const qwenDir = path.join(workspaceDir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
-    const target = path.join(qwenDir, 'voice-keyterms.txt');
+    const canopyDir = path.join(workspaceDir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
+    const target = path.join(canopyDir, 'voice-keyterms.txt');
     fs.writeFileSync(target, 'SafeTerm\n');
     fs.utimesSync(target, new Date(0), new Date(0));
 
@@ -129,9 +129,9 @@ describe('buildVoiceKeyterms race checks', () => {
 
   it('does not read content larger than the file size cap after open', () => {
     workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'voice-keyterms-'));
-    const qwenDir = path.join(workspaceDir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
-    const target = path.join(qwenDir, 'voice-keyterms.txt');
+    const canopyDir = path.join(workspaceDir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
+    const target = path.join(canopyDir, 'voice-keyterms.txt');
     fs.writeFileSync(target, 'Small\n');
 
     raceState.oversizedReadText = `HugeTermMarker\n${'x'.repeat(64 * 1024)}`;

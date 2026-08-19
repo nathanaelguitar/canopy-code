@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,8 +16,8 @@ import { ColorSelector } from '../create/ColorSelector.js';
 import { MANAGEMENT_STEPS } from '../types.js';
 import { theme } from '../../../semantic-colors.js';
 import { getColorForDisplay, shouldShowColor } from '../utils.js';
-import type { SubagentConfig, Config } from '@qwen-code/qwen-code-core';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import type { SubagentConfig, Config } from '@canopy-code/canopy-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { useKeypress } from '../../../hooks/useKeypress.js';
 import { t } from '../../../../i18n/index.js';
 

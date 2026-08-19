@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ const coreMocks = vi.hoisted(() => ({
 // The middleware only touches these five core helpers; stub them so the test is
 // a pure unit on the `recordRequest` seam. `withDaemonRequestSpan` just runs the
 // wrapped fn (which registers the res listeners and calls next()).
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   ...coreMocks,
 }));
 
@@ -322,7 +322,7 @@ describe('daemonTelemetryMiddleware — recordRequest seam', () => {
         expect.any(Function),
       );
       expect(coreMocks.spanSetAttribute).toHaveBeenLastCalledWith(
-        'qwen-code.workspace.hash',
+        'canopy-code.workspace.hash',
         'hash:/workspace/secondary',
       );
     }
@@ -638,12 +638,12 @@ describe('daemonTelemetryMiddleware — recordRequest seam', () => {
     );
     expect(coreMocks.spanSetAttribute).toHaveBeenNthCalledWith(
       1,
-      'qwen-code.workspace.hash',
+      'canopy-code.workspace.hash',
       'hash:/workspace/one',
     );
     expect(coreMocks.spanSetAttribute).toHaveBeenNthCalledWith(
       2,
-      'qwen-code.workspace.hash',
+      'canopy-code.workspace.hash',
       'hash:/workspace/two',
     );
   });
@@ -694,7 +694,7 @@ describe('daemonTelemetryMiddleware — recordRequest seam', () => {
 
     expect(resolveWorkspaceCwd).not.toHaveBeenCalled();
     expect(coreMocks.spanSetAttribute).toHaveBeenCalledWith(
-      'qwen-code.workspace.hash',
+      'canopy-code.workspace.hash',
       'hash:/workspace/secondary',
     );
   });
@@ -716,7 +716,7 @@ describe('daemonTelemetryMiddleware — recordRequest seam', () => {
 
     expect(coreMocks.spanSetAttribute).toHaveBeenCalledTimes(1);
     expect(coreMocks.spanSetAttribute).toHaveBeenCalledWith(
-      'qwen-code.workspace.hash',
+      'canopy-code.workspace.hash',
       'hash:/workspace/first',
     );
   });

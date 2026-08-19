@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Phase C — Session.pendingWorktreeNotice consumption tests.
@@ -12,20 +12,20 @@
  *   VP4: second Session.prompt() does NOT inject the notice again.
  *   VP4b: no notice set — first prompt is sent without any worktree reminder.
  *
- * This file does NOT mock @qwen-code/qwen-code-core at the module level so
+ * This file does NOT mock @canopy-code/canopy-code-core at the module level so
  * the real Session class and its dependencies resolve correctly.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Session } from './Session.js';
-import type { Config, GeminiChat } from '@qwen-code/qwen-code-core';
+import type { Config, GeminiChat } from '@canopy-code/canopy-code-core';
 import {
   ApprovalMode,
   AuthType,
   GoalPersistenceUnavailableError,
   Storage,
-} from '@qwen-code/qwen-code-core';
-import * as core from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import * as core from '@canopy-code/canopy-code-core';
 import type {
   AgentSideConnection,
   PromptRequest,
@@ -111,7 +111,7 @@ describe('Session.pendingWorktreeNotice', () => {
       setApprovalMode: vi.fn(),
       getApprovalMode: vi.fn().mockReturnValue(ApprovalMode.DEFAULT),
       switchModel: vi.fn(),
-      getModel: vi.fn().mockReturnValue('qwen3'),
+      getModel: vi.fn().mockReturnValue('canopy3'),
       getSessionId: vi.fn().mockReturnValue(SESSION_ID),
       takeActiveTodoReminder: vi.fn().mockReturnValue(undefined),
       getActiveTodoWorkChainOwner: vi.fn((promptId: string) => promptId),
@@ -148,7 +148,7 @@ describe('Session.pendingWorktreeNotice', () => {
       getFileFilteringRespectGitIgnore: vi.fn().mockReturnValue(true),
       getFileFilteringOptions: vi.fn().mockReturnValue({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       }),
       getEnableRecursiveFileSearch: vi.fn().mockReturnValue(false),
       getTargetDir: vi.fn().mockReturnValue('/tmp'),
@@ -230,7 +230,7 @@ describe('Session.pendingWorktreeNotice', () => {
     );
 
     const notice =
-      '[Resumed] Active worktree: "feat" at /repo/.qwen/worktrees/feat ' +
+      '[Resumed] Active worktree: "feat" at /repo/.canopy/worktrees/feat ' +
       '(branch: worktree-feat). Continue using this path for all file operations.';
     session.pendingWorktreeNotice = notice;
 
@@ -353,7 +353,7 @@ describe('Session.pendingWorktreeNotice', () => {
     const notice = 'Recovered agents are available.';
     session.pendingRecoveredAgentsNotice = notice;
 
-    // A daemon continuation (`qwen.daemon.continueLastTurn`) closing a dangling
+    // A daemon continuation (`canopy.daemon.continueLastTurn`) closing a dangling
     // tool call re-sends synthesized functionResponse parts. The one-shot
     // recovered-agents notice must survive it (the `!isContinue` guard) so it
     // is delivered on the user's next ordinary prompt instead.
@@ -367,7 +367,7 @@ describe('Session.pendingWorktreeNotice', () => {
     ] as never);
     await session.prompt({
       ...makePromptRequest(''),
-      _meta: { 'qwen.daemon.continueLastTurn': true },
+      _meta: { 'canopy.daemon.continueLastTurn': true },
     } as PromptRequest);
 
     // The continuation send leads with the synthesized functionResponse and
@@ -438,7 +438,7 @@ describe('Session.pendingWorktreeNotice', () => {
     await session.prompt({
       sessionId: SESSION_ID,
       prompt: [],
-      _meta: { 'qwen.daemon.continueLastTurn': true },
+      _meta: { 'canopy.daemon.continueLastTurn': true },
     } as unknown as PromptRequest);
 
     expect(capturedMessages.length).toBeGreaterThanOrEqual(1);

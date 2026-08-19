@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -137,7 +137,7 @@ export class MemoryDiagnosticsDumper {
       // Phase 2: full collection (may fork subprocesses — risky under pressure)
       const diagnostics = await collectMemoryDiagnostics({
         sessionId,
-        qwenVersion: this.config.getCliVersion(),
+        canopyVersion: this.config.getCliVersion(),
       });
 
       const fullPayload = {

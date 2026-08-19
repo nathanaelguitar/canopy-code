@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   Storage,
   type Config,
   type ExtensionMutationEvent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { ExtensionRefreshState } from './extension-refresh-state.js';
 
 const debugLogger = createDebugLogger('EXTENSION_FILE_WATCHER');
@@ -21,8 +21,8 @@ const debugLogger = createDebugLogger('EXTENSION_FILE_WATCHER');
 const TOP_LEVEL_FILES = new Set(['extension-enablement.json']);
 
 const EXTENSION_FILES = new Set([
-  'qwen-extension.json',
-  '.qwen-extension-install.json',
+  'canopy-extension.json',
+  '.canopy-extension-install.json',
 ]);
 
 // Keep these sets in sync with extension directory conventions. New runtime
@@ -166,7 +166,7 @@ export class ExtensionFileWatcher {
       const configured = extension.config.contextFileName;
       const names =
         configured === undefined
-          ? ['QWEN.md']
+          ? ['CANOPY.md']
           : Array.isArray(configured)
             ? configured
             : [configured];
@@ -272,7 +272,7 @@ export class ExtensionFileWatcher {
     }
     if (
       !fs.existsSync(
-        path.join(this.extensionsDir, parts[0], 'qwen-extension.json'),
+        path.join(this.extensionsDir, parts[0], 'canopy-extension.json'),
       )
     ) {
       return 'stale';

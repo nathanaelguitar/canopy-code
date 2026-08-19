@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -164,7 +164,7 @@ describe('owned workspace runtime publication', () => {
       makeRuntime('/Users/test', { primary: true }),
     ]);
     const runtime = makeRuntime(
-      '/Users/test/Documents/Qwen Code/Conversations',
+      '/Users/test/Documents/Canopy Code/Conversations',
       {
         provenance: 'live-conversation',
         removable: false,
@@ -213,12 +213,12 @@ describe('owned workspace runtime publication', () => {
 
   it('does not let the Live root contain an existing workspace', async () => {
     const registry = createMockRegistry([
-      makeRuntime('/Users/test/Documents/Qwen Code/Conversations/project', {
+      makeRuntime('/Users/test/Documents/Canopy Code/Conversations/project', {
         primary: true,
       }),
     ]);
     const runtime = makeRuntime(
-      '/Users/test/Documents/Qwen Code/Conversations',
+      '/Users/test/Documents/Canopy Code/Conversations',
       {
         provenance: 'live-conversation',
         removable: false,
@@ -853,13 +853,13 @@ describe('POST /workspaces', () => {
   it.skipIf(process.platform === 'win32')(
     'translates a Windows-shaped cwd past the absolute-path guard in a sandbox',
     async () => {
-      vi.stubEnv('SANDBOX', 'qwen-code-sandbox-0');
-      _setSandboxMountExistsForTest((p) => p === '/c/qwen-repro');
+      vi.stubEnv('SANDBOX', 'canopy-code-sandbox-0');
+      _setSandboxMountExistsForTest((p) => p === '/c/canopy-repro');
       try {
         const { app } = createApp();
         const res = await request(app)
           .post('/workspaces')
-          .send({ cwd: 'C:\\qwen-repro' });
+          .send({ cwd: 'C:\\canopy-repro' });
         expect(res.status).toBe(400);
         // Past the guard: the failure is now the realpath existence check,
         // not the absolute-path rejection.
@@ -879,7 +879,7 @@ describe('POST /workspaces', () => {
         const { app } = createApp();
         const res = await request(app)
           .post('/workspaces')
-          .send({ cwd: 'C:\\qwen-repro' });
+          .send({ cwd: 'C:\\canopy-repro' });
         expect(res.status).toBe(400);
         expect(res.body.error).toBe('`cwd` must be an absolute path');
       } finally {
@@ -926,7 +926,7 @@ describe('POST /workspaces', () => {
 
   it('does not expose the hidden Live runtime to workspace nesting checks', async () => {
     const parent = await mkdtemp(join(REAL_DIR, 'qws-live-parent-'));
-    const liveRoot = join(parent, 'Documents', 'Qwen Code', 'Conversations');
+    const liveRoot = join(parent, 'Documents', 'Canopy Code', 'Conversations');
     try {
       const { app } = createApp({
         workspaceRegistry: createMockRegistry([
@@ -948,7 +948,7 @@ describe('POST /workspaces', () => {
 
   it('still blocks a user workspace inside the hidden Live runtime', async () => {
     const parent = await mkdtemp(join(REAL_DIR, 'qws-live-parent-'));
-    const liveRoot = join(parent, 'Documents', 'Qwen Code', 'Conversations');
+    const liveRoot = join(parent, 'Documents', 'Canopy Code', 'Conversations');
     const child = join(liveRoot, 'conversation');
     try {
       await mkdir(child, { recursive: true });
@@ -987,12 +987,12 @@ describe('POST /workspaces', () => {
 
     const res = await request(app).post('/workspaces').send({
       cwd: REAL_DIR,
-      displayName: 'Qwen SDK',
+      displayName: 'Canopy SDK',
     });
 
     expect(res.status).toBe(201);
-    expect(res.body.displayName).toBe('Qwen SDK');
-    expect(runtime.displayName).toBe('Qwen SDK');
+    expect(res.body.displayName).toBe('Canopy SDK');
+    expect(runtime.displayName).toBe('Canopy SDK');
     expect(registry.getByWorkspaceCwd(REAL_DIR)).toBe(runtime);
     expect(add).not.toHaveBeenCalled();
     expect(read).not.toHaveBeenCalled();
@@ -1012,13 +1012,15 @@ describe('POST /workspaces', () => {
     const res = await request(app).post('/workspaces').send({
       cwd: REAL_DIR,
       persist: true,
-      displayName: 'Qwen SDK',
+      displayName: 'Canopy SDK',
     });
 
     expect(res.status).toBe(201);
-    expect(res.body.displayName).toBe('Qwen SDK');
-    expect(add).toHaveBeenCalledWith(REAL_DIR, 'Qwen SDK');
-    expect(registry.getByWorkspaceCwd(REAL_DIR)?.displayName).toBe('Qwen SDK');
+    expect(res.body.displayName).toBe('Canopy SDK');
+    expect(add).toHaveBeenCalledWith(REAL_DIR, 'Canopy SDK');
+    expect(registry.getByWorkspaceCwd(REAL_DIR)?.displayName).toBe(
+      'Canopy SDK',
+    );
     expect(registry.getByWorkspaceCwd(REAL_DIR)?.registrationIds).toEqual([
       workspaceRegistrationId(REAL_DIR),
     ]);
@@ -1420,7 +1422,7 @@ describe('POST /workspaces', () => {
 
   it('promotes a workspace that contains the hidden Live runtime', async () => {
     const parent = await mkdtemp(join(REAL_DIR, 'qws-live-parent-'));
-    const liveRoot = join(parent, 'Documents', 'Qwen Code', 'Conversations');
+    const liveRoot = join(parent, 'Documents', 'Canopy Code', 'Conversations');
     const add = vi.fn().mockResolvedValue(true);
     try {
       const { app } = createApp({
@@ -1757,7 +1759,9 @@ describe('PATCH /workspaces/:workspace', () => {
 
     expect(res.status).toBe(200);
     expect(runtime.displayName).toBe('New name');
-    expect(writeStderrLine).toHaveBeenCalledWith('qwen serve: release failed');
+    expect(writeStderrLine).toHaveBeenCalledWith(
+      'canopy serve: release failed',
+    );
   });
 
   it('serializes removal and shutdown behind a pending update', async () => {
@@ -2216,7 +2220,7 @@ describe('DELETE /workspaces/:workspace', () => {
       registry.getManagedByWorkspaceId(runtime.workspaceId),
     ).toBeUndefined();
     expect(writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: failed to commit workspace registry drain: registry commit failed',
+      'canopy serve: failed to commit workspace registry drain: registry commit failed',
     );
   });
 
@@ -2482,7 +2486,7 @@ describe('persistent workspace registrations', () => {
   });
 
   it('keeps legacy Conversations registrations inactive and only forgets the stored record', async () => {
-    const reserved = '/reserved/qwen-code/conversations';
+    const reserved = '/reserved/canopy-code/conversations';
     const registrationId = workspaceRegistrationId(reserved);
     const internal = makeRuntime(reserved, {
       provenance: 'live-conversation',
@@ -2840,7 +2844,7 @@ describe('GET /workspace-path-suggestions', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    base = await mkdtemp(join(REAL_DIR, 'qwen-suggest-'));
+    base = await mkdtemp(join(REAL_DIR, 'canopy-suggest-'));
     await mkdir(join(base, 'alpha'));
     await mkdir(join(base, 'alpine'));
     await mkdir(join(base, 'beta'));

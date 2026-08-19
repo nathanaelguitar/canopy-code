@@ -114,12 +114,12 @@ describe('loadSandboxConfig sandbox command selection', () => {
     resetSandboxProbeCacheForTest();
     platform.mockReturnValue('linux');
     delete process.env['SANDBOX'];
-    delete process.env['QWEN_SANDBOX'];
+    delete process.env['CANOPY_SANDBOX'];
   });
 
   afterEach(() => {
     delete process.env['SANDBOX'];
-    delete process.env['QWEN_SANDBOX'];
+    delete process.env['CANOPY_SANDBOX'];
   });
 
   it('falls back to podman when docker is installed but its daemon is unreachable', async () => {
@@ -220,7 +220,7 @@ describe('loadSandboxConfig sandbox command selection', () => {
   it('strips ANSI and control characters from the runtime failure', async () => {
     // The runtime's stderr is interpolated into a FatalSandboxError that
     // reaches the terminal, so its escape and control bytes must not survive.
-    process.env['QWEN_SANDBOX'] = 'docker';
+    process.env['CANOPY_SANDBOX'] = 'docker';
     installed('docker');
     probes({
       docker: {
@@ -242,14 +242,14 @@ describe('loadSandboxConfig sandbox command selection', () => {
     // Pins the `result.error` branch — the wedged-daemon path the timeout
     // exists for. Delete that branch and the throw degrades from the ETIMEDOUT
     // text to "exited with null" with the suite still green.
-    process.env['QWEN_SANDBOX'] = 'docker';
+    process.env['CANOPY_SANDBOX'] = 'docker';
     installed('docker');
     probes({ docker: timedOut() });
 
     await expect(loadSandboxConfig({}, {})).rejects.toThrow(/ETIMEDOUT/);
   });
 
-  it('does not blame QWEN_SANDBOX when --sandbox enabled the auto-detect path', async () => {
+  it('does not blame CANOPY_SANDBOX when --sandbox enabled the auto-detect path', async () => {
     installed('docker');
     probes({ docker: daemonDown() });
 
@@ -259,16 +259,16 @@ describe('loadSandboxConfig sandbox command selection', () => {
 
     expect((failure as Error).message).toContain("'docker' is installed");
     expect((failure as Error).message).toContain('--sandbox');
-    expect((failure as Error).message).not.toContain('QWEN_SANDBOX is true');
+    expect((failure as Error).message).not.toContain('CANOPY_SANDBOX is true');
   });
 
-  it('says QWEN_SANDBOX is true when the env var enabled the sandbox', async () => {
-    process.env['QWEN_SANDBOX'] = 'true';
+  it('says CANOPY_SANDBOX is true when the env var enabled the sandbox', async () => {
+    process.env['CANOPY_SANDBOX'] = 'true';
     installed('docker');
     probes({ docker: daemonDown() });
 
     await expect(loadSandboxConfig({}, {})).rejects.toThrow(
-      /QWEN_SANDBOX is true and 'docker' is installed but cannot run/,
+      /CANOPY_SANDBOX is true and 'docker' is installed but cannot run/,
     );
   });
 
@@ -281,17 +281,17 @@ describe('loadSandboxConfig sandbox command selection', () => {
     );
   });
 
-  it('does not silently override an explicit QWEN_SANDBOX choice', async () => {
-    process.env['QWEN_SANDBOX'] = 'docker';
+  it('does not silently override an explicit CANOPY_SANDBOX choice', async () => {
+    process.env['CANOPY_SANDBOX'] = 'docker';
     installed('docker', 'podman');
     probes({ docker: daemonDown(), podman: healthy() });
 
     await expect(loadSandboxConfig({}, {})).rejects.toThrow(
-      /'docker' \(from QWEN_SANDBOX\) is installed but cannot run/,
+      /'docker' \(from CANOPY_SANDBOX\) is installed but cannot run/,
     );
   });
 
-  it('does not blame QWEN_SANDBOX for a command that came from --sandbox', async () => {
+  it('does not blame CANOPY_SANDBOX for a command that came from --sandbox', async () => {
     installed('docker', 'podman');
     probes({ docker: daemonDown(), podman: healthy() });
 
@@ -302,21 +302,21 @@ describe('loadSandboxConfig sandbox command selection', () => {
     );
 
     expect((failure as Error).message).toContain("'docker' is installed");
-    expect((failure as Error).message).not.toContain('QWEN_SANDBOX');
+    expect((failure as Error).message).not.toContain('CANOPY_SANDBOX');
   });
 
-  it('names QWEN_SANDBOX when a missing command really did come from it', async () => {
-    process.env['QWEN_SANDBOX'] = 'podman';
+  it('names CANOPY_SANDBOX when a missing command really did come from it', async () => {
+    process.env['CANOPY_SANDBOX'] = 'podman';
     installed('docker');
     probes({});
 
     await expect(loadSandboxConfig({}, {})).rejects.toThrow(
-      /Missing sandbox command 'podman' \(from QWEN_SANDBOX\)/,
+      /Missing sandbox command 'podman' \(from CANOPY_SANDBOX\)/,
     );
   });
 
   it('accepts an explicit choice that is usable', async () => {
-    process.env['QWEN_SANDBOX'] = 'podman';
+    process.env['CANOPY_SANDBOX'] = 'podman';
     installed('podman');
     probes({ podman: healthy() });
 

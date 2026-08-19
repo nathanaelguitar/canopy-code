@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,7 @@ import {
   type GoalTerminalEvent,
   type GoalTerminalKind,
   type SlashCommandRecordPayload,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   isGoalStatusKind,
   isTerminalGoalStatusKind,
@@ -228,7 +228,7 @@ export function recordGoalStatusItem(
       // service works for the rest of the session and then vanishes on resume,
       // which is indistinguishable from the restore bug this module fixes.
       writeStderrLineSafe(
-        `qwen: no chat recording service; goal_status (kind=${item.kind}) will not survive a resume.`,
+        `canopy: no chat recording service; goal_status (kind=${item.kind}) will not survive a resume.`,
       );
       return;
     }
@@ -245,7 +245,7 @@ export function recordGoalStatusItem(
     // Not debugLogger: that no-ops unless a debug session is active, and a
     // lost write here is invisible until the goal fails to survive a resume.
     writeStderrLineSafe(
-      `qwen: failed to record goal_status (kind=${item.kind}): ${error}`,
+      `canopy: failed to record goal_status (kind=${item.kind}): ${error}`,
     );
   }
 }
@@ -360,7 +360,7 @@ export function restoreGoalFromHistory(
   // one line is written either way.
   if (goalConditionBlockedBy(restorable.condition)) {
     writeStderrLineSafe(
-      `qwen: refusing to restore a goal for session ${sessionId}: the condition is empty.`,
+      `canopy: refusing to restore a goal for session ${sessionId}: the condition is empty.`,
     );
     unregisterGoalHook(config, sessionId);
     return { restored: false, blockedBy: 'condition-invalid' };

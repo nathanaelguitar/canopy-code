@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,57 +33,57 @@ vi.mock('../telemetry/trace-context.js', () => ({
 describe('getShellContextEnvVars', () => {
   let originalSessionId: string | undefined;
   // Isolated for the same reason as the session id, and it matters more now: the
-  // CLI exports QWEN_CODE_CLI to every shell it spawns, so a `npm test` run started
-  // from inside a qwen session inherits it — and the exact-equality assertion below
+  // CLI exports CANOPY_CODE_CLI to every shell it spawns, so a `npm test` run started
+  // from inside a canopy session inherits it — and the exact-equality assertion below
   // would fail on a variable the test never set.
   let originalCli: string | undefined;
-  // And QWEN_CODE_PROJECT_DIR, for the same reason again — the CLI exports it
+  // And CANOPY_CODE_PROJECT_DIR, for the same reason again — the CLI exports it
   // too, and the `.toEqual()` exact matches below fail on the inherited key.
   // Reproduced: with it set, exactly the two exact-match tests fail. Restoring it
   // here also cleans up after the per-session tests below, which assign it and
   // used to leak the assignment into every later test in the file.
   let originalProjectDir: string | undefined;
-  // And QWEN_CODE_MODEL — Config claims it into process.env, so a test run
-  // started from inside a qwen session inherits it too.
+  // And CANOPY_CODE_MODEL — Config claims it into process.env, so a test run
+  // started from inside a canopy session inherits it too.
   let originalModel: string | undefined;
 
   beforeEach(() => {
-    originalSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
-    originalCli = process.env['QWEN_CODE_CLI'];
-    delete process.env['QWEN_CODE_CLI'];
-    originalProjectDir = process.env['QWEN_CODE_PROJECT_DIR'];
-    delete process.env['QWEN_CODE_PROJECT_DIR'];
-    originalModel = process.env['QWEN_CODE_MODEL'];
-    delete process.env['QWEN_CODE_MODEL'];
+    originalSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
+    originalCli = process.env['CANOPY_CODE_CLI'];
+    delete process.env['CANOPY_CODE_CLI'];
+    originalProjectDir = process.env['CANOPY_CODE_PROJECT_DIR'];
+    delete process.env['CANOPY_CODE_PROJECT_DIR'];
+    originalModel = process.env['CANOPY_CODE_MODEL'];
+    delete process.env['CANOPY_CODE_MODEL'];
   });
 
   afterEach(() => {
     if (originalSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = originalSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = originalSessionId;
     } else {
-      delete process.env['QWEN_CODE_SESSION_ID'];
+      delete process.env['CANOPY_CODE_SESSION_ID'];
     }
     if (originalCli !== undefined) {
-      process.env['QWEN_CODE_CLI'] = originalCli;
+      process.env['CANOPY_CODE_CLI'] = originalCli;
     } else {
-      delete process.env['QWEN_CODE_CLI'];
+      delete process.env['CANOPY_CODE_CLI'];
     }
     if (originalProjectDir !== undefined) {
-      process.env['QWEN_CODE_PROJECT_DIR'] = originalProjectDir;
+      process.env['CANOPY_CODE_PROJECT_DIR'] = originalProjectDir;
     } else {
-      delete process.env['QWEN_CODE_PROJECT_DIR'];
+      delete process.env['CANOPY_CODE_PROJECT_DIR'];
     }
     if (originalModel !== undefined) {
-      process.env['QWEN_CODE_MODEL'] = originalModel;
+      process.env['CANOPY_CODE_MODEL'] = originalModel;
     } else {
-      delete process.env['QWEN_CODE_MODEL'];
+      delete process.env['CANOPY_CODE_MODEL'];
     }
   });
 
-  it('passes the running CLI down, so a subprocess does not resolve `qwen` off PATH', () => {
-    // A skill that shells out to `qwen …` would otherwise reach whatever the machine
-    // has installed. Dogfooded: a dev-daemon session ran `qwen review agent-prompt
+  it('passes the running CLI down, so a subprocess does not resolve `canopy` off PATH', () => {
+    // A skill that shells out to `canopy …` would otherwise reach whatever the machine
+    // has installed. Dogfooded: a dev-daemon session ran `canopy review agent-prompt
     // --role 0`, PATH found a v0.19.10 whose agent-prompt predates --role, and the
     // review died on "Missing required argument: chunk".
     const dir = mkdtempSync(join(tmpdir(), 'cli-entry-'));
@@ -92,8 +92,8 @@ describe('getShellContextEnvVars', () => {
       writeFileSync(entry, '#!/usr/bin/env node\nconsole.log("hi");\n', {
         mode: 0o755,
       });
-      process.env['QWEN_CODE_CLI'] = entry;
-      expect(getShellContextEnvVars()['QWEN_CODE_CLI']).toBe(entry);
+      process.env['CANOPY_CODE_CLI'] = entry;
+      expect(getShellContextEnvVars()['CANOPY_CODE_CLI']).toBe(entry);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -102,23 +102,23 @@ describe('getShellContextEnvVars', () => {
   it('overwrites a shebang-less .js with an EMPTY string — omission would leak it through the spread', () => {
     // The variable predates this mechanism with a second meaning: the desktop
     // app's scripts set it to a vendored `dist/cli.js` — a module path meant for
-    // `node <path>`, with no shebang. `"${QWEN_CODE_CLI:-qwen}"` executing that
+    // `node <path>`, with no shebang. `"${CANOPY_CODE_CLI:-canopy}"` executing that
     // runs a JS bundle as a shell script (exit 126). Filtering must WRITE `''`:
     // every spawn site composes the child env as `{...process.env, ...vars}`,
     // so a key merely omitted from the returned record arrives anyway, inherited
     // through the spread — reproduced: exit 126 on exactly the hosts the filter
-    // was written for. The `:-` expansion falls back to `qwen` on empty.
+    // was written for. The `:-` expansion falls back to `canopy` on empty.
     const dir = mkdtempSync(join(tmpdir(), 'cli-nosb-'));
     try {
       const bundle = join(dir, 'cli.js');
       writeFileSync(bundle, '"use strict";\nconsole.log("bundle");\n');
-      process.env['QWEN_CODE_CLI'] = bundle;
+      process.env['CANOPY_CODE_CLI'] = bundle;
 
       const vars = getShellContextEnvVars();
-      expect(vars['QWEN_CODE_CLI']).toBe('');
+      expect(vars['CANOPY_CODE_CLI']).toBe('');
       // The contract, one spread up — the channel the omission bug lived in:
       const childEnv = { ...process.env, ...vars };
-      expect(childEnv['QWEN_CODE_CLI']).toBe('');
+      expect(childEnv['CANOPY_CODE_CLI']).toBe('');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -128,9 +128,9 @@ describe('getShellContextEnvVars', () => {
     // The catch branch (`shebangless = true` on read failure) must not leak the
     // inherited value either — a deleted or permission-blocked path is exactly
     // as unusable as a shebang-less one.
-    process.env['QWEN_CODE_CLI'] = '/no/such/dir/cli.js';
+    process.env['CANOPY_CODE_CLI'] = '/no/such/dir/cli.js';
     const childEnv = { ...process.env, ...getShellContextEnvVars() };
-    expect(childEnv['QWEN_CODE_CLI']).toBe('');
+    expect(childEnv['CANOPY_CODE_CLI']).toBe('');
   });
 
   it('an EXECUTABLE shebang-less .js is filtered by the header check itself', () => {
@@ -146,9 +146,9 @@ describe('getShellContextEnvVars', () => {
       writeFileSync(bundle, '"use strict";\nconsole.log("bundle");\n', {
         mode: 0o755,
       });
-      process.env['QWEN_CODE_CLI'] = bundle;
+      process.env['CANOPY_CODE_CLI'] = bundle;
       const childEnv = { ...process.env, ...getShellContextEnvVars() };
-      expect(childEnv['QWEN_CODE_CLI']).toBe('');
+      expect(childEnv['CANOPY_CODE_CLI']).toBe('');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -166,9 +166,9 @@ describe('getShellContextEnvVars', () => {
         writeFileSync(entry, '#!/usr/bin/env node\nconsole.log("hi");\n', {
           mode: 0o644,
         });
-        process.env['QWEN_CODE_CLI'] = entry;
+        process.env['CANOPY_CODE_CLI'] = entry;
         const childEnv = { ...process.env, ...getShellContextEnvVars() };
-        expect(childEnv['QWEN_CODE_CLI']).toBe('');
+        expect(childEnv['CANOPY_CODE_CLI']).toBe('');
       } finally {
         rmSync(dir, { recursive: true, force: true });
       }
@@ -182,9 +182,9 @@ describe('getShellContextEnvVars', () => {
       writeFileSync(entry, '#!/usr/bin/env node\nconsole.log("hi");\n', {
         mode: 0o755,
       });
-      process.env['QWEN_CODE_CLI'] = entry;
+      process.env['CANOPY_CODE_CLI'] = entry;
       const childEnv = { ...process.env, ...getShellContextEnvVars() };
-      expect(childEnv['QWEN_CODE_CLI']).toBe(entry);
+      expect(childEnv['CANOPY_CODE_CLI']).toBe(entry);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -193,13 +193,13 @@ describe('getShellContextEnvVars', () => {
   it('a DIRECTORY entry is filtered — search permission is not executability', () => {
     // `node <pkg-dir>` makes argv[1] the directory itself, and a directory
     // passes an X_OK probe. An extension allowlist answered "usable" for it
-    // and every `"${QWEN_CODE_CLI:-qwen}"` died on exit 126; only the
+    // and every `"${CANOPY_CODE_CLI:-canopy}"` died on exit 126; only the
     // regular-file check can refuse this shape.
     const dir = mkdtempSync(join(tmpdir(), 'cli-dir-'));
     try {
-      process.env['QWEN_CODE_CLI'] = dir;
+      process.env['CANOPY_CODE_CLI'] = dir;
       const childEnv = { ...process.env, ...getShellContextEnvVars() };
-      expect(childEnv['QWEN_CODE_CLI']).toBe('');
+      expect(childEnv['CANOPY_CODE_CLI']).toBe('');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -214,9 +214,9 @@ describe('getShellContextEnvVars', () => {
     try {
       const entry = join(dir, 'index.ts');
       writeFileSync(entry, 'export {};\n', { mode: 0o755 });
-      process.env['QWEN_CODE_CLI'] = entry;
+      process.env['CANOPY_CODE_CLI'] = entry;
       const childEnv = { ...process.env, ...getShellContextEnvVars() };
-      expect(childEnv['QWEN_CODE_CLI']).toBe('');
+      expect(childEnv['CANOPY_CODE_CLI']).toBe('');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -228,62 +228,62 @@ describe('getShellContextEnvVars', () => {
     // is that shape's stand-in here.
     const dir = mkdtempSync(join(tmpdir(), 'cli-bin-'));
     try {
-      const entry = join(dir, 'qwen');
+      const entry = join(dir, 'canopy');
       writeFileSync(entry, '\x7fELF-not-really\n', { mode: 0o755 });
-      process.env['QWEN_CODE_CLI'] = entry;
+      process.env['CANOPY_CODE_CLI'] = entry;
       const childEnv = { ...process.env, ...getShellContextEnvVars() };
-      expect(childEnv['QWEN_CODE_CLI']).toBe(entry);
+      expect(childEnv['CANOPY_CODE_CLI']).toBe(entry);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it('omits QWEN_CODE_CLI when the host does not export one', () => {
+  it('omits CANOPY_CODE_CLI when the host does not export one', () => {
     // Nothing to override: when the process env has no value, the spread at the
     // spawn sites has nothing to leak either, so absence is correct here. (NOT
     // because an empty string would shadow the fallback — the consumer is the
-    // colon form `${QWEN_CODE_CLI:-qwen}`, which falls back on unset AND empty.
+    // colon form `${CANOPY_CODE_CLI:-canopy}`, which falls back on unset AND empty.
     // That mistaken comment is what produced the filter-by-omission bug below.)
-    expect('QWEN_CODE_CLI' in getShellContextEnvVars()).toBe(false);
+    expect('CANOPY_CODE_CLI' in getShellContextEnvVars()).toBe(false);
   });
 
   it('returns empty strings for agent/prompt when no context is available', () => {
     const env = getShellContextEnvVars();
     expect(env).toEqual({
-      QWEN_CODE_AGENT_ID: '',
-      QWEN_CODE_PROMPT_ID: '',
+      CANOPY_CODE_AGENT_ID: '',
+      CANOPY_CODE_PROMPT_ID: '',
     });
   });
 
-  it('returns QWEN_CODE_SESSION_ID when set in process.env', () => {
-    process.env['QWEN_CODE_SESSION_ID'] = 'test-session-123';
+  it('returns CANOPY_CODE_SESSION_ID when set in process.env', () => {
+    process.env['CANOPY_CODE_SESSION_ID'] = 'test-session-123';
     const env = getShellContextEnvVars();
-    expect(env['QWEN_CODE_SESSION_ID']).toBe('test-session-123');
+    expect(env['CANOPY_CODE_SESSION_ID']).toBe('test-session-123');
   });
 
-  it('returns QWEN_CODE_AGENT_ID when called within agent context', async () => {
+  it('returns CANOPY_CODE_AGENT_ID when called within agent context', async () => {
     const env = await runWithAgentContext('my-agent-42', async () =>
       getShellContextEnvVars(),
     );
-    expect(env['QWEN_CODE_AGENT_ID']).toBe('my-agent-42');
+    expect(env['CANOPY_CODE_AGENT_ID']).toBe('my-agent-42');
   });
 
-  it('returns QWEN_CODE_PROMPT_ID when called within prompt context', () => {
+  it('returns CANOPY_CODE_PROMPT_ID when called within prompt context', () => {
     const env = promptIdContext.run('prompt-abc', () =>
       getShellContextEnvVars(),
     );
-    expect(env['QWEN_CODE_PROMPT_ID']).toBe('prompt-abc');
+    expect(env['CANOPY_CODE_PROMPT_ID']).toBe('prompt-abc');
   });
 
   it('returns all vars when all contexts are active', async () => {
-    process.env['QWEN_CODE_SESSION_ID'] = 'sess-uuid';
+    process.env['CANOPY_CODE_SESSION_ID'] = 'sess-uuid';
     const env = await runWithAgentContext('agent-xyz', async () =>
       promptIdContext.run('prompt-456', () => getShellContextEnvVars()),
     );
     expect(env).toEqual({
-      QWEN_CODE_SESSION_ID: 'sess-uuid',
-      QWEN_CODE_AGENT_ID: 'agent-xyz',
-      QWEN_CODE_PROMPT_ID: 'prompt-456',
+      CANOPY_CODE_SESSION_ID: 'sess-uuid',
+      CANOPY_CODE_AGENT_ID: 'agent-xyz',
+      CANOPY_CODE_PROMPT_ID: 'prompt-456',
     });
   });
 
@@ -295,34 +295,34 @@ describe('getShellContextEnvVars', () => {
       // for that session's transcripts and find none (or worse, find theirs).
       registerSessionProjectDir('sess-A', '/proj/A');
       registerSessionProjectDir('sess-B', '/proj/B');
-      process.env['QWEN_CODE_PROJECT_DIR'] = '/proj/A'; // the first to boot
+      process.env['CANOPY_CODE_PROJECT_DIR'] = '/proj/A'; // the first to boot
 
       const a = sessionIdContext.run('sess-A', () => getShellContextEnvVars());
       const b = sessionIdContext.run('sess-B', () => getShellContextEnvVars());
 
-      expect(a['QWEN_CODE_PROJECT_DIR']).toBe('/proj/A');
-      expect(b['QWEN_CODE_PROJECT_DIR']).toBe('/proj/B'); // NOT A's
+      expect(a['CANOPY_CODE_PROJECT_DIR']).toBe('/proj/A');
+      expect(b['CANOPY_CODE_PROJECT_DIR']).toBe('/proj/B'); // NOT A's
     });
 
     it('drops a session entry on unregister — no daemon leak', () => {
       registerSessionProjectDir('sess-X', '/proj/X');
       expect(
         sessionIdContext.run('sess-X', () => getShellContextEnvVars())[
-          'QWEN_CODE_PROJECT_DIR'
+          'CANOPY_CODE_PROJECT_DIR'
         ],
       ).toBe('/proj/X');
       unregisterSessionProjectDir('sess-X');
-      delete process.env['QWEN_CODE_PROJECT_DIR'];
+      delete process.env['CANOPY_CODE_PROJECT_DIR'];
       expect(
         sessionIdContext.run('sess-X', () => getShellContextEnvVars())[
-          'QWEN_CODE_PROJECT_DIR'
+          'CANOPY_CODE_PROJECT_DIR'
         ],
       ).toBeUndefined();
     });
 
     it('falls back to the env var for the single-session CLI', () => {
-      process.env['QWEN_CODE_PROJECT_DIR'] = '/proj/only';
-      expect(getShellContextEnvVars()['QWEN_CODE_PROJECT_DIR']).toBe(
+      process.env['CANOPY_CODE_PROJECT_DIR'] = '/proj/only';
+      expect(getShellContextEnvVars()['CANOPY_CODE_PROJECT_DIR']).toBe(
         '/proj/only',
       );
     });
@@ -333,23 +333,23 @@ describe('getShellContextEnvVars', () => {
       // Daemon mode: process.env holds the FIRST session's ID forever
       // (constructor guard `sessionEnvClaimed` in config.ts), so a later
       // session must win via its own async context.
-      process.env['QWEN_CODE_SESSION_ID'] = 'stale-first-session';
+      process.env['CANOPY_CODE_SESSION_ID'] = 'stale-first-session';
       const env = sessionIdContext.run('current-session', () =>
         getShellContextEnvVars(),
       );
-      expect(env['QWEN_CODE_SESSION_ID']).toBe('current-session');
+      expect(env['CANOPY_CODE_SESSION_ID']).toBe('current-session');
     });
 
     it('falls back to process.env outside any session context (single-session CLI)', () => {
-      process.env['QWEN_CODE_SESSION_ID'] = 'cli-session';
+      process.env['CANOPY_CODE_SESSION_ID'] = 'cli-session';
       const env = getShellContextEnvVars();
-      expect(env['QWEN_CODE_SESSION_ID']).toBe('cli-session');
+      expect(env['CANOPY_CODE_SESSION_ID']).toBe('cli-session');
     });
 
     it('isolates concurrent sessions in the same process', async () => {
       // Regression: two daemon sessions interleaving must each see their
       // own ID at spawn time, even though process.env is a single slot.
-      process.env['QWEN_CODE_SESSION_ID'] = 'stale-first-session';
+      process.env['CANOPY_CODE_SESSION_ID'] = 'stale-first-session';
       let envSeenByA: Record<string, string> = {};
       let envSeenByB: Record<string, string> = {};
 
@@ -364,18 +364,18 @@ describe('getShellContextEnvVars', () => {
         }),
       ]);
 
-      expect(envSeenByA['QWEN_CODE_SESSION_ID']).toBe('session-A');
-      expect(envSeenByB['QWEN_CODE_SESSION_ID']).toBe('session-B');
+      expect(envSeenByA['CANOPY_CODE_SESSION_ID']).toBe('session-A');
+      expect(envSeenByB['CANOPY_CODE_SESSION_ID']).toBe('session-B');
     });
   });
 
-  describe('active model id (QWEN_CODE_MODEL)', () => {
+  describe('active model id (CANOPY_CODE_MODEL)', () => {
     it('passes the active model down from the Config-claimed slot', () => {
       // A subprocess that must report which model ran (the /review compose
       // step) has no other authoritative source — settings files miss /model
       // switches and describe the wrong home under QWEN_HOME isolation.
-      process.env['QWEN_CODE_MODEL'] = 'qwen3-coder-plus';
-      expect(getShellContextEnvVars()['QWEN_CODE_MODEL']).toBe(
+      process.env['CANOPY_CODE_MODEL'] = 'qwen3-coder-plus';
+      expect(getShellContextEnvVars()['CANOPY_CODE_MODEL']).toBe(
         'qwen3-coder-plus',
       );
     });
@@ -383,17 +383,17 @@ describe('getShellContextEnvVars', () => {
     it('omits the key when no Config has claimed the slot', () => {
       // Same rule as the session ID: nothing in process.env means the
       // spawn-site spread has nothing stale to leak, so absence is correct.
-      expect('QWEN_CODE_MODEL' in getShellContextEnvVars()).toBe(false);
+      expect('CANOPY_CODE_MODEL' in getShellContextEnvVars()).toBe(false);
     });
 
     it('reflects a republished slot after a model switch', () => {
       // publishModelEnv in config.ts rewrites the slot on set/switchModel and
       // refreshAuth; spawn-time reads must see the CURRENT value, not one
       // captured earlier.
-      process.env['QWEN_CODE_MODEL'] = 'model-before-switch';
+      process.env['CANOPY_CODE_MODEL'] = 'model-before-switch';
       getShellContextEnvVars();
-      process.env['QWEN_CODE_MODEL'] = 'model-after-switch';
-      expect(getShellContextEnvVars()['QWEN_CODE_MODEL']).toBe(
+      process.env['CANOPY_CODE_MODEL'] = 'model-after-switch';
+      expect(getShellContextEnvVars()['CANOPY_CODE_MODEL']).toBe(
         'model-after-switch',
       );
     });
@@ -407,42 +407,42 @@ describe('getShellContextEnvVars', () => {
       // bug this PR opens with, relocated to the consumer.
       registerSessionModel('sess-A', 'model-A');
       registerSessionModel('sess-B', 'model-B');
-      process.env['QWEN_CODE_MODEL'] = 'model-A'; // the first to boot
+      process.env['CANOPY_CODE_MODEL'] = 'model-A'; // the first to boot
 
       const a = sessionIdContext.run('sess-A', () => getShellContextEnvVars());
       const b = sessionIdContext.run('sess-B', () => getShellContextEnvVars());
 
-      expect(a['QWEN_CODE_MODEL']).toBe('model-A');
-      expect(b['QWEN_CODE_MODEL']).toBe('model-B'); // NOT A's
+      expect(a['CANOPY_CODE_MODEL']).toBe('model-A');
+      expect(b['CANOPY_CODE_MODEL']).toBe('model-B'); // NOT A's
     });
 
     it('drops a session entry on unregister — no daemon leak', () => {
       registerSessionModel('sess-X', 'model-X');
       expect(
         sessionIdContext.run('sess-X', () => getShellContextEnvVars())[
-          'QWEN_CODE_MODEL'
+          'CANOPY_CODE_MODEL'
         ],
       ).toBe('model-X');
       unregisterSessionModel('sess-X');
-      delete process.env['QWEN_CODE_MODEL'];
+      delete process.env['CANOPY_CODE_MODEL'];
       expect(
         sessionIdContext.run('sess-X', () => getShellContextEnvVars())[
-          'QWEN_CODE_MODEL'
+          'CANOPY_CODE_MODEL'
         ],
       ).toBeUndefined();
     });
 
     it('falls back to the global slot for the single-session CLI', () => {
-      process.env['QWEN_CODE_MODEL'] = 'model-only';
-      expect(getShellContextEnvVars()['QWEN_CODE_MODEL']).toBe('model-only');
+      process.env['CANOPY_CODE_MODEL'] = 'model-only';
+      expect(getShellContextEnvVars()['CANOPY_CODE_MODEL']).toBe('model-only');
     });
   });
 
   it('sets empty string for agent/prompt to override inherited env', () => {
-    // Simulates a nested qwen-code process where parent injected these
+    // Simulates a nested canopy-code process where parent injected these
     const env = getShellContextEnvVars();
-    expect(env['QWEN_CODE_AGENT_ID']).toBe('');
-    expect(env['QWEN_CODE_PROMPT_ID']).toBe('');
+    expect(env['CANOPY_CODE_AGENT_ID']).toBe('');
+    expect(env['CANOPY_CODE_PROMPT_ID']).toBe('');
     // Empty strings will overwrite any stale inherited values in process.env
   });
 

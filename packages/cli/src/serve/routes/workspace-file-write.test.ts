@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -44,7 +44,7 @@ async function makeHarness(opts?: {
   const scratch = await fsp.mkdtemp(
     path.join(
       os.tmpdir(),
-      `qwen-write-routes-${randomBytes(4).toString('hex')}-`,
+      `canopy-write-routes-${randomBytes(4).toString('hex')}-`,
     ),
   );
   const wsDir = path.join(scratch, opts?.workspaceName ?? 'ws');
@@ -278,7 +278,7 @@ describe('POST /file/write', () => {
       .post('/file/write')
       .set('Host', loopbackHost())
       .set('Authorization', 'Bearer secret')
-      .set('X-Qwen-Client-Id', 'unknown-client')
+      .set('X-Canopy-Client-Id', 'unknown-client')
       .send({ path: 'a.txt', content: 'x', mode: 'create' });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('invalid_client_id');
@@ -770,7 +770,7 @@ describe('POST /file/upload', () => {
       .set('Host', loopbackHost())
       .set('Authorization', 'Bearer secret')
       .set('Content-Type', 'application/octet-stream')
-      .set('X-Qwen-Client-Id', 'not-a-real-client')
+      .set('X-Canopy-Client-Id', 'not-a-real-client')
       .query({ path: 'a.bin' })
       .send(Buffer.from('x'));
     expect(res.status).toBe(400);
@@ -1256,7 +1256,7 @@ describe('POST /file/upload HTTP concurrency gate (end-to-end)', () => {
     const scratch = await fsp.mkdtemp(
       path.join(
         os.tmpdir(),
-        `qwen-upload-gate-${randomBytes(4).toString('hex')}-`,
+        `canopy-upload-gate-${randomBytes(4).toString('hex')}-`,
       ),
     );
     const wsDir = path.join(scratch, 'ws');

@@ -13,7 +13,7 @@ import {
   isSignalTermination,
   flatMapTextParts,
   checkArgumentSafety,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 import type { CommandContext } from '../../ui/commands/types.js';
 import type { IPromptProcessor, PromptPipelineContent } from './types.js';

@@ -8,7 +8,7 @@ import type {
   ObservedChannelRelatedContact,
   ObservedChannelTopic,
 } from '@qwen-code/channel-base';
-import { atomicWriteFileSync } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync } from '@canopy-code/canopy-code-core';
 
 const REGISTRY_VERSION = 1;
 const MAX_OBSERVATIONS = 500;

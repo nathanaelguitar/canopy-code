@@ -36,7 +36,7 @@ describe('auth command', () => {
   it('builds a removal notice with migration paths and no ANSI in non-TTY', () => {
     const notice = buildRemovalNotice();
 
-    expect(notice).toContain('qwen auth has been removed');
+    expect(notice).toContain('canopy auth has been removed');
     expect(notice).toContain('/auth');
     expect(notice).toContain('/doctor');
     expect(notice).toContain('BAILIAN_CODING_PLAN_API_KEY');
@@ -72,7 +72,7 @@ describe('auth command', () => {
     ['auth'],
     ['auth status'],
     ['auth api-key'],
-    ['auth qwen-oauth'],
+    ['auth canopy-oauth'],
     ['auth openrouter --key test-key'],
     ['auth coding-plan --region china --key sk-sp-test'],
     ['auth --key test-key'],
@@ -89,7 +89,7 @@ describe('auth command', () => {
     }) as never);
 
     await yargs(command.split(' '))
-      .scriptName('qwen')
+      .scriptName('canopy')
       .command(authCommand)
       .strict()
       .fail((message, error) => {

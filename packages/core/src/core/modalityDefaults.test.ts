@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect } from 'vitest';
 import {
   defaultModalities,
-  isQwenFamilyWireModel,
+  isCanopyFamilyWireModel,
   isTieredEffortWireModel,
 } from './modalityDefaults.js';
 
@@ -109,7 +109,7 @@ describe('defaultModalities', () => {
     });
   });
 
-  describe('Qwen', () => {
+  describe('Canopy', () => {
     it('returns image + video for qwen-vl-max', () => {
       const m = defaultModalities('qwen-vl-max');
       expect(m.image).toBe(true);
@@ -300,22 +300,22 @@ describe('defaultModalities', () => {
   });
 });
 
-describe('isQwenFamilyWireModel', () => {
-  it('matches qwen* ids case-insensitively', () => {
-    expect(isQwenFamilyWireModel('qwen3.8-max')).toBe(true);
-    expect(isQwenFamilyWireModel('Qwen3.7-Max')).toBe(true);
-    expect(isQwenFamilyWireModel('qwen-vl-max')).toBe(true);
+describe('isCanopyFamilyWireModel', () => {
+  it('matches canopy* ids case-insensitively', () => {
+    expect(isCanopyFamilyWireModel('qwen3.8-max')).toBe(true);
+    expect(isCanopyFamilyWireModel('Qwen3.7-Max')).toBe(true);
+    expect(isCanopyFamilyWireModel('qwen-vl-max')).toBe(true);
   });
 
-  it('matches the coder-model QWEN_OAUTH default', () => {
-    expect(isQwenFamilyWireModel('coder-model')).toBe(true);
+  it('matches the coder-model CANOPY_OAUTH default', () => {
+    expect(isCanopyFamilyWireModel('coder-model')).toBe(true);
   });
 
-  it('rejects non-qwen ids and empty input', () => {
-    expect(isQwenFamilyWireModel('glm-5.2')).toBe(false);
-    expect(isQwenFamilyWireModel('kimi-k2.6')).toBe(false);
-    expect(isQwenFamilyWireModel('')).toBe(false);
-    expect(isQwenFamilyWireModel(undefined)).toBe(false);
+  it('rejects non-canopy ids and empty input', () => {
+    expect(isCanopyFamilyWireModel('glm-5.2')).toBe(false);
+    expect(isCanopyFamilyWireModel('kimi-k2.6')).toBe(false);
+    expect(isCanopyFamilyWireModel('')).toBe(false);
+    expect(isCanopyFamilyWireModel(undefined)).toBe(false);
   });
 });
 
@@ -328,7 +328,7 @@ describe('isTieredEffortWireModel', () => {
     expect(isTieredEffortWireModel('Qwen3.8-Max')).toBe(true);
   });
 
-  it('rejects other qwen models and non-qwen ids', () => {
+  it('rejects other canopy models and non-canopy ids', () => {
     expect(isTieredEffortWireModel('qwen3.7-max')).toBe(false);
     expect(isTieredEffortWireModel('coder-model')).toBe(false);
     expect(isTieredEffortWireModel('glm-5.2')).toBe(false);

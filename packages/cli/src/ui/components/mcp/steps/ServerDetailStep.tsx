@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { theme } from '../../../semantic-colors.js';
 import { useKeypress } from '../../../hooks/useKeypress.js';
 import { RadioButtonSelect } from '../../shared/RadioButtonSelect.js';
 import { t } from '../../../../i18n/index.js';
-import { MCPServerStatus } from '@qwen-code/qwen-code-core';
+import { MCPServerStatus } from '@canopy-code/canopy-code-core';
 import type { ServerDetailStepProps } from '../types.js';
 import {
   getStatusColor,

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HooksConfigSource, HookType } from '@qwen-code/qwen-code-core';
+import { HooksConfigSource, HookType } from '@canopy-code/canopy-code-core';
 
 vi.mock('../../../i18n/index.js', () => ({
   t: vi.fn((key: string) => key),

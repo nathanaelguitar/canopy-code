@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import type { UsageSummaryRecord } from '@qwen-code/qwen-code-core';
+import type { UsageSummaryRecord } from '@canopy-code/canopy-code-core';
 import { registerUsageStatsRoutes } from './usage-stats.js';
 
 const DAY = 86_400_000;
@@ -191,18 +191,18 @@ describe('usage-stats route (cache + range + clamping)', () => {
 
 describe('usage-stats route (real loader against seeded history)', () => {
   let tmpHome: string;
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
 
   beforeEach(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-usage-route-'));
-    originalQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = path.join(tmpHome, '.qwen');
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-usage-route-'));
+    originalCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = path.join(tmpHome, '.canopy');
     fs.mkdirSync(process.env['QWEN_HOME'], { recursive: true });
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 

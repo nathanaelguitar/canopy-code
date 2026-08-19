@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,7 +35,7 @@ import { join } from 'node:path';
 export interface WorkspacePackage {
   /** Repo-relative directory, e.g. `packages/cli`. */
   dir: string;
-  /** The npm package name, e.g. `@qwen-code/cli`. */
+  /** The npm package name, e.g. `@canopy-code/cli`. */
   name: string;
   /** Script names it defines (`build`, `test`, …). */
   scripts: string[];

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -90,7 +90,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       timeout: 60000,
       maxRetries: 2,
       model: 'qwen-max',
-      authType: AuthType.QWEN_OAUTH,
+      authType: AuthType.CANOPY_OAUTH,
     } as ContentGeneratorConfig;
 
     // Mock Config
@@ -122,9 +122,9 @@ describe('DashScopeOpenAICompatibleProvider', () => {
   });
 
   describe('isDashScopeProvider', () => {
-    it('should return true for QWEN_OAUTH auth type', () => {
+    it('should return true for CANOPY_OAUTH auth type', () => {
       const config = {
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         baseUrl: 'https://api.openai.com/v1',
       } as ContentGeneratorConfig;
 
@@ -520,10 +520,10 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       const headers = provider.buildHeaders();
 
       expect(headers).toEqual({
-        'User-Agent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
+        'User-Agent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
         'X-DashScope-CacheControl': 'enable',
-        'X-DashScope-UserAgent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
-        'X-DashScope-AuthType': AuthType.QWEN_OAUTH,
+        'X-DashScope-UserAgent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
+        'X-DashScope-AuthType': AuthType.CANOPY_OAUTH,
       });
     });
 
@@ -541,9 +541,9 @@ describe('DashScopeOpenAICompatibleProvider', () => {
 
       const headers = providerWithCustomHeaders.buildHeaders();
 
-      expect(headers['User-Agent']).toContain('QwenCode/1.0.0');
-      expect(headers['X-DashScope-UserAgent']).toContain('QwenCode/1.0.0');
-      expect(headers['X-DashScope-AuthType']).toBe(AuthType.QWEN_OAUTH);
+      expect(headers['User-Agent']).toContain('CanopyCode/1.0.0');
+      expect(headers['X-DashScope-UserAgent']).toContain('CanopyCode/1.0.0');
+      expect(headers['X-DashScope-AuthType']).toBe(AuthType.CANOPY_OAUTH);
       expect(headers['X-Custom']).toBe('1');
       expect(headers['X-DashScope-CacheControl']).toBe('disable');
     });
@@ -558,10 +558,10 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       const headers = provider.buildHeaders();
 
       expect(headers['User-Agent']).toBe(
-        `QwenCode/unknown (${process.platform}; ${process.arch})`,
+        `CanopyCode/unknown (${process.platform}; ${process.arch})`,
       );
       expect(headers['X-DashScope-UserAgent']).toBe(
-        `QwenCode/unknown (${process.platform}; ${process.arch})`,
+        `CanopyCode/unknown (${process.platform}; ${process.arch})`,
       );
     });
   });
@@ -577,10 +577,10 @@ describe('DashScopeOpenAICompatibleProvider', () => {
           timeout: 60000,
           maxRetries: 2,
           defaultHeaders: {
-            'User-Agent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
+            'User-Agent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
             'X-DashScope-CacheControl': 'enable',
-            'X-DashScope-UserAgent': `QwenCode/1.0.0 (${process.platform}; ${process.arch})`,
-            'X-DashScope-AuthType': AuthType.QWEN_OAUTH,
+            'X-DashScope-UserAgent': `CanopyCode/1.0.0 (${process.platform}; ${process.arch})`,
+            'X-DashScope-AuthType': AuthType.CANOPY_OAUTH,
           },
         }),
       );
@@ -682,7 +682,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(lastMessage.content).toBe('Hello!');
     });
 
-    it('sends enable_thinking:true on a qwen model when a reasoning effort is set', () => {
+    it('sends enable_thinking:true on a canopy model when a reasoning effort is set', () => {
       const generator = new DashScopeOpenAICompatibleProvider(
         {
           ...mockContentGeneratorConfig,
@@ -994,7 +994,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(mockDebugLogger.warn).toHaveBeenCalledTimes(1);
     });
 
-    it('keeps enable_thinking when a request-level reasoning_effort override ships on a legacy qwen model', () => {
+    it('keeps enable_thinking when a request-level reasoning_effort override ships on a legacy canopy model', () => {
       // Legacy hybrids read enable_thinking, not reasoning_effort; the
       // override passes through as an opaque parameter and must not delete
       // the thinking switch, or the wire would carry no thinking signal.
@@ -1020,7 +1020,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['enable_thinking']).toBe(true);
     });
 
-    it('drops the inert reasoning_effort when it conflicts with thinking_budget on a legacy qwen model', () => {
+    it('drops the inert reasoning_effort when it conflicts with thinking_budget on a legacy canopy model', () => {
       // DashScope rejects the reasoning_effort + thinking_budget pair.
       // Legacy hybrids read enable_thinking/thinking_budget, not
       // reasoning_effort, so the inert field goes and the knobs the model
@@ -1049,7 +1049,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['thinking_budget']).toBe(1024);
     });
 
-    it('drops the inert reasoning_effort for a legacy qwen model with only a user thinking_budget', () => {
+    it('drops the inert reasoning_effort for a legacy canopy model with only a user thinking_budget', () => {
       // No config tier: the wire would otherwise carry a single ignored
       // parameter (reasoning_effort) with the meaningful thinking_budget
       // deleted. The user's budget must survive.
@@ -1071,7 +1071,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['enable_thinking']).toBeUndefined();
     });
 
-    it('keeps every knob for a non-qwen model with an extra_body enable_thinking and reasoning_effort', () => {
+    it('keeps every knob for a non-canopy model with an extra_body enable_thinking and reasoning_effort', () => {
       // glm/kimi presets inject enable_thinking via extra_body; a user
       // reasoning_effort override is an opaque sampling override there, not
       // a thinking switch, and must not delete the preset's switch.
@@ -1093,8 +1093,8 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(mockDebugLogger.warn).not.toHaveBeenCalled();
     });
 
-    it('keeps every knob for a non-qwen model with an extra_body thinking_budget and reasoning_effort', () => {
-      // The family gate's observable effect for non-qwen models: a user
+    it('keeps every knob for a non-canopy model with an extra_body thinking_budget and reasoning_effort', () => {
+      // The family gate's observable effect for non-canopy models: a user
       // thinking_budget survives alongside an opaque reasoning_effort
       // override (mutation check: deleting the gate's early return drops
       // the budget here).
@@ -1434,7 +1434,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       );
     });
 
-    it('keeps a legacy Qwen budget over an opaque none effort', () => {
+    it('keeps a legacy Canopy budget over an opaque none effort', () => {
       const generator = new DashScopeOpenAICompatibleProvider(
         {
           ...mockContentGeneratorConfig,
@@ -1586,7 +1586,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(mockDebugLogger.warn).not.toHaveBeenCalled();
     });
 
-    it('keeps thinking_budget alongside enable_thinking on legacy qwen models', () => {
+    it('keeps thinking_budget alongside enable_thinking on legacy canopy models', () => {
       // thinking_budget + enable_thinking is a valid pair on hybrid models;
       // only the reasoning_effort combination is rejected.
       const generator = new DashScopeOpenAICompatibleProvider(
@@ -1658,9 +1658,9 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['vl_high_resolution_images']).toBe(true);
     });
 
-    it('strips the pipeline-injected nested reasoning when enable_thinking is added on a qwen model', () => {
+    it('strips the pipeline-injected nested reasoning when enable_thinking is added on a canopy model', () => {
       // The pipeline injects a nested `reasoning: { effort }` object for
-      // OpenAI-compatible endpoints. qwen drives thinking via `enable_thinking`,
+      // OpenAI-compatible endpoints. canopy drives thinking via `enable_thinking`,
       // so shipping both would send two competing knobs — the nested form must
       // be dropped (mirrors deepseek.ts / zai.ts).
       const generator = new DashScopeOpenAICompatibleProvider(
@@ -1707,7 +1707,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['vl_high_resolution_images']).toBe(true);
     });
 
-    it('keeps the nested reasoning for a non-qwen wire model (no enable_thinking, no strip)', () => {
+    it('keeps the nested reasoning for a non-canopy wire model (no enable_thinking, no strip)', () => {
       const generator = new DashScopeOpenAICompatibleProvider(
         {
           ...mockContentGeneratorConfig,
@@ -1737,7 +1737,7 @@ describe('DashScopeOpenAICompatibleProvider', () => {
       expect(result['enable_thinking']).toBeUndefined();
     });
 
-    it('does not send enable_thinking for a non-qwen wire model even with effort set', () => {
+    it('does not send enable_thinking for a non-canopy wire model even with effort set', () => {
       const generator = new DashScopeOpenAICompatibleProvider(
         {
           ...mockContentGeneratorConfig,

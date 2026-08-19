@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,10 +8,10 @@ import type { HookDefinition, HookEventName } from '../hooks/types.js';
 
 /**
  * Represents the storage level for a skill configuration.
- * - 'project': Stored in `.qwen/skills/` within the project directory
- * - 'user': Stored in `~/.qwen/skills/` in the user's home directory
+ * - 'project': Stored in `.canopy/skills/` within the project directory
+ * - 'user': Stored in `~/.canopy/skills/` in the user's home directory
  * - 'extension': Provided by an installed extension
- * - 'bundled': Built-in skills shipped with qwen-code
+ * - 'bundled': Built-in skills shipped with canopy-code
  */
 export type SkillLevel = 'project' | 'user' | 'extension' | 'bundled';
 
@@ -76,7 +76,7 @@ export interface SkillConfig {
 
   /**
    * Absolute path to the skill root directory (directory containing SKILL.md).
-   * Used to set QWEN_SKILL_ROOT environment variable for skill hooks.
+   * Used to set CANOPY_SKILL_ROOT environment variable for skill hooks.
    */
   skillRoot?: string;
 

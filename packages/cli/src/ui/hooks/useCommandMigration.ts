@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import { detectTomlCommands } from '../../services/command-migration-tool.js';
 import type { LoadedSettings } from '../../config/settings.js';
 
@@ -26,13 +26,13 @@ export function useCommandMigration(
     const checkTomlCommands = async () => {
       const allFiles: string[] = [];
 
-      // Check workspace commands directory (.qwen/commands)
+      // Check workspace commands directory (.canopy/commands)
       const workspaceCommandsDir = storage.getProjectCommandsDir();
       const workspaceFiles = await detectTomlCommands(workspaceCommandsDir);
       if (cancelled) return;
       allFiles.push(...workspaceFiles.map((f) => `workspace: ${f}`));
 
-      // Check user commands directory (~/.qwen/commands)
+      // Check user commands directory (~/.canopy/commands)
       const userCommandsDir = Storage.getUserCommandsDir();
       const userFiles = await detectTomlCommands(userCommandsDir);
       if (cancelled) return;

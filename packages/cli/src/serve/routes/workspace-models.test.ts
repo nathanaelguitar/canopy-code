@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ function readUserSettings(): Record<string, unknown> {
 }
 
 function writeWorkspaceSettings(settings: Record<string, unknown>): void {
-  const dir = path.join(workspace, '.qwen');
+  const dir = path.join(workspace, '.canopy');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(
     path.join(dir, 'settings.json'),
@@ -41,7 +41,7 @@ function writeWorkspaceSettings(settings: Record<string, unknown>): void {
 
 function readWorkspaceSettings(): Record<string, unknown> {
   return JSON.parse(
-    fs.readFileSync(path.join(workspace, '.qwen', 'settings.json'), 'utf8'),
+    fs.readFileSync(path.join(workspace, '.canopy', 'settings.json'), 'utf8'),
   );
 }
 
@@ -87,8 +87,8 @@ function makeApp(
 }
 
 beforeEach(() => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-models-home-'));
-  workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-models-ws-'));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-models-home-'));
+  workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-models-ws-'));
   prevHome = process.env['QWEN_HOME'];
   process.env['QWEN_HOME'] = home;
 });
@@ -141,7 +141,7 @@ describe('DELETE /workspace/models', () => {
     expect(broadcastSettingsChanged).not.toHaveBeenCalled();
   });
 
-  it('removes a model from ~/.qwen/settings.json and keeps siblings', async () => {
+  it('removes a model from ~/.canopy/settings.json and keeps siblings', async () => {
     writeUserSettings({
       modelProviders: {
         openai: [{ id: 'gpt-4o' }, { id: 'deepseek-v4' }],

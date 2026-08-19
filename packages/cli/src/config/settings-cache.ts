@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   createDebugLogger,
   ideContextStore,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { findEnvFiles, preResolveHomeEnvOverrides } from './environment.js';
 import {
   getSystemDefaultsPath,
@@ -24,7 +24,7 @@ import type { LoadedSettings } from './settings.js';
 /**
  * Process-level cache for `loadSettings()`, keyed by workspace directory.
  *
- * The ACP child under `qwen serve` is long-lived and serves many sessions
+ * The ACP child under `canopy serve` is long-lived and serves many sessions
  * (often for the same cwd). A full `loadSettings()` runs on the shared event
  * loop for every `session/new` / `session/load`: four settings files read,
  * parsed, migration-checked and structuredClone'd, the `.env` tree walked,

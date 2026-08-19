@@ -31,7 +31,7 @@ import {
   removeMCPStatusChangeListener,
   MCPServerStatus,
   recordSkillInvocation,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import type {
   Message,

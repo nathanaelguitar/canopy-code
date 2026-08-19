@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Files for 'qwen mcp approve' / 'qwen mcp reject' commands (issue #4615).
+// Files for 'canopy mcp approve' / 'canopy mcp reject' commands (issue #4615).
 import type { CommandModule } from 'yargs';
-import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
-import { isGatedMcpScope } from '@qwen-code/qwen-code-core';
+import type { MCPServerConfig } from '@canopy-code/canopy-code-core';
+import { isGatedMcpScope } from '@canopy-code/canopy-code-core';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
 import { loadSettings } from '../../config/settings.js';
 import { assembleMcpServers } from '../../config/mcpServers.js';
@@ -18,7 +18,7 @@ import {
 
 /**
  * All gated (approval-requiring) servers visible from `cwd` — project
- * `.mcp.json` plus workspace `.qwen/settings.json` (#4615). Non-gated sources
+ * `.mcp.json` plus workspace `.canopy/settings.json` (#4615). Non-gated sources
  * (user/system/extension) never need approval and are excluded.
  */
 function loadGatedServers(cwd: string): Record<string, MCPServerConfig> {
@@ -44,7 +44,7 @@ async function setProjectServerStatus(
   const names = Object.keys(servers);
   if (names.length === 0) {
     writeStdoutLine(
-      'No approval-requiring MCP servers found (looked in .mcp.json and .qwen/settings.json).',
+      'No approval-requiring MCP servers found (looked in .mcp.json and .canopy/settings.json).',
     );
     return;
   }
@@ -84,10 +84,10 @@ async function setProjectServerStatus(
 export const approveCommand: CommandModule = {
   command: 'approve [name]',
   describe:
-    'Approve a gated MCP server (.mcp.json or workspace .qwen/settings.json)',
+    'Approve a gated MCP server (.mcp.json or workspace .canopy/settings.json)',
   builder: (yargs) =>
     yargs
-      .usage('Usage: qwen mcp approve [options] [name]')
+      .usage('Usage: canopy mcp approve [options] [name]')
       .positional('name', {
         describe: 'Name of the gated server to approve',
         type: 'string',
@@ -109,10 +109,10 @@ export const approveCommand: CommandModule = {
 export const rejectCommand: CommandModule = {
   command: 'reject [name]',
   describe:
-    'Reject a gated MCP server (.mcp.json or workspace .qwen/settings.json)',
+    'Reject a gated MCP server (.mcp.json or workspace .canopy/settings.json)',
   builder: (yargs) =>
     yargs
-      .usage('Usage: qwen mcp reject [options] [name]')
+      .usage('Usage: canopy mcp reject [options] [name]')
       .positional('name', {
         describe: 'Name of the gated server to reject',
         type: 'string',

@@ -7,7 +7,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { Part, PartListUnion } from '@google/genai';
-import type { Config, Extension } from '@qwen-code/qwen-code-core';
+import type { Config, Extension } from '@canopy-code/canopy-code-core';
 import {
   getErrorMessage,
   isNodeError,
@@ -21,7 +21,7 @@ import {
   summarizeMcpResource,
   SessionService,
   SessionReferenceService,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   HistoryItemToolGroup,
   HistoryItemWithoutId,
@@ -224,30 +224,30 @@ export async function resolveAtCommandQuery({
   const displayPathsByCanonicalPath = new Map<string, Set<string>>();
   const ignoredByReason: Record<string, string[]> = {
     git: [],
-    qwen: [],
+    canopy: [],
     both: [],
   };
   const getIgnoreReason = (
     candidate: string,
-  ): 'git' | 'qwen' | 'both' | undefined => {
+  ): 'git' | 'canopy' | 'both' | undefined => {
     const gitIgnored =
       respectFileIgnore.respectGitIgnore &&
       fileDiscovery.shouldIgnoreFile(candidate, {
         respectGitIgnore: true,
-        respectQwenIgnore: false,
+        respectCanopyIgnore: false,
       });
-    const qwenIgnored =
-      respectFileIgnore.respectQwenIgnore &&
+    const canopyIgnored =
+      respectFileIgnore.respectCanopyIgnore &&
       fileDiscovery.shouldIgnoreFile(candidate, {
         respectGitIgnore: false,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       });
-    return gitIgnored && qwenIgnored
+    return gitIgnored && canopyIgnored
       ? 'both'
       : gitIgnored
         ? 'git'
-        : qwenIgnored
-          ? 'qwen'
+        : canopyIgnored
+          ? 'canopy'
           : undefined;
   };
 
@@ -401,10 +401,10 @@ export async function resolveAtCommandQuery({
       ignoredByReason[reason].push(pathName);
       const reasonText =
         reason === 'both'
-          ? 'ignored by both git and qwen'
+          ? 'ignored by both git and canopy'
           : reason === 'git'
             ? 'git-ignored'
-            : 'qwen-ignored';
+            : 'canopy-ignored';
       onDebugMessage(`Path ${pathName} is ${reasonText} and will be skipped.`);
       continue;
     }
@@ -432,10 +432,10 @@ export async function resolveAtCommandQuery({
           deferredIgnoreReason = canonicalIgnoreReason;
           const reasonText =
             canonicalIgnoreReason === 'both'
-              ? 'ignored by both git and qwen'
+              ? 'ignored by both git and canopy'
               : canonicalIgnoreReason === 'git'
                 ? 'git-ignored'
-                : 'qwen-ignored';
+                : 'canopy-ignored';
           onDebugMessage(
             `Path ${pathName} is ${reasonText} and will be skipped.`,
           );
@@ -515,7 +515,7 @@ export async function resolveAtCommandQuery({
   // Inform user about ignored paths
   const totalIgnored =
     ignoredByReason['git'].length +
-    ignoredByReason['qwen'].length +
+    ignoredByReason['canopy'].length +
     ignoredByReason['both'].length;
 
   if (totalIgnored > 0) {
@@ -523,8 +523,8 @@ export async function resolveAtCommandQuery({
     if (ignoredByReason['git'].length) {
       messages.push(`Git-ignored: ${ignoredByReason['git'].join(', ')}`);
     }
-    if (ignoredByReason['qwen'].length) {
-      messages.push(`Qwen-ignored: ${ignoredByReason['qwen'].join(', ')}`);
+    if (ignoredByReason['canopy'].length) {
+      messages.push(`Canopy-ignored: ${ignoredByReason['canopy'].join(', ')}`);
     }
     if (ignoredByReason['both'].length) {
       messages.push(`Ignored by both: ${ignoredByReason['both'].join(', ')}`);

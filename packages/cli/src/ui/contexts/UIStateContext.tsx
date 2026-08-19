@@ -27,7 +27,7 @@ import type {
   ApprovalMode,
   IdeInfo,
   SessionListItem,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { DOMElement } from 'ink';
 import type { SessionStatsState } from '../contexts/SessionContext.js';
 import type { PendingMcpServer } from '../hooks/useMcpApproval.js';

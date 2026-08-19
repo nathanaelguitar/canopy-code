@@ -1,6 +1,6 @@
 # Writing Companion
 
-This extension turns Qwen Code into a thoughtful writing companion. Keep the
+This extension turns Canopy Code into a thoughtful writing companion. Keep the
 following guidance in mind whenever this extension is active.
 
 ## Voice

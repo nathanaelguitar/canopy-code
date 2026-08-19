@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,8 +27,8 @@ describe('PROJECT_ENV_HARDCODED_EXCLUSIONS', () => {
   // Security guard: a project `.env` must never be able to disable TLS
   // certificate verification. Removing this key would let an untrusted repo
   // silently turn off MITM protection for all API connections.
-  it('excludes QWEN_TLS_INSECURE so a project .env cannot disable TLS', () => {
-    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('QWEN_TLS_INSECURE');
+  it('excludes CANOPY_TLS_INSECURE so a project .env cannot disable TLS', () => {
+    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('CANOPY_TLS_INSECURE');
   });
 
   // isTlsVerificationDisabled() also honors NODE_TLS_REJECT_UNAUTHORIZED=0, and
@@ -48,13 +48,13 @@ describe('PROJECT_ENV_HARDCODED_EXCLUSIONS', () => {
 
   it('keeps daemon memory scope operator-owned', () => {
     expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain(
-      'QWEN_CODE_MEMORY_PROJECT_SCOPE',
+      'CANOPY_CODE_MEMORY_PROJECT_SCOPE',
     );
   });
 
   it('excludes attribution markers so a project .env cannot spoof channel', () => {
     expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('QWEN_CODE_SERVE');
-    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('QWEN_CODE_DESKTOP');
+    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('CANOPY_CODE_DESKTOP');
   });
 
   // QWEN_CLI_ENTRY is the spawned session-process entrypoint; a project file
@@ -75,7 +75,7 @@ describe('PROJECT_ENV_HARDCODED_EXCLUSIONS', () => {
       'NODE_COMPILE_CACHE',
     );
     expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).not.toContain(
-      'QWEN_CODE_PENDING_COMPILE_CACHE',
+      'CANOPY_CODE_PENDING_COMPILE_CACHE',
     );
   });
 
@@ -203,13 +203,15 @@ describe('PROJECT_ENV_HARDCODED_EXCLUSIONS', () => {
     }
   });
 
-  // QWEN_CDP_MCP_COMMAND is spawned by the daemon as the browser-automation
-  // MCP adapter and QWEN_SERVE_CDP_TUNNEL_OVER_WS switches that tunnel
+  // CANOPY_CDP_MCP_COMMAND is spawned by the daemon as the browser-automation
+  // MCP adapter and CANOPY_SERVE_CDP_TUNNEL_OVER_WS switches that tunnel
   // surface on — the same daemon-hijack class as QWEN_CLI_ENTRY.
   it('excludes the serve CDP adapter command and tunnel switch', () => {
-    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain('QWEN_CDP_MCP_COMMAND');
     expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain(
-      'QWEN_SERVE_CDP_TUNNEL_OVER_WS',
+      'CANOPY_CDP_MCP_COMMAND',
+    );
+    expect(PROJECT_ENV_HARDCODED_EXCLUSIONS).toContain(
+      'CANOPY_SERVE_CDP_TUNNEL_OVER_WS',
     );
   });
 
@@ -222,19 +224,19 @@ describe('PROJECT_ENV_HARDCODED_EXCLUSIONS', () => {
 
   it('does not bootstrap attribution markers from a home .env', () => {
     expect(HOME_ENV_BOOTSTRAP_KEYS).not.toContain('QWEN_CODE_SERVE');
-    expect(HOME_ENV_BOOTSTRAP_KEYS).not.toContain('QWEN_CODE_DESKTOP');
+    expect(HOME_ENV_BOOTSTRAP_KEYS).not.toContain('CANOPY_CODE_DESKTOP');
   });
 });
 
 describe('isHardcodedProjectEnvExclusion', () => {
   // Windows env lookup is case-insensitive; exact-case membership would let
-  // `node_extra_ca_certs`/`qwen_cli_entry` slip past every application gate.
+  // `node_extra_ca_certs`/`canopy_cli_entry` slip past every application gate.
   it('matches the hardcoded exclusions case-insensitively', () => {
     expect(isHardcodedProjectEnvExclusion('QWEN_HOME')).toBe(true);
-    expect(isHardcodedProjectEnvExclusion('qwen_home')).toBe(true);
+    expect(isHardcodedProjectEnvExclusion('canopy_home')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('node_extra_ca_certs')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('Node_Extra_Ca_Certs')).toBe(true);
-    expect(isHardcodedProjectEnvExclusion('qwen_cli_entry')).toBe(true);
+    expect(isHardcodedProjectEnvExclusion('canopy_cli_entry')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('DEV')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('dev')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('QWEN_SERVER_TOKEN')).toBe(false);
@@ -279,13 +281,13 @@ describe('isHardcodedProjectEnvExclusion', () => {
     expect(isHardcodedProjectEnvExclusion('pythonstartup')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('BROWSER')).toBe(true);
     expect(isHardcodedProjectEnvExclusion('browser')).toBe(true);
-    expect(isHardcodedProjectEnvExclusion('QWEN_CDP_MCP_COMMAND')).toBe(true);
-    expect(isHardcodedProjectEnvExclusion('qwen_cdp_mcp_command')).toBe(true);
+    expect(isHardcodedProjectEnvExclusion('CANOPY_CDP_MCP_COMMAND')).toBe(true);
+    expect(isHardcodedProjectEnvExclusion('canopy_cdp_mcp_command')).toBe(true);
     expect(
-      isHardcodedProjectEnvExclusion('QWEN_SERVE_CDP_TUNNEL_OVER_WS'),
+      isHardcodedProjectEnvExclusion('CANOPY_SERVE_CDP_TUNNEL_OVER_WS'),
     ).toBe(true);
     expect(
-      isHardcodedProjectEnvExclusion('qwen_serve_cdp_tunnel_over_ws'),
+      isHardcodedProjectEnvExclusion('canopy_serve_cdp_tunnel_over_ws'),
     ).toBe(true);
   });
 
@@ -389,8 +391,8 @@ describe('isLoaderEnvKey', () => {
     expect(isLoaderEnvKey('EDITOR')).toBe(false);
     expect(isLoaderEnvKey('PYTHONSTARTUP')).toBe(false);
     expect(isLoaderEnvKey('BROWSER')).toBe(false);
-    expect(isLoaderEnvKey('QWEN_CDP_MCP_COMMAND')).toBe(false);
-    expect(isLoaderEnvKey('QWEN_SERVE_CDP_TUNNEL_OVER_WS')).toBe(false);
+    expect(isLoaderEnvKey('CANOPY_CDP_MCP_COMMAND')).toBe(false);
+    expect(isLoaderEnvKey('CANOPY_SERVE_CDP_TUNNEL_OVER_WS')).toBe(false);
   });
 
   // Library search paths and the interactive-sh-only ENV are deliberately
@@ -612,7 +614,7 @@ describe('scrubAndReportInheritedLoaderEnv', () => {
     const breadcrumb = captureStderr(() => {
       removedKeys = scrubAndReportInheritedLoaderEnv(
         env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
     });
@@ -620,7 +622,7 @@ describe('scrubAndReportInheritedLoaderEnv', () => {
     expect(removedKeys).toEqual(['NODE_OPTIONS', 'LD_PRELOAD']);
     expect(env['HOME']).toBe('/home/user');
     expect(breadcrumb).toContain(
-      'qwen serve: scrubbed inherited loader env vars from the daemon ' +
+      'canopy serve: scrubbed inherited loader env vars from the daemon ' +
         'process; session subprocesses will not inherit them: ' +
         'NODE_OPTIONS, LD_PRELOAD',
     );
@@ -631,7 +633,7 @@ describe('scrubAndReportInheritedLoaderEnv', () => {
 
     const breadcrumb = captureStderr(() => {
       expect(
-        scrubAndReportInheritedLoaderEnv(env, 'qwen', 'ACP child'),
+        scrubAndReportInheritedLoaderEnv(env, 'canopy', 'ACP child'),
       ).toEqual([]);
     });
 
@@ -662,7 +664,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       // Daemon A boots and scrubs the shared env.
       const daemonA = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(daemonA.removedKeys).toContain('NODE_OPTIONS');
@@ -671,7 +673,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       // Daemon B boots into the already-scrubbed env: nothing left to remove.
       const daemonB = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(daemonB.removedKeys).toEqual([]);
@@ -699,7 +701,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
     try {
       const handle = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(process.env['LD_PRELOAD']).toBeUndefined();
@@ -727,7 +729,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       // Daemon A boots and scrubs the shared env.
       const daemonA = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(process.env['NODE_OPTIONS']).toBeUndefined();
@@ -738,7 +740,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       // Daemon B boots and its scrub removes the host assignment.
       const daemonB = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(daemonB.removedKeys).toContain('NODE_OPTIONS');
@@ -768,7 +770,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
     try {
       const daemonA = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(process.env['NODE_OPTIONS']).toBeUndefined();
@@ -776,7 +778,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       process.env['NODE_OPTIONS'] = '--current';
       const daemonB = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(daemonB.removedKeys).toContain('NODE_OPTIONS');
@@ -803,7 +805,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
     try {
       const firstCycle = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       firstCycle.release();
@@ -814,7 +816,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
 
       const secondCycle = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(secondCycle.removedKeys).not.toContain('NODE_OPTIONS');
@@ -836,13 +838,13 @@ describe('acquireInheritedLoaderEnvScrub', () => {
       .mockImplementation(() => true);
     try {
       // Simulate a holder that never releases before the reset runs.
-      acquireInheritedLoaderEnvScrub(process.env, 'qwen serve', 'daemon');
+      acquireInheritedLoaderEnvScrub(process.env, 'canopy serve', 'daemon');
       resetInheritedLoaderEnvScrubForTesting();
       delete process.env['LD_PRELOAD'];
 
       const handle = acquireInheritedLoaderEnvScrub(
         process.env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(handle.removedKeys).toEqual([]);
@@ -868,7 +870,7 @@ describe('acquireInheritedLoaderEnvScrub', () => {
     try {
       const handle = acquireInheritedLoaderEnvScrub(
         env,
-        'qwen serve',
+        'canopy serve',
         'daemon',
       );
       expect(handle.removedKeys).toEqual(['NODE_OPTIONS']);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import {
   type ProviderModelConfig,
   type ProviderProtocolConfig,
   stripRuntimeSnapshotPrefix,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Settings } from '../config/settings.js';
 import { sanitizeProviderBaseUrl } from './acpModelUtils.js';
 
@@ -27,11 +27,11 @@ import { sanitizeProviderBaseUrl } from './acpModelUtils.js';
  * Mirrors the model-var mappings in core's AUTH_ENV_MAPPINGS.
  */
 const AUTH_ENV_MODEL_VARS: Record<AuthType, string[]> = {
-  [AuthType.USE_OPENAI]: ['OPENAI_MODEL', 'QWEN_MODEL'],
+  [AuthType.USE_OPENAI]: ['OPENAI_MODEL', 'CANOPY_MODEL'],
   [AuthType.USE_GEMINI]: ['GEMINI_MODEL'],
   [AuthType.USE_VERTEX_AI]: ['GOOGLE_MODEL'],
   [AuthType.USE_ANTHROPIC]: ['ANTHROPIC_MODEL'],
-  [AuthType.QWEN_OAUTH]: [],
+  [AuthType.CANOPY_OAUTH]: [],
 };
 
 /**
@@ -106,11 +106,11 @@ function buildSkippedProviderWarnings(
     }
     const protocol = resolveProviderProtocol(providerId, providerProtocol);
     if (
-      protocol === AuthType.QWEN_OAUTH &&
-      providerId !== AuthType.QWEN_OAUTH
+      protocol === AuthType.CANOPY_OAUTH &&
+      providerId !== AuthType.CANOPY_OAUTH
     ) {
       warnings.push(
-        `Warning: modelProviders provider "${providerId}" maps to "qwen-oauth" via providerProtocol, but qwen-oauth uses hard-coded models only; its ${models.length} model(s) are ignored.`,
+        `Warning: modelProviders provider "${providerId}" maps to "canopy-oauth" via providerProtocol, but canopy-oauth uses hard-coded models only; its ${models.length} model(s) are ignored.`,
       );
       continue;
     }
@@ -202,13 +202,13 @@ export interface ResolvedCliGenerationConfig {
 export function getAuthTypeFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): AuthType | undefined {
-  if (env['QWEN_OAUTH']) {
-    return AuthType.QWEN_OAUTH;
+  if (env['CANOPY_OAUTH']) {
+    return AuthType.CANOPY_OAUTH;
   }
 
   if (
     env['OPENAI_API_KEY'] &&
-    (env['OPENAI_MODEL'] || env['QWEN_MODEL']) &&
+    (env['OPENAI_MODEL'] || env['CANOPY_MODEL']) &&
     env['OPENAI_BASE_URL']
   ) {
     return AuthType.USE_OPENAI;
@@ -240,7 +240,7 @@ export function getAuthTypeFromEnv(
  * - argv.model > settings.model.name > auth-specific env model vars
  *
  * Env var mapping by auth type (mirrors core's AUTH_ENV_MAPPINGS):
- * - USE_OPENAI: OPENAI_MODEL, QWEN_MODEL
+ * - USE_OPENAI: OPENAI_MODEL, CANOPY_MODEL
  * - USE_GEMINI: GEMINI_MODEL
  * - USE_VERTEX_AI: GOOGLE_MODEL
  * - USE_ANTHROPIC: ANTHROPIC_MODEL

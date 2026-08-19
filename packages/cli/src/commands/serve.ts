@@ -1,18 +1,18 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Argv, CommandModule } from 'yargs';
 import type { ServeChannelSelection } from '../serve/types.js';
-import type { RunHandle } from '../serve/run-qwen-serve.js';
+import type { RunHandle } from '../serve/run-canopy-serve.js';
 import { normalizeServeChannelSelection } from '../serve/channel-selection.js';
 // Type-only imports — no runtime cost. The serve module pulls in express +
 // body-parser + qs + the daemon transport stack; static-importing it from
-// here would tax every `qwen` invocation (interactive, mcp, channel, etc.)
+// here would tax every `canopy` invocation (interactive, mcp, channel, etc.)
 // with ~50ms of cold ESM resolution. The runtime import is deferred to the
-// handler below so it only loads when the user actually runs `qwen serve`.
+// handler below so it only loads when the user actually runs `canopy serve`.
 import { writeStderrLine, writeStdoutLine } from '../utils/stdioHelpers.js';
 import { DEFAULT_RING_SIZE } from '@qwen-code/acp-bridge/eventBus';
 import {
@@ -38,7 +38,7 @@ import {
   parsePositiveIntegerEnv,
   shouldLaunchBrowser,
   type MemoryProjectScope,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadSettings } from '../config/settings.js';
 import { HEADLESS_YOLO_NO_SANDBOX_WARNING } from '../utils/headlessSafetyWarnings.js';
 
@@ -46,7 +46,7 @@ import { HEADLESS_YOLO_NO_SANDBOX_WARNING } from '../utils/headlessSafetyWarning
  * Pause the current async function indefinitely. Used after the daemon
  * listener is up so yargs `parse()` never resolves — if it did, the
  * top-level CLI would fall through to the interactive (TUI) entry point
- * in `gemini.tsx`. SIGINT / SIGTERM in `runQwenServe` is the sole exit
+ * in `gemini.tsx`. SIGINT / SIGTERM in `runCanopyServe` is the sole exit
  * route.
  */
 function blockForever(): Promise<never> {
@@ -146,7 +146,7 @@ export async function maybeOpenWebShellBrowser(
     await handle.runtimeReady;
   } catch (runtimeErr) {
     writeStderrLine(
-      `qwen serve: Web Shell runtime not ready; skipping --open: ${
+      `canopy serve: Web Shell runtime not ready; skipping --open: ${
         runtimeErr instanceof Error ? runtimeErr.message : String(runtimeErr)
       }`,
     );
@@ -161,14 +161,14 @@ export async function maybeOpenWebShellBrowser(
     if (handle.resolvedToken) {
       target.hash = `token=${encodeURIComponent(handle.resolvedToken)}`;
       writeStderrLine(
-        'qwen serve: --open passes the token in the browser launch command ' +
+        'canopy serve: --open passes the token in the browser launch command ' +
           '(visible via `ps` / /proc); on a multi-user host open the URL manually instead.',
       );
     }
     await openBrowserSecurely(target.toString());
   } catch (browserErr) {
     writeStderrLine(
-      `qwen serve: failed to open browser: ${browserErr instanceof Error ? browserErr.message : String(browserErr)}`,
+      `canopy serve: failed to open browser: ${browserErr instanceof Error ? browserErr.message : String(browserErr)}`,
     );
   }
 }
@@ -235,7 +235,7 @@ function primaryWorkspaceArg(
 export const serveCommand: CommandModule<unknown, ServeArgs> = {
   command: 'serve',
   describe:
-    'Run Qwen Code as a local HTTP daemon (Stage 1 experimental: --http-bridge)',
+    'Run Canopy Code as a local HTTP daemon (Stage 1 experimental: --http-bridge)',
   builder: (yargs: Argv) =>
     yargs
       .option('port', {
@@ -291,7 +291,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         description:
           'Choose how project memory is partitioned. ' +
           'Defaults to "workspace" so each daemon workspace stays isolated; "git-root" preserves the legacy shared scope. ' +
-          'Overrides QWEN_CODE_MEMORY_PROJECT_SCOPE when provided.',
+          'Overrides CANOPY_CODE_MEMORY_PROJECT_SCOPE when provided.',
       })
       .option('max-connections', {
         type: 'number',
@@ -450,7 +450,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         type: 'boolean',
         default: true,
         description:
-          'HTTP bridge mode: attempt to preheat one primary `qwen --acp` child; trusted ' +
+          'HTTP bridge mode: attempt to preheat one primary `canopy --acp` child; trusted ' +
           'secondaries start one on demand. Stage 2 native in-process mode is ' +
           'not yet implemented; this flag will become opt-in then.',
       })
@@ -460,7 +460,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
           'Total memory budget in MB for the daemon process tree. When unset, ' +
           'derived as 50% of cgroup-constrained ' +
           'or host memory, and capped at the resolved available memory either ' +
-          'way. It does not change how any `qwen --acp` child is sized; the ' +
+          'way. It does not change how any `canopy --acp` child is sized; the ' +
           'one consumer today is adaptive live-journal growth: one ' +
           'daemon-wide pool of ' +
           JOURNAL_GROWTH_POOL_FRACTION * 100 +
@@ -538,13 +538,13 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         type: 'number',
         description:
           'Server-side wallclock cap on POST /session/:id/prompt (ms). ' +
-          'Falls back to QWEN_SERVE_PROMPT_DEADLINE_MS. Positive integer.',
+          'Falls back to CANOPY_SERVE_PROMPT_DEADLINE_MS. Positive integer.',
       })
       .option('writer-idle-timeout-ms', {
         type: 'number',
         description:
           'Per-SSE-connection idle deadline (ms). ' +
-          'Falls back to QWEN_SERVE_WRITER_IDLE_TIMEOUT_MS. Positive integer.',
+          'Falls back to CANOPY_SERVE_WRITER_IDLE_TIMEOUT_MS. Positive integer.',
       })
       .option('channel-idle-timeout-ms', {
         type: 'number',
@@ -632,7 +632,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
   handler: async (argv) => {
     if (!argv['http-bridge']) {
       writeStderrLine(
-        'qwen serve: --no-http-bridge (native mode) is not yet implemented; ' +
+        'canopy serve: --no-http-bridge (native mode) is not yet implemented; ' +
           'falling back to http-bridge.',
       );
     }
@@ -642,7 +642,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       // operators toward the env-var path which uses
       // `/proc/<pid>/environ` (owner-only).
       writeStderrLine(
-        'qwen serve: --token is visible in the process command line; ' +
+        'canopy serve: --token is visible in the process command line; ' +
           'prefer the QWEN_SERVER_TOKEN env var for any non-trivial ' +
           'deployment.',
       );
@@ -652,7 +652,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       channelSelection = normalizeServeChannelSelection(argv.channel);
     } catch (err) {
       writeStderrLine(
-        `qwen serve: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: ${err instanceof Error ? err.message : String(err)}`,
       );
       process.exit(1);
     }
@@ -669,14 +669,14 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         mcpClientBudget <= 0
       ) {
         writeStderrLine(
-          'qwen serve: --mcp-client-budget must be a positive integer.',
+          'canopy serve: --mcp-client-budget must be a positive integer.',
         );
         process.exit(1);
       }
     }
     if (mcpBudgetMode === 'enforce' && mcpClientBudget === undefined) {
       writeStderrLine(
-        'qwen serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.',
+        'canopy serve: --mcp-budget-mode=enforce requires --mcp-client-budget=N.',
       );
       process.exit(1);
     }
@@ -698,7 +698,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         maxPendingPromptsPerSession < 0)
     ) {
       writeStderrLine(
-        'qwen serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).',
+        'canopy serve: --max-pending-prompts-per-session must be a non-negative integer (0 / Infinity = unlimited).',
       );
       process.exit(1);
     }
@@ -707,7 +707,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       // policy in stderr (journald / docker logs) so operators don't
       // have to parse /capabilities or /workspace/mcp to confirm it.
       writeStderrLine(
-        `qwen serve: --mcp-client-budget=${mcpClientBudget} mode=${resolvedMcpMode}` +
+        `canopy serve: --mcp-client-budget=${mcpClientBudget} mode=${resolvedMcpMode}` +
           (resolvedMcpMode === 'enforce'
             ? ' (servers past the cap will be refused at discovery)'
             : resolvedMcpMode === 'warn'
@@ -724,7 +724,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
     // sessions will load. Per-session override (the ACP client flipping
     // approval mode mid-session) is out of scope here; this warns about
     // a deployment that's wide-open at boot. Suppress with
-    // QWEN_CODE_SUPPRESS_YOLO_WARNING=1.
+    // CANOPY_CODE_SUPPRESS_YOLO_WARNING=1.
     try {
       const loaded = loadSettings(
         primaryWorkspaceArg(argv.workspace) ?? process.cwd(),
@@ -733,7 +733,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       const approvalMode = merged.tools?.approvalMode;
       const sandbox = merged.tools?.sandbox;
       const sandboxEnv = process.env['SANDBOX'];
-      const suppress = process.env['QWEN_CODE_SUPPRESS_YOLO_WARNING'];
+      const suppress = process.env['CANOPY_CODE_SUPPRESS_YOLO_WARNING'];
       const suppressed = suppress === '1' || suppress === 'true';
       if (
         approvalMode === ApprovalMode.YOLO &&
@@ -753,8 +753,8 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
     // With no default, argv['rate-limit'] is undefined when neither flag is passed.
     const rateLimit =
       argv['rate-limit'] ??
-      (process.env['QWEN_SERVE_RATE_LIMIT'] === '1' ||
-        process.env['QWEN_SERVE_RATE_LIMIT'] === 'true');
+      (process.env['CANOPY_SERVE_RATE_LIMIT'] === '1' ||
+        process.env['CANOPY_SERVE_RATE_LIMIT'] === 'true');
     let rateLimitPrompt: number | undefined;
     let rateLimitMutation: number | undefined;
     let rateLimitRead: number | undefined;
@@ -766,14 +766,15 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         return parsePositiveIntegerEnv(raw, Number.NaN);
       };
       rateLimitPrompt =
-        argv['rate-limit-prompt'] ?? envInt('QWEN_SERVE_RATE_LIMIT_PROMPT');
+        argv['rate-limit-prompt'] ?? envInt('CANOPY_SERVE_RATE_LIMIT_PROMPT');
       rateLimitMutation =
-        argv['rate-limit-mutation'] ?? envInt('QWEN_SERVE_RATE_LIMIT_MUTATION');
+        argv['rate-limit-mutation'] ??
+        envInt('CANOPY_SERVE_RATE_LIMIT_MUTATION');
       rateLimitRead =
-        argv['rate-limit-read'] ?? envInt('QWEN_SERVE_RATE_LIMIT_READ');
+        argv['rate-limit-read'] ?? envInt('CANOPY_SERVE_RATE_LIMIT_READ');
       rateLimitWindowMs =
         argv['rate-limit-window-ms'] ??
-        envInt('QWEN_SERVE_RATE_LIMIT_WINDOW_MS');
+        envInt('CANOPY_SERVE_RATE_LIMIT_WINDOW_MS');
 
       for (const [name, value] of [
         ['--rate-limit-prompt', rateLimitPrompt],
@@ -784,7 +785,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
           value !== undefined &&
           (!Number.isFinite(value) || !Number.isInteger(value) || value <= 0)
         ) {
-          writeStderrLine(`qwen serve: ${name} must be a positive integer.`);
+          writeStderrLine(`canopy serve: ${name} must be a positive integer.`);
           process.exit(1);
         }
       }
@@ -795,7 +796,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
           rateLimitWindowMs < 1000)
       ) {
         writeStderrLine(
-          'qwen serve: --rate-limit-window-ms must be an integer >= 1000.',
+          'canopy serve: --rate-limit-window-ms must be an integer >= 1000.',
         );
         process.exit(1);
       }
@@ -807,9 +808,9 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
 
     // Lazy-load the slim serve runner so the yargs fallback path does not pull
     // the public serve barrel, which also exports REST/ACP runtime modules.
-    const { runQwenServe } = await import('../serve/run-qwen-serve.js');
+    const { runCanopyServe } = await import('../serve/run-canopy-serve.js');
     try {
-      const handle = await runQwenServe({
+      const handle = await runCanopyServe({
         port: argv.port,
         hostname: argv.hostname,
         token: argv.token,
@@ -917,7 +918,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       await maybeOpenWebShellBrowser(handle, argv.open);
     } catch (err) {
       writeStderrLine(
-        `qwen serve: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: ${err instanceof Error ? err.message : String(err)}`,
       );
       process.exit(1);
     }

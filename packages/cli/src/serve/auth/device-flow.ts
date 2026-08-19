@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * Device-flow authorization registry for `qwen serve`. The registry
+ * Device-flow authorization registry for `canopy serve`. The registry
  * brokers an OAuth 2.0 Device Authorization Grant (RFC 8628) initiated
  * through `POST /workspace/auth/device-flow` so a remote SDK client can
  * ask the daemon to log in. Tokens land on the **daemon** filesystem,
@@ -120,7 +120,7 @@ export const DEVICE_FLOW_MAX_INTERVAL_MS = 60_000;
 
 // Derive the type from the supported-providers tuple so
 // adding/removing a provider id requires touching exactly ONE site.
-export const DEVICE_FLOW_SUPPORTED_PROVIDERS = ['qwen-oauth'] as const;
+export const DEVICE_FLOW_SUPPORTED_PROVIDERS = ['canopy-oauth'] as const;
 export type DeviceFlowProviderId =
   (typeof DEVICE_FLOW_SUPPORTED_PROVIDERS)[number];
 
@@ -223,7 +223,7 @@ export interface BrandedSecret<T extends string = string> {
   toJSON(): '[redacted]';
   [Symbol.toPrimitive](): '[redacted]';
   /** Phantom marker preserving the literal type at the type level so
-   *  `BrandedSecret<'qwen-oauth'>` is distinguishable from
+   *  `BrandedSecret<'canopy-oauth'>` is distinguishable from
    *  `BrandedSecret<string>` when a caller wants a narrower brand. */
   readonly _phantom?: T;
 }
@@ -302,8 +302,8 @@ export type DeviceFlowPollResult =
        *  in a split-brain state. The contract is: every fs / network
        *  call inside `persist` MUST take `signal` as input AND propagate
        *  it down to abortable primitives (`fs.writeFile`, `fetch`,
-       *  etc.). `cacheQwenCredentials({signal})` in
-       *  `qwenDeviceFlowProvider` is the canonical example. */
+       *  etc.). `cacheCanopyCredentials({signal})` in
+       *  `canopyDeviceFlowProvider` is the canonical example. */
       persist(opts: { signal: AbortSignal }): Promise<{
         expiresAt?: number;
         accountAlias?: string;
@@ -356,7 +356,7 @@ export interface DeviceFlowProvider {
    *      detail through `writeStderrLine` for operator audit; the
    *      thrown `message` is the SSE-visible surface.
    *
-   * `qwenDeviceFlowProvider` is the canonical example.
+   * `canopyDeviceFlowProvider` is the canonical example.
    */
   poll(
     state: {
@@ -489,7 +489,7 @@ interface DeviceFlowEntry {
   cancelRequestedDuringPersist?: boolean;
   /**
    * Client id of the SDK caller that invoked `cancel()` (via
-   * `DELETE /workspace/auth/device-flow/:id`'s `X-Qwen-Client-Id`).
+   * `DELETE /workspace/auth/device-flow/:id`'s `X-Canopy-Client-Id`).
    * Stamped only on the persist-defer path so the persist resolution
    * branch can attribute the cancel back to the actual canceller,
    * not the original initiator.
@@ -511,7 +511,7 @@ export interface DeviceFlowRegistryDeps {
   events: DeviceFlowEventSink;
   audit?: DeviceFlowAuditSink;
   /** Provider lookup. Tests stub a fake provider; production wires the
-   *  Qwen-OAuth implementation. */
+   *  Canopy-OAuth implementation. */
   resolveProvider(
     providerId: DeviceFlowProviderId,
   ): DeviceFlowProvider | undefined;
@@ -647,7 +647,7 @@ export function getDeviceFlowRegistry(app: {
 /**
  * In-memory device-flow state holder. Single instance per daemon.
  *
- * Lifecycle: `runQwenServe` constructs one, hands it to `createServeApp`,
+ * Lifecycle: `runCanopyServe` constructs one, hands it to `createServeApp`,
  * and calls `dispose()` during shutdown drain so every pending poll timer
  * is cancelled before the process exits.
  */
@@ -1260,7 +1260,7 @@ export class DeviceFlowRegistry {
             this.transitionTerminal(entry, 'error', 'persist_failed')
           ) {
             // S1 sanitize: full err detail goes through stderr audit
-            // (debugLogger inside cacheQwenCredentials); only a
+            // (debugLogger inside cacheCanopyCredentials); only a
             // bounded sentence flows to SSE subscribers.
             const pastExpiry = this.now() >= entry.expiresAt;
             this.deps.events.publish(

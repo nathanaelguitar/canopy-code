@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,9 +11,9 @@ const mockDebugLogger = vi.hoisted(() => ({
   warn: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     createDebugLogger: vi.fn(() => mockDebugLogger),
@@ -22,7 +22,7 @@ vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
 
 vi.mock('node:fs/promises', { spy: true });
 
-import type { FileSystemService } from '@qwen-code/qwen-code-core';
+import type { FileSystemService } from '@canopy-code/canopy-code-core';
 import { AcpFileSystemService } from './filesystem.js';
 import type { AgentSideConnection } from '@agentclientprotocol/sdk';
 import { promises as fs } from 'node:fs';
@@ -1102,7 +1102,7 @@ describe('AcpFileSystemService', () => {
         sessionId: 'session-origin',
         _meta: {
           encoding: 'utf-16le',
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },
@@ -1125,7 +1125,7 @@ describe('AcpFileSystemService', () => {
         path: '/some/file.txt',
         content: 'hello',
         _meta: {
-          'qwen-code/tool-write-origin': {
+          'canopy-code/tool-write-origin': {
             version: 1,
             source: 'write_file',
           },

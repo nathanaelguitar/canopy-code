@@ -2,7 +2,7 @@
  * Per-project lock for the durable cron scheduler. Ensures only one
  * session fires file-backed tasks when multiple sessions share a project.
  *
- * Lock file: `~/.qwen/tmp/<project-hash>/scheduled_tasks.lock` (per-machine
+ * Lock file: `~/.canopy/tmp/<project-hash>/scheduled_tasks.lock` (per-machine
  * runtime state — kept out of the working tree, next to the tasks file).
  * Content: `{ "pid": <number>, "sessionId": "<string>", "lockId": "<string>" }`
  *

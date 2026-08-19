@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -115,14 +115,14 @@ describe('AgentTool', () => {
       description: 'Specialized agent for searching and analyzing files',
       systemPrompt: 'You are a file search specialist.',
       level: 'project',
-      filePath: '/project/.qwen/agents/file-search.md',
+      filePath: '/project/.canopy/agents/file-search.md',
     },
     {
       name: 'code-review',
       description: 'Agent for reviewing code quality and best practices',
       systemPrompt: 'You are a code review specialist.',
       level: 'user',
-      filePath: '/home/user/.qwen/agents/code-review.md',
+      filePath: '/home/user/.canopy/agents/code-review.md',
     },
   ];
 
@@ -228,7 +228,7 @@ describe('AgentTool', () => {
       isInteractive: vi.fn().mockReturnValue(false),
       getFileFilteringOptions: vi.fn().mockReturnValue({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
         customIgnoreFiles: ['.agentignore', '.aiignore'],
       }),
       getWorktreeSymlinkDirectories: vi.fn().mockReturnValue([]),
@@ -237,7 +237,7 @@ describe('AgentTool', () => {
       getToolRegistry: vi.fn().mockReturnValue(stubToolRegistry),
       createToolRegistry: vi.fn().mockResolvedValue(stubToolRegistry),
       storage: {
-        getProjectDir: vi.fn().mockReturnValue('/test/project/.qwen'),
+        getProjectDir: vi.fn().mockReturnValue('/test/project/.canopy'),
       },
     } as unknown as Config;
 
@@ -611,7 +611,7 @@ describe('AgentTool', () => {
       expect(properties.properties.fork_profile.minLength).toBe(2);
       expect(properties.properties.fork_profile.maxLength).toBe(50);
       expect(properties.properties.fork_profile.description).toContain(
-        '.qwen/fork-profiles/<name>.md',
+        '.canopy/fork-profiles/<name>.md',
       );
       expect(properties.properties.fork_profile.description).toContain(
         'Cannot be combined with fork_tools',
@@ -1163,7 +1163,7 @@ describe('AgentTool', () => {
       expect(
         agentTool.validateToolParams({
           ...validParams,
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
         }),
       ).toBeNull();
     });
@@ -1255,7 +1255,7 @@ describe('AgentTool', () => {
       expect(
         agentTool.validateToolParams({
           ...validParams,
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
           isolation: 'worktree',
         }),
       ).toBeNull();
@@ -1270,11 +1270,11 @@ describe('AgentTool', () => {
         }
       ).createInvocation({
         ...validParams,
-        working_dir: '.qwen/tmp/review-pr-1',
+        working_dir: '.canopy/tmp/review-pr-1',
         isolation: 'worktree',
       });
 
-      expect(invocation.params.working_dir).toBe('.qwen/tmp/review-pr-1');
+      expect(invocation.params.working_dir).toBe('.canopy/tmp/review-pr-1');
       expect(invocation.params.isolation).toBeUndefined();
     });
 
@@ -1284,7 +1284,7 @@ describe('AgentTool', () => {
       expect(
         agentTool.validateToolParams({
           ...noTypeParams,
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
         }),
       ).toMatch(/subagent_type/i);
     });
@@ -1294,7 +1294,7 @@ describe('AgentTool', () => {
         agentTool.validateToolParams({
           ...validParams,
           subagent_type: 'fork',
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
         }),
       ).toMatch(/fork/i);
     });
@@ -1303,7 +1303,7 @@ describe('AgentTool', () => {
       expect(
         agentTool.validateToolParams({
           ...validParams,
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
           run_in_background: true,
         }),
       ).toMatch(/run_in_background|incompatible/i);
@@ -1351,7 +1351,7 @@ describe('AgentTool', () => {
         agentTool.validateToolParams({
           ...validParams,
           name: 'writer',
-          working_dir: '.qwen/tmp/writer',
+          working_dir: '.canopy/tmp/writer',
           isolation: 'worktree',
         }),
       ).toBeNull();
@@ -1383,7 +1383,7 @@ describe('AgentTool', () => {
       const os = await import('node:os');
       const { execFileSync } = await import('node:child_process');
       const repo = await fs.mkdtemp(
-        pathMod.join(os.tmpdir(), 'qwen-iso-dirty-'),
+        pathMod.join(os.tmpdir(), 'canopy-iso-dirty-'),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -1424,7 +1424,7 @@ describe('AgentTool', () => {
       const os = await import('node:os');
       const { execFileSync } = await import('node:child_process');
       const repo = await fs.mkdtemp(
-        pathMod.join(os.tmpdir(), 'qwen-iso-clean-'),
+        pathMod.join(os.tmpdir(), 'canopy-iso-clean-'),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -1675,7 +1675,7 @@ describe('AgentTool', () => {
           prompt: 'Review the diff',
           subagent_type: 'file-search',
           name: 'reviewer',
-          working_dir: '.qwen/tmp/review-pr-1',
+          working_dir: '.canopy/tmp/review-pr-1',
           isolation: 'worktree',
         });
 
@@ -1684,7 +1684,7 @@ describe('AgentTool', () => {
         expect(spawnTeammate).toHaveBeenCalledWith(
           expect.objectContaining({
             name: 'reviewer',
-            cwd: '/test/project/.qwen/tmp/review-pr-1',
+            cwd: '/test/project/.canopy/tmp/review-pr-1',
           }),
         );
       } finally {
@@ -1728,7 +1728,7 @@ describe('AgentTool', () => {
           prompt: 'Make the change',
           subagent_type: 'file-search',
           name: 'writer',
-          working_dir: '.qwen/tmp/writer',
+          working_dir: '.canopy/tmp/writer',
         });
         const result = await invocation.execute(controller.signal);
 
@@ -1950,7 +1950,7 @@ describe('AgentTool', () => {
           description: 'A brand new agent',
           systemPrompt: 'Do new things.',
           level: 'project',
-          filePath: '/project/.qwen/agents/new-agent.md',
+          filePath: '/project/.canopy/agents/new-agent.md',
         },
       ];
 
@@ -1975,7 +1975,7 @@ describe('AgentTool', () => {
           description: 'A test agent',
           systemPrompt: 'Test prompt',
           level: 'project',
-          filePath: '/project/.qwen/agents/test-agent.md',
+          filePath: '/project/.canopy/agents/test-agent.md',
         },
       ];
 
@@ -2115,7 +2115,7 @@ describe('AgentTool', () => {
         description: 'Review',
         prompt: 'Review the diff',
         subagent_type: 'file-search',
-        working_dir: '.qwen/tmp/review-pr-1',
+        working_dir: '.canopy/tmp/review-pr-1',
       });
       const result = await invocation.execute();
 
@@ -2137,7 +2137,7 @@ describe('AgentTool', () => {
       // returns false (the default '/test/project' mock does not exist on CI,
       // where simple-git throws at construction).
       const nonRepo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-nested-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-nested-')),
       );
       try {
         vi.mocked(config.getProjectRoot).mockReturnValue(nonRepo);
@@ -2251,7 +2251,7 @@ describe('AgentTool', () => {
 
     it('passes custom ignore files into worktree isolation file service', async () => {
       vi.useRealTimers();
-      const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wt-'));
+      const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wt-'));
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
         execFileSync('git', ['config', 'user.email', 't@e.com'], {
@@ -2274,7 +2274,7 @@ describe('AgentTool', () => {
         vi.mocked(config.getWorkingDir).mockReturnValue(repo);
         vi.mocked(config.getFileFilteringOptions).mockReturnValue({
           respectGitIgnore: true,
-          respectQwenIgnore: true,
+          respectCanopyIgnore: true,
           customIgnoreFiles: ['.cursorignore'],
         });
 
@@ -2293,15 +2293,15 @@ describe('AgentTool', () => {
         const agentConfig = createCall[1] as Config;
         expect(agentConfig.getProjectRoot()).not.toBe(repo);
         expect(
-          agentConfig.getFileService().getQwenIgnoreFileNamesDisplay(),
-        ).toBe('.qwenignore, .cursorignore');
+          agentConfig.getFileService().getCanopyIgnoreFileNamesDisplay(),
+        ).toBe('.canopyignore, .cursorignore');
         expect(
-          agentConfig.getFileService().shouldQwenIgnoreFile('secret.txt'),
+          agentConfig.getFileService().shouldCanopyIgnoreFile('secret.txt'),
         ).toBe(true);
         expect(
           agentConfig
             .getFileService()
-            .getQwenIgnoreFileDisplayForPath('secret.txt'),
+            .getCanopyIgnoreFileDisplayForPath('secret.txt'),
         ).toBe('.cursorignore');
       } finally {
         fs.rmSync(repo, { recursive: true, force: true });
@@ -2312,7 +2312,7 @@ describe('AgentTool', () => {
     it('pins the sub-agent to a caller-owned worktree via working_dir and leaves it in place', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2328,8 +2328,8 @@ describe('AgentTool', () => {
         });
 
         // A real, registered worktree the caller owns — mirrors the PR
-        // worktree `/review`'s fetch-pr provisions at `.qwen/tmp/review-pr-<n>`.
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        // worktree `/review`'s fetch-pr provisions at `.canopy/tmp/review-pr-<n>`.
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2388,7 +2388,7 @@ describe('AgentTool', () => {
     it('executes a review agent when strict providers send working_dir and isolation together', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-strict-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-strict-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2403,7 +2403,7 @@ describe('AgentTool', () => {
           cwd: repo,
         });
 
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2454,7 +2454,7 @@ describe('AgentTool', () => {
       // working_dir exclusion is caught here, not only in the UI classifiers.
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-fg-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-fg-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2469,7 +2469,7 @@ describe('AgentTool', () => {
           cwd: repo,
         });
 
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2510,7 +2510,7 @@ describe('AgentTool', () => {
     it('rejects working_dir that is not a registered worktree of this repo', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-bad-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-bad-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2557,7 +2557,7 @@ describe('AgentTool', () => {
     it('accepts a registered sibling worktree of this repo', async () => {
       vi.useRealTimers();
       const root = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-sibling-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-sibling-')),
       );
       const repo = path.join(root, 'repo');
       const wt = path.join(root, 'review-pr-1');
@@ -2605,7 +2605,7 @@ describe('AgentTool', () => {
     it('resolves a repo-relative working_dir against the parent cwd (the /review production form)', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-rel-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-rel-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2620,9 +2620,9 @@ describe('AgentTool', () => {
           cwd: repo,
         });
 
-        // fetch-pr creates the worktree at <cwd>/.qwen/tmp/review-pr-<n> and
+        // fetch-pr creates the worktree at <cwd>/.canopy/tmp/review-pr-<n> and
         // the /review skill passes that repo-relative path verbatim.
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2642,7 +2642,7 @@ describe('AgentTool', () => {
           prompt: 'Review the diff',
           subagent_type: 'file-search',
           // Relative form, exactly as the skill passes it.
-          working_dir: path.join('.qwen', 'tmp', 'review-pr-1'),
+          working_dir: path.join('.canopy', 'tmp', 'review-pr-1'),
         });
         await invocation.execute();
 
@@ -2663,7 +2663,7 @@ describe('AgentTool', () => {
     it('rejects working_dir pointing at the repository main working tree', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-main-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-main-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2706,7 +2706,7 @@ describe('AgentTool', () => {
     it('rejects working_dir when the parent directory is not a git repository', async () => {
       vi.useRealTimers();
       const nonRepo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-nogit-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-nogit-')),
       );
       try {
         vi.mocked(config.getProjectRoot).mockReturnValue(nonRepo);
@@ -2739,7 +2739,7 @@ describe('AgentTool', () => {
     it('accepts a registered worktree in detached HEAD state (no branch)', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-detached-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-detached-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2756,7 +2756,7 @@ describe('AgentTool', () => {
         // A detached worktree is registered but has no branch, so
         // getRegisteredWorktreeBranch returns null for it. That must not gate
         // the pin — `git worktree add --detach` is a legitimate setup.
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync('git', ['worktree', 'add', '--detach', wt, 'HEAD'], {
           cwd: repo,
@@ -2791,7 +2791,7 @@ describe('AgentTool', () => {
     it('leaves the caller-owned worktree in place when the sub-agent fails', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-failpath-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-failpath-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2805,7 +2805,7 @@ describe('AgentTool', () => {
         execFileSync('git', ['commit', '-q', '-m', 'init', '--no-verify'], {
           cwd: repo,
         });
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2848,7 +2848,7 @@ describe('AgentTool', () => {
     it('re-anchors validation at the repo root when launched from a monorepo subdirectory', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-mono-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-mono-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2865,7 +2865,7 @@ describe('AgentTool', () => {
         execFileSync('git', ['commit', '-q', '-m', 'init', '--no-verify'], {
           cwd: repo,
         });
-        const wt = path.join(repo, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(repo, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2905,7 +2905,7 @@ describe('AgentTool', () => {
     it('resolves a repo-relative working_dir against the subdirectory cwd, not the repo root (monorepo)', async () => {
       vi.useRealTimers();
       const repo = fs.realpathSync(
-        fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-wd-monorel-')),
+        fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-wd-monorel-')),
       );
       try {
         execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
@@ -2922,11 +2922,11 @@ describe('AgentTool', () => {
 
         // fetch-pr creates the worktree cwd-relative (git resolves a relative
         // worktree path against the process cwd), so when the CLI runs from a
-        // package subdirectory the worktree lands under the SUBDIR's .qwen,
+        // package subdirectory the worktree lands under the SUBDIR's .canopy,
         // NOT the repo root's. Mimic that exactly.
         const subdir = path.join(repo, 'packages', 'core');
         fs.mkdirSync(subdir, { recursive: true });
-        const wt = path.join(subdir, '.qwen', 'tmp', 'review-pr-1');
+        const wt = path.join(subdir, '.canopy', 'tmp', 'review-pr-1');
         fs.mkdirSync(path.dirname(wt), { recursive: true });
         execFileSync(
           'git',
@@ -2935,7 +2935,7 @@ describe('AgentTool', () => {
             'add',
             '-b',
             'review-pr-1',
-            path.join('.qwen', 'tmp', 'review-pr-1'),
+            path.join('.canopy', 'tmp', 'review-pr-1'),
             'HEAD',
           ],
           { cwd: subdir },
@@ -2953,8 +2953,8 @@ describe('AgentTool', () => {
           prompt: 'Review the diff',
           subagent_type: 'file-search',
           // Relative form, resolved against the subdir cwd — must land on the
-          // subdir worktree, not <repo>/.qwen/tmp/review-pr-1.
-          working_dir: path.join('.qwen', 'tmp', 'review-pr-1'),
+          // subdir worktree, not <repo>/.canopy/tmp/review-pr-1.
+          working_dir: path.join('.canopy', 'tmp', 'review-pr-1'),
         });
         await invocation.execute();
 
@@ -3119,7 +3119,7 @@ describe('AgentTool', () => {
       expect(description).toBe('Search files');
     });
 
-    describe('qwen-code.subagent span outcome (#4410 wenshao)', () => {
+    describe('canopy-code.subagent span outcome (#4410 wenshao)', () => {
       beforeEach(() => {
         mockStartSubagentSpan.mockClear();
         mockEndSubagentSpan.mockClear();
@@ -3580,9 +3580,9 @@ describe('AgentTool', () => {
 
     it('resolves a project fork profile into the existing execution gate and task prompt', async () => {
       const projectRoot = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'qwen-agent-fork-profile-'),
+        path.join(os.tmpdir(), 'canopy-agent-fork-profile-'),
       );
-      const profileDir = path.join(projectRoot, '.qwen', 'fork-profiles');
+      const profileDir = path.join(projectRoot, '.canopy', 'fork-profiles');
       fs.mkdirSync(profileDir, { recursive: true });
       fs.writeFileSync(
         path.join(profileDir, 'ro-research.md'),
@@ -3704,9 +3704,9 @@ describe('AgentTool', () => {
 
     it('preserves a deny-all profile through invocation and execution', async () => {
       const projectRoot = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'qwen-agent-deny-all-fork-profile-'),
+        path.join(os.tmpdir(), 'canopy-agent-deny-all-fork-profile-'),
       );
-      const profileDir = path.join(projectRoot, '.qwen', 'fork-profiles');
+      const profileDir = path.join(projectRoot, '.canopy', 'fork-profiles');
       fs.mkdirSync(profileDir, { recursive: true });
       fs.writeFileSync(
         path.join(profileDir, 'deny-all.md'),
@@ -3771,7 +3771,7 @@ describe('AgentTool', () => {
 
     it('fails an unresolved profile before runtime, hooks, or task registration', () => {
       const projectRoot = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'qwen-agent-missing-fork-profile-'),
+        path.join(os.tmpdir(), 'canopy-agent-missing-fork-profile-'),
       );
       vi.mocked(config.getProjectRoot).mockReturnValue(projectRoot);
       const hookSystem = {
@@ -5590,7 +5590,7 @@ describe('AgentTool', () => {
       description: 'Background monitor agent',
       systemPrompt: 'You are a monitor.',
       level: 'project',
-      filePath: '/project/.qwen/agents/monitor.md',
+      filePath: '/project/.canopy/agents/monitor.md',
       background: true,
     };
 
@@ -5651,7 +5651,7 @@ describe('AgentTool', () => {
         'getBackgroundTaskRegistry'
       ] = vi.fn().mockReturnValue(mockRegistry);
       (config as unknown as Record<string, unknown>)['storage'] = {
-        getProjectDir: () => '/tmp/qwen-test',
+        getProjectDir: () => '/tmp/canopy-test',
       };
       (mockAgent as unknown as Record<string, unknown>)[
         'setExternalMessageProvider'
@@ -6486,7 +6486,7 @@ describe('AgentTool', () => {
       ).createInvocation(params);
       await invocation.execute();
       const expectedTranscriptPrefix = path.join(
-        '/tmp/qwen-test',
+        '/tmp/canopy-test',
         'subagents',
         'test-session-id',
         'agent-monitor-',

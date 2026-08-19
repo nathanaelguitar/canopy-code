@@ -6,7 +6,10 @@
 
 import { randomUUID } from 'node:crypto';
 import { useCallback, useRef, useState } from 'react';
-import type { GoalTurnHost, GoalTurnPermit } from '@qwen-code/qwen-code-core';
+import type {
+  GoalTurnHost,
+  GoalTurnPermit,
+} from '@canopy-code/canopy-code-core';
 import { isSlashCommand } from '../utils/commandUtils.js';
 
 export interface QueuedGoalTurn {

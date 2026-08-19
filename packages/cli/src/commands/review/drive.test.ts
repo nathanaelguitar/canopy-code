@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -288,7 +288,7 @@ describe('readiness', () => {
 describe('the server name', () => {
   it('refuses a name that would escape the temp dir', () => {
     // Measured: `--server '../../PWNED'` put drive.sh and its log at the
-    // FILESYSTEM ROOT, because join(tmpdir(), 'qwen-review-drive-' + server)
+    // FILESYSTEM ROOT, because join(tmpdir(), 'canopy-review-drive-' + server)
     // normalises the `..` away.
     const h = harness({});
     const r = runDrive({
@@ -435,7 +435,7 @@ describe('the working directory', () => {
       server: 'wd2',
       exec,
     });
-    expect(existsSync(join(tmpdir(), 'qwen-review-drive-wd2'))).toBe(false);
+    expect(existsSync(join(tmpdir(), 'canopy-review-drive-wd2'))).toBe(false);
   });
 });
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -50,13 +50,13 @@ function makeSettings(opts: {
     user: opts.userUi
       ? file(
           { ui: opts.userUi },
-          opts.userPath ?? '/home/u/.qwen/settings.json',
+          opts.userPath ?? '/home/u/.canopy/settings.json',
         )
       : empty,
     workspace: opts.workspaceUi
       ? file(
           { ui: opts.workspaceUi },
-          opts.workspacePath ?? '/repo/.qwen/settings.json',
+          opts.workspacePath ?? '/repo/.canopy/settings.json',
         )
       : empty,
     isTrusted: opts.isTrusted ?? true,
@@ -70,7 +70,7 @@ describe('resolveCustomBanner', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-banner-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-banner-'));
   });
 
   afterEach(() => {
@@ -314,7 +314,7 @@ describe('resolveCustomBanner', () => {
             small: 'should-be-rejected',
           } as unknown as CustomAsciiArtSetting,
         },
-        userPath: '/home/u/.qwen/settings.json',
+        userPath: '/home/u/.canopy/settings.json',
       }),
     );
     // The resolver must NOT silently let `path` win — both forms are

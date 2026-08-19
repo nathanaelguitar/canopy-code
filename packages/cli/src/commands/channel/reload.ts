@@ -1,9 +1,9 @@
 import type { CommandModule } from 'yargs';
 import { writeStderrLine, writeStdoutLine } from '../../utils/stdioHelpers.js';
 import {
-  QWEN_DAEMON_TOKEN_ENV,
-  QWEN_DAEMON_URL_ENV,
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_DAEMON_TOKEN_ENV,
+  CANOPY_DAEMON_URL_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 } from '../../serve/channel-worker-env.js';
 import {
   channelStartupFailureBody,
@@ -53,14 +53,14 @@ interface ReloadArgs {
 function resolveDaemonUrl(flag: string | undefined): string {
   // `||` (not `??`) so an empty flag or empty env var falls through to the
   // default rather than producing an unusable empty base URL.
-  return flag || process.env[QWEN_DAEMON_URL_ENV] || DEFAULT_DAEMON_URL;
+  return flag || process.env[CANOPY_DAEMON_URL_ENV] || DEFAULT_DAEMON_URL;
 }
 
 function resolveToken(flag: string | undefined): string | undefined {
   return (
     flag ??
-    process.env[QWEN_SERVER_TOKEN_ENV] ??
-    process.env[QWEN_DAEMON_TOKEN_ENV]
+    process.env[CANOPY_SERVER_TOKEN_ENV] ??
+    process.env[CANOPY_DAEMON_TOKEN_ENV]
   );
 }
 
@@ -72,11 +72,11 @@ export const reloadCommand: CommandModule<unknown, ReloadArgs> = {
     yargs
       .option('daemon-url', {
         type: 'string',
-        description: `Daemon base URL (default: $${QWEN_DAEMON_URL_ENV} or ${DEFAULT_DAEMON_URL})`,
+        description: `Daemon base URL (default: $${CANOPY_DAEMON_URL_ENV} or ${DEFAULT_DAEMON_URL})`,
       })
       .option('token', {
         type: 'string',
-        description: `Bearer token (default: $${QWEN_SERVER_TOKEN_ENV} or $${QWEN_DAEMON_TOKEN_ENV})`,
+        description: `Bearer token (default: $${CANOPY_SERVER_TOKEN_ENV} or $${CANOPY_DAEMON_TOKEN_ENV})`,
       })
       .option('timeout', {
         type: 'number',

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -180,7 +180,7 @@ function isWorkspaceVoiceTranscriptionAvailable(
     );
   } catch (err) {
     writeStderrLine(
-      `qwen serve: workspace voice transcription capability check failed: ${
+      `canopy serve: workspace voice transcription capability check failed: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );

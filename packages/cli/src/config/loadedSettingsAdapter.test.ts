@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ function makeSettings(initial: SettingsShape = {}) {
   const file: MutableSettingsFile = {
     settings: structuredClone(initial),
     originalSettings: structuredClone(initial),
-    path: '/tmp/qwen-test-settings.json',
+    path: '/tmp/canopy-test-settings.json',
   };
   const setValue = vi.fn(
     (_scope: SettingScope, key: string, value: unknown) => {

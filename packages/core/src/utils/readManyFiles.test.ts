@@ -62,7 +62,7 @@ describe('readManyFiles', () => {
       getFileService: () => new FileDiscoveryService(rootDir),
       getFileFilteringOptions: () => ({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       }),
       getTargetDir: () => rootDir,
       getProjectRoot: () => rootDir,
@@ -290,7 +290,7 @@ describe('readManyFiles', () => {
         expect(readTextFileFromHandleSpy).toHaveBeenCalled();
         expect(readTextFileSpy).not.toHaveBeenCalled();
         expect(mkdtempSpy).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen-validated-read-'),
+          expect.stringContaining('canopy-validated-read-'),
         );
       } finally {
         readTextFileSpy.mockRestore();
@@ -576,7 +576,7 @@ describe('readManyFiles', () => {
           const result = await readFile(file, options);
           // The first snapshot read proves the descriptor is already bound to
           // the approved inode before the visible path is swapped.
-          if (String(file).includes('qwen-validated-read-')) {
+          if (String(file).includes('canopy-validated-read-')) {
             swappedAfterSnapshotRead = true;
             await fs.rename(absolutePath, backupPath);
             await fs.symlink(outsidePath, absolutePath);
@@ -986,7 +986,7 @@ describe('readManyFiles', () => {
       const content = contentToString(result.contentParts);
       expect(content).toContain('File size exceeds the 10MB limit');
       expect(content).toContain('huge.bin');
-      expect(content).not.toContain('qwen-validated-read-');
+      expect(content).not.toContain('canopy-validated-read-');
       expect(content).not.toContain(
         'No files matching the criteria were found',
       );
@@ -995,7 +995,7 @@ describe('readManyFiles', () => {
       // Downstream callers (e.g. atCommandProcessor) inspect this field to
       // render the read as failed rather than successful.
       expect(result.files[0]!.error).toMatch(/exceeds the 10MB limit/i);
-      expect(result.files[0]!.error).not.toContain('qwen-validated-read-');
+      expect(result.files[0]!.error).not.toContain('canopy-validated-read-');
     });
 
     it('uses display paths for validated binary-file messages', async () => {
@@ -1017,7 +1017,7 @@ describe('readManyFiles', () => {
       expect(content).toContain(
         'Cannot display content of binary file: alias.bin',
       );
-      expect(content).not.toContain('qwen-validated-read-');
+      expect(content).not.toContain('canopy-validated-read-');
     });
 
     it('surfaces a size error for a validated file too large to snapshot', async () => {

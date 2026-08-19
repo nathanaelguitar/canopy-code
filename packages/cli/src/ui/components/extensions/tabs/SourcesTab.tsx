@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,7 +22,7 @@ import {
   redactUrlCredentials,
   createDebugLogger,
   isExtensionCommittedWithWarningsError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { getErrorMessage } from '../../../../utils/errors.js';
 import { stripUnsafeCharacters } from '../../../utils/textUtils.js';
 import type { StatusMessage } from '../ExtensionsManagerDialog.js';

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   getAutoMemoryProjectStateDir,
   getUserAutoMemoryRoot,
   AUTO_MEMORY_INDEX_FILENAME,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useConfig } from '../contexts/ConfigContext.js';
 import { useSettings } from '../contexts/SettingsContext.js';
 import { SettingScope } from '../../config/settings.js';
@@ -149,8 +149,8 @@ export function MemoryDialog({ onClose }: MemoryDialogProps) {
   const globalMemoryPath = useMemo(
     () =>
       path.join(
-        Storage.getGlobalQwenDir(),
-        getAllGeminiMdFilenames()[0] ?? 'QWEN.md',
+        Storage.getGlobalCanopyDir(),
+        getAllGeminiMdFilenames()[0] ?? 'CANOPY.md',
       ),
     [],
   );
@@ -158,7 +158,7 @@ export function MemoryDialog({ onClose }: MemoryDialogProps) {
     () =>
       path.join(
         config.getWorkingDir(),
-        getAllGeminiMdFilenames()[0] ?? 'QWEN.md',
+        getAllGeminiMdFilenames()[0] ?? 'CANOPY.md',
       ),
     [config],
   );
@@ -273,12 +273,12 @@ export function MemoryDialog({ onClose }: MemoryDialogProps) {
         case 'project':
           return resolvePreferredMemoryFile(
             config.getWorkingDir(),
-            getAllGeminiMdFilenames()[0] ?? 'QWEN.md',
+            getAllGeminiMdFilenames()[0] ?? 'CANOPY.md',
           );
         case 'global':
           return resolvePreferredMemoryFile(
-            Storage.getGlobalQwenDir(),
-            getAllGeminiMdFilenames()[0] ?? 'QWEN.md',
+            Storage.getGlobalCanopyDir(),
+            getAllGeminiMdFilenames()[0] ?? 'CANOPY.md',
           );
         default: {
           const _exhaustive: never = item.value;

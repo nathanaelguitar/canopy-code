@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import {
   buildProviderTemplate,
   computeModelListVersion,
   PROVIDER_METADATA_NS,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useProviderUpdates } from './useProviderUpdates.js';
 
 vi.mock('../../utils/settingsUtils.js', async (importOriginal) => {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -51,7 +51,7 @@ import type {
   InvocationContextV1,
   WorkflowApproval,
   BranchPoint,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   AuthType,
   ApprovalMode,
@@ -191,7 +191,7 @@ import {
   buildBackgroundEntryLabel,
   collectSessionTurnState,
   computeInitialTurnFromHistory as computeInitialTurnFromHistoryCore,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { NOT_CURRENTLY_GENERATING_CANCEL_MESSAGE } from '@qwen-code/acp-bridge/bridgeErrors';
 import { CHANNEL_PROMPT_META_KEY } from '@qwen-code/channel-base';
 import { ENV_ACP_REPEATED_TOOL_FAILURE_GUARD } from '../../config/shared-env-keys.js';
@@ -351,11 +351,11 @@ const permissionRequestTails = new WeakMap<
   AgentSideConnection,
   Promise<void>
 >();
-const USER_CANCEL_ABORT_REASON = 'qwen:user-cancel';
-const NEW_PROMPT_ABORT_REASON = 'qwen:new-prompt';
-const SESSION_DISPOSE_ABORT_REASON = 'qwen:session-dispose';
-const DAEMON_RETRY_META_KEY = 'qwen.daemon.retry';
-const DAEMON_CONTINUE_META_KEY = 'qwen.daemon.continueLastTurn';
+const USER_CANCEL_ABORT_REASON = 'canopy:user-cancel';
+const NEW_PROMPT_ABORT_REASON = 'canopy:new-prompt';
+const SESSION_DISPOSE_ABORT_REASON = 'canopy:session-dispose';
+const DAEMON_RETRY_META_KEY = 'canopy.daemon.retry';
+const DAEMON_CONTINUE_META_KEY = 'canopy.daemon.continueLastTurn';
 const MAX_DAEMON_MEDIA_REFERENCES = 256;
 
 function readDaemonMediaReferences(
@@ -755,7 +755,7 @@ function recordDaemonLoopDetected(
   loopType: LoopType,
   message: string,
   loopState: DaemonToolLoopState,
-  options: { recordToQwenLogger?: boolean } = {},
+  options: { recordToCanopyLogger?: boolean } = {},
 ): true {
   if (!loopState.loopDetected) {
     loopState.loopDetected = true;
@@ -1403,20 +1403,20 @@ export function resolveExistingFile(
 }
 
 export function resolveHomeLoopResolverRoots({
-  homeQwenDir = Storage.getGlobalQwenDir(),
+  homeCanopyDir = Storage.getGlobalCanopyDir(),
   homeDir = os.homedir(),
-  qwenHome = process.env['QWEN_HOME'],
+  canopyHome = process.env['QWEN_HOME'],
 }: {
-  homeQwenDir?: string;
+  homeCanopyDir?: string;
   homeDir?: string;
-  qwenHome?: string;
-} = {}): { homeConfineRoot: string; homeQwenDir: string } {
-  // qwenHome truthy → QWEN_HOME is itself the global dir, so confine within
-  // homeQwenDir; the homeDir param is only consulted when qwenHome is unset.
+  canopyHome?: string;
+} = {}): { homeConfineRoot: string; homeCanopyDir: string } {
+  // canopyHome truthy → QWEN_HOME is itself the global dir, so confine within
+  // homeCanopyDir; the homeDir param is only consulted when canopyHome is unset.
   return {
     homeConfineRoot:
-      (qwenHome ? homeQwenDir : homeDir) || path.dirname(homeQwenDir),
-    homeQwenDir,
+      (canopyHome ? homeCanopyDir : homeDir) || path.dirname(homeCanopyDir),
+    homeCanopyDir,
   };
 }
 
@@ -2948,7 +2948,7 @@ export class Session implements SessionContext {
           content: { type: 'text', text: entry.text },
           _meta: {
             source: 'realtime_voice',
-            qwenDiscreteMessage: true,
+            canopyDiscreteMessage: true,
           },
         });
       } catch (error) {
@@ -3861,7 +3861,7 @@ export class Session implements SessionContext {
             ...result,
             _meta: {
               ...result._meta,
-              'qwen.branchPoint': {
+              'canopy.branchPoint': {
                 assistantRecordUuid: branchPoint.assistantRecordUuid,
                 checkpointUuid: branchPoint.checkpointUuid,
               },
@@ -3945,7 +3945,7 @@ export class Session implements SessionContext {
    * accepted, the daemon bridge drives the continuation through the normal
    * prompt-admission path (`sendPrompt` with the trusted continue meta) so it is
    * tracked like any other prompt; `prompt()` then re-detects/strips
-   * authoritatively. Powers `qwen/control/session/continue`.
+   * authoritatively. Powers `canopy/control/session/continue`.
    */
   async continueLastTurn(): Promise<{
     accepted: boolean;
@@ -3993,7 +3993,7 @@ export class Session implements SessionContext {
   /**
    * Generate a server-side follow-up suggestion for the just-completed
    * turn and push it to attached clients via the daemon's
-   * `qwen/notify/session/prompt-suggestion` extNotification. Mirrors
+   * `canopy/notify/session/prompt-suggestion` extNotification. Mirrors
    * the CLI's `AppContainer.tsx` integration: same `generatePromptSuggestion`
    * call, same `enableCacheSharing` flag forwarding, same curated
    * history slice (`getHistory(true).slice(-40)`).
@@ -4059,7 +4059,7 @@ export class Session implements SessionContext {
         if (ac.signal.aborted) return;
         if (r.suggestion) {
           await this.client.extNotification(
-            'qwen/notify/session/prompt-suggestion',
+            'canopy/notify/session/prompt-suggestion',
             {
               v: 1,
               sessionId: this.sessionId,
@@ -4164,8 +4164,8 @@ export class Session implements SessionContext {
           promptMetadata?.[DAEMON_CONTINUE_META_KEY] === true;
         // Bind the prompt ID for the remainder of this turn, mirroring the
         // sessionIdContext.run wrapper in #executePrompt. Shell subprocesses
-        // read it via getShellContextEnvVars (QWEN_CODE_PROMPT_ID) — without
-        // it, `qwen review fetch-pr` cannot record its worktree lease and an
+        // read it via getShellContextEnvVars (CANOPY_CODE_PROMPT_ID) — without
+        // it, `canopy review fetch-pr` cannot record its worktree lease and an
         // interrupted /review leaves the review worktree behind. TUI and
         // headless enter this context at their prompt entry points
         // (useGeminiStream.ts / nonInteractiveCli.ts); ACP had no equivalent.
@@ -4445,7 +4445,7 @@ export class Session implements SessionContext {
             } else {
               // Normal processing for non-slash commands. promptLast keeps the
               // user's instruction the final, prominent part when referenced
-              // file/editor content is appended (issue: ACP + local qwen).
+              // file/editor content is appended (issue: ACP + local canopy).
               parts = await this.#resolvePrompt(
                 modelPromptBlocks,
                 pendingSend.signal,
@@ -4970,12 +4970,12 @@ export class Session implements SessionContext {
               );
               // Remove review worktrees leased during this prompt and not
               // released by the skill's own cleanup step — a cancelled or
-              // errored /review otherwise leaves `.qwen/tmp/review-pr-<n>`
+              // errored /review otherwise leaves `.canopy/tmp/review-pr-<n>`
               // and its branch behind. Unconditional like the headless
               // finally (nonInteractiveCli.ts): the ACP turn loop runs
               // whole turns, so unlike the TUI's per-continuation
               // submitQuery this can never fire mid-review. No-op when the
-              // lease was already cleared by `qwen review cleanup`.
+              // lease was already cleared by `canopy review cleanup`.
               cleanupReviewWorktreeLeases({
                 sessionId: this.config.getSessionId(),
                 promptId,
@@ -6006,7 +6006,7 @@ export class Session implements SessionContext {
         content: { type: 'text', text },
         _meta: {
           source: 'todo_stop_guard',
-          qwenDiscreteMessage: true,
+          canopyDiscreteMessage: true,
           attempt: state.attempt,
           maxAttempts: state.maxAttempts,
           unfinishedCount: state.unfinishedCount,
@@ -6043,11 +6043,11 @@ export class Session implements SessionContext {
     update: Extract<SessionUpdate, { sessionUpdate: 'plan' }>,
   ): void {
     const meta = isRecord(update['_meta']) ? update['_meta'] : undefined;
-    const plan = isRecord(meta?.['qwenTodoPlan'])
-      ? meta['qwenTodoPlan']
+    const plan = isRecord(meta?.['canopyTodoPlan'])
+      ? meta['canopyTodoPlan']
       : undefined;
-    const transcript = isRecord(meta?.['qwenTranscript'])
-      ? meta['qwenTranscript']
+    const transcript = isRecord(meta?.['canopyTranscript'])
+      ? meta['canopyTranscript']
       : undefined;
     const planId = plan?.['id'];
     const sourceCallId = transcript?.['planToolCallId'];
@@ -6447,7 +6447,7 @@ export class Session implements SessionContext {
         LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
         REPEATED_TOOL_FAILURE_STOP_MESSAGE,
         toolLoopState,
-        { recordToQwenLogger: false },
+        { recordToCanopyLogger: false },
       );
       if (!rejectOnLoopDetected) {
         // Rejecting turns publish the structured turn_error as the
@@ -6847,7 +6847,7 @@ export class Session implements SessionContext {
     // checking for work before the load completes would skip start() and
     // leave durable jobs dormant until the next prompt. Missed one-shots
     // are delivered as late fires through the start() callback below.
-    // Durable tasks live under ~/.qwen (user-owned, not in the working
+    // Durable tasks live under ~/.canopy (user-owned, not in the working
     // tree), so no folder-trust gate is needed here.
     try {
       await scheduler.enableDurable(this.sessionId);
@@ -7039,16 +7039,16 @@ export class Session implements SessionContext {
     // the current project; a fresh resolver also correctly re-delivers full.
     if (!this.loopTickResolver || this.loopTickResolverRoot !== root) {
       // Resolve the home/global loop.md from the QWEN_HOME-aware global dir (the
-      // rest of Qwen honors QWEN_HOME for `.qwen`); reading raw os.homedir() here
-      // would always hit the real `~/.qwen` and ignore a relocated config home.
-      const { homeConfineRoot, homeQwenDir } = resolveHomeLoopResolverRoots();
+      // rest of Canopy honors QWEN_HOME for `.canopy`); reading raw os.homedir() here
+      // would always hit the real `~/.canopy` and ignore a relocated config home.
+      const { homeConfineRoot, homeCanopyDir } = resolveHomeLoopResolverRoots();
       this.loopTickResolver = new LoopTickResolver({
         projectRoot: root,
         homeDir: homeConfineRoot,
-        homeQwenDir,
-        // The project `.qwen/loop.md` is repo-controlled, so an untrusted folder
+        homeCanopyDir,
+        // The project `.canopy/loop.md` is repo-controlled, so an untrusted folder
         // must not read it and feed it to the model (mirrors getProjectHooks()'s
-        // trust gate). The home/global `~/.qwen/loop.md` is user-owned and stays
+        // trust gate). The home/global `~/.canopy/loop.md` is user-owned and stays
         // allowed. Pass a getter, not a snapshot: isTrustedFolder() can flip
         // mid-session on an IDE workspace-trust update, and the resolver outlives
         // a single tick — re-read it on every resolve() so a trusted→untrusted
@@ -7130,7 +7130,7 @@ export class Session implements SessionContext {
                 try {
                   loopTick = await resolver.resolve(loopMode, trustedAtResolve);
                 } catch (resolveErr) {
-                  // resolve() reads .qwen/loop.md (project or home/global); an
+                  // resolve() reads .canopy/loop.md (project or home/global); an
                   // EACCES/EIO here is a sentinel-RESOLUTION failure, not a
                   // model-call failure — tag it so the two are distinguishable
                   // in logs.
@@ -7140,7 +7140,7 @@ export class Session implements SessionContext {
                   // path (OS username + dir layout) — stays in this LOCAL debug
                   // log only; debug logs are never sent to the ACP client.
                   debugLogger.warn(
-                    `loop.md sentinel resolution failed (mode=${loopMode}, code=${code}) — check .qwen/loop.md permissions/IO`,
+                    `loop.md sentinel resolution failed (mode=${loopMode}, code=${code}) — check .canopy/loop.md permissions/IO`,
                     resolveErr,
                   );
                   if (
@@ -7175,7 +7175,7 @@ export class Session implements SessionContext {
                     // so re-throwing the raw fs error would leak that absolute
                     // path. Surface only the candidate labels + errno code via the
                     // shared absentLocations() — reusing the QWEN_HOME-aware home
-                    // label (never a hardcoded `~/.qwen`) and naming the project
+                    // label (never a hardcoded `~/.canopy`) and naming the project
                     // candidate only when it was actually read (the captured trust
                     // matches the resolve() probe, so an untrusted folder can't
                     // falsely claim `(project)`).
@@ -7627,7 +7627,7 @@ export class Session implements SessionContext {
       .getChatRecordingService()
       ?.setTitleRecordedCallback((customTitle, titleSource, sessionId) => {
         void this.client
-          .extNotification('qwen/notify/session/title-update', {
+          .extNotification('canopy/notify/session/title-update', {
             v: 1,
             sessionId,
             title: customTitle,
@@ -7643,7 +7643,7 @@ export class Session implements SessionContext {
       this.unsubscribeChatRecordingFailure = this.config.onChatRecordingFailure(
         (event) =>
           this.client.extNotification(
-            'qwen/notify/session/recording-degraded',
+            'canopy/notify/session/recording-degraded',
             {
               v: 1,
               sessionId: event.sessionId,
@@ -8156,7 +8156,7 @@ export class Session implements SessionContext {
       content: { type: 'text', text: item.displayText },
       _meta: {
         source: 'background_notification',
-        qwenDiscreteMessage: true,
+        canopyDiscreteMessage: true,
         backgroundTask: {
           taskId: item.taskId,
           status: item.status,
@@ -8178,7 +8178,7 @@ export class Session implements SessionContext {
       content: { type: 'text', text },
       _meta: {
         source: 'background_notification_response',
-        qwenDiscreteMessage: true,
+        canopyDiscreteMessage: true,
         backgroundTask: {
           taskId: item.taskId,
           status: item.status,
@@ -8200,7 +8200,7 @@ export class Session implements SessionContext {
     reason: PromptResponse['stopReason'],
   ): Promise<void> {
     try {
-      await this.client.extNotification('_qwencode/end_turn', {
+      await this.client.extNotification('_canopycode/end_turn', {
         sessionId: this.sessionId,
         reason,
         source: 'background_notification',
@@ -8366,7 +8366,7 @@ export class Session implements SessionContext {
     // A2 (#4511): notify attached clients of an in-session mode switch.
     // Mirrors the model-update extNotification in `setModel`.
     void this.client
-      .extNotification('qwen/notify/session/mode-update', {
+      .extNotification('canopy/notify/session/mode-update', {
         v: 1,
         sessionId: this.sessionId,
         currentModeId: params.modeId,
@@ -8415,7 +8415,7 @@ export class Session implements SessionContext {
 
     const requireCachedCredentials =
       selectedAuthType !== previousAuthType &&
-      selectedAuthType === AuthType.QWEN_OAUTH;
+      selectedAuthType === AuthType.CANOPY_OAUTH;
     const switchOptions =
       resolvedRoute?.baseUrl !== undefined || requireCachedCredentials
         ? {
@@ -8459,7 +8459,7 @@ export class Session implements SessionContext {
     // the change (the HTTP path also flows through this method), avoiding a
     // double publish. Fire-and-forget, matching the MCP-budget extNotification.
     void this.client
-      .extNotification('qwen/notify/session/model-update', {
+      .extNotification('canopy/notify/session/model-update', {
         v: 1,
         sessionId: this.sessionId,
         currentModelId: currentAcpModelId,
@@ -8492,7 +8492,7 @@ export class Session implements SessionContext {
 
     return {
       _meta: {
-        qwenModelSwitch: {
+        canopyModelSwitch: {
           authType: effectiveAuthType,
           modelId: effectiveModelId,
           baseUrl: after?.baseUrl ?? '(default)',
@@ -8534,7 +8534,7 @@ export class Session implements SessionContext {
     // legacy frame for this change, not two. `setMode` omits the flag, so
     // its dual-emit still fires (it has no `sendUpdate`).
     try {
-      await this.client.extNotification('qwen/notify/session/mode-update', {
+      await this.client.extNotification('canopy/notify/session/mode-update', {
         v: 1,
         sessionId: this.sessionId,
         currentModeId: newModeId,
@@ -8920,7 +8920,7 @@ export class Session implements SessionContext {
     };
     // Bounded-concurrency runner: matches core's `runConcurrently`
     // behaviour (`coreToolScheduler.ts:1506`), capped by
-    // `QWEN_CODE_MAX_TOOL_CONCURRENCY` (default 10). Results are returned
+    // `CANOPY_CODE_MAX_TOOL_CONCURRENCY` (default 10). Results are returned
     // in input order regardless of resolution order.
     //
     // Only agent-only batches reach here (the batcher above groups only
@@ -8938,7 +8938,7 @@ export class Session implements SessionContext {
       shouldSkipUnstarted?: () => boolean,
     ): Promise<RunToolResult[]> => {
       const maxConcurrency = parsePositiveIntegerEnv(
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'],
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'],
         10,
       );
       const results: RunToolResult[] = new Array(calls.length);
@@ -10165,7 +10165,7 @@ export class Session implements SessionContext {
               if (hooksEnabled && messageBus) {
                 this.fireNotificationHookWithTerminalSequence(
                   messageBus,
-                  `Qwen Code needs your permission to use ${toolName}`,
+                  `Canopy Code needs your permission to use ${toolName}`,
                   NotificationType.PermissionPrompt,
                   'Permission needed',
                 );
@@ -10198,7 +10198,7 @@ export class Session implements SessionContext {
                     ...interactionMetaFields(confirmationDetails),
                     ...(isExitPlanModeTool && this.activeTodoPlanRevision
                       ? {
-                          qwenTodoApproval: this.activeTodoPlanRevision,
+                          canopyTodoApproval: this.activeTodoPlanRevision,
                         }
                       : {}),
                   },
@@ -10624,7 +10624,7 @@ export class Session implements SessionContext {
           let settledPersistedOutputFiles: string[] | undefined;
           const sleepInhibitorHandle = acquireSleepInhibitor(
             this.config,
-            `Qwen Code is executing tool ${toolName}`,
+            `Canopy Code is executing tool ${toolName}`,
           );
           try {
             try {
@@ -11541,7 +11541,7 @@ export class Session implements SessionContext {
     // placed AFTER this content — mirroring the interactive path, which keeps
     // the prompt prominent by merging IDE editor context in FRONT of the
     // prompt via prependToFirstTextPart (client.ts), leaving the instruction
-    // last. Recency-biased providers (e.g. local Ollama qwen models) otherwise
+    // last. Recency-biased providers (e.g. local Ollama canopy models) otherwise
     // latch onto trailing file content and answer as if it were the task,
     // ignoring a prompt buried before it. The model correlates each @reference
     // with its content block by the "@path" token left in the prompt text and
@@ -11898,15 +11898,18 @@ export class Session implements SessionContext {
     }
 
     try {
-      await this.client.extNotification('qwen/notify/session/artifact-event', {
-        v: 1,
-        sessionId: this.sessionId,
-        source: 'hook',
-        hookEventName: args.hookEventName,
-        toolName: args.toolName,
-        toolCallId: args.toolCallId,
-        artifacts: args.artifacts,
-      });
+      await this.client.extNotification(
+        'canopy/notify/session/artifact-event',
+        {
+          v: 1,
+          sessionId: this.sessionId,
+          source: 'hook',
+          hookEventName: args.hookEventName,
+          toolName: args.toolName,
+          toolCallId: args.toolCallId,
+          artifacts: args.artifacts,
+        },
+      );
     } catch (error) {
       writeStderrLine(
         `Hook artifact notification dropped for ${args.toolName ?? args.hookEventName}: ${
@@ -11931,7 +11934,7 @@ export class Session implements SessionContext {
       .then((hookResult) => {
         if (!hookResult.terminalSequence) return;
         return this.client.extNotification(
-          'qwen/notify/session/terminal-sequence',
+          'canopy/notify/session/terminal-sequence',
           {
             v: 1,
             sessionId: this.sessionId,

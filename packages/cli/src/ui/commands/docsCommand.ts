@@ -10,14 +10,14 @@ import {
   type SlashCommand,
   CommandKind,
 } from './types.js';
-import { openBrowserSecurely } from '@qwen-code/qwen-code-core';
+import { openBrowserSecurely } from '@canopy-code/canopy-code-core';
 import { MessageType } from '../types.js';
 import { t, getCurrentLanguage } from '../../i18n/index.js';
 
 export const docsCommand: SlashCommand = {
   name: 'docs',
   get description() {
-    return t('open full Qwen Code documentation in your browser');
+    return t('open full Canopy Code documentation in your browser');
   },
   kind: CommandKind.BUILT_IN,
   supportedModes: ['interactive', 'non_interactive', 'acp'] as const,
@@ -30,7 +30,7 @@ export const docsCommand: SlashCommand = {
       return {
         type: 'message' as const,
         messageType: 'info' as const,
-        content: `Qwen Code documentation: ${docsUrl}`,
+        content: `Canopy Code documentation: ${docsUrl}`,
       };
     }
 

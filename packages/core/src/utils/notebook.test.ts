@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -596,7 +596,7 @@ describe('notebook utilities', () => {
         nbformat: 4,
         nbformat_minor: 5,
         cells: [
-          { cell_type: 'code', id: 'qwen-cell-1', source: '', metadata: {} },
+          { cell_type: 'code', id: 'canopy-cell-1', source: '', metadata: {} },
           { cell_type: 'code', source: '', metadata: {} },
         ],
         metadata: {},
@@ -604,14 +604,14 @@ describe('notebook utilities', () => {
     );
 
     expect(hasStableCellIds(notebook)).toBe(false);
-    expect(makeCellId(notebook)).toBe('qwen-cell-2');
+    expect(makeCellId(notebook)).toBe('canopy-cell-2');
     notebook.cells.push({
       cell_type: 'code',
-      id: 'qwen-cell-2',
+      id: 'canopy-cell-2',
       source: '',
       metadata: {},
     });
-    expect(makeCellId(notebook)).toBe('qwen-cell-3');
+    expect(makeCellId(notebook)).toBe('canopy-cell-3');
   });
 
   it('should not generate cell IDs for old notebook formats', () => {

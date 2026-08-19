@@ -12,7 +12,7 @@ import type {
   GoalStateCause,
   Logger,
   SessionListItem,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   HistoryItemWithoutId,
   HistoryItem,
@@ -322,7 +322,7 @@ export type CommandSource =
   | 'skill-dir-command' // FileCommandLoader (user/project, no extensionName)
   | 'plugin-command' // FileCommandLoader (extension, extensionName set)
   | 'mcp-prompt' // McpPromptLoader
-  | 'workflow-command'; // SavedWorkflowLoader (.qwen/workflows/<name>.js)
+  | 'workflow-command'; // SavedWorkflowLoader (.canopy/workflows/<name>.js)
 // Reserved for future loaders (not implemented in Phase 1):
 // | 'plugin-skill'
 // | 'dynamic-skill'

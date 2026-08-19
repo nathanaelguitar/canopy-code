@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * guards in Config.
  *
  * The guards ensure that only the first Config instance in a process sets
- * `process.env['QWEN_CODE_SESSION_ID']` / `process.env['QWEN_CODE_MODEL']`,
+ * `process.env['CANOPY_CODE_SESSION_ID']` / `process.env['CANOPY_CODE_MODEL']`,
  * preventing throwaway instances (e.g. telemetry-only) from overwriting the
  * real session's values.
  *
@@ -23,7 +23,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('node:fs');
 vi.mock('node:fs/promises');
 vi.mock('../telemetry/index.js', () => ({
-  QwenLogger: vi.fn().mockImplementation(() => ({
+  CanopyLogger: vi.fn().mockImplementation(() => ({
     logStartSessionEvent: vi.fn().mockResolvedValue(undefined),
     logEndSessionEvent: vi.fn().mockResolvedValue(undefined),
     shutdown: vi.fn().mockResolvedValue(undefined),
@@ -44,7 +44,7 @@ vi.mock('../core/contentGenerator.js', () => ({
   }),
   createContentGeneratorConfig: vi.fn().mockReturnValue({}),
   createContentGenerator: vi.fn().mockReturnValue({}),
-  AuthType: { USE_GEMINI: 'gemini', QWEN_OAUTH: 'qwen-oauth' },
+  AuthType: { USE_GEMINI: 'gemini', CANOPY_OAUTH: 'canopy-oauth' },
 }));
 vi.mock('../core/baseLlmClient.js');
 vi.mock('../core/toolHookTriggers.js', () => ({
@@ -118,10 +118,10 @@ let originalEnv: string | undefined;
 let originalModelEnv: string | undefined;
 
 beforeEach(() => {
-  originalEnv = process.env['QWEN_CODE_SESSION_ID'];
-  delete process.env['QWEN_CODE_SESSION_ID'];
-  originalModelEnv = process.env['QWEN_CODE_MODEL'];
-  delete process.env['QWEN_CODE_MODEL'];
+  originalEnv = process.env['CANOPY_CODE_SESSION_ID'];
+  delete process.env['CANOPY_CODE_SESSION_ID'];
+  originalModelEnv = process.env['CANOPY_CODE_MODEL'];
+  delete process.env['CANOPY_CODE_MODEL'];
 
   (fs.existsSync as Mock).mockReturnValue(true);
   (fs.readdirSync as Mock).mockReturnValue([]);
@@ -139,24 +139,24 @@ beforeEach(() => {
 
 afterEach(() => {
   if (originalEnv !== undefined) {
-    process.env['QWEN_CODE_SESSION_ID'] = originalEnv;
+    process.env['CANOPY_CODE_SESSION_ID'] = originalEnv;
   } else {
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
   }
   if (originalModelEnv !== undefined) {
-    process.env['QWEN_CODE_MODEL'] = originalModelEnv;
+    process.env['CANOPY_CODE_MODEL'] = originalModelEnv;
   } else {
-    delete process.env['QWEN_CODE_MODEL'];
+    delete process.env['CANOPY_CODE_MODEL'];
   }
   vi.resetModules();
 });
 
 describe('Config sessionEnvClaimed guard', () => {
-  it('first Config sets process.env QWEN_CODE_SESSION_ID to its sessionId', async () => {
+  it('first Config sets process.env CANOPY_CODE_SESSION_ID to its sessionId', async () => {
     const { Config } = await import('./config.js');
     const config = new Config({ ...baseParams });
 
-    expect(process.env['QWEN_CODE_SESSION_ID']).toBe(config.getSessionId());
+    expect(process.env['CANOPY_CODE_SESSION_ID']).toBe(config.getSessionId());
   });
 
   it('subsequent Config does not overwrite the env var set by the first', async () => {
@@ -171,8 +171,8 @@ describe('Config sessionEnvClaimed guard', () => {
     });
 
     // The env var should still be the first config's session ID
-    expect(process.env['QWEN_CODE_SESSION_ID']).toBe(firstSessionId);
-    expect(process.env['QWEN_CODE_SESSION_ID']).not.toBe(
+    expect(process.env['CANOPY_CODE_SESSION_ID']).toBe(firstSessionId);
+    expect(process.env['CANOPY_CODE_SESSION_ID']).not.toBe(
       secondConfig.getSessionId(),
     );
   });
@@ -182,22 +182,22 @@ describe('Config sessionEnvClaimed guard', () => {
     const config = new Config({ ...baseParams });
     const originalSessionId = config.getSessionId();
 
-    expect(process.env['QWEN_CODE_SESSION_ID']).toBe(originalSessionId);
+    expect(process.env['CANOPY_CODE_SESSION_ID']).toBe(originalSessionId);
 
     // Simulate /clear or session switch
     config.startNewSession('new-session-uuid-123');
 
-    expect(process.env['QWEN_CODE_SESSION_ID']).toBe('new-session-uuid-123');
-    expect(process.env['QWEN_CODE_SESSION_ID']).not.toBe(originalSessionId);
+    expect(process.env['CANOPY_CODE_SESSION_ID']).toBe('new-session-uuid-123');
+    expect(process.env['CANOPY_CODE_SESSION_ID']).not.toBe(originalSessionId);
   });
 });
 
 describe('Config modelEnvClaimed guard', () => {
-  it('first Config publishes its model to QWEN_CODE_MODEL', async () => {
+  it('first Config publishes its model to CANOPY_CODE_MODEL', async () => {
     const { Config } = await import('./config.js');
     new Config({ ...baseParams });
 
-    expect(process.env['QWEN_CODE_MODEL']).toBe('test-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('test-model');
   });
 
   it('a later Config does not overwrite the claimed slot', async () => {
@@ -207,7 +207,7 @@ describe('Config modelEnvClaimed guard', () => {
     // Second Config (daemon side-session or telemetry-only throwaway)
     new Config({ ...baseParams, model: 'other-model' });
 
-    expect(process.env['QWEN_CODE_MODEL']).toBe('test-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('test-model');
   });
 
   it('only the claiming Config republishes on setModel', async () => {
@@ -217,11 +217,11 @@ describe('Config modelEnvClaimed guard', () => {
 
     // Simulate /model on the live session
     await owner.setModel('switched-model');
-    expect(process.env['QWEN_CODE_MODEL']).toBe('switched-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('switched-model');
 
     // A non-owner's switch must not touch the process-global slot
     await later.setModel('hijacked-model');
-    expect(process.env['QWEN_CODE_MODEL']).toBe('switched-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('switched-model');
   });
 
   it('republishes on refreshAuth when the resolved model changes', async () => {
@@ -232,7 +232,7 @@ describe('Config modelEnvClaimed guard', () => {
       '../core/contentGenerator.js'
     );
     const config = new Config({ ...baseParams });
-    expect(process.env['QWEN_CODE_MODEL']).toBe('test-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('test-model');
 
     // Auth flows call refreshAuth directly — no model-change listener fires —
     // and the resolved model can differ from the pre-auth one; the slot must
@@ -246,7 +246,7 @@ describe('Config modelEnvClaimed guard', () => {
     });
     await config.refreshAuth(AuthType.USE_GEMINI);
 
-    expect(process.env['QWEN_CODE_MODEL']).toBe('auth-resolved-model');
+    expect(process.env['CANOPY_CODE_MODEL']).toBe('auth-resolved-model');
   });
 
   it("registers each Config's model per session, so a daemon side-session reads its own", async () => {

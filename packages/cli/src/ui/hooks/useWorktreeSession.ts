@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,8 +8,8 @@ import { useState, useEffect } from 'react';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import type { Config, WorktreeSession } from '@qwen-code/qwen-code-core';
-import { readWorktreeSession } from '@qwen-code/qwen-code-core';
+import type { Config, WorktreeSession } from '@canopy-code/canopy-code-core';
+import { readWorktreeSession } from '@canopy-code/canopy-code-core';
 
 /**
  * Watches the active session's WorktreeSession sidecar file and returns

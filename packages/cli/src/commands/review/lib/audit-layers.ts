@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -465,7 +465,7 @@ export function uncoveredLayers(
  * a modeled executable system whose reverse audit owes per-layer coverage. It
  * rides an EXISTING manifest field (`domains`) rather than a new schema key, so
  * the strict repository-context validator is untouched: a maintainer adds a
- * matching rule to `.qwen/review-context.json` that emits this domain when the
+ * matching rule to `.canopy/review-context.json` that emits this domain when the
  * diff touches the guard/interpreter it applies to, and the gate below keys on
  * it. Absent it, the gate is inert — every ordinary review is unaffected.
  */

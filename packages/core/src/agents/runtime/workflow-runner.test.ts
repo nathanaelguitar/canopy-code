@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -322,8 +322,8 @@ describe('WorkflowRunner', () => {
 
   it('keeps queued agents stopped while pausing and starts them after resume', async () => {
     const originalConcurrency =
-      process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
+      process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
     try {
       const { config, registry } = configWithRegistry();
       const started: string[] = [];
@@ -381,17 +381,18 @@ describe('WorkflowRunner', () => {
       await expect(handle.completion).resolves.toMatchObject({ ok: true });
     } finally {
       if (originalConcurrency === undefined) {
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
       } else {
-        process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = originalConcurrency;
+        process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] =
+          originalConcurrency;
       }
     }
   });
 
   it('cancels a paused run without starting queued agents or deadlocking', async () => {
     const originalConcurrency =
-      process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
+      process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
     try {
       const { config, registry } = configWithRegistry();
       const started: string[] = [];
@@ -429,9 +430,10 @@ describe('WorkflowRunner', () => {
       expect(started).toEqual(['first']);
     } finally {
       if (originalConcurrency === undefined) {
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
       } else {
-        process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = originalConcurrency;
+        process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] =
+          originalConcurrency;
       }
     }
   });
@@ -661,8 +663,8 @@ describe('WorkflowRunner', () => {
 
   it('classifies the internal wall-clock timeout as failed', async () => {
     vi.useFakeTimers();
-    const originalTimeout = process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'] = '1';
+    const originalTimeout = process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'] = '1';
     try {
       const timedOut = configWithRegistry();
       const observed = observeSettlement(timedOut.registry);
@@ -686,9 +688,9 @@ describe('WorkflowRunner', () => {
     } finally {
       vi.useRealTimers();
       if (originalTimeout === undefined) {
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'];
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'];
       } else {
-        process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'] = originalTimeout;
+        process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'] = originalTimeout;
       }
     }
   });

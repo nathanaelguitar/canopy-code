@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import {
   Storage,
   getCronFilePath,
   readCronTasks,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   registerScheduledTasksRoutes,
   registerWorkspaceQualifiedScheduledTasksRoutes,
@@ -111,7 +111,7 @@ async function makeHarness(
   const workspace = path.join(scratch, 'workspace');
   await fsp.mkdir(workspace, { recursive: true });
   // The durable tasks file lands under the runtime base dir, not the real
-  // ~/.qwen — redirect it into the scratch dir for the duration of the test.
+  // ~/.canopy — redirect it into the scratch dir for the duration of the test.
   Storage.setRuntimeBaseDir(scratch);
 
   const bridge = makeStubBridge();

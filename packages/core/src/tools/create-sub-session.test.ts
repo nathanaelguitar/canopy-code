@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,7 +35,7 @@ describe('CreateSubSessionTool', () => {
     const res = await tool
       .build({ prompt: 'do X' })
       .execute(new AbortController().signal);
-    expect(res.error?.message).toContain('qwen serve');
+    expect(res.error?.message).toContain('canopy serve');
     expect(res.returnDisplay).toContain('daemon-only');
   });
 

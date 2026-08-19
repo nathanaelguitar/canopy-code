@@ -1062,7 +1062,7 @@ describe('TodoWriteTool – runtime output directory', () => {
   let tool: TodoWriteTool;
   let mockAbortSignal: AbortSignal;
   let mockConfig: Config;
-  const originalRuntimeEnv = process.env['QWEN_RUNTIME_DIR'];
+  const originalRuntimeEnv = process.env['CANOPY_RUNTIME_DIR'];
 
   beforeEach(() => {
     mockConfig = {
@@ -1072,16 +1072,16 @@ describe('TodoWriteTool – runtime output directory', () => {
     tool = new TodoWriteTool(mockConfig);
     mockAbortSignal = new AbortController().signal;
     Storage.setRuntimeBaseDir(null);
-    delete process.env['QWEN_RUNTIME_DIR'];
+    delete process.env['CANOPY_RUNTIME_DIR'];
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     Storage.setRuntimeBaseDir(null);
     if (originalRuntimeEnv !== undefined) {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeEnv;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeEnv;
     } else {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     }
     vi.restoreAllMocks();
   });
@@ -1110,9 +1110,9 @@ describe('TodoWriteTool – runtime output directory', () => {
     expect(writePath).toContain('runtime-session.json');
   });
 
-  it('should write todos to env var dir when QWEN_RUNTIME_DIR is set', async () => {
+  it('should write todos to env var dir when CANOPY_RUNTIME_DIR is set', async () => {
     const envRuntimeDir = path.resolve('env', 'runtime');
-    process.env['QWEN_RUNTIME_DIR'] = envRuntimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = envRuntimeDir;
 
     const params: TodoWriteParams = {
       todos: [{ id: '1', content: 'Task 1', status: 'pending' }],
@@ -1132,7 +1132,7 @@ describe('TodoWriteTool – runtime output directory', () => {
     expect(writePath).toContain(path.join(envRuntimeDir, 'todos'));
   });
 
-  it('should use default ~/.qwen path when no custom dir is configured', async () => {
+  it('should use default ~/.canopy path when no custom dir is configured', async () => {
     const params: TodoWriteParams = {
       todos: [{ id: '1', content: 'Task 1', status: 'pending' }],
     };
@@ -1148,7 +1148,7 @@ describe('TodoWriteTool – runtime output directory', () => {
     await invocation.execute(mockAbortSignal);
 
     const writePath = mockAtomicWrite.mock.calls[0]?.[0] as string;
-    expect(writePath).toContain(path.join('.qwen', 'todos'));
+    expect(writePath).toContain(path.join('.canopy', 'todos'));
   });
 
   it('should check file existence in custom runtime dir for getDescription', () => {

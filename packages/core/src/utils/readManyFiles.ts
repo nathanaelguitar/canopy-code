@@ -371,7 +371,7 @@ async function snapshotValidatedFile(
       }
 
       snapshotDir = await fs.promises.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-validated-read-'),
+        path.join(os.tmpdir(), 'canopy-validated-read-'),
       );
       const snapshotPath = path.join(snapshotDir, path.basename(filePath));
       const target = await fs.promises.open(

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -313,7 +313,7 @@ describe('runForkedAgent (AgentHeadless path) bound-tool isolation', () => {
               round: 1,
               callId: 'write-1',
               name: ToolNames.WRITE_FILE,
-              args: { file_path: '/repo/.qwen/memories/project.md' },
+              args: { file_path: '/repo/.canopy/memories/project.md' },
               description: 'write',
               timestamp: Date.now(),
             });
@@ -358,10 +358,12 @@ describe('runForkedAgent (AgentHeadless path) bound-tool isolation', () => {
 
       expect(result.filesTouched).toEqual([
         '/repo/README.md',
-        '/repo/.qwen/memories/project.md',
+        '/repo/.canopy/memories/project.md',
         '/repo/outside.md',
       ]);
-      expect(result.filesWritten).toEqual(['/repo/.qwen/memories/project.md']);
+      expect(result.filesWritten).toEqual([
+        '/repo/.canopy/memories/project.md',
+      ]);
     } finally {
       spy.mockRestore();
     }

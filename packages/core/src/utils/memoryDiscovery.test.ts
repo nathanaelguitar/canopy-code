@@ -15,7 +15,7 @@ import {
   LOCAL_CONTEXT_FILENAME,
 } from '../memory/const.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
-import { QWEN_DIR } from './paths.js';
+import { CANOPY_DIR } from './paths.js';
 import type { InstructionsLoadedNotification } from './memoryDiscovery.js';
 
 const mockLogger = vi.hoisted(() => ({
@@ -115,7 +115,7 @@ describe('loadServerHierarchicalMemory', () => {
         'Src directory memory',
       ); // Untrusted
 
-      const filepath = path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME);
+      const filepath = path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME);
       await createTestFile(filepath, 'default context content'); // In user home dir (outside untrusted space).
       const { fileCount, memoryContent } = await loadServerHierarchicalMemory(
         cwd,
@@ -150,7 +150,7 @@ describe('loadServerHierarchicalMemory', () => {
 
   it('should skip implicit global, project, and rule discovery in explicit-only mode', async () => {
     await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'global context',
     );
     await createTestFile(
@@ -162,7 +162,7 @@ describe('loadServerHierarchicalMemory', () => {
       'cwd context',
     );
     await createTestFile(
-      path.join(projectRoot, QWEN_DIR, 'rules', 'baseline.md'),
+      path.join(projectRoot, CANOPY_DIR, 'rules', 'baseline.md'),
       'project rule',
     );
 
@@ -193,7 +193,7 @@ describe('loadServerHierarchicalMemory', () => {
       'explicit context',
     );
     await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'global context',
     );
     await createTestFile(
@@ -201,7 +201,7 @@ describe('loadServerHierarchicalMemory', () => {
       'project context',
     );
     await createTestFile(
-      path.join(projectRoot, QWEN_DIR, 'rules', 'baseline.md'),
+      path.join(projectRoot, CANOPY_DIR, 'rules', 'baseline.md'),
       'project rule',
     );
 
@@ -227,7 +227,7 @@ describe('loadServerHierarchicalMemory', () => {
 
   it('should load only the global context file if present and others are not (default filename)', async () => {
     const defaultContextFile = await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'default context content',
     );
 
@@ -253,7 +253,7 @@ describe('loadServerHierarchicalMemory', () => {
     setGeminiMdFilename(customFilename);
 
     const customContextFile = await createTestFile(
-      path.join(homedir, QWEN_DIR, customFilename),
+      path.join(homedir, CANOPY_DIR, customFilename),
       'custom context content',
     );
 
@@ -389,7 +389,7 @@ describe('loadServerHierarchicalMemory', () => {
 
   it('should load and correctly order global and upward context files', async () => {
     const defaultContextFile = await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'default context content',
     );
     const rootGeminiFile = await createTestFile(
@@ -429,7 +429,7 @@ describe('loadServerHierarchicalMemory', () => {
 
   it('should load extension context file paths', async () => {
     const extensionFilePath = await createTestFile(
-      path.join(testRootDir, 'extensions/ext1/QWEN.md'),
+      path.join(testRootDir, 'extensions/ext1/CANOPY.md'),
       'Extension memory content',
     );
 
@@ -452,7 +452,7 @@ describe('loadServerHierarchicalMemory', () => {
 
   it('notifies when startup instruction files are loaded', async () => {
     const globalFile = await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'global context',
     );
     const projectFile = await createTestFile(
@@ -460,7 +460,7 @@ describe('loadServerHierarchicalMemory', () => {
       'project context',
     );
     const extensionFile = await createTestFile(
-      path.join(testRootDir, 'extensions/ext1/QWEN.md'),
+      path.join(testRootDir, 'extensions/ext1/CANOPY.md'),
       'extension context',
     );
     const notifications: InstructionsLoadedNotification[] = [];
@@ -538,7 +538,7 @@ describe('loadServerHierarchicalMemory', () => {
   it('classifies home-directory project files as project memory', async () => {
     await createEmptyDir(path.join(homedir, '.git'));
     const globalFile = await createTestFile(
-      path.join(homedir, QWEN_DIR, DEFAULT_CONTEXT_FILENAME),
+      path.join(homedir, CANOPY_DIR, DEFAULT_CONTEXT_FILENAME),
       'global context',
     );
     const projectFile = await createTestFile(
@@ -743,7 +743,7 @@ describe('loadServerHierarchicalMemory', () => {
     );
 
     // The grandchild is imported by child.md, but the chain was started by the
-    // top-level discovered QWEN.md, so trigger != parent at depth > 1.
+    // top-level discovered CANOPY.md, so trigger != parent at depth > 1.
     expect(notifications).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -925,8 +925,8 @@ describe('loadServerHierarchicalMemory', () => {
     expect(childOccurrences).toBe(1);
   });
 
-  describe('QWEN.local.md (project-local context file)', () => {
-    // The local-context-file slot is anchored at `<projectRoot>/.qwen/`, where
+  describe('CANOPY.local.md (project-local context file)', () => {
+    // The local-context-file slot is anchored at `<projectRoot>/.canopy/`, where
     // projectRoot is the nearest ancestor containing a `.git` directory OR a
     // `.git` file (the latter is how git worktrees and submodules are marked).
     // Most tests in this block use the directory form; a few below cover the
@@ -935,9 +935,9 @@ describe('loadServerHierarchicalMemory', () => {
       await createEmptyDir(path.join(projectRoot, '.git'));
     });
 
-    it('loads .qwen/QWEN.local.md from project root when present', async () => {
+    it('loads .canopy/CANOPY.local.md from project root when present', async () => {
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'local context content',
       );
 
@@ -955,9 +955,9 @@ describe('loadServerHierarchicalMemory', () => {
       );
     });
 
-    it('notifies when QWEN.local.md is loaded', async () => {
+    it('notifies when CANOPY.local.md is loaded', async () => {
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, LOCAL_CONTEXT_FILENAME),
+        path.join(projectRoot, CANOPY_DIR, LOCAL_CONTEXT_FILENAME),
         'local context content',
       );
       const notifications: InstructionsLoadedNotification[] = [];
@@ -988,13 +988,13 @@ describe('loadServerHierarchicalMemory', () => {
       );
     });
 
-    it('orders QWEN.local.md after the project-root QWEN.md', async () => {
+    it('orders CANOPY.local.md after the project-root CANOPY.md', async () => {
       const projectFile = await createTestFile(
         path.join(projectRoot, DEFAULT_CONTEXT_FILENAME),
         'shared project context',
       );
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'local override',
       );
 
@@ -1017,7 +1017,7 @@ describe('loadServerHierarchicalMemory', () => {
       expect(localIdx).toBeGreaterThan(projectIdx);
     });
 
-    it('orders QWEN.local.md after upward-traversed CWD QWEN.md', async () => {
+    it('orders CANOPY.local.md after upward-traversed CWD CANOPY.md', async () => {
       const projectFile = await createTestFile(
         path.join(projectRoot, DEFAULT_CONTEXT_FILENAME),
         'project root memory',
@@ -1027,7 +1027,7 @@ describe('loadServerHierarchicalMemory', () => {
         'cwd memory',
       );
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'local memory',
       );
 
@@ -1052,7 +1052,7 @@ describe('loadServerHierarchicalMemory', () => {
       expect(localIdx).toBeGreaterThan(cwdIdx);
     });
 
-    it('silently ignores absent .qwen/QWEN.local.md', async () => {
+    it('silently ignores absent .canopy/CANOPY.local.md', async () => {
       await createTestFile(
         path.join(projectRoot, DEFAULT_CONTEXT_FILENAME),
         'project content',
@@ -1068,12 +1068,12 @@ describe('loadServerHierarchicalMemory', () => {
 
       expect(result.fileCount).toBe(1);
       expect(result.memoryContent).toContain('project content');
-      expect(result.memoryContent).not.toContain('QWEN.local.md');
+      expect(result.memoryContent).not.toContain('CANOPY.local.md');
     });
 
-    it('does not load QWEN.local.md from untrusted workspaces', async () => {
+    it('does not load CANOPY.local.md from untrusted workspaces', async () => {
       await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'local content',
       );
 
@@ -1089,9 +1089,9 @@ describe('loadServerHierarchicalMemory', () => {
       expect(memoryContent).not.toContain('local content');
     });
 
-    it('does not load QWEN.local.md in explicit-only mode', async () => {
+    it('does not load CANOPY.local.md in explicit-only mode', async () => {
       await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'local content',
       );
 
@@ -1110,12 +1110,12 @@ describe('loadServerHierarchicalMemory', () => {
       expect(result.memoryContent).not.toContain('local content');
     });
 
-    it('does not search .qwen/QWEN.local.md in CWD subdirectories', async () => {
-      // A `.qwen/QWEN.local.md` placed inside a nested directory (not the
+    it('does not search .canopy/CANOPY.local.md in CWD subdirectories', async () => {
+      // A `.canopy/CANOPY.local.md` placed inside a nested directory (not the
       // project root) must NOT be picked up — the slot is single, fixed,
-      // and lives at <projectRoot>/.qwen/QWEN.local.md.
+      // and lives at <projectRoot>/.canopy/CANOPY.local.md.
       await createTestFile(
-        path.join(cwd, QWEN_DIR, 'QWEN.local.md'),
+        path.join(cwd, CANOPY_DIR, 'CANOPY.local.md'),
         'misplaced local content',
       );
 
@@ -1131,9 +1131,9 @@ describe('loadServerHierarchicalMemory', () => {
       expect(result.memoryContent).not.toContain('misplaced local content');
     });
 
-    it('loads QWEN.local.md even when no project QWEN.md exists', async () => {
+    it('loads CANOPY.local.md even when no project CANOPY.md exists', async () => {
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'standalone local',
       );
 
@@ -1151,7 +1151,7 @@ describe('loadServerHierarchicalMemory', () => {
       );
     });
 
-    it('loads QWEN.local.md when project root is marked by a .git FILE (worktree / submodule layout)', async () => {
+    it('loads CANOPY.local.md when project root is marked by a .git FILE (worktree / submodule layout)', async () => {
       // Git worktrees and submodules mark the repo root with a `.git` file
       // (containing `gitdir: <path>`), not a `.git` directory. The loader
       // must treat that as a valid project root, otherwise `<cwd>` is used
@@ -1167,7 +1167,7 @@ describe('loadServerHierarchicalMemory', () => {
       );
 
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'worktree local',
       );
 
@@ -1185,7 +1185,7 @@ describe('loadServerHierarchicalMemory', () => {
       );
     });
 
-    it('skips QWEN.local.md when no project root can be found (no .git ancestor)', async () => {
+    it('skips CANOPY.local.md when no project root can be found (no .git ancestor)', async () => {
       // Without a project root, falling back to cwd would silently turn the
       // single fixed slot into a per-cwd file — opposite of the design.
       // Pin the "skip" behavior so a future regression doesn't reintroduce
@@ -1196,11 +1196,11 @@ describe('loadServerHierarchicalMemory', () => {
       });
 
       await createTestFile(
-        path.join(cwd, QWEN_DIR, 'QWEN.local.md'),
+        path.join(cwd, CANOPY_DIR, 'CANOPY.local.md'),
         'cwd-anchored local that must not load',
       );
       await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'projectRoot-anchored local that must not load either',
       );
 
@@ -1221,17 +1221,17 @@ describe('loadServerHierarchicalMemory', () => {
       );
     });
 
-    it('skips QWEN.local.md when cwd === homedir without .git (avoids global-dir collision)', async () => {
+    it('skips CANOPY.local.md when cwd === homedir without .git (avoids global-dir collision)', async () => {
       // When cwd is the home directory and there is no `.git` there, the
-      // would-be slot path resolves to `<homedir>/.qwen/QWEN.local.md` —
-      // i.e. inside the GLOBAL Qwen dir. Loading that as a project-local
+      // would-be slot path resolves to `<homedir>/.canopy/CANOPY.local.md` —
+      // i.e. inside the GLOBAL Canopy dir. Loading that as a project-local
       // override is wrong: there is no project. Pin the "skip" behavior.
       await fsPromises.rm(path.join(projectRoot, '.git'), {
         recursive: true,
         force: true,
       });
       await createTestFile(
-        path.join(homedir, QWEN_DIR, 'QWEN.local.md'),
+        path.join(homedir, CANOPY_DIR, 'CANOPY.local.md'),
         'do not promote this to project-local',
       );
 
@@ -1243,7 +1243,7 @@ describe('loadServerHierarchicalMemory', () => {
         DEFAULT_FOLDER_TRUST,
       );
 
-      // Allowed: global QWEN.md / AGENTS.md in ~/.qwen/ may still load via
+      // Allowed: global CANOPY.md / AGENTS.md in ~/.canopy/ may still load via
       // the existing global-discovery path. The assertion here is narrow —
       // the LOCAL slot specifically must not have been loaded.
       expect(result.memoryContent).not.toContain(
@@ -1253,7 +1253,7 @@ describe('loadServerHierarchicalMemory', () => {
 
     it('dedupes when an extension registers the local slot path explicitly', async () => {
       // The hierarchical scan iterates `getAllGeminiMdFilenames()`
-      // (QWEN.md / AGENTS.md) and never produces a `QWEN.local.md` path,
+      // (CANOPY.md / AGENTS.md) and never produces a `CANOPY.local.md` path,
       // so the dedup guard in the slot loader looks unreachable in
       // production paths. It IS reachable, though, via
       // `extensionContextFilePaths`: an extension may register the slot
@@ -1262,7 +1262,7 @@ describe('loadServerHierarchicalMemory', () => {
       // slot loader from then appending the same file a second time
       // (double content + inflated fileCount). Pin that behavior.
       const localFile = await createTestFile(
-        path.join(projectRoot, QWEN_DIR, 'QWEN.local.md'),
+        path.join(projectRoot, CANOPY_DIR, 'CANOPY.local.md'),
         'slot content only once',
       );
 

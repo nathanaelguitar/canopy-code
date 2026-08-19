@@ -201,7 +201,7 @@ describe('checkForUpdates', () => {
     expect(result).toEqual({
       status: 'update',
       info: {
-        message: 'Qwen Code update available! 1.0.0 → 1.1.0',
+        message: 'Canopy Code update available! 1.0.0 → 1.1.0',
         update: {
           current: '1.0.0',
           latest: '1.1.0',
@@ -220,7 +220,7 @@ describe('checkForUpdates', () => {
 
     await expect(
       fetchGlobalNpmUpdateInfo(
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
         '1.0.0',
         'latest',
         run as unknown as NonNullable<
@@ -230,7 +230,7 @@ describe('checkForUpdates', () => {
     ).resolves.toMatchObject({ current: '1.0.0', latest: '1.1.0' });
     const npmArgs = [
       'view',
-      '@qwen-code/qwen-code',
+      '@canopy-code/canopy-code',
       'dist-tags.latest',
       '--json',
       '--global',
@@ -250,14 +250,14 @@ describe('checkForUpdates', () => {
     // for every install type, not just global ones. The check must always
     // go through fetchGlobalNpm (npm view), never fall back to update-notifier.
     getPackageJson.mockResolvedValue({
-      name: '@qwen-code/qwen-code',
+      name: '@canopy-code/canopy-code',
       version: '1.0.0',
     });
     const fetchGlobalNpm = vi.fn().mockResolvedValue({
       current: '1.0.0',
       latest: '1.1.0',
       type: 'latest',
-      name: '@qwen-code/qwen-code',
+      name: '@canopy-code/canopy-code',
     });
 
     await expect(
@@ -268,7 +268,7 @@ describe('checkForUpdates', () => {
     });
 
     expect(fetchGlobalNpm).toHaveBeenCalledWith(
-      '@qwen-code/qwen-code',
+      '@canopy-code/canopy-code',
       '1.0.0',
       'latest',
     );
@@ -283,7 +283,7 @@ describe('checkForUpdates', () => {
       );
 
     await runGlobalNpm(
-      ['view', '@qwen-code/qwen-code'],
+      ['view', '@canopy-code/canopy-code'],
       run as unknown as NonNullable<Parameters<typeof runGlobalNpm>[1]>,
       'win32',
       'C:\\Program Files\\nodejs\\node.exe',
@@ -295,7 +295,7 @@ describe('checkForUpdates', () => {
       [
         'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
         'view',
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
       ],
       expect.not.objectContaining({ shell: true }),
     );
@@ -310,7 +310,7 @@ describe('checkForUpdates', () => {
 
     await expect(
       fetchGlobalNpmUpdateInfo(
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
         '1.0.0',
         'latest',
         run as unknown as NonNullable<
@@ -325,7 +325,7 @@ describe('checkForUpdates', () => {
 
     await expect(
       fetchGlobalNpmUpdateInfo(
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
         '1.0.0',
         'nightly',
         run as unknown as NonNullable<
@@ -345,7 +345,7 @@ describe('checkForUpdates', () => {
 
     await expect(
       fetchGlobalNpmUpdateInfo(
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
         '1.0.0',
         'latest',
         run as unknown as NonNullable<
@@ -366,7 +366,7 @@ describe('checkForUpdates', () => {
 
     await expect(
       fetchGlobalNpmUpdateInfo(
-        '@qwen-code/qwen-code',
+        '@canopy-code/canopy-code',
         '1.0.0',
         'latest',
         run as unknown as NonNullable<

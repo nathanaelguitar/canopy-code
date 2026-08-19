@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import {
   SessionService,
   Storage,
   type SessionServiceOptions,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { WorkspaceRuntime } from './workspace-registry.js';
 
 export function runWithWorkspaceRuntimeStorage<T>(

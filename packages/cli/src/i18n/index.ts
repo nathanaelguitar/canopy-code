@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen team
+ * Copyright 2025 Canopy team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
-import { Storage, resolveBundleDir } from '@qwen-code/qwen-code-core';
+import { Storage, resolveBundleDir } from '@canopy-code/canopy-code-core';
 import {
   type SupportedLanguage,
   SUPPORTED_LANGUAGES,
@@ -47,12 +47,12 @@ const getBuiltinLocalesDir = (): string =>
   path.join(resolveBundleDir(import.meta.url), 'locales');
 
 const getUserLocalesDir = (): string =>
-  path.join(Storage.getGlobalQwenDir(), 'locales');
+  path.join(Storage.getGlobalCanopyDir(), 'locales');
 
 /**
  * Get the path to the user's custom locales directory.
  * Users can place custom language packs (e.g., es.js, fr.js) in this directory.
- * @returns The path to ~/.qwen/locales
+ * @returns The path to ~/.canopy/locales
  */
 export function getUserLocalesDirectory(): string {
   return getUserLocalesDir();
@@ -68,7 +68,7 @@ const getLocalePath = (
 
 // Language detection
 export function detectSystemLanguage(): SupportedLanguage {
-  const envLang = process.env['QWEN_CODE_LANG'] || process.env['LANG'];
+  const envLang = process.env['CANOPY_CODE_LANG'] || process.env['LANG'];
   if (envLang) {
     const resolved = resolveSupportedLanguage(envLang);
     if (resolved) {
@@ -311,7 +311,7 @@ export async function initializeI18n(
 export function resolveLanguageSetting(
   settingsLanguage?: string,
 ): SupportedLanguage | 'auto' {
-  return (
-    process.env['QWEN_CODE_LANG'] || settingsLanguage || 'auto'
-  ) as SupportedLanguage | 'auto';
+  return (process.env['CANOPY_CODE_LANG'] || settingsLanguage || 'auto') as
+    | SupportedLanguage
+    | 'auto';
 }

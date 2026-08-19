@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -30,15 +30,15 @@ function manifest() {
     schemaVersion: 1,
     version: '0.1.0',
     protocolVersion: LIVE_HOST_PROTOCOL_VERSION,
-    bundleId: 'com.alibaba.qwen-code.live-host',
+    bundleId: 'com.alibaba.canopy-code.live-host',
     assets: {
       arm64: {
-        name: 'Qwen-Live-Host-arm64.zip',
+        name: 'Canopy-Live-Host-arm64.zip',
         size: 123,
         sha256: sha,
       },
       x64: {
-        name: 'Qwen-Live-Host-x64.zip',
+        name: 'Canopy-Live-Host-x64.zip',
         size: 456,
         sha256: sha,
       },
@@ -53,12 +53,12 @@ function manifestForBytes(version: string, bytes: Buffer) {
     version,
     assets: {
       arm64: {
-        name: 'Qwen-Live-Host-arm64.zip',
+        name: 'Canopy-Live-Host-arm64.zip',
         size: bytes.byteLength,
         sha256: checksum,
       },
       x64: {
-        name: 'Qwen-Live-Host-x64.zip',
+        name: 'Canopy-Live-Host-x64.zip',
         size: bytes.byteLength,
         sha256: checksum,
       },
@@ -72,17 +72,17 @@ describe('LiveHostInstaller', () => {
       'https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/live-host',
     );
     expect(LIVE_HOST_RELEASE_BASE_URL).toBe(
-      'https://github.com/QwenLM/qwen-code/releases/download/live-host-latest',
+      'https://github.com/QwenLM/canopy-code/releases/download/live-host-latest',
     );
     expect(resolveLiveHostManifestUrls()).toEqual([
-      `${LIVE_HOST_OSS_BASE_URL}/latest/Qwen-Live-Host-manifest.json`,
-      `${LIVE_HOST_RELEASE_BASE_URL}/Qwen-Live-Host-manifest.json`,
+      `${LIVE_HOST_OSS_BASE_URL}/latest/Canopy-Live-Host-manifest.json`,
+      `${LIVE_HOST_RELEASE_BASE_URL}/Canopy-Live-Host-manifest.json`,
     ]);
     expect(
-      resolveLiveHostAssetUrls('0.1.0', 'Qwen-Live-Host-arm64.zip'),
+      resolveLiveHostAssetUrls('0.1.0', 'Canopy-Live-Host-arm64.zip'),
     ).toEqual([
-      `${LIVE_HOST_OSS_BASE_URL}/v0.1.0/Qwen-Live-Host-arm64.zip`,
-      `${LIVE_HOST_RELEASE_BASE_URL}/Qwen-Live-Host-arm64.zip`,
+      `${LIVE_HOST_OSS_BASE_URL}/v0.1.0/Canopy-Live-Host-arm64.zip`,
+      `${LIVE_HOST_RELEASE_BASE_URL}/Canopy-Live-Host-arm64.zip`,
     ]);
   });
 
@@ -185,7 +185,7 @@ describe('LiveHostInstaller', () => {
         downloadLiveHostRelease('arm64', destination, () => {}, fetchImpl),
       ).rejects.toMatchObject({
         message:
-          'Qwen Live Host download failed. OSS: Live Host manifest download failed (503). GitHub: Live Host manifest download failed (503).',
+          'Canopy Live Host download failed. OSS: Live Host manifest download failed (503). GitHub: Live Host manifest download failed (503).',
         errors: [
           { message: 'OSS: Live Host manifest download failed (503).' },
           { message: 'GitHub: Live Host manifest download failed (503).' },
@@ -229,7 +229,7 @@ describe('LiveHostInstaller', () => {
     }
   });
 
-  it('accepts only the Qwen Developer ID team', () => {
+  it('accepts only the Canopy Developer ID team', () => {
     expect(
       isExpectedLiveHostSignature(
         [

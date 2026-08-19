@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@
 // Two properties make it safe to land:
 //
 //  - **Opt-in, inert by default.** Without the `modeled-executable-system`
-//    domain (which only a `.qwen/review-context.json` matching rule, read from
+//    domain (which only a `.canopy/review-context.json` matching rule, read from
 //    the trusted base branch, can set) the gate returns nothing. Every ordinary
 //    review is untouched.
 //  - **Only ever WITHHOLDS an Approve.** It appends to `unreviewedDimensions`,

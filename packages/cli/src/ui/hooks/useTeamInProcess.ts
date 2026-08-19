@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -25,7 +25,7 @@ import {
   type TeamManager,
   type TeammateJoinedEvent,
   type TeammateExitedEvent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { AgentViewActions } from '../contexts/AgentViewContext.js';
 import { theme } from '../semantic-colors.js';
 

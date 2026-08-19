@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ import { lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import {
   ToolNames,
   sanitizeFilenameComponent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { join } from 'node:path';
 import { priorSessionEntries } from './run-ledger.js';
 
@@ -137,7 +137,7 @@ export class TranscriptsUnavailableError extends Error {}
  *
  * Both halves come from the environment the CLI exported, never from an argument:
  * a path the model can choose is a path the model can point somewhere flattering.
- * `QWEN_CODE_PROJECT_DIR` exists because the project dir is keyed on the session's
+ * `CANOPY_CODE_PROJECT_DIR` exists because the project dir is keyed on the session's
  * *launch* cwd, and this subcommand may well be running inside a PR worktree the
  * skill `cd`-ed into — recomputing it from `process.cwd()` yields a directory that
  * never existed. Callers that need both halves (the chat file lives beside the
@@ -149,11 +149,11 @@ export function transcriptPaths(env: NodeJS.ProcessEnv = process.env): {
   sessionId: string;
   dir: string;
 } {
-  const projectDir = env['QWEN_CODE_PROJECT_DIR']?.trim();
-  const sessionId = env['QWEN_CODE_SESSION_ID']?.trim();
+  const projectDir = env['CANOPY_CODE_PROJECT_DIR']?.trim();
+  const sessionId = env['CANOPY_CODE_SESSION_ID']?.trim();
   if (!projectDir || !sessionId) {
     throw new TranscriptsUnavailableError(
-      'the CLI did not export QWEN_CODE_PROJECT_DIR / QWEN_CODE_SESSION_ID, so ' +
+      'the CLI did not export CANOPY_CODE_PROJECT_DIR / CANOPY_CODE_SESSION_ID, so ' +
         "this run cannot find the harness's record of what its agents did",
     );
   }
@@ -339,7 +339,7 @@ function parseTranscript(file: string, diffPath?: string): AgentRecord | null {
       const fc = (part as FunctionCallPart).functionCall;
       if (!fc) continue;
       // Serialize only the ARGUMENTS. The diff path is a path the agent was told
-      // to open; a tool *result* that quotes it (a grep over `.qwen/tmp`, this
+      // to open; a tool *result* that quotes it (a grep over `.canopy/tmp`, this
       // file in a diff) says nothing about what the agent opened.
       const args = (fc.args ?? {}) as Record<string, unknown>;
       // Match the path as a whole JSON string value, quotes included: a bare

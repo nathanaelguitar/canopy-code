@@ -18,7 +18,7 @@ import type {
   ServerGeminiStreamEvent,
   SessionMetrics,
   WorkflowApprovalRequestCallback,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { CLIUserMessage } from './nonInteractive/types.js';
 import {
   executeToolCall,
@@ -45,7 +45,7 @@ import {
   PLAN_MODE_ENTRY_SIBLING_SKIP_MESSAGE,
   createGoalRuntime,
   GoalPersistenceUnavailableError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Part } from '@google/genai';
 import { EventEmitter } from 'node:events';
 import {
@@ -76,9 +76,9 @@ const getActiveInteractionSpanSpy = vi.hoisted(() => vi.fn());
 const addAgentOutputMessageAttributesSpy = vi.hoisted(() => vi.fn());
 const interactionSpan = vi.hoisted(() => ({}));
 vi.mock('./ui/hooks/atCommandProcessor.js');
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
 
   class MockChatRecordingService {
     initialize = vi.fn();
@@ -198,7 +198,7 @@ describe('skipHeadlessLoopSentinel', () => {
   });
 
   it('does not delete a durable sentinel job (it persists for a future session)', () => {
-    // Durable jobs live under ~/.qwen and never count toward sessionSize, so
+    // Durable jobs live under ~/.canopy and never count toward sessionSize, so
     // they don't pin the run; deleting one would wrongly remove it from disk.
     const scheduler = new CronScheduler();
     const job = scheduler.create('*/5 * * * *', LOOP_SENTINEL_CRON, true);
@@ -1904,7 +1904,7 @@ describe('runNonInteractive', () => {
 
   it('on EPIPE, destroys stdout and returns normally instead of process.exit', async () => {
     // Regression: process.exit(0) on EPIPE bypassed runExitCleanup → flush()
-    // and dropped queued JSONL writes for `qwen -p ... | head -1` patterns.
+    // and dropped queued JSONL writes for `canopy -p ... | head -1` patterns.
     // process.exit is mocked to throw in beforeEach, so reaching the
     // assertion also proves the bypass route is gone.
     setupMetricsMock();
@@ -3050,10 +3050,10 @@ describe('runNonInteractive', () => {
       expect(mockCoreExecuteToolCall).toHaveBeenCalledTimes(5);
     });
 
-    it('throttles a parallel batch to QWEN_CODE_MAX_TOOL_CONCURRENCY in flight', async () => {
+    it('throttles a parallel batch to CANOPY_CODE_MAX_TOOL_CONCURRENCY in flight', async () => {
       setupMetricsMock();
-      const prev = process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '2';
+      const prev = process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '2';
       try {
         vi.mocked(mockToolRegistry.getTool).mockReturnValue({
           kind: Kind.Read,
@@ -3105,9 +3105,9 @@ describe('runNonInteractive', () => {
         expect(mockCoreExecuteToolCall).toHaveBeenCalledTimes(4);
       } finally {
         if (prev === undefined) {
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         } else {
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = prev;
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = prev;
         }
       }
     });
@@ -3308,7 +3308,7 @@ describe('runNonInteractive', () => {
     const duplicateToolCallEvent: ServerGeminiStreamEvent = {
       type: GeminiEventType.ToolCallRequest,
       value: {
-        callId: 'tool-drain__qwen_dup_2',
+        callId: 'tool-drain__canopy_dup_2',
         providerCallId: 'tool-drain',
         name: 'testTool',
         args: { arg1: 'value1' },
@@ -3381,7 +3381,7 @@ describe('runNonInteractive', () => {
     const toolCallEvent: ServerGeminiStreamEvent = {
       type: GeminiEventType.ToolCallRequest,
       value: {
-        callId: 'tool-history__qwen_dup_2',
+        callId: 'tool-history__canopy_dup_2',
         providerCallId: 'tool-history',
         name: 'testTool',
         args: { arg1: 'value1' },
@@ -3418,7 +3418,7 @@ describe('runNonInteractive', () => {
 
     const duplicateParts = mockGeminiClient.sendMessageStream.mock.calls[1][0];
     expect(duplicateParts[0].functionResponse?.id).toBe(
-      'tool-history__qwen_dup_2',
+      'tool-history__canopy_dup_2',
     );
     expect(duplicateParts[0].functionResponse?.response?.['error']).toContain(
       'Duplicate provider tool call id "tool-history"',
@@ -4064,7 +4064,7 @@ describe('runNonInteractive', () => {
   });
 
   it('does not select a headless image route after clamping removes the image', async () => {
-    vi.stubEnv('QWEN_CODE_MAX_INLINE_MEDIA_BYTES', '1');
+    vi.stubEnv('CANOPY_CODE_MAX_INLINE_MEDIA_BYTES', '1');
     setupMetricsMock();
     await mockHeadlessImageInput();
     const { resolveForModel } = configureHeadlessVisionModel({
@@ -7608,10 +7608,10 @@ describe('runNonInteractive', () => {
     it('emits structuredResult to stdout in OutputFormat.TEXT mode', async () => {
       // The other --json-schema tests pin OutputFormat.JSON /
       // OutputFormat.STREAM_JSON. TEXT is the default for headless runs
-      // (`qwen -p "..."` without --output-format), so it needs its own
+      // (`canopy -p "..."` without --output-format), so it needs its own
       // pin: a regression that diverged the TEXT adapter's
       // structuredResult handling from the JSON / stream-json paths
-      // would only surface to users running plain `qwen -p`.
+      // would only surface to users running plain `canopy -p`.
       (mockConfig.getJsonSchema as Mock).mockReturnValue({
         type: 'object',
         properties: { summary: { type: 'string' } },
@@ -7688,12 +7688,12 @@ describe('runNonInteractive', () => {
       );
       const realTmpDir = await fs.realpath(tmpDir);
       // restoreWorktreeContext enforces a structural invariant:
-      // worktreePath MUST live under `<originalCwd>/.qwen/worktrees/`
+      // worktreePath MUST live under `<originalCwd>/.canopy/worktrees/`
       // (PR #4174 review #3256839787). The test fixture mirrors that
       // shape so the restore path isn't rejected as tampered.
       const worktreeDir = path.join(
         realTmpDir,
-        '.qwen',
+        '.canopy',
         'worktrees',
         'worktree-real',
       );

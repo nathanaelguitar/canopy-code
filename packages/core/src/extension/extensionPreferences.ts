@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -120,7 +120,7 @@ export class ExtensionPreferencesStore {
       // perfectly valid, so do NOT quarantine it here; only parse failures
       // above do that. Return the default for this read.
       //
-      // `debugLogger.error` is gated behind QWEN_DEBUG_LOG_FILE (unset for
+      // `debugLogger.error` is gated behind CANOPY_DEBUG_LOG_FILE (unset for
       // almost all users), so without an stderr line the user's
       // favorites/scopes would appear to vanish with no trail. Mirror the
       // `quarantineCorruptFile` pattern and surface it on stderr too.

@@ -296,7 +296,7 @@ export class LoggingContentGenerator implements ContentGenerator {
     // A user cancel is not an API error, so skip the api_error event entirely —
     // the span already records the cancellation through its aborted status, so
     // the signal isn't lost. Without this gate a user cancel is emitted as a
-    // `qwen-code.api_error` event with error_type `APIUserAbortError`, which is
+    // `canopy-code.api_error` event with error_type `APIUserAbortError`, which is
     // exactly what #8356 reported; `isAbortError` gating the debug log alone
     // does not cover this separate telemetry path.
     if (abortSignal?.aborted && isAbortError(error)) {

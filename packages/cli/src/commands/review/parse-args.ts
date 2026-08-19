@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review parse-args`: deterministic argument parsing for the /review
+// `canopy review parse-args`: deterministic argument parsing for the /review
 // skill. The flag grammar (`--comment`, `--effort <level>`, `--effort=<level>`)
 // and the target disambiguation (PR number / PR URL / file path / local diff)
 // used to live as prose in SKILL.md, which the model re-simulated on every

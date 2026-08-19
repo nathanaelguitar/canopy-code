@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,23 +22,23 @@ import {
 } from './sharedTokenManager.js';
 import { Storage } from '../config/storage.js';
 
-const debugLogger = createDebugLogger('QWEN_OAUTH');
+const debugLogger = createDebugLogger('CANOPY_OAUTH');
 
 // OAuth Endpoints
-const QWEN_OAUTH_BASE_URL = 'https://chat.qwen.ai';
+const CANOPY_OAUTH_BASE_URL = 'https://chat.qwen.ai';
 
-const QWEN_OAUTH_DEVICE_CODE_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/device/code`;
-const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`;
+const CANOPY_OAUTH_DEVICE_CODE_ENDPOINT = `${CANOPY_OAUTH_BASE_URL}/api/v1/oauth2/device/code`;
+const CANOPY_OAUTH_TOKEN_ENDPOINT = `${CANOPY_OAUTH_BASE_URL}/api/v1/oauth2/token`;
 
 // OAuth Client Configuration
-const QWEN_OAUTH_CLIENT_ID = 'f0304373b74a44d2b584a3fb70ca9e56';
+const CANOPY_OAUTH_CLIENT_ID = 'f0304373b74a44d2b584a3fb70ca9e56';
 
-const QWEN_OAUTH_SCOPE = 'openid profile email model.completion';
-const QWEN_OAUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
-const QWEN_OAUTH_REFRESH_TIMEOUT_MS = 30_000;
+const CANOPY_OAUTH_SCOPE = 'openid profile email model.completion';
+const CANOPY_OAUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
+const CANOPY_OAUTH_REFRESH_TIMEOUT_MS = 30_000;
 
 // File System Configuration
-const QWEN_CREDENTIAL_FILENAME = 'oauth_creds.json';
+const CANOPY_CREDENTIAL_FILENAME = 'oauth_creds.json';
 
 /**
  * PKCE (Proof Key for Code Exchange) utilities
@@ -95,7 +95,7 @@ function createTokenRefreshNetworkError(
   const prefix = timedOut ? 'Token refresh timeout' : 'Token refresh failed';
   return new Error(
     `${prefix}: ${formatFetchErrorForUser(error, {
-      url: QWEN_OAUTH_TOKEN_ENDPOINT,
+      url: CANOPY_OAUTH_TOKEN_ENDPOINT,
     })}`,
     { cause: error },
   );
@@ -125,7 +125,7 @@ export class CredentialsClearRequiredError extends Error {
 }
 
 /**
- * Typed error thrown by `QwenOAuth2Client.pollDeviceToken` for upstream
+ * Typed error thrown by `CanopyOAuth2Client.pollDeviceToken` for upstream
  * RFC 8628 errors that aren't `authorization_pending` / `slow_down`.
  *
  * Earlier the class threw a plain `Error` with the OAuth code embedded
@@ -139,9 +139,9 @@ export class CredentialsClearRequiredError extends Error {
  * The thrown `message` keeps the same `"Device token poll failed:
  * ${error} - ${description}"` shape so existing log-parsing /
  * substring-matching code continues to work; new code should branch
- * on `instanceof QwenOAuthPollError` + read fields directly.
+ * on `instanceof CanopyOAuthPollError` + read fields directly.
  */
-export class QwenOAuthPollError extends Error {
+export class CanopyOAuthPollError extends Error {
   readonly status?: number;
   readonly oauthError?: string;
   readonly description?: string;
@@ -155,7 +155,7 @@ export class QwenOAuthPollError extends Error {
         opts.description ?? '(no description)'
       }`,
     );
-    this.name = 'QwenOAuthPollError';
+    this.name = 'CanopyOAuthPollError';
     this.oauthError = opts.oauthError;
     this.description = opts.description;
     this.status = opts.status;
@@ -163,9 +163,9 @@ export class QwenOAuthPollError extends Error {
 }
 
 /**
- * Qwen OAuth2 credentials interface
+ * Canopy OAuth2 credentials interface
  */
-export interface QwenCredentials {
+export interface CanopyCredentials {
   access_token?: string;
   refresh_token?: string;
   id_token?: string;
@@ -284,11 +284,11 @@ export interface TokenRefreshData {
 export type TokenRefreshResponse = TokenRefreshData | ErrorData;
 
 /**
- * Qwen OAuth2 client interface
+ * Canopy OAuth2 client interface
  */
-export interface IQwenOAuth2Client {
-  setCredentials(credentials: QwenCredentials): void;
-  getCredentials(): QwenCredentials;
+export interface ICanopyOAuth2Client {
+  setCredentials(credentials: CanopyCredentials): void;
+  getCredentials(): CanopyCredentials;
   getAccessToken(): Promise<{ token?: string }>;
   requestDeviceAuthorization(
     options: {
@@ -309,21 +309,21 @@ export interface IQwenOAuth2Client {
 }
 
 /**
- * Qwen OAuth2 client implementation
+ * Canopy OAuth2 client implementation
  */
-export class QwenOAuth2Client implements IQwenOAuth2Client {
-  private credentials: QwenCredentials = {};
+export class CanopyOAuth2Client implements ICanopyOAuth2Client {
+  private credentials: CanopyCredentials = {};
   private sharedManager: SharedTokenManager;
 
   constructor() {
     this.sharedManager = SharedTokenManager.getInstance();
   }
 
-  setCredentials(credentials: QwenCredentials): void {
+  setCredentials(credentials: CanopyCredentials): void {
     this.credentials = credentials;
   }
 
-  getCredentials(): QwenCredentials {
+  getCredentials(): CanopyCredentials {
     return this.credentials;
   }
 
@@ -355,13 +355,13 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
     fetchOpts?: { signal?: AbortSignal },
   ): Promise<DeviceAuthorizationResponse> {
     const bodyData = {
-      client_id: QWEN_OAUTH_CLIENT_ID,
+      client_id: CANOPY_OAUTH_CLIENT_ID,
       scope: options.scope,
       code_challenge: options.code_challenge,
       code_challenge_method: options.code_challenge_method,
     };
 
-    const response = await fetch(QWEN_OAUTH_DEVICE_CODE_ENDPOINT, {
+    const response = await fetch(CANOPY_OAUTH_DEVICE_CODE_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -427,13 +427,13 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
     fetchOpts?: { signal?: AbortSignal },
   ): Promise<DeviceTokenResponse> {
     const bodyData = {
-      grant_type: QWEN_OAUTH_GRANT_TYPE,
-      client_id: QWEN_OAUTH_CLIENT_ID,
+      grant_type: CANOPY_OAUTH_GRANT_TYPE,
+      client_id: CANOPY_OAUTH_CLIENT_ID,
       device_code: options.device_code,
       code_verifier: options.code_verifier,
     };
 
-    const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+    const response = await fetch(CANOPY_OAUTH_TOKEN_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -483,12 +483,12 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
 
       // Handle other 400 errors (access_denied, expired_token, etc.) as real errors
 
-      // For other errors, throw a typed `QwenOAuthPollError` so
+      // For other errors, throw a typed `CanopyOAuthPollError` so
       // downstream callers (PR #4255 device-flow registry) can branch
       // on `instanceof` + structured fields instead of substring-
       // matching the message text. The message format is preserved
       // for log-readers + any pre-existing substring matchers.
-      throw new QwenOAuthPollError({
+      throw new CanopyOAuthPollError({
         oauthError: errorData.error,
         description: errorData.error_description,
         status: response.status,
@@ -506,18 +506,18 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
     const bodyData = {
       grant_type: 'refresh_token',
       refresh_token: this.credentials.refresh_token,
-      client_id: QWEN_OAUTH_CLIENT_ID,
+      client_id: CANOPY_OAUTH_CLIENT_ID,
     };
 
     const { signal, cleanup } = combineAbortSignals([], {
-      timeoutMs: QWEN_OAUTH_REFRESH_TIMEOUT_MS,
+      timeoutMs: CANOPY_OAUTH_REFRESH_TIMEOUT_MS,
     });
     debugLogger.debug('Refreshing access token...');
 
     try {
       let response: Response;
       try {
-        response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+        response = await fetch(CANOPY_OAUTH_TOKEN_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -539,7 +539,7 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
         }
         // Handle 400/401 errors which indicate refresh token expiry or invalidity
         if (response.status === 400 || response.status === 401) {
-          await clearQwenCredentials();
+          await clearCanopyCredentials();
           throw new CredentialsClearRequiredError(
             "Refresh token expired or invalid. Please use '/auth' to re-authenticate.",
             { status: response.status, response: errorData },
@@ -562,7 +562,7 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
         responseData = JSON.parse(responseText) as TokenRefreshResponse;
       } catch {
         throw new Error(
-          `Qwen OAuth refresh returned invalid JSON: ${responseText || '(empty response body)'}`,
+          `Canopy OAuth refresh returned invalid JSON: ${responseText || '(empty response body)'}`,
         );
       }
 
@@ -576,7 +576,7 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
 
       // Handle successful response
       const tokenData = responseData as TokenRefreshData;
-      const tokens: QwenCredentials = {
+      const tokens: CanopyCredentials = {
         access_token: tokenData.access_token,
         token_type: tokenData.token_type,
         // Use new refresh token if provided, otherwise preserve existing one
@@ -598,7 +598,7 @@ export class QwenOAuth2Client implements IQwenOAuth2Client {
   }
 }
 
-export enum QwenOAuth2Event {
+export enum CanopyOAuth2Event {
   AuthUri = 'auth-uri',
   AuthProgress = 'auth-progress',
   AuthCancel = 'auth-cancel',
@@ -616,15 +616,15 @@ export type AuthResult =
     };
 
 /**
- * Global event emitter instance for QwenOAuth2 authentication events
+ * Global event emitter instance for CanopyOAuth2 authentication events
  */
-export const qwenOAuth2Events = new EventEmitter();
+export const canopyOAuth2Events = new EventEmitter();
 
-export async function getQwenOAuthClient(
+export async function getCanopyOAuthClient(
   config: Config,
   options?: { requireCachedCredentials?: boolean },
-): Promise<QwenOAuth2Client> {
-  const client = new QwenOAuth2Client();
+): Promise<CanopyOAuth2Client> {
+  const client = new CanopyOAuth2Client();
 
   // Use shared token manager to get valid credentials with cross-session synchronization
   const sharedManager = SharedTokenManager.getInstance();
@@ -660,19 +660,19 @@ export async function getQwenOAuthClient(
 
     if (options?.requireCachedCredentials) {
       throw new Error(
-        'Qwen OAuth credentials expired. Please use /auth to re-authenticate with qwen-oauth.',
+        'Canopy OAuth credentials expired. Please use /auth to re-authenticate with canopy-oauth.',
       );
     }
 
     // If we couldn't obtain valid credentials via SharedTokenManager, fall back to
     // interactive device authorization (unless explicitly forbidden above).
-    const result = await authWithQwenDeviceFlow(client, config);
+    const result = await authWithCanopyDeviceFlow(client, config);
     if (!result.success) {
       // Only emit timeout event if the failure reason is actually timeout
       // Other error types (401, 429, etc.) have already emitted their specific events
       if (result.reason === 'timeout') {
-        qwenOAuth2Events.emit(
-          QwenOAuth2Event.AuthProgress,
+        canopyOAuth2Events.emit(
+          CanopyOAuth2Event.AuthProgress,
           'timeout',
           'Authentication timed out. Please try again or select a different authentication method.',
         );
@@ -684,14 +684,14 @@ export async function getQwenOAuthClient(
         (() => {
           switch (result.reason) {
             case 'timeout':
-              return 'Qwen OAuth authentication timed out';
+              return 'Canopy OAuth authentication timed out';
             case 'cancelled':
-              return 'Qwen OAuth authentication was cancelled by user';
+              return 'Canopy OAuth authentication was cancelled by user';
             case 'rate_limit':
-              return 'Too many request for Qwen OAuth authentication, please try again later.';
+              return 'Too many request for Canopy OAuth authentication, please try again later.';
             case 'error':
             default:
-              return 'Qwen OAuth authentication failed';
+              return 'Canopy OAuth authentication failed';
           }
         })();
 
@@ -719,7 +719,7 @@ export function showFallbackMessage(
   verificationUriComplete: string,
   out: NodeJS.WriteStream = process.stderr,
 ): void {
-  const title = 'Qwen OAuth Device Authorization';
+  const title = 'Canopy OAuth Device Authorization';
   const url = verificationUriComplete;
 
   // When the terminal supports OSC 8 hyperlinks, emit the URL as a single
@@ -826,8 +826,8 @@ export function showFallbackMessage(
   out.write(bottomBorder + '\n\n');
 }
 
-async function authWithQwenDeviceFlow(
-  client: QwenOAuth2Client,
+async function authWithCanopyDeviceFlow(
+  client: CanopyOAuth2Client,
   config: Config,
 ): Promise<AuthResult> {
   let isCancelled = false;
@@ -836,7 +836,7 @@ async function authWithQwenDeviceFlow(
   const cancelHandler = () => {
     isCancelled = true;
   };
-  qwenOAuth2Events.once(QwenOAuth2Event.AuthCancel, cancelHandler);
+  canopyOAuth2Events.once(CanopyOAuth2Event.AuthCancel, cancelHandler);
 
   // Helper to check cancellation and return appropriate result
   const checkCancellation = (): AuthResult | null => {
@@ -845,7 +845,7 @@ async function authWithQwenDeviceFlow(
     }
     const message = 'Authentication cancelled by user.';
     debugLogger.debug('\n' + message);
-    qwenOAuth2Events.emit(QwenOAuth2Event.AuthProgress, 'error', message);
+    canopyOAuth2Events.emit(CanopyOAuth2Event.AuthProgress, 'error', message);
     return { success: false, reason: 'cancelled', message };
   };
 
@@ -854,7 +854,7 @@ async function authWithQwenDeviceFlow(
     status: 'polling' | 'success' | 'error' | 'timeout' | 'rate_limit',
     message: string,
   ): void => {
-    qwenOAuth2Events.emit(QwenOAuth2Event.AuthProgress, status, message);
+    canopyOAuth2Events.emit(CanopyOAuth2Event.AuthProgress, status, message);
   };
 
   // Helper to handle browser launch with error handling
@@ -873,7 +873,7 @@ async function authWithQwenDeviceFlow(
 
     // Request device authorization
     const deviceAuth = await client.requestDeviceAuthorization({
-      scope: QWEN_OAUTH_SCOPE,
+      scope: CANOPY_OAUTH_SCOPE,
       code_challenge,
       code_challenge_method: 'S256',
     });
@@ -887,7 +887,7 @@ async function authWithQwenDeviceFlow(
     }
 
     // Emit device authorization event for UI integration immediately
-    qwenOAuth2Events.emit(QwenOAuth2Event.AuthUri, deviceAuth);
+    canopyOAuth2Events.emit(CanopyOAuth2Event.AuthUri, deviceAuth);
 
     if (config.isBrowserLaunchSuppressed() || !config.isInteractive()) {
       showFallbackMessage(deviceAuth.verification_uri_complete);
@@ -925,8 +925,8 @@ async function authWithQwenDeviceFlow(
         if (isDeviceTokenSuccess(tokenResponse)) {
           const tokenData = tokenResponse as DeviceTokenData;
 
-          // Convert to QwenCredentials format
-          const credentials: QwenCredentials = {
+          // Convert to CanopyCredentials format
+          const credentials: CanopyCredentials = {
             access_token: tokenData.access_token!, // Safe to assert as non-null due to isDeviceTokenSuccess check
             refresh_token: tokenData.refresh_token || undefined,
             token_type: tokenData.token_type,
@@ -938,12 +938,12 @@ async function authWithQwenDeviceFlow(
 
           client.setCredentials(credentials);
 
-          // Cache the new tokens. `cacheQwenCredentials` itself folds
+          // Cache the new tokens. `cacheCanopyCredentials` itself folds
           // in `SharedTokenManager.clearCache()` (PR #4255 review D1) so
           // we no longer need a paired call here — the previous explicit
           // post-cache clear was a duplicate that fired clearCache twice
           // on the success path.
-          await cacheQwenCredentials(credentials);
+          await cacheCanopyCredentials(credentials);
 
           emitAuthProgress(
             'success',
@@ -1074,7 +1074,7 @@ async function authWithQwenDeviceFlow(
     return { success: false, reason: 'timeout', message: timeoutMessage };
   } catch (error: unknown) {
     const fullErrorMessage = formatFetchErrorForUser(error, {
-      url: QWEN_OAUTH_BASE_URL,
+      url: CANOPY_OAUTH_BASE_URL,
     });
     const message = `Device authorization flow failed: ${fullErrorMessage}`;
 
@@ -1082,22 +1082,22 @@ async function authWithQwenDeviceFlow(
     return { success: false, reason: 'error', message };
   } finally {
     // Clean up event listener
-    qwenOAuth2Events.off(QwenOAuth2Event.AuthCancel, cancelHandler);
+    canopyOAuth2Events.off(CanopyOAuth2Event.AuthCancel, cancelHandler);
   }
 }
 
-// PR 21 (#4175 Wave 4): exported so the `qwen serve` device-flow registry can
+// PR 21 (#4175 Wave 4): exported so the `canopy serve` device-flow registry can
 // persist credentials acquired through the daemon's HTTP route. Mode 0o600
 // matches opencode's `auth.json` to keep tokens unreadable by other users on
 // shared hosts. The constant is exported so tests/auditors can assert intent
 // rather than re-deriving it from a raw octal literal.
-export const QWEN_CREDENTIAL_FILE_MODE = 0o600;
+export const CANOPY_CREDENTIAL_FILE_MODE = 0o600;
 
-export async function cacheQwenCredentials(
-  credentials: QwenCredentials,
+export async function cacheCanopyCredentials(
+  credentials: CanopyCredentials,
   opts?: { signal?: AbortSignal },
 ) {
-  const filePath = getQwenCachedCredentialPath();
+  const filePath = getCanopyCachedCredentialPath();
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -1129,7 +1129,7 @@ export async function cacheQwenCredentials(
     const tempPath = `${filePath}.tmp.${process.pid}.${randomUUID()}`;
     try {
       await fs.writeFile(tempPath, credString, {
-        mode: QWEN_CREDENTIAL_FILE_MODE,
+        mode: CANOPY_CREDENTIAL_FILE_MODE,
         ...(opts?.signal ? { signal: opts.signal } : {}),
       });
       // Defensive: if the platform ignored `mode` on creation
@@ -1139,11 +1139,11 @@ export async function cacheQwenCredentials(
       // path. A non-cooperative FS that can't tighten a 0o600 file
       // shouldn't be serving credentials anyway.
       try {
-        await fs.chmod(tempPath, QWEN_CREDENTIAL_FILE_MODE);
+        await fs.chmod(tempPath, CANOPY_CREDENTIAL_FILE_MODE);
       } catch (chmodErr) {
         if (process.platform !== 'win32') {
           throw new Error(
-            `cacheQwenCredentials: refusing to publish credentials — chmod 0o${QWEN_CREDENTIAL_FILE_MODE.toString(8)} on temp file failed: ${
+            `cacheCanopyCredentials: refusing to publish credentials — chmod 0o${CANOPY_CREDENTIAL_FILE_MODE.toString(8)} on temp file failed: ${
               chmodErr instanceof Error ? chmodErr.message : String(chmodErr)
             }`,
           );
@@ -1153,7 +1153,7 @@ export async function cacheQwenCredentials(
         // Surface a debug breadcrumb for operators on exotic Windows
         // filesystems but allow the rename to proceed.
         debugLogger.warn(
-          `cacheQwenCredentials: chmod 0o${QWEN_CREDENTIAL_FILE_MODE.toString(8)} on Windows temp file ${tempPath} failed; relying on NTFS ACL: ${
+          `cacheCanopyCredentials: chmod 0o${CANOPY_CREDENTIAL_FILE_MODE.toString(8)} on Windows temp file ${tempPath} failed; relying on NTFS ACL: ${
             chmodErr instanceof Error ? chmodErr.message : String(chmodErr)
           }`,
         );
@@ -1195,7 +1195,7 @@ export async function cacheQwenCredentials(
       // with a minimal shape will also flow through here — acceptable
       // noise for the production-visibility win.
       debugLogger.warn(
-        `cacheQwenCredentials: SharedTokenManager.clearCache failed; in-process callers may serve stale credentials until the next mtime poll: ${
+        `cacheCanopyCredentials: SharedTokenManager.clearCache failed; in-process callers may serve stale credentials until the next mtime poll: ${
           clearErr instanceof Error ? clearErr.message : String(clearErr)
         }`,
       );
@@ -1222,14 +1222,14 @@ export async function cacheQwenCredentials(
 }
 
 /**
- * Clear cached Qwen credentials from disk
+ * Clear cached Canopy credentials from disk
  * This is useful when credentials have expired or need to be reset
  */
-export async function clearQwenCredentials(): Promise<void> {
+export async function clearCanopyCredentials(): Promise<void> {
   try {
-    const filePath = getQwenCachedCredentialPath();
+    const filePath = getCanopyCachedCredentialPath();
     await fs.unlink(filePath);
-    debugLogger.debug('Cached Qwen credentials cleared successfully.');
+    debugLogger.debug('Cached Canopy credentials cleared successfully.');
   } catch (error: unknown) {
     // If file doesn't exist or can't be deleted, we consider it cleared
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
@@ -1238,7 +1238,7 @@ export async function clearQwenCredentials(): Promise<void> {
     }
     // Log other errors but don't throw - clearing credentials should be non-critical
     debugLogger.warn(
-      'Warning: Failed to clear cached Qwen credentials:',
+      'Warning: Failed to clear cached Canopy credentials:',
       error,
     );
   } finally {
@@ -1252,8 +1252,8 @@ export async function clearQwenCredentials(): Promise<void> {
   }
 }
 
-function getQwenCachedCredentialPath(): string {
-  return path.join(Storage.getGlobalQwenDir(), QWEN_CREDENTIAL_FILENAME);
+function getCanopyCachedCredentialPath(): string {
+  return path.join(Storage.getGlobalCanopyDir(), CANOPY_CREDENTIAL_FILENAME);
 }
 
-export const clearCachedCredentialFile = clearQwenCredentials;
+export const clearCachedCredentialFile = clearCanopyCredentials;

@@ -6,7 +6,7 @@
 
 // Re-exported from core so the CLI UI, the shell/diagnostics paths in core
 // and the serve daemon all render a byte count identically.
-export { formatMemoryUsage } from '@qwen-code/qwen-code-core';
+export { formatMemoryUsage } from '@canopy-code/canopy-code-core';
 
 /**
  * Formats a duration in milliseconds into a concise, human-readable string (e.g., "1h 5s").

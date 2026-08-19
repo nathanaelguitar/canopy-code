@@ -13,7 +13,7 @@ import {
   ToolNames,
   persistSessionUsage,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   hasBlockingBackgroundWork,
   buildBackgroundWorkBlockedMessage,

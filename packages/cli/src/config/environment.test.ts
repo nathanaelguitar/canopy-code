@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -74,8 +74,8 @@ const TRACKED_ENV = [
   'EDITOR',
   'PYTHONSTARTUP',
   'BROWSER',
-  'QWEN_CDP_MCP_COMMAND',
-  'QWEN_SERVE_CDP_TUNNEL_OVER_WS',
+  'CANOPY_CDP_MCP_COMMAND',
+  'CANOPY_SERVE_CDP_TUNNEL_OVER_WS',
   'NODE_COMPILE_CACHE',
   'NODE_DISABLE_COMPILE_CACHE',
   'NODE_EXTRA_CA_CERTS',
@@ -86,9 +86,9 @@ const TRACKED_ENV = [
   'Qwen_Cli_Entry',
   'QWEN_HOME',
   ENV_ACP_REPEATED_TOOL_FAILURE_GUARD,
-  'QWEN_CODE_PENDING_COMPILE_CACHE',
-  'QWEN_CODE_TRUSTED_FOLDERS_PATH',
-  'QWEN_RUNTIME_DIR',
+  'CANOPY_CODE_PENDING_COMPILE_CACHE',
+  'CANOPY_CODE_TRUSTED_FOLDERS_PATH',
+  'CANOPY_RUNTIME_DIR',
   'QWEN_SERVER_TOKEN',
   'qwen_server_token',
   'tmpdir',
@@ -99,7 +99,7 @@ const previousEnv = new Map<string, string | undefined>();
 
 function makeWorkspace(): string {
   const dir = fs.realpathSync(
-    fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-runtime-env-')),
+    fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-runtime-env-')),
   );
   tmpDirs.push(dir);
   return dir;
@@ -116,7 +116,7 @@ beforeEach(() => {
     delete process.env[key];
   }
   // Hermetic against the runner's real user-level .env files: findEnvFiles()
-  // always discovers ~/.env and ~/.qwen/.env, and home scope deliberately
+  // always discovers ~/.env and ~/.canopy/.env, and home scope deliberately
   // bypasses the hardcoded exclusions — so a dev machine with
   // QWEN_CLI_ENTRY/NODE_OPTIONS in its home .env would both add warnings the
   // source-scoped counts never expect and apply keys the process.env
@@ -159,7 +159,7 @@ describe('buildRuntimeEnvironment', () => {
         'NODE_OPTIONS=--require ./bad.js',
         'NPM_CONFIG_NODE_OPTIONS=--require ./bad.js',
         'QWEN_SERVER_TOKEN=dotenv-token',
-        'QWEN_HOME=/tmp/ignored-qwen-home',
+        'QWEN_HOME=/tmp/ignored-canopy-home',
         `${ENV_ACP_REPEATED_TOOL_FAILURE_GUARD}=enforce`,
         '',
       ].join('\n'),
@@ -182,7 +182,7 @@ describe('buildRuntimeEnvironment', () => {
           // Case variant: only the isLoaderEnvKey gate rejects it, so this
           // line pins the settings.env gate in buildRuntimeEnvironment.
           NPM_CONFIG_NODE_OPTIONS: '--require ./bad.js',
-          QWEN_RUNTIME_DIR: '/tmp/ignored-runtime-dir',
+          CANOPY_RUNTIME_DIR: '/tmp/ignored-runtime-dir',
           [ENV_ACP_REPEATED_TOOL_FAILURE_GUARD]: 'warn',
         },
       }),
@@ -204,7 +204,7 @@ describe('buildRuntimeEnvironment', () => {
     expect(snapshot.effectiveEnv['BASH_ENV']).toBeUndefined();
     expect(snapshot.effectiveEnv['QWEN_SERVER_TOKEN']).toBeUndefined();
     expect(snapshot.effectiveEnv['QWEN_HOME']).toBeUndefined();
-    expect(snapshot.effectiveEnv['QWEN_RUNTIME_DIR']).toBeUndefined();
+    expect(snapshot.effectiveEnv['CANOPY_RUNTIME_DIR']).toBeUndefined();
     expect(
       snapshot.effectiveEnv[ENV_ACP_REPEATED_TOOL_FAILURE_GUARD],
     ).toBeUndefined();
@@ -273,7 +273,7 @@ describe('buildRuntimeEnvironment', () => {
         [child]: TrustLevel.TRUST_FOLDER,
       }),
     );
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = trustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = trustedFoldersPath;
 
     const snapshot = buildRuntimeEnvironment(
       testSettings({ security: { folderTrust: { enabled: true } } }),
@@ -289,7 +289,7 @@ describe('buildRuntimeEnvironment', () => {
 describe('loadEnvironment', () => {
   it('preserves settings.env compile cache over the pending default', () => {
     const workspace = makeWorkspace();
-    process.env['QWEN_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
+    process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
 
     loadEnvironment(
       testSettings({
@@ -301,22 +301,22 @@ describe('loadEnvironment', () => {
     );
 
     expect(process.env['NODE_COMPILE_CACHE']).toBe('/tmp/operator-cache');
-    expect(process.env['QWEN_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
   });
 
   it('publishes the pending compile cache after environment loading', () => {
     const workspace = makeWorkspace();
-    process.env['QWEN_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
+    process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
 
     loadEnvironment(testSettings({}), workspace);
 
     expect(process.env['NODE_COMPILE_CACHE']).toBe('/tmp/generated-cache');
-    expect(process.env['QWEN_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
   });
 
   it('does not publish the pending compile cache when disabled by settings.env', () => {
     const workspace = makeWorkspace();
-    process.env['QWEN_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
+    process.env['CANOPY_CODE_PENDING_COMPILE_CACHE'] = '/tmp/generated-cache';
 
     loadEnvironment(
       testSettings({
@@ -328,7 +328,7 @@ describe('loadEnvironment', () => {
     );
 
     expect(process.env['NODE_COMPILE_CACHE']).toBeUndefined();
-    expect(process.env['QWEN_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
+    expect(process.env['CANOPY_CODE_PENDING_COMPILE_CACHE']).toBeUndefined();
   });
 
   it('filters reload-excluded keys from settings.env on initial load', () => {
@@ -544,8 +544,8 @@ describe('loadEnvironment', () => {
   // GIT_CONFIG_* blocks); $VISUAL/$EDITOR are git's editor fallback and the
   // CLI's own editor launch; CPython executes PYTHONSTARTUP at interactive
   // startup; the CLI execs $BROWSER via openBrowserSecurely; the daemon
-  // spawns QWEN_CDP_MCP_COMMAND as the browser-automation MCP adapter and
-  // QWEN_SERVE_CDP_TUNNEL_OVER_WS switches that tunnel surface on.
+  // spawns CANOPY_CDP_MCP_COMMAND as the browser-automation MCP adapter and
+  // CANOPY_SERVE_CDP_TUNNEL_OVER_WS switches that tunnel surface on.
   it('never applies the round-4 exec-redirect keys from project .env or settings.env, including reload', () => {
     resetEnvironmentTrackingForTesting();
     const workspace = makeWorkspace();
@@ -564,8 +564,8 @@ describe('loadEnvironment', () => {
     );
     const settings = testSettings({
       env: {
-        QWEN_CDP_MCP_COMMAND: '/workspace-a/evil-adapter',
-        QWEN_SERVE_CDP_TUNNEL_OVER_WS: '1',
+        CANOPY_CDP_MCP_COMMAND: '/workspace-a/evil-adapter',
+        CANOPY_SERVE_CDP_TUNNEL_OVER_WS: '1',
         RUNTIME_SETTINGS_ONLY: 'from-settings',
       },
     });
@@ -577,8 +577,8 @@ describe('loadEnvironment', () => {
       expect(env['PYTHONSTARTUP']).toBeUndefined();
       expect(env['XDG_CONFIG_HOME']).toBeUndefined();
       expect(env['BROWSER']).toBeUndefined();
-      expect(env['QWEN_CDP_MCP_COMMAND']).toBeUndefined();
-      expect(env['QWEN_SERVE_CDP_TUNNEL_OVER_WS']).toBeUndefined();
+      expect(env['CANOPY_CDP_MCP_COMMAND']).toBeUndefined();
+      expect(env['CANOPY_SERVE_CDP_TUNNEL_OVER_WS']).toBeUndefined();
     };
 
     loadEnvironment(settings, workspace);
@@ -601,10 +601,10 @@ describe('loadEnvironment', () => {
     );
   });
 
-  // The privileged <workspace>/.qwen/.env scope deliberately bypasses
+  // The privileged <workspace>/.canopy/.env scope deliberately bypasses
   // excludedEnvVars and is discovered before the plain .env, so exempting it
   // from the loader denylist must not ship green.
-  it('never applies loader-affecting keys from the .qwen/.env scope either', () => {
+  it('never applies loader-affecting keys from the .canopy/.env scope either', () => {
     const workspace = makeWorkspace();
     fs.mkdirSync(path.join(workspace, SETTINGS_DIRECTORY_NAME));
     fs.writeFileSync(
@@ -756,10 +756,10 @@ describe('loadEnvironment', () => {
   // home-scoped exemption mutant for loader keys cannot ship green.
   it('never applies loader-affecting keys from user-level .env files either', () => {
     const workspace = makeWorkspace();
-    const qwenHome = makeWorkspace();
-    process.env['QWEN_HOME'] = qwenHome;
+    const canopyHome = makeWorkspace();
+    process.env['QWEN_HOME'] = canopyHome;
     fs.writeFileSync(
-      path.join(qwenHome, '.env'),
+      path.join(canopyHome, '.env'),
       [
         'NODE_OPTIONS=--import file:///workspace-a/harness.mjs',
         'npm_config_node_options=--import file:///workspace-a/hook.mjs',

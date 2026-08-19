@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -123,9 +123,9 @@ describe('installAccessLogMiddleware', () => {
     const { response } = h.begin({
       path: `/session/${sessionId}/${routeSuffix}`,
       rawHeaders: [
-        'X-Qwen-Client-Id',
+        'X-Canopy-Client-Id',
         firstClientId,
-        'x-qwen-client-id',
+        'x-canopy-client-id',
         'second-client',
       ],
     });

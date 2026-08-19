@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ import {
   buildSkillLlmContent,
   computeThresholds,
   type CompactionThresholds,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
 /**
@@ -101,7 +101,7 @@ function parseMemoryFiles(memoryContent: string): ContextMemoryDetail[] {
 }
 
 export async function collectContextData(
-  config: import('@qwen-code/qwen-code-core').Config,
+  config: import('@canopy-code/canopy-code-core').Config,
   showDetails: boolean,
 ): Promise<HistoryItemContextUsage> {
   const modelName = config.getModel() || 'unknown';

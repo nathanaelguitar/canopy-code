@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Content, FunctionCall, Part } from '@google/genai';
 import { createDebugLogger } from '../utils/debugLogger.js';
 
-const DUPLICATE_ID_SUFFIX = '__qwen_dup_';
-const GENERATED_ID_PREFIX = 'call_qwen_';
+const DUPLICATE_ID_SUFFIX = '__canopy_dup_';
+const GENERATED_ID_PREFIX = 'call_canopy_';
 const PROVIDER_TOOL_CALL_ID = Symbol('providerToolCallId');
 const debugLogger = createDebugLogger('TOOL_CALL_IDS');
 

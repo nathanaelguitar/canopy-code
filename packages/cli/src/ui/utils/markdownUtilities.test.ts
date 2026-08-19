@@ -108,12 +108,12 @@ describe('markdownUtilities', () => {
       const { before, after } = splitFencedMarkdown(content, splitPoint);
       // Head shows line1,line2,blank (3 lines), so the tail continues at line 4.
       expect(before).toBe('```python\nline1\nline2\n\n```\n');
-      expect(after).toBe('```python qwen-code:start-line=4\nline3\nline4\n');
+      expect(after).toBe('```python canopy-code:start-line=4\nline3\nline4\n');
       // Each half is now a self-contained, valid fenced block.
       expect(before.match(/```/g)).toHaveLength(2);
       expect(after.startsWith('```python ')).toBe(true);
       // The directive parses back to the right language and start line.
-      expect(parseCodeFenceInfo('python qwen-code:start-line=4')).toEqual({
+      expect(parseCodeFenceInfo('python canopy-code:start-line=4')).toEqual({
         lang: 'python',
         startLine: 4,
       });
@@ -125,7 +125,7 @@ describe('markdownUtilities', () => {
       const { before, after } = splitFencedMarkdown(content, splitPoint);
       expect(before.endsWith('~~~~\n')).toBe(true); // closing carries no info string
       // Re-open keeps the delimiter run and full info string, plus the directive.
-      expect(after.startsWith('~~~~ts extra qwen-code:start-line=2\n')).toBe(
+      expect(after.startsWith('~~~~ts extra canopy-code:start-line=2\n')).toBe(
         true,
       );
     });
@@ -139,7 +139,9 @@ describe('markdownUtilities', () => {
       // so the tail is the remainder of line 1 and its gutter must still say
       // 1. This previously read `start-line=2`, counting the unfinished line
       // as though it had been completed in the head.
-      expect(after).toBe('```ts qwen-code:start-line=1\n' + content.slice(40));
+      expect(after).toBe(
+        '```ts canopy-code:start-line=1\n' + content.slice(40),
+      );
     });
 
     it('keeps the tail on the same source line when split mid-line', () => {
@@ -148,7 +150,7 @@ describe('markdownUtilities', () => {
       const { before, after } = splitFencedMarkdown(content, 12);
 
       expect(before).toBe('```js\naaa\nbb\n```\n');
-      expect(after).toBe('```js qwen-code:start-line=2\nb\nccc\n```');
+      expect(after).toBe('```js canopy-code:start-line=2\nb\nccc\n```');
     });
 
     // Guards against over-correcting. Splits that land on a line boundary were
@@ -165,7 +167,7 @@ describe('markdownUtilities', () => {
         const { after } = splitFencedMarkdown(content, splitPoint);
         expect(
           after.startsWith(
-            `\`\`\`js qwen-code:start-line=${expectedStartLine}\n`,
+            `\`\`\`js canopy-code:start-line=${expectedStartLine}\n`,
           ),
         ).toBe(true);
       },
@@ -174,13 +176,15 @@ describe('markdownUtilities', () => {
     it('accumulates the start line when a re-opened tail is split again', () => {
       // Simulate the tail produced by a prior split (already carries a directive).
       const tail =
-        '```python qwen-code:start-line=4\nline4\nline5\n\nline6\nline7\n';
+        '```python canopy-code:start-line=4\nline4\nline5\n\nline6\nline7\n';
       const splitPoint = tail.indexOf('line6');
       const { after } = splitFencedMarkdown(tail, splitPoint);
       // Head of this tail shows line4,line5,blank (3 lines) from start 4 → next 7.
-      expect(after.startsWith('```python qwen-code:start-line=7\n')).toBe(true);
+      expect(after.startsWith('```python canopy-code:start-line=7\n')).toBe(
+        true,
+      );
       // No duplicated directive on the re-opened fence.
-      expect(after.match(/qwen-code:start-line=/g)).toHaveLength(1);
+      expect(after.match(/canopy-code:start-line=/g)).toHaveLength(1);
     });
 
     it('handles a language-less fence without a stray leading space', () => {
@@ -190,10 +194,10 @@ describe('markdownUtilities', () => {
       // Head closes with a bare fence; tail re-opens with the directive only,
       // no language and no leading space.
       expect(before).toBe('```\nline1\nline2\n```\n');
-      expect(after).toBe('```qwen-code:start-line=3\nline3\n');
-      expect(after).toMatch(/^```qwen-code:start-line=\d+\n/);
+      expect(after).toBe('```canopy-code:start-line=3\nline3\n');
+      expect(after).toMatch(/^```canopy-code:start-line=\d+\n/);
       // The directive still parses back to no language and the right start line.
-      expect(parseCodeFenceInfo('qwen-code:start-line=3')).toEqual({
+      expect(parseCodeFenceInfo('canopy-code:start-line=3')).toEqual({
         lang: null,
         startLine: 3,
       });
@@ -230,14 +234,14 @@ describe('markdownUtilities', () => {
     });
 
     it('extracts the start line and strips the directive from the language', () => {
-      expect(parseCodeFenceInfo('ts qwen-code:start-line=17')).toEqual({
+      expect(parseCodeFenceInfo('ts canopy-code:start-line=17')).toEqual({
         lang: 'ts',
         startLine: 17,
       });
     });
 
     it('handles a language-less fence that only carries the directive', () => {
-      expect(parseCodeFenceInfo('qwen-code:start-line=5')).toEqual({
+      expect(parseCodeFenceInfo('canopy-code:start-line=5')).toEqual({
         lang: null,
         startLine: 5,
       });
@@ -275,7 +279,7 @@ describe('markdownUtilities', () => {
     });
 
     it('carries the accumulated start-line directive from a re-opened fence', () => {
-      const content = '```ts qwen-code:start-line=7\nline7\nline8\n';
+      const content = '```ts canopy-code:start-line=7\nline7\nline8\n';
       const idx = content.indexOf('line8');
       expect(getEnclosingFenceInfo(content, idx)).toEqual({
         lang: 'ts',

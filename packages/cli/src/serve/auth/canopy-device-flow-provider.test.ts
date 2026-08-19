@@ -1,15 +1,15 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * Unit tests for `QwenOAuthDeviceFlowProvider`'s stderr audit path.
+ * Unit tests for `CanopyOAuthDeviceFlowProvider`'s stderr audit path.
  *
- * PR #4291 follow-up review (qwen-latest, #1): the catch block in
+ * PR #4291 follow-up review (canopy-latest, #1): the catch block in
  * `poll()` adds 4 distinct branches (AbortError skip, structured
- * `QwenOAuthPollError`, generic `Error` with name+length redaction,
+ * `CanopyOAuthPollError`, generic `Error` with name+length redaction,
  * non-Error throw) that drive what — if anything — lands in the
  * operator audit. The security-critical pieces are:
  *
@@ -21,39 +21,39 @@
  * - The cancel/dispose lifecycle MUST stay quiet — emitting a "poll
  *   failed" line on every normal cancellation pollutes the audit.
  *
- * These tests pin all four branches against a stub `IQwenOAuth2Client`
+ * These tests pin all four branches against a stub `ICanopyOAuth2Client`
  * so a future refactor that drops the redaction shows up in CI.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  QwenOAuthPollError,
-  type IQwenOAuth2Client,
-} from '@qwen-code/qwen-code-core';
-import { QwenOAuthDeviceFlowProvider } from './qwen-device-flow-provider.js';
+  CanopyOAuthPollError,
+  type ICanopyOAuth2Client,
+} from '@canopy-code/canopy-code-core';
+import { CanopyOAuthDeviceFlowProvider } from './canopy-device-flow-provider.js';
 import { brandSecret } from './device-flow.js';
 
 function fakeClient(
-  overrides: Partial<IQwenOAuth2Client> = {},
-): IQwenOAuth2Client {
+  overrides: Partial<ICanopyOAuth2Client> = {},
+): ICanopyOAuth2Client {
   return {
     setCredentials: () => {},
     getCredentials: () =>
-      ({}) as ReturnType<IQwenOAuth2Client['getCredentials']>,
+      ({}) as ReturnType<ICanopyOAuth2Client['getCredentials']>,
     getAccessToken: async () => ({}),
     requestDeviceAuthorization: async () =>
       ({}) as Awaited<
-        ReturnType<IQwenOAuth2Client['requestDeviceAuthorization']>
+        ReturnType<ICanopyOAuth2Client['requestDeviceAuthorization']>
       >,
     pollDeviceToken: async () =>
-      ({}) as Awaited<ReturnType<IQwenOAuth2Client['pollDeviceToken']>>,
+      ({}) as Awaited<ReturnType<ICanopyOAuth2Client['pollDeviceToken']>>,
     refreshAccessToken: async () =>
-      ({}) as Awaited<ReturnType<IQwenOAuth2Client['refreshAccessToken']>>,
+      ({}) as Awaited<ReturnType<ICanopyOAuth2Client['refreshAccessToken']>>,
     ...overrides,
   };
 }
 
-describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
+describe('CanopyOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
   let stderrLines: string[];
   let stderrSpy: ReturnType<typeof vi.fn>;
   let originalWrite: typeof process.stderr.write;
@@ -86,7 +86,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // without invoking `pollDeviceToken` at all — no fetch, no catch,
     // no audit. Pin the negative case so a future refactor that
     // accidentally writes a stderr line on this path fails CI.
-    const provider = new QwenOAuthDeviceFlowProvider(fakeClient());
+    const provider = new CanopyOAuthDeviceFlowProvider(fakeClient());
     const controller = new AbortController();
     controller.abort();
     const result = await provider.poll(makeState(), {
@@ -105,7 +105,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     const abortErr = new Error('The operation was aborted.');
     abortErr.name = 'AbortError';
     const controller = new AbortController();
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
           controller.abort();
@@ -133,7 +133,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // still produce a stderr breadcrumb.
     const abortErr = new Error('The operation was aborted.');
     abortErr.name = 'AbortError';
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
           throw abortErr;
@@ -163,7 +163,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // generic. We still treat the post-await `signal.aborted` as
     // proof this was a cancel, not a real failure.
     const controller = new AbortController();
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
           controller.abort();
@@ -178,16 +178,16 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     expect(stderrLines).toHaveLength(0);
   });
 
-  it('logs only the structured oauthError field on QwenOAuthPollError (no raw body, no device_code/PKCE leak)', async () => {
+  it('logs only the structured oauthError field on CanopyOAuthPollError (no raw body, no device_code/PKCE leak)', async () => {
     // Critical security path: even when the upstream RESPONSE includes
     // the request body verbatim (WAF echo, hostile reverse proxy), the
-    // QwenOAuthPollError carries only the structured `oauthError` /
+    // CanopyOAuthPollError carries only the structured `oauthError` /
     // `description` fields. Logging those is safe; logging
     // `err.message` would re-introduce the leak vector.
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
-          throw new QwenOAuthPollError({
+          throw new CanopyOAuthPollError({
             oauthError: 'slow_down',
             description: 'Polling too fast',
             status: 400,
@@ -201,7 +201,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     expect(result.kind).toBe('error');
     expect(stderrLines).toHaveLength(1);
     const line = stderrLines[0];
-    expect(line).toContain('qwen device-flow poll failed');
+    expect(line).toContain('canopy device-flow poll failed');
     expect(line).toContain('oauthError=slow_down');
     // The raw default message ("Device token poll failed: slow_down -
     // Polling too fast") MUST NOT appear — only the structured field.
@@ -216,8 +216,8 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // its message). Log just the constructor name + length so
     // on-call gets a triage-able breadcrumb without the request body.
     const longMessage =
-      'HTTP 502 from qwen IdP: <html><body>Forbidden — request body: device_code=device-code-secret-AAAA1111&code_verifier=pkce-verifier-secret-BBBB2222</body></html>';
-    const provider = new QwenOAuthDeviceFlowProvider(
+      'HTTP 502 from canopy IdP: <html><body>Forbidden — request body: device_code=device-code-secret-AAAA1111&code_verifier=pkce-verifier-secret-BBBB2222</body></html>';
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
           throw new Error(longMessage);
@@ -238,7 +238,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     expect(line).toContain('raw suppressed');
     // Hard assertions: NEITHER the raw message NOR the templated
     // device-flow secrets may appear in stderr.
-    expect(line).not.toContain('HTTP 502 from qwen');
+    expect(line).not.toContain('HTTP 502 from canopy');
     expect(line).not.toContain('device-code-secret');
     expect(line).not.toContain('pkce-verifier-secret');
   });
@@ -257,7 +257,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
       const value: unknown = 'this is not an Error instance';
       throw value as Error;
     };
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => nonErrorThrower(),
       }),
@@ -277,10 +277,10 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // Mapping check: the `errorKind` field in the typed return AND
     // the stderr breadcrumb must agree. A mis-mapping here would
     // route the SSE consumer one way and the operator another.
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
-          throw new QwenOAuthPollError({
+          throw new CanopyOAuthPollError({
             oauthError: 'access_denied',
             description: 'user declined',
             status: 400,
@@ -310,10 +310,10 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // terminals. `sanitizeForStderr` strips C0/C1 controls + DEL.
     const malicious =
       'slow_down\n[serve] FORGED LOG ENTRY 2026-01-01\x1b[31mRED\x1b[0m';
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
-          throw new QwenOAuthPollError({
+          throw new CanopyOAuthPollError({
             oauthError: malicious,
             description: 'attacker-supplied',
             status: 400,
@@ -344,7 +344,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
   });
 
   it('sanitizes control characters in attacker-controlled err.name on the non-OAuth path (round-4 #4)', async () => {
-    // PR #4291 follow-up review (qwen-latest, round-4 #4):
+    // PR #4291 follow-up review (canopy-latest, round-4 #4):
     // `Error.name` is a freely assignable string property. A hostile
     // provider or fetch wrapper could set `e.name` to inject newlines
     // or ANSI sequences into stderr through the same vector we
@@ -352,7 +352,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     // sanitization on the non-OAuth path.
     const err = new Error('upstream HTTP 500');
     err.name = 'Hostile\n[serve] FORGED LINE 2026-01-01\x1b[31mRED\x1b[0m';
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
           throw err;
@@ -400,10 +400,10 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     const U_200E_LRM = '\u200e';
     const U_FEFF_BOM = '\ufeff';
     const malicious = `slow_down${U_2028_LINE_SEP}[serve] FAKE LOG ${U_200E_LRM}RTL${U_FEFF_BOM}`;
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
-          throw new QwenOAuthPollError({
+          throw new CanopyOAuthPollError({
             oauthError: malicious,
             description: 'attacker-supplied unicode',
             status: 400,
@@ -429,7 +429,7 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
   });
 
   it('sanitizes Unicode bidi ISOLATE controls U+2066–U+2069 (CVE-2021-42574 Trojan Source) (round-6 #5)', async () => {
-    // Round-6 review (qwen-latest, #5): the round-5 regex covered
+    // Round-6 review (canopy-latest, #5): the round-5 regex covered
     // U+202A–U+202E (embedding/override) but missed U+2066–U+2069
     // (LRI/RLI/FSI/PDI). These bidi ISOLATE controls are the primary
     // CVE-2021-42574 attack vectors — a hostile IdP swapping
@@ -438,10 +438,10 @@ describe('QwenOAuthDeviceFlowProvider.poll() — stderr audit branches', () => {
     const U_2066_LRI = '\u2066';
     const U_2068_FSI = '\u2068';
     const U_2069_PDI = '\u2069';
-    const provider = new QwenOAuthDeviceFlowProvider(
+    const provider = new CanopyOAuthDeviceFlowProvider(
       fakeClient({
         pollDeviceToken: async () => {
-          throw new QwenOAuthPollError({
+          throw new CanopyOAuthPollError({
             oauthError: `access_denied${U_2066_LRI}HIDDEN${U_2069_PDI}${U_2068_FSI}`,
             description: 'trojan source',
             status: 400,

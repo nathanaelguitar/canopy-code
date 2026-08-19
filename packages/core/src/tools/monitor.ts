@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -373,7 +373,7 @@ class MonitorToolInvocation extends BaseToolInvocation<
         detached: true,
         env: {
           ...sanitizeChildEnv(process.env),
-          QWEN_CODE: '1',
+          CANOPY_CODE: '1',
           TERM: 'dumb', // no color codes for streaming
           ...getShellPagerEnv(this.config.getShellExecutionConfig().pager, {
             includeGitPager: false,

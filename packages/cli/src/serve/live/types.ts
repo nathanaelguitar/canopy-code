@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 export const LIVE_HOST_PROTOCOL_VERSION = 6 as const;
-export const LIVE_HOST_BUNDLE_ID = 'com.alibaba.qwen-code.live-host' as const;
+export const LIVE_HOST_BUNDLE_ID = 'com.alibaba.canopy-code.live-host' as const;
 export const LIVE_INPUT_AUDIO_EPOCH_BYTES = 8;
 
 export type LiveState =

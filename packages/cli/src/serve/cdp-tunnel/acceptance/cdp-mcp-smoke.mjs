@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Plan C layer-C verification (issue #5626): drive an external CDP MCP adapter
@@ -9,9 +9,9 @@
  * DevTools toolset operates the real browser through the tunnel.
  *
  * Prereqs: same as real-tab.mjs (daemon with the tunnel on + extension loaded +
- * its service worker awake), plus QWEN_CDP_MCP_COMMAND set to an adapter binary.
+ * its service worker awake), plus CANOPY_CDP_MCP_COMMAND set to an adapter binary.
  * Run:
- *   QWEN_CDP_MCP_COMMAND=/path/to/adapter \
+ *   CANOPY_CDP_MCP_COMMAND=/path/to/adapter \
  *     node packages/cli/src/serve/cdp-tunnel/acceptance/cdp-mcp-smoke.mjs
  */
 import { spawn } from 'node:child_process';
@@ -22,10 +22,10 @@ import {
 } from './acceptance-helpers.mjs';
 
 const ENDPOINT = cdpEndpoint();
-const command = process.env.QWEN_CDP_MCP_COMMAND;
+const command = process.env.CANOPY_CDP_MCP_COMMAND;
 if (!command) {
   console.error(
-    'Set QWEN_CDP_MCP_COMMAND to an external CDP MCP adapter binary.',
+    'Set CANOPY_CDP_MCP_COMMAND to an external CDP MCP adapter binary.',
   );
   process.exit(2);
 }

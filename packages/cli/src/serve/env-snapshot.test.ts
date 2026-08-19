@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -47,7 +47,7 @@ afterEach(() => {
 
 describe('buildEnvStatusFromProcess', () => {
   it('snapshots process.env into an independent copy', () => {
-    const key = 'QWEN_TEST_ENV_SNAPSHOT_COPY';
+    const key = 'CANOPY_TEST_ENV_SNAPSHOT_COPY';
     const previous = process.env[key];
     delete process.env[key];
 

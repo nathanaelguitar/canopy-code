@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -38,9 +38,9 @@ interface Harness {
   persistSetting: ReturnType<typeof vi.fn>;
 }
 
-const originalQwenHome = process.env['QWEN_HOME'];
+const originalCanopyHome = process.env['QWEN_HOME'];
 const originalTrustedFoldersPath =
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
 function safeBody(req: Request): Record<string, unknown> {
   return req.body && typeof req.body === 'object'
@@ -59,7 +59,7 @@ async function makeHarness(opts?: {
   const scratch = await fsp.mkdtemp(
     path.join(
       os.tmpdir(),
-      `qwen-permission-routes-${randomBytes(4).toString('hex')}-`,
+      `canopy-permission-routes-${randomBytes(4).toString('hex')}-`,
     ),
   );
   const home = path.join(scratch, 'home');
@@ -67,7 +67,7 @@ async function makeHarness(opts?: {
   await fsp.mkdir(home, { recursive: true });
   await fsp.mkdir(workspace, { recursive: true });
   process.env['QWEN_HOME'] = home;
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
     home,
     TRUSTED_FOLDERS_FILENAME,
   );
@@ -92,7 +92,7 @@ async function makeHarness(opts?: {
     safeBody,
     workspace: workspaceService,
     parseAndValidateClientId: (req: Request, res: Response) => {
-      const clientId = req.get('X-Qwen-Client-Id');
+      const clientId = req.get('X-Canopy-Client-Id');
       if (clientId === 'unknown-client') {
         res.status(400).json({
           error: 'Unknown client id',
@@ -116,15 +116,16 @@ async function makeHarness(opts?: {
 
 async function teardown(h: Harness): Promise<void> {
   await fsp.rm(h.scratch, { recursive: true, force: true });
-  if (originalQwenHome === undefined) {
+  if (originalCanopyHome === undefined) {
     delete process.env['QWEN_HOME'];
   } else {
-    process.env['QWEN_HOME'] = originalQwenHome;
+    process.env['QWEN_HOME'] = originalCanopyHome;
   }
   if (originalTrustedFoldersPath === undefined) {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   } else {
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
+      originalTrustedFoldersPath;
   }
   resetHomeEnvBootstrapForTesting();
   resetTrustedFoldersForTesting();
@@ -223,7 +224,7 @@ describe('workspace permissions routes', () => {
 
     const res = await request(h.app)
       .post('/workspace/permissions')
-      .set('X-Qwen-Client-Id', 'client-1')
+      .set('X-Canopy-Client-Id', 'client-1')
       .send({
         scope: 'user',
         ruleType: 'allow',
@@ -320,7 +321,7 @@ describe('workspace permissions routes', () => {
 
     const res = await request(h.app)
       .post('/workspace/permissions')
-      .set('X-Qwen-Client-Id', 'client-1')
+      .set('X-Canopy-Client-Id', 'client-1')
       .send({
         scope: 'user',
         ruleType: 'allow',

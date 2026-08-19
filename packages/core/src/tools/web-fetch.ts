@@ -48,14 +48,14 @@ const FETCH_TIMEOUT_MS = 60_000;
 // Expiry does NOT fail the tool — executeDirectFetch falls back to returning
 // the raw fetched content.
 const SIDE_QUERY_TIMEOUT_MS = 300_000;
-// Deployment/test knob (same convention as QWEN_STREAM_IDLE_TIMEOUT_MS):
+// Deployment/test knob (same convention as CANOPY_STREAM_IDLE_TIMEOUT_MS):
 // override the processing backstop without code changes. Malformed or
 // non-positive values fall back to the default. Values above the max timer
 // delay (2^31-1 ms) are rejected rather than clamped — Node truncates larger
 // delays to 1ms, which would disable processing instead of extending it.
 export function sideQueryTimeoutMs(): number {
   const value = parsePositiveIntegerEnv(
-    process.env['QWEN_WEB_FETCH_PROCESSING_TIMEOUT_MS'],
+    process.env['CANOPY_WEB_FETCH_PROCESSING_TIMEOUT_MS'],
     SIDE_QUERY_TIMEOUT_MS,
   );
   return value > 2_147_483_647 ? SIDE_QUERY_TIMEOUT_MS : value;
@@ -260,7 +260,7 @@ class WebFetchToolInvocation extends BaseToolInvocation<
 
   private getUserAgent(): string {
     const version = this.config.getCliVersion?.() || 'unknown';
-    return `QwenCode/${version} ${USER_AGENT_SUFFIX}`;
+    return `CanopyCode/${version} ${USER_AGENT_SUFFIX}`;
   }
 
   private fetchPlan?: { url: string; upgradedFrom?: string };

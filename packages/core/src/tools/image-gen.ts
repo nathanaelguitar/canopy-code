@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -45,7 +45,7 @@ class ImageGenInvocation extends BaseToolInvocation<
     const sessionDir = Storage.sanitizePlanSessionId(config.getSessionId());
     this.outputPath = path.join(
       config.getTargetDir(),
-      '.qwen',
+      '.canopy',
       'generated-images',
       sessionDir,
       `${randomUUID()}.png`,

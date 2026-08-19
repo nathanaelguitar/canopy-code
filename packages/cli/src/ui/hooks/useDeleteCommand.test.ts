@@ -1,13 +1,16 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { useDeleteCommand } from './useDeleteCommand.js';
-import type { Config, RemoveSessionsResult } from '@qwen-code/qwen-code-core';
+import type {
+  Config,
+  RemoveSessionsResult,
+} from '@canopy-code/canopy-code-core';
 
 function createConfig(opts: {
   currentSessionId: string;

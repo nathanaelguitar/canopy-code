@@ -309,7 +309,7 @@ describe('Telemetry Metrics', () => {
       });
 
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.tool.execution.count',
+        'canopy-code.tool.execution.count',
         expect.any(Object),
       );
       expect(mockCounterAddFn).toHaveBeenCalledWith(1, {
@@ -362,7 +362,7 @@ describe('Telemetry Metrics', () => {
       });
 
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.repeated_tool_failure_guard.count',
+        'canopy-code.repeated_tool_failure_guard.count',
         expect.any(Object),
       );
       expect(mockCounterAddFn).toHaveBeenCalledWith(1, {
@@ -1096,15 +1096,15 @@ describe('Telemetry Metrics', () => {
       initializeMetricsModule(makeFakeConfig({}));
 
       expect(mockCreateCounterFn).toHaveBeenCalledWith(
-        'qwen-code.channel.memory.recall.count',
+        'canopy-code.channel.memory.recall.count',
         expect.any(Object),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.channel.memory.recall.duration',
+        'canopy-code.channel.memory.recall.duration',
         expect.objectContaining({ unit: 'ms' }),
       );
       expect(mockCreateHistogramFn).toHaveBeenCalledWith(
-        'qwen-code.channel.memory.recall.selected_count',
+        'canopy-code.channel.memory.recall.selected_count',
         expect.any(Object),
       );
     });

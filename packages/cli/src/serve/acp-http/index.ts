@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import type { HttpAcpBridge } from '@qwen-code/acp-bridge/bridgeTypes';
 import {
   RUNTIME_MCP_IF_ABSENT_CONFIG_FLAG,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { normalizeSessionIdForLookup } from '../../config/session-id.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 import type { DaemonWorkspaceService } from '../workspace-service/types.js';
@@ -83,7 +83,7 @@ import {
 } from '../cdp-tunnel/cdp-reverse-link.js';
 import { attachCdpClient } from '../cdp-tunnel/cdp-ws.js';
 import {
-  QWEN_CDP_MCP_COMMAND_ENV,
+  CANOPY_CDP_MCP_COMMAND_ENV,
   resolveCdpMcpCommand,
 } from '../cdp-mcp-command.js';
 import { safeWsSend } from './safe-ws-send.js';
@@ -194,7 +194,7 @@ function pluralWorkspaceRawSelector(
  * in `packages/chrome-extension/src/background/service-worker.ts` (the two
  * packages can't share a module).
  */
-const CDP_BRIDGE_CLIENT_NAME = 'qwen-cdp-bridge';
+const CDP_BRIDGE_CLIENT_NAME = 'canopy-cdp-bridge';
 const CHROME_DEVTOOLS_MCP_SERVER_NAME = 'chrome-devtools';
 const RUNTIME_MCP_RETRY_DELAY_MS = 250;
 const RUNTIME_MCP_RETRY_ATTEMPTS = 20;
@@ -235,7 +235,7 @@ function buildChromeDevToolsMcpRuntimeConfig(
   const command = resolveCdpMcpCommand(env);
   if (!command) {
     writeStderrLine(
-      `qwen serve: set ${QWEN_CDP_MCP_COMMAND_ENV} to enable browser automation MCP (no adapter is bundled)`,
+      `canopy serve: set ${CANOPY_CDP_MCP_COMMAND_ENV} to enable browser automation MCP (no adapter is bundled)`,
     );
     return undefined;
   }
@@ -254,15 +254,15 @@ function buildChromeDevToolsMcpRuntimeConfig(
  * Browsers cannot set an `Authorization` header on a WebSocket, so the Web
  * Shell authenticates the `/voice/stream` (and `/acp`) upgrade by offering the
  * bearer token as a `Sec-WebSocket-Protocol` subprotocol of the form
- * `qwen-bearer.<base64url(token)>`. Kept in sync with the encoder in
+ * `canopy-bearer.<base64url(token)>`. Kept in sync with the encoder in
  * `packages/web-shell/client/voice/useVoiceCapture.ts`.
  */
-export const WS_BEARER_SUBPROTOCOL_PREFIX = 'qwen-bearer.';
+export const WS_BEARER_SUBPROTOCOL_PREFIX = 'canopy-bearer.';
 
 /**
  * Pull the bearer credential off a WS upgrade request. Prefer the standard
  * `Authorization: Bearer <token>` header (non-browser clients); fall back to
- * the `qwen-bearer.*` subprotocol (browser clients). Returns `undefined` when
+ * the `canopy-bearer.*` subprotocol (browser clients). Returns `undefined` when
  * neither is present or parseable.
  */
 function extractUpgradeBearer(req: IncomingMessage): string | undefined {
@@ -309,43 +309,43 @@ const CONN_GRACE_MS = 10_000;
 const SESSION_GRACE_MS = 10_000;
 
 const WS_EXEMPT_METHODS = new Set([
-  '_qwen/session/heartbeat',
-  '_qwen/session/update_metadata',
+  '_canopy/session/heartbeat',
+  '_canopy/session/update_metadata',
 ]);
 
 const WS_READ_METHODS = new Set([
   'session/list',
-  '_qwen/session/context',
-  '_qwen/session/supported_commands',
-  '_qwen/session/context_usage',
-  '_qwen/session/tasks',
-  '_qwen/session/lsp',
-  '_qwen/session/artifacts',
-  '_qwen/workspace/mcp',
-  '_qwen/workspace/skills',
-  '_qwen/workspace/providers',
-  '_qwen/workspace/env',
-  '_qwen/workspace/preflight',
-  '_qwen/workspace/session_groups/list',
-  '_qwen/workspace/trust',
-  '_qwen/workspace/permissions',
-  '_qwen/workspace/voice',
-  '_qwen/workspace/tools',
-  '_qwen/workspace/mcp/tools',
-  '_qwen/workspace/mcp/resources',
-  '_qwen/workspace/agents/list',
-  '_qwen/workspace/agents/get',
-  '_qwen/workspace/memory',
-  '_qwen/workspace/memory/remember/get',
-  '_qwen/workspace/memory/forget/get',
-  '_qwen/workspace/memory/dream/get',
-  '_qwen/workspace/auth/status',
-  '_qwen/workspace/auth/device_flow/get',
-  '_qwen/file/read',
-  '_qwen/file/read_bytes',
-  '_qwen/file/stat',
-  '_qwen/file/list',
-  '_qwen/file/glob',
+  '_canopy/session/context',
+  '_canopy/session/supported_commands',
+  '_canopy/session/context_usage',
+  '_canopy/session/tasks',
+  '_canopy/session/lsp',
+  '_canopy/session/artifacts',
+  '_canopy/workspace/mcp',
+  '_canopy/workspace/skills',
+  '_canopy/workspace/providers',
+  '_canopy/workspace/env',
+  '_canopy/workspace/preflight',
+  '_canopy/workspace/session_groups/list',
+  '_canopy/workspace/trust',
+  '_canopy/workspace/permissions',
+  '_canopy/workspace/voice',
+  '_canopy/workspace/tools',
+  '_canopy/workspace/mcp/tools',
+  '_canopy/workspace/mcp/resources',
+  '_canopy/workspace/agents/list',
+  '_canopy/workspace/agents/get',
+  '_canopy/workspace/memory',
+  '_canopy/workspace/memory/remember/get',
+  '_canopy/workspace/memory/forget/get',
+  '_canopy/workspace/memory/dream/get',
+  '_canopy/workspace/auth/status',
+  '_canopy/workspace/auth/device_flow/get',
+  '_canopy/file/read',
+  '_canopy/file/read_bytes',
+  '_canopy/file/stat',
+  '_canopy/file/list',
+  '_canopy/file/glob',
 ]);
 
 function isSameLoopbackOrigin(origin: string, localPort?: number): boolean {
@@ -693,7 +693,7 @@ export function mountAcpHttp(
       // throwing through the teardown path.
       if (!dispatcherRef.current) {
         writeStderrLine(
-          'qwen serve: /acp abandonPending called before dispatcher initialized (skipped)',
+          'canopy serve: /acp abandonPending called before dispatcher initialized (skipped)',
         );
         return false;
       }
@@ -704,7 +704,7 @@ export function mountAcpHttp(
     (sessionId, clientId) => {
       void bridge.detachClient(sessionId, clientId).catch((err: unknown) => {
         writeStderrLine(
-          `qwen serve: /acp detachClient(${sessionId}) failed: ${
+          `canopy serve: /acp detachClient(${sessionId}) failed: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -730,7 +730,7 @@ export function mountAcpHttp(
       );
     } catch (err) {
       writeStderrLine(
-        `qwen serve: failed to remove ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
+        `canopy serve: failed to remove ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -745,7 +745,7 @@ export function mountAcpHttp(
       await removeChromeDevToolsMcp(originatorClientId);
     })().catch((err) => {
       writeStderrLine(
-        `qwen serve: failed to clean up ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
+        `canopy serve: failed to clean up ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -759,7 +759,7 @@ export function mountAcpHttp(
     if (opts.token) {
       if (!cdpMcpTerminalSkipLogged) {
         writeStderrLine(
-          `qwen serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped because /cdp requires bearer auth`,
+          `canopy serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped because /cdp requires bearer auth`,
         );
         cdpMcpTerminalSkipLogged = true;
       }
@@ -801,7 +801,7 @@ export function mountAcpHttp(
         }
         if ((result as { skipped?: boolean }).skipped) {
           writeStderrLine(
-            `qwen serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped: ${
+            `canopy serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped: ${
               (result as { reason?: string }).reason ?? 'unknown'
             }`,
           );
@@ -816,7 +816,7 @@ export function mountAcpHttp(
             .catch(() => {});
           cdpMcpTerminalSkipLogged = true;
           writeStderrLine(
-            `qwen serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped because settings already define it`,
+            `canopy serve: ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP skipped because settings already define it`,
           );
           return;
         }
@@ -826,7 +826,7 @@ export function mountAcpHttp(
         }
       } catch (err) {
         writeStderrLine(
-          `qwen serve: failed to add ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
+          `canopy serve: failed to add ${CHROME_DEVTOOLS_MCP_SERVER_NAME} runtime MCP: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -918,7 +918,7 @@ export function mountAcpHttp(
     const existed = mount.registry.delete(connectionId);
     if (existed) {
       writeStderrLine(
-        `qwen serve: ${mount.routeLabel} connection deleted ${connectionId.slice(0, 8)} (remaining=${mount.registry.size})`,
+        `canopy serve: ${mount.routeLabel} connection deleted ${connectionId.slice(0, 8)} (remaining=${mount.registry.size})`,
       );
     }
     res.status(202).end();
@@ -947,7 +947,7 @@ export function mountAcpHttp(
     const parsed = parseInbound(req.body);
     if (!parsed.ok) {
       writeStderrLine(
-        `qwen serve: ${mount.routeLabel} malformed request from ${req.socket?.remoteAddress}: ${parsed.error.error.message}`,
+        `canopy serve: ${mount.routeLabel} malformed request from ${req.socket?.remoteAddress}: ${parsed.error.error.message}`,
       );
       res.status(400).json(parsed.error);
       return;
@@ -972,7 +972,7 @@ export function mountAcpHttp(
       if (!conn) {
         // Connection cap reached — shed load rather than grow unbounded.
         writeStderrLine(
-          `qwen serve: ${mount.routeLabel} connection cap reached (max=${mount.registry.connectionCap}), rejecting initialize`,
+          `canopy serve: ${mount.routeLabel} connection cap reached (max=${mount.registry.connectionCap}), rejecting initialize`,
         );
         res.setHeader('Retry-After', '5');
         res
@@ -1003,7 +1003,7 @@ export function mountAcpHttp(
         ),
       });
       writeStderrLine(
-        `qwen serve: ${mount.routeLabel} connection established ${conn.connectionId.slice(0, 8)} ` +
+        `canopy serve: ${mount.routeLabel} connection established ${conn.connectionId.slice(0, 8)} ` +
           `(loopback=${conn.fromLoopback}, active=${mount.registry.size})`,
       );
       return;
@@ -1052,7 +1052,7 @@ export function mountAcpHttp(
       const m = message.method;
       if (!WS_EXEMPT_METHODS.has(m)) {
         const tier: RateLimitTier =
-          m === 'session/prompt' || m === '_qwen/session/prompt'
+          m === 'session/prompt' || m === '_canopy/session/prompt'
             ? 'prompt'
             : WS_READ_METHODS.has(m)
               ? 'read'
@@ -1087,7 +1087,7 @@ export function mountAcpHttp(
       )
       .catch((err: unknown) => {
         writeStderrLine(
-          `qwen serve: ${mount.routeLabel} handle error: ${
+          `canopy serve: ${mount.routeLabel} handle error: ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -1137,7 +1137,7 @@ export function mountAcpHttp(
         res,
         () => {
           writeStderrLine(
-            `qwen serve: ${mount.routeLabel} connection stream closed (${connId.slice(0, 8)})`,
+            `canopy serve: ${mount.routeLabel} connection stream closed (${connId.slice(0, 8)})`,
           );
           // Grace-period reap: a dead connection otherwise locks its
           // ownedSessions + counts against maxConnections for the full 30-min
@@ -1163,7 +1163,7 @@ export function mountAcpHttp(
               !conn.hasRecoverableSession()
             ) {
               writeStderrLine(
-                `qwen serve: ${mount.routeLabel} reaping connection ${connId.slice(0, 8)} (conn stream gone, no live session stream)`,
+                `canopy serve: ${mount.routeLabel} reaping connection ${connId.slice(0, 8)} (conn stream gone, no live session stream)`,
               );
               mount.registry.delete(connId);
             }
@@ -1220,7 +1220,7 @@ export function mountAcpHttp(
     // degrade to "not provided" so the bus falls back to the numeric
     // stale-cursor heuristic.
     const eventEpoch = parseEventEpochHeader(
-      headerOf(req, 'x-qwen-event-epoch'),
+      headerOf(req, 'x-canopy-event-epoch'),
       '/acp ',
     );
     // Advertise the current bus epoch BEFORE `stream.open()` flushes headers
@@ -1228,7 +1228,7 @@ export function mountAcpHttp(
     // epoch to pair with its resume cursor on later reconnects.
     const busEpoch = mount.dispatcher.getSessionEventEpoch(sessionId);
     if (busEpoch !== undefined) {
-      res.setHeader('X-Qwen-Event-Epoch', busEpoch);
+      res.setHeader('X-Canopy-Event-Epoch', busEpoch);
     }
     // Open (write SSE headers + `retry:`) BEFORE attaching, so the protocol
     // handshake precedes any buffered frames the attach flushes.
@@ -1269,7 +1269,7 @@ export function mountAcpHttp(
         // error) → the stream is a zombie; full close now. Logged so the
         // operator trail can tell this apart from a transport-close detach.
         writeStderrLine(
-          `qwen serve: ${mount.routeLabel} session stream pump ended while open ` +
+          `canopy serve: ${mount.routeLabel} session stream pump ended while open ` +
             `(${logSafe(sessionId)}) — closing`,
         );
         conn.closeSessionStream(sessionId);
@@ -1277,7 +1277,7 @@ export function mountAcpHttp(
         // Guard mismatch: a stale stream's pump settled after a newer reclaim
         // already took over. No-op, but log it so the trail isn't silent.
         writeStderrLine(
-          `qwen serve: ${mount.routeLabel} session stream pump settled for a superseded ` +
+          `canopy serve: ${mount.routeLabel} session stream pump settled for a superseded ` +
             `stream (${logSafe(sessionId)}) — no-op`,
         );
       }
@@ -1286,7 +1286,7 @@ export function mountAcpHttp(
       .pumpSessionEvents(conn, sessionId, ac.signal, lastEventId, eventEpoch)
       .then(onPumpSettled, (err: unknown) => {
         writeStderrLine(
-          `qwen serve: ${mount.routeLabel} event pump error (${logSafe(sessionId)}, lastEventId=${
+          `canopy serve: ${mount.routeLabel} event pump error (${logSafe(sessionId)}, lastEventId=${
             lastEventId ?? 'none'
           }): ${logSafe(err instanceof Error ? err.message : String(err))}`,
         );
@@ -1323,7 +1323,7 @@ export function mountAcpHttp(
           .detachClient(sessionId, clientId)
           .catch((err: unknown) => {
             writeStderrLine(
-              `qwen serve: /workspaces/${rt.workspaceId}/acp detachClient(${sessionId}) failed: ${
+              `canopy serve: /workspaces/${rt.workspaceId}/acp detachClient(${sessionId}) failed: ${
                 err instanceof Error ? err.message : String(err)
               }`,
             );
@@ -1532,10 +1532,10 @@ export function mountAcpHttp(
       noServer: true,
       maxPayload: 10 * 1024 * 1024,
       // Browsers authenticate the upgrade by offering the bearer token as a
-      // `qwen-bearer.*` subprotocol (see extractUpgradeBearer). Never echo that
+      // `canopy-bearer.*` subprotocol (see extractUpgradeBearer). Never echo that
       // secret-bearing value back in the handshake response — select the first
       // non-secret subprotocol instead. The web-shell offers a non-secret
-      // marker (`qwen-ws`) alongside the bearer one precisely so there is always
+      // marker (`canopy-ws`) alongside the bearer one precisely so there is always
       // a safe value to select: selecting none would make strict WS clients
       // (e.g. the `ws` library) reject the handshake with "Server sent no
       // subprotocol". ACP clients offer no subprotocol, so this is a no-op for
@@ -1560,7 +1560,7 @@ export function mountAcpHttp(
       const localPort = (socket as { localPort?: number }).localPort;
       const logReject = (reason: string) => {
         writeStderrLine(
-          `qwen serve: WebSocket upgrade rejected (${reason}) from ${rawAddr}`,
+          `canopy serve: WebSocket upgrade rejected (${reason}) from ${rawAddr}`,
         );
       };
       // `/cdp` is the Plan C CDP-tunnel endpoint (issue #5626): a loopback
@@ -1692,7 +1692,7 @@ export function mountAcpHttp(
       // `bearerAuth` enforces for plain HTTP.
       if (!upgradeCredentials.isOpen(upgradeListenerIdentity)) {
         // Accept the token from `Authorization` (non-browser clients) or the
-        // `qwen-bearer.*` subprotocol (browsers, which can't set Authorization
+        // `canopy-bearer.*` subprotocol (browsers, which can't set Authorization
         // on a WebSocket). Hash-compare in constant time, same posture as REST.
         const presented = extractUpgradeBearer(req);
         if (
@@ -1870,7 +1870,7 @@ export function mountAcpHttp(
         const initTimer = setTimeout(() => {
           if (!initialized) {
             writeStderrLine(
-              `qwen serve: ${activeMount.routeLabel} WS initialize timeout (30s) from ${rawAddr}`,
+              `canopy serve: ${activeMount.routeLabel} WS initialize timeout (30s) from ${rawAddr}`,
             );
             ws.close(1002, 'Initialize timeout');
           }
@@ -1898,7 +1898,7 @@ export function mountAcpHttp(
 
         ws.on('error', (err) => {
           writeStderrLine(
-            `qwen serve: ${activeMount.routeLabel} WS error: ${err instanceof Error ? err.message : String(err)}`,
+            `canopy serve: ${activeMount.routeLabel} WS error: ${err instanceof Error ? err.message : String(err)}`,
           );
         });
 
@@ -1926,7 +1926,7 @@ export function mountAcpHttp(
             .then(() => handleWsMessage(rawData))
             .catch((err) => {
               writeStderrLine(
-                `qwen serve: ${activeMount.routeLabel} WS message handler error: ${err instanceof Error ? err.message : String(err)}`,
+                `canopy serve: ${activeMount.routeLabel} WS message handler error: ${err instanceof Error ? err.message : String(err)}`,
               );
             });
         });
@@ -2143,7 +2143,7 @@ export function mountAcpHttp(
               // concurrent provider round-trips. Reject once at the cap.
               if (clientMcpInflightDispatch >= MAX_INFLIGHT_MCP_DISPATCH) {
                 writeStderrLine(
-                  `qwen serve: ${activeMount.routeLabel} client-MCP inflight cap hit (${MAX_INFLIGHT_MCP_DISPATCH}); rejecting ${String(frameType)} frame`,
+                  `canopy serve: ${activeMount.routeLabel} client-MCP inflight cap hit (${MAX_INFLIGHT_MCP_DISPATCH}); rejecting ${String(frameType)} frame`,
                 );
                 safeWsSend(
                   ws,
@@ -2165,7 +2165,7 @@ export function mountAcpHttp(
                 const message =
                   err instanceof Error ? err.message : String(err);
                 writeStderrLine(
-                  `qwen serve: ${activeMount.routeLabel} client-mcp frame error: ${message}`,
+                  `canopy serve: ${activeMount.routeLabel} client-mcp frame error: ${message}`,
                 );
                 // handleFrame normally returns a structured {kind:'error'};
                 // this branch is an UNEXPECTED rejection. mcp_register /
@@ -2258,7 +2258,7 @@ export function mountAcpHttp(
               ws,
               () => {
                 writeStderrLine(
-                  `qwen serve: ${activeMount.routeLabel} WS closed (${conn.connectionId.slice(0, 8)})`,
+                  `canopy serve: ${activeMount.routeLabel} WS closed (${conn.connectionId.slice(0, 8)})`,
                 );
                 activeMount.registry.delete(conn.connectionId);
               },
@@ -2282,7 +2282,7 @@ export function mountAcpHttp(
             clearTimeout(initTimer);
             connRef = conn;
             writeStderrLine(
-              `qwen serve: ${activeMount.routeLabel} WS established ${conn.connectionId.slice(0, 8)} (loopback=${fromLoopback}, active=${activeMount.registry.size})`,
+              `canopy serve: ${activeMount.routeLabel} WS established ${conn.connectionId.slice(0, 8)} (loopback=${fromLoopback}, active=${activeMount.registry.size})`,
             );
             // Plan C (issue #5626): register this connection as the active CDP
             // bridge eagerly so a `/cdp` puppeteer client can bind immediately
@@ -2320,7 +2320,7 @@ export function mountAcpHttp(
                 conn.connectionId,
               );
               writeStderrLine(
-                `qwen serve: ${activeMount.routeLabel} connection ${conn.connectionId.slice(0, 8)} registered as CDP bridge`,
+                `canopy serve: ${activeMount.routeLabel} connection ${conn.connectionId.slice(0, 8)} registered as CDP bridge`,
               );
             }
             return;
@@ -2372,7 +2372,7 @@ export function mountAcpHttp(
                   .pumpSessionEvents(conn, sid, ac.signal)
                   .then(cleanupSession, (err: unknown) => {
                     writeStderrLine(
-                      `qwen serve: ${activeMount.routeLabel} WS pump error (${sid}): ${err instanceof Error ? err.message : String(err)}`,
+                      `canopy serve: ${activeMount.routeLabel} WS pump error (${sid}): ${err instanceof Error ? err.message : String(err)}`,
                     );
                     cleanupSession();
                   });
@@ -2387,7 +2387,7 @@ export function mountAcpHttp(
               // (mirrors REST resolveTier returning null for heartbeat)
             } else {
               const tier: RateLimitTier =
-                m === 'session/prompt' || m === '_qwen/session/prompt'
+                m === 'session/prompt' || m === '_canopy/session/prompt'
                   ? 'prompt'
                   : WS_READ_METHODS.has(m)
                     ? 'read'
@@ -2415,12 +2415,12 @@ export function mountAcpHttp(
           const isPrompt =
             isRequest(message) &&
             (message.method === 'session/prompt' ||
-              message.method === '_qwen/session/prompt');
+              message.method === '_canopy/session/prompt');
           const dispatchP = activeMount.dispatcher
             .handle(conn, message, undefined, fromLoopback)
             .catch((err: unknown) => {
               writeStderrLine(
-                `qwen serve: ${activeMount.routeLabel} WS handle error: ${err instanceof Error ? err.message : String(err)}`,
+                `canopy serve: ${activeMount.routeLabel} WS handle error: ${err instanceof Error ? err.message : String(err)}`,
               );
             });
           if (!isPrompt) await dispatchP;
@@ -2429,7 +2429,9 @@ export function mountAcpHttp(
     };
     httpServer.on('upgrade', upgradeListener!);
 
-    writeStderrLine(`qwen serve: /acp WebSocket transport enabled on ${path}`);
+    writeStderrLine(
+      `canopy serve: /acp WebSocket transport enabled on ${path}`,
+    );
   }
 
   return {

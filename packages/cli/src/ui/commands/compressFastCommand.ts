@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { CompressionStatus } from '@qwen-code/qwen-code-core';
+import { CompressionStatus } from '@canopy-code/canopy-code-core';
 import type { HistoryItemCompression } from '../types.js';
 import { MessageType } from '../types.js';
 import type { SlashCommand } from './types.js';

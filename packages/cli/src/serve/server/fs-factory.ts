@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,13 +16,13 @@ import type { PathMutexRegistry } from '../fs/path-mutex-registry.js';
 import type { WorkspaceGenerationGuard } from '../workspace-registry.js';
 import { isWithinRoot } from '../../config/path-comparison.js';
 
-const IDE_WORKSPACE_PATH_ENV_VAR = 'QWEN_CODE_IDE_WORKSPACE_PATH';
+const IDE_WORKSPACE_PATH_ENV_VAR = 'CANOPY_CODE_IDE_WORKSPACE_PATH';
 
 /**
  * Build a no-op fs-audit emitter that logs a warning every
  * `WARN_EVERY` dropped events. The default factory uses this so a
  * regression that silently strips audit events shows up in operator
- * logs instead of disappearing. `runQwenServe` replaces this with a
+ * logs instead of disappearing. `runCanopyServe` replaces this with a
  * real per-session emit, so legitimate production traffic never hits
  * the warning.
  */
@@ -41,7 +41,7 @@ export function createDefaultFsAuditEmit(): (event: BridgeEvent) => void {
       if (data?.pathHash) ctx.push(`pathHash=${data.pathHash}`);
       const ctxStr = ctx.length > 0 ? ` (${ctx.join(' ')})` : '';
       writeStderrLine(
-        `qwen serve: fs audit emit is the default no-op — ${droppedCount} event(s) dropped so far. ` +
+        `canopy serve: fs audit emit is the default no-op — ${droppedCount} event(s) dropped so far. ` +
           `Latest type=${event.type}${ctxStr}. ` +
           `Inject deps.fsFactory in createServeApp to wire audit into the EventBus.`,
       );
@@ -51,13 +51,13 @@ export function createDefaultFsAuditEmit(): (event: BridgeEvent) => void {
 
 /**
  * Shared `WorkspaceFileSystemFactory` construction used by both
- * `runQwenServe` and `createServeApp`'s default bridge wiring.
+ * `runCanopyServe` and `createServeApp`'s default bridge wiring.
  * Centralizes the "use the injected factory if provided, otherwise
  * build one with the given trust + audit-emit posture" logic.
  *
  * Trust is intentionally a **required** parameter — the two call
  * sites have different correct defaults:
- *   - `runQwenServe` defaults to `trusted: true`
+ *   - `runCanopyServe` defaults to `trusted: true`
  *   - `createServeApp` defaults to `trusted: false` (test-safe)
  */
 export function resolveBridgeFsFactory(input: {
@@ -93,7 +93,7 @@ export function resolveBoundWorkspacesFromIdeEnv(
     primary = canonicalizeWorkspace(primaryWorkspace);
   } catch (err) {
     writeStderrLine(
-      `qwen serve: failed to canonicalize IDE workspace paths, using primary only: ${err}`,
+      `canopy serve: failed to canonicalize IDE workspace paths, using primary only: ${err}`,
     );
     return [primary];
   }
@@ -104,7 +104,7 @@ export function resolveBoundWorkspacesFromIdeEnv(
       envCanonicals.push(canonical);
     } catch (err) {
       writeStderrLine(
-        `qwen serve: skipping IDE workspace root that failed to canonicalize: ${workspace} (${err})`,
+        `canopy serve: skipping IDE workspace root that failed to canonicalize: ${workspace} (${err})`,
       );
     }
   }
@@ -116,7 +116,7 @@ export function resolveBoundWorkspacesFromIdeEnv(
     )
   ) {
     writeStderrLine(
-      'qwen serve: ignoring stale IDE workspace paths that do not overlap ' +
+      'canopy serve: ignoring stale IDE workspace paths that do not overlap ' +
         'the selected workspace',
     );
     return [primary];
@@ -177,7 +177,7 @@ function dropNestedWorkspacesPreservingPrimary(
   );
   if (filtered.length < workspaces.length) {
     writeStderrLine(
-      'qwen serve: dropping nested IDE workspace roots ' +
+      'canopy serve: dropping nested IDE workspace roots ' +
         '(parent folders already cover children)',
     );
   }

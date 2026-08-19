@@ -617,12 +617,12 @@ export class ChatCompressionService {
         // Compression uses the compaction model (config.getCompactionModel?.()) to reduce cost.
         // Falls back to the main model if not set or if the payload exceeds the
         // compaction model's context window.
-        // See https://github.com/QwenLM/qwen-code/issues/5956
+        // See https://github.com/QwenLM/canopy-code/issues/5956
         // Stream so a slow compression inference keeps the HTTP connection alive.
         // Non-streaming returns no bytes until the whole summary is generated, so
         // behind a BFF gateway with a short `proxy_read_timeout` a long inference
         // is killed with a 504 (surfaced as a 422) mid-compression, breaking the
-        // session. See https://github.com/QwenLM/qwen-code/issues/5861.
+        // session. See https://github.com/QwenLM/canopy-code/issues/5861.
         stream: true,
         // Best-effort: failures fall back to NOOP and the next turn re-triggers
         // compression anyway, so don't burn 7 retries blocking the user mid-turn.

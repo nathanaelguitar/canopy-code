@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,15 +17,15 @@ import {
   type GoalJournal,
   type GoalStateRecordPayloadV2,
   uiTelemetryService,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from './config/settings.js';
 import { CommandKind, type ExecutionMode } from './ui/commands/types.js';
 import { filterCommandsForMode } from './services/commandUtils.js';
 import { goalCommand } from './ui/commands/goalCommand.js';
 
 const recordAutoSkillUsageMock = vi.hoisted(() => vi.fn());
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   recordAutoSkillUsage: recordAutoSkillUsageMock,
 }));
 
@@ -527,7 +527,7 @@ describe('handleSlashCommand', () => {
       skillDetail: {
         name: 'review-skill',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
       },
       action: vi.fn().mockResolvedValue({
         type: 'submit_prompt',
@@ -557,7 +557,7 @@ describe('handleSlashCommand', () => {
     expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
       name: 'review-skill',
       level: 'project',
-      filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+      filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
     });
   });
 
@@ -635,7 +635,7 @@ describe('handleSlashCommand', () => {
       skillDetail: {
         name: 'review',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
       },
       action: vi.fn().mockResolvedValue({
         type: 'submit_prompt',
@@ -1202,7 +1202,7 @@ describe('handleSlashCommand', () => {
         skillDetail: {
           name: 'feat-dev',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-feat-dev/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-feat-dev/SKILL.md',
         },
       };
       const skillB = {
@@ -1210,7 +1210,7 @@ describe('handleSlashCommand', () => {
         skillDetail: {
           name: 'review',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
         },
       };
       mockGetCommands.mockReturnValue([skillA, skillB]);
@@ -1227,12 +1227,12 @@ describe('handleSlashCommand', () => {
       expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
         name: 'feat-dev',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-feat-dev/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-feat-dev/SKILL.md',
       });
       expect(recordAutoSkillUsageMock).toHaveBeenCalledWith('/test/project', {
         name: 'review',
         level: 'project',
-        filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+        filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
       });
     });
 
@@ -1249,7 +1249,7 @@ describe('handleSlashCommand', () => {
         skillDetail: {
           name: 'feat-dev',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-feat-dev/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-feat-dev/SKILL.md',
         },
       };
       const skillB = {
@@ -1257,7 +1257,7 @@ describe('handleSlashCommand', () => {
         skillDetail: {
           name: 'review',
           level: 'project',
-          filePath: '/test/project/.qwen/skills/auto-skill-review/SKILL.md',
+          filePath: '/test/project/.canopy/skills/auto-skill-review/SKILL.md',
         },
       };
       mockGetCommands.mockReturnValue([skillA, skillB]);

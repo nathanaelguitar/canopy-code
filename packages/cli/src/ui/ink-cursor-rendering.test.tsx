@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -222,7 +222,7 @@ describe.each([false, true])(
     });
 
     it('positions the hardware cursor at the correct row in fullscreen (y > 0)', async () => {
-      // Regression test for QwenLM/qwen-code#7980: in fullscreen mode the
+      // Regression test for CanopyLM/canopy-code#7980: in fullscreen mode the
       // output has no trailing newline, so the terminal cursor sits ON the
       // last line rather than one past it. buildCursorSuffix must account
       // for this, otherwise the hardware cursor lands one row too high.

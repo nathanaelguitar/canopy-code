@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { SandboxConfig } from '@qwen-code/qwen-code-core';
+import type { SandboxConfig } from '@canopy-code/canopy-code-core';
 import {
   FatalSandboxError,
   stripAnsiAndControl,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import commandExists from 'command-exists';
 import { spawnSync } from 'node:child_process';
 import * as os from 'node:os';
@@ -119,7 +119,7 @@ function getSandboxCommand(
 
   // note environment variable takes precedence over argument (from command line or settings)
   const environmentConfiguredSandbox =
-    process.env['QWEN_SANDBOX']?.toLowerCase().trim() ?? '';
+    process.env['CANOPY_SANDBOX']?.toLowerCase().trim() ?? '';
   sandbox =
     environmentConfiguredSandbox?.length > 0
       ? environmentConfiguredSandbox
@@ -131,11 +131,11 @@ function getSandboxCommand(
     return '';
   }
 
-  // An explicitly named command can come from QWEN_SANDBOX, --sandbox, or
+  // An explicitly named command can come from CANOPY_SANDBOX, --sandbox, or
   // tools.sandbox in settings. Naming the wrong one sends the user looking in
   // a place they never configured, so only claim the env var when it won.
   const sandboxSource =
-    environmentConfiguredSandbox.length > 0 ? ' (from QWEN_SANDBOX)' : '';
+    environmentConfiguredSandbox.length > 0 ? ' (from CANOPY_SANDBOX)' : '';
 
   if (typeof sandbox === 'string' && sandbox) {
     if (!isSandboxCommand(sandbox)) {
@@ -194,11 +194,11 @@ function getSandboxCommand(
     // settings, so these messages name the env var only when it was the one
     // that enabled it — same reasoning as sandboxSource above.
     const enabledLabel = sandboxSource
-      ? 'QWEN_SANDBOX is true'
+      ? 'CANOPY_SANDBOX is true'
       : 'Sandbox is enabled';
     const specifyHint = sandboxSource
-      ? 'specify command in QWEN_SANDBOX'
-      : 'specify command via --sandbox or QWEN_SANDBOX';
+      ? 'specify command in CANOPY_SANDBOX'
+      : 'specify command via --sandbox or CANOPY_SANDBOX';
     // Report the runtime that actually broke rather than a generic
     // "nothing installed", which would send the user down the wrong path.
     if (firstFailure) {
@@ -226,7 +226,7 @@ export async function loadSandboxConfig(
   const packageJson = await getPackageJson();
   const image =
     argv.sandboxImage ??
-    process.env['QWEN_SANDBOX_IMAGE'] ??
+    process.env['CANOPY_SANDBOX_IMAGE'] ??
     settings.tools?.sandboxImage ??
     packageJson?.config?.sandboxImageUri;
 

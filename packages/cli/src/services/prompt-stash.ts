@@ -6,7 +6,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { atomicWriteFileSync, Storage } from '@qwen-code/qwen-code-core';
+import { atomicWriteFileSync, Storage } from '@canopy-code/canopy-code-core';
 
 const PROMPT_STASH_FILE = 'prompt-stash.json';
 

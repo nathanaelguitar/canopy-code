@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,11 +8,11 @@
  * CPU profiling utility that generates .cpuprofile files for Chrome DevTools.
  *
  * Three trigger modes:
- * 1. Environment variable: QWEN_CODE_CPU_PROFILE=1 — records from process start to exit
+ * 1. Environment variable: CANOPY_CODE_CPU_PROFILE=1 — records from process start to exit
  * 2. Signal toggle: SIGUSR1 — first signal starts, second stops and writes
  * 3. Command: /doctor cpu-profile [--duration N] — records for N seconds
  *
- * Output: ~/.qwen/cpu-profiles/qwen-code-cpu-<pid>-<timestamp>.cpuprofile
+ * Output: ~/.canopy/cpu-profiles/canopy-code-cpu-<pid>-<timestamp>.cpuprofile
  * Zero overhead when disabled (single env var check at init).
  */
 
@@ -70,7 +70,7 @@ const lastWriteByDir = new Map<string, number>();
 /**
  * Initialize CPU profiler. Call once at process start.
  * Always registers SIGUSR1 handler (for ad-hoc profiling).
- * When QWEN_CODE_CPU_PROFILE=1, also starts recording immediately.
+ * When CANOPY_CODE_CPU_PROFILE=1, also starts recording immediately.
  */
 export function initCpuProfiler(): void {
   if (initialized) return;
@@ -91,7 +91,7 @@ export function initCpuProfiler(): void {
     }
   });
 
-  const enabled = process.env['QWEN_CODE_CPU_PROFILE'] === '1';
+  const enabled = process.env['CANOPY_CODE_CPU_PROFILE'] === '1';
   if (!enabled) return;
 
   // Start recording immediately in env-var mode
@@ -208,7 +208,7 @@ export async function stopCpuProfile(options?: {
 
     const filePath = path.join(
       outputDir,
-      `qwen-code-cpu-${process.pid}-${formatTimestamp(now)}.cpuprofile`,
+      `canopy-code-cpu-${process.pid}-${formatTimestamp(now)}.cpuprofile`,
     );
 
     try {
@@ -279,7 +279,7 @@ export function clearCpuProfileRateLimit(): void {
 // ---------------------------------------------------------------------------
 
 function defaultOutputDir(): string {
-  return path.join(os.homedir(), '.qwen', 'cpu-profiles');
+  return path.join(os.homedir(), '.canopy', 'cpu-profiles');
 }
 
 function formatTimestamp(now: Date): string {
@@ -412,7 +412,7 @@ function cleanupOldProfiles(outputDir: string, maxProfiles: number): void {
       .readdirSync(outputDir)
       .filter(
         (name) =>
-          name.startsWith('qwen-code-cpu-') && name.endsWith('.cpuprofile'),
+          name.startsWith('canopy-code-cpu-') && name.endsWith('.cpuprofile'),
       )
       .map((name) => path.join(outputDir, name))
       .sort((a, b) => {

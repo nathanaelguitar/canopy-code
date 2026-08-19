@@ -145,9 +145,9 @@ describe('parseAndFormatApiError', () => {
   });
 
   it.each([
-    'Qwen OAuth quota exceeded: retry after 12:00 UTC',
-    'Qwen OAuth free tier has been discontinued for this model',
-  ])('should return Qwen quota messages unchanged: %s', (message) => {
+    'Canopy OAuth quota exceeded: retry after 12:00 UTC',
+    'Canopy OAuth free tier has been discontinued for this model',
+  ])('should return Canopy quota messages unchanged: %s', (message) => {
     const error: StructuredError = { message, status: 429 };
 
     expect(parseAndFormatApiError(error)).toBe(message);

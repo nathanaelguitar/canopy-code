@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +24,7 @@ export interface InstallState {
  * point at a temp directory.
  */
 export function installStatePathFor(home: string = homedir()): string {
-  return join(home, '.qwen', 'computer-use', 'installed.json');
+  return join(home, '.canopy', 'computer-use', 'installed.json');
 }
 
 export async function loadInstallState(

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review comment-status`: one deterministic pass over a PR's existing
+// `canopy review comment-status`: one deterministic pass over a PR's existing
 // inline comments, emitting a per-thread status index — anchor validity at the
 // live head, whether the anchored file changed in the reviewed worktree since
 // the comment was filed (and which commits touched it), reply participation,
@@ -23,7 +23,7 @@
 import type { CommandModule } from 'yargs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD } from '@qwen-code/qwen-code-core';
+import { DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD } from '@canopy-code/canopy-code-core';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
 import { ensureAuthenticated, gh, ghApiAll, setGhHost } from './lib/gh.js';
 import { gitOpt } from './lib/git.js';
@@ -446,7 +446,7 @@ async function runCommentStatus(args: CommentStatusArgs): Promise<void> {
     );
     if (worktreeMissing) {
       writeStdoutLine(
-        `warning: no worktree at ${worktree} — run \`qwen review fetch-pr\` first. ` +
+        `warning: no worktree at ${worktree} — run \`canopy review fetch-pr\` first. ` +
           `Every thread's code facts (changedSinceComment, touchedBy) are \`unknown\`; ` +
           `only the anchor and reply facts are usable.`,
       );

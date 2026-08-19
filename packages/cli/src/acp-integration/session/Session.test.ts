@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,14 +32,14 @@ import type {
   Config,
   Extension,
   GeminiChat,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   ApprovalMode,
   AuthType,
   SYSTEM_REMINDER_OPEN,
   SYSTEM_REMINDER_CLOSE,
-} from '@qwen-code/qwen-code-core';
-import * as core from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import * as core from '@canopy-code/canopy-code-core';
 import { SettingScope } from '../../config/settings.js';
 import type {
   AgentSideConnection,
@@ -93,9 +93,9 @@ const TODO_STOP_GUARD_CONTINUATION_CLAIM_METHOD =
 // Session computed (e.g. the home confinement root) without a private-field peek.
 const loopTickResolverDepsSpy = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     createDebugLogger: () => ({
@@ -585,8 +585,8 @@ describe('Session', () => {
 
   beforeEach(() => {
     originalProcessGuardMode =
-      process.env['QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'];
-    process.env['QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'] = 'shadow';
+      process.env['CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'];
+    process.env['CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'] = 'shadow';
     startToolSpanSpy.mockClear();
     addToolArgumentsAttributesSpy.mockClear();
     addToolCallResultAttributesSpy.mockClear();
@@ -605,7 +605,7 @@ describe('Session', () => {
     refreshMemoryInstructionSpy.mockReset();
     refreshMemoryInstructionSpy.mockResolvedValue(undefined);
     transcribeVoiceAudioSpy.mockReset();
-    currentModel = 'qwen3-code-plus';
+    currentModel = 'canopy3-code-plus';
     currentAuthType = AuthType.USE_OPENAI;
     switchModelSpy = vi
       .fn()
@@ -775,7 +775,7 @@ describe('Session', () => {
       assertCanStartTurn: vi.fn().mockResolvedValue(undefined),
       getWorkingDir: vi.fn().mockReturnValue(process.cwd()),
       getProjectRoot: vi.fn().mockReturnValue('/repo'),
-      // Folder trust gates the project `.qwen/loop.md`; default trusted (the
+      // Folder trust gates the project `.canopy/loop.md`; default trusted (the
       // production default). Untrusted-folder tests override to false.
       isTrustedFolder: vi.fn().mockReturnValue(true),
       getTelemetryLogPromptsEnabled: vi.fn().mockReturnValue(false),
@@ -790,7 +790,7 @@ describe('Session', () => {
       getFileFilteringRespectGitIgnore: vi.fn().mockReturnValue(true),
       getFileFilteringOptions: vi.fn().mockReturnValue({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       }),
       getWorkspaceContext: vi.fn().mockReturnValue({
         isPathWithinWorkspace: vi.fn().mockReturnValue(true),
@@ -875,9 +875,9 @@ describe('Session', () => {
 
   afterEach(() => {
     if (originalProcessGuardMode === undefined) {
-      delete process.env['QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'];
+      delete process.env['CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'];
     } else {
-      process.env['QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'] =
+      process.env['CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD'] =
         originalProcessGuardMode;
     }
     // Reset global runtime base dir state to prevent state leakage between tests
@@ -1899,7 +1899,7 @@ describe('Session', () => {
     });
 
     expect(mockClient.extNotification).toHaveBeenCalledWith(
-      'qwen/notify/session/recording-degraded',
+      'canopy/notify/session/recording-degraded',
       {
         v: 1,
         sessionId: 'failed-session-id',
@@ -1911,7 +1911,7 @@ describe('Session', () => {
   });
 
   it('registers the dedicated Live screen tool and routes it over extMethod', async () => {
-    const directory = path.join(os.tmpdir(), 'qwen-live-appshot');
+    const directory = path.join(os.tmpdir(), 'canopy-live-appshot');
     await fs.mkdir(directory, { recursive: true, mode: 0o700 });
     const screenshotPath = path.join(directory, `${randomUUID()}.png`);
     await fs.writeFile(
@@ -1943,7 +1943,7 @@ describe('Session', () => {
         returnDisplay: 'Captured Safari — LIVE_APP_A',
       });
       expect(mockClient.extMethod).toHaveBeenCalledWith(
-        'qwen/control/live/capture-screen-context',
+        'canopy/control/live/capture-screen-context',
         { callerSessionId: 'test-session-id' },
       );
       const speakTool = registered.get(SPEAK_TO_USER_TOOL_NAME);
@@ -1953,7 +1953,7 @@ describe('Session', () => {
       );
       await speakInvocation?.execute(new AbortController().signal);
       expect(mockClient.extMethod).toHaveBeenCalledWith(
-        'qwen/control/live/speak-to-user',
+        'canopy/control/live/speak-to-user',
         { callerSessionId: 'test-session-id', message: '测试语音' },
       );
       expect(mockGeminiClient.setTools).toHaveBeenCalledOnce();
@@ -1986,7 +1986,7 @@ describe('Session', () => {
         content: { type: 'text', text: '你好' },
         _meta: {
           source: 'realtime_voice',
-          qwenDiscreteMessage: true,
+          canopyDiscreteMessage: true,
         },
       },
     });
@@ -1997,7 +1997,7 @@ describe('Session', () => {
         content: { type: 'text', text: '你好！' },
         _meta: {
           source: 'realtime_voice',
-          qwenDiscreteMessage: true,
+          canopyDiscreteMessage: true,
         },
       },
     });
@@ -2023,7 +2023,7 @@ describe('Session', () => {
     callback?.('Durable title', 'auto', 'persisted-session-id');
 
     expect(mockClient.extNotification).toHaveBeenCalledWith(
-      'qwen/notify/session/title-update',
+      'canopy/notify/session/title-update',
       {
         v: 1,
         sessionId: 'persisted-session-id',
@@ -2631,7 +2631,7 @@ describe('Session', () => {
       const continueRequest = {
         prompt: [],
         sessionId: 'test-session-id',
-        _meta: { 'qwen.daemon.continueLastTurn': true },
+        _meta: { 'canopy.daemon.continueLastTurn': true },
       } as unknown as Parameters<typeof session.prompt>[0];
       const result = await session.prompt(continueRequest);
 
@@ -2668,7 +2668,7 @@ describe('Session', () => {
       const continueRequest = {
         prompt: [],
         sessionId: 'test-session-id',
-        _meta: { 'qwen.daemon.continueLastTurn': true },
+        _meta: { 'canopy.daemon.continueLastTurn': true },
       } as unknown as Parameters<typeof session.prompt>[0];
 
       await expect(session.prompt(continueRequest)).rejects.toThrow(
@@ -2711,7 +2711,7 @@ describe('Session', () => {
 
   // Runs a full exit_plan_mode approval turn and returns the permission
   // request the client received, so tests can assert the observable
-  // `_meta.qwenTodoApproval` binding instead of poking the private
+  // `_meta.canopyTodoApproval` binding instead of poking the private
   // `activeTodoPlanRevision` field. Mirrors the it.each harness in the
   // prompt describe block.
   async function runExitPlanModeApprovalPrompt(): Promise<
@@ -2808,7 +2808,7 @@ describe('Session', () => {
       });
 
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/mode-update',
+        'canopy/notify/session/mode-update',
         expect.objectContaining({
           v: 1,
           sessionId: 'test-session-id',
@@ -2828,7 +2828,7 @@ describe('Session', () => {
 
       expect(mockConfig.setApprovalMode).not.toHaveBeenCalled();
       expect(mockClient.extNotification).not.toHaveBeenCalledWith(
-        'qwen/notify/session/mode-update',
+        'canopy/notify/session/mode-update',
         expect.anything(),
       );
     });
@@ -2841,8 +2841,8 @@ describe('Session', () => {
         sessionUpdate: 'plan',
         entries: [{ content: 'Ship', priority: 'medium', status: 'pending' }],
         _meta: {
-          qwenTodoPlan: { id: 'plan-1' },
-          qwenTranscript: { planToolCallId: 'todo-call-1' },
+          canopyTodoPlan: { id: 'plan-1' },
+          canopyTranscript: { planToolCallId: 'todo-call-1' },
         },
       });
 
@@ -2854,7 +2854,7 @@ describe('Session', () => {
       const request = await runExitPlanModeApprovalPrompt();
       expect(request.toolCall._meta).toEqual(
         expect.not.objectContaining({
-          qwenTodoApproval: expect.anything(),
+          canopyTodoApproval: expect.anything(),
         }),
       );
     });
@@ -2865,8 +2865,8 @@ describe('Session', () => {
         sessionUpdate: 'plan',
         entries: [{ content: 'Ship', priority: 'medium', status: 'pending' }],
         _meta: {
-          qwenTodoPlan: { id: 'plan-1' },
-          qwenTranscript: { planToolCallId: 'todo-call-1' },
+          canopyTodoPlan: { id: 'plan-1' },
+          canopyTranscript: { planToolCallId: 'todo-call-1' },
         },
       });
 
@@ -2878,7 +2878,7 @@ describe('Session', () => {
       const request = await runExitPlanModeApprovalPrompt();
       expect(request.toolCall._meta).toEqual(
         expect.objectContaining({
-          qwenTodoApproval: { planId: 'plan-1', sourceCallId: 'todo-call-1' },
+          canopyTodoApproval: { planId: 'plan-1', sourceCallId: 'todo-call-1' },
         }),
       );
     });
@@ -2902,7 +2902,7 @@ describe('Session', () => {
       ).sendCurrentModeUpdateNotification();
 
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/mode-update',
+        'canopy/notify/session/mode-update',
         expect.objectContaining({
           v: 1,
           sessionId: 'test-session-id',
@@ -2924,7 +2924,7 @@ describe('Session', () => {
       ).sendCurrentModeUpdateNotification();
 
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/mode-update',
+        'canopy/notify/session/mode-update',
         expect.objectContaining({
           currentModeId: ApprovalMode.DEFAULT,
           legacyFrameSent: false,
@@ -2948,8 +2948,8 @@ describe('Session', () => {
         sessionUpdate: 'plan',
         entries: [{ content: 'old', priority: 'medium', status: 'pending' }],
         _meta: {
-          qwenTodoPlan: { id: 'old-plan' },
-          qwenTranscript: { planToolCallId: 'old-call' },
+          canopyTodoPlan: { id: 'old-plan' },
+          canopyTranscript: { planToolCallId: 'old-call' },
         },
       });
 
@@ -2961,7 +2961,7 @@ describe('Session', () => {
       const request = await runExitPlanModeApprovalPrompt();
       expect(request.toolCall._meta).toEqual(
         expect.not.objectContaining({
-          qwenTodoApproval: expect.anything(),
+          canopyTodoApproval: expect.anything(),
         }),
       );
       expect(mockChatRecordingService.rewindRecording).toHaveBeenCalledWith(
@@ -3254,14 +3254,14 @@ describe('Session', () => {
         sessionUpdate: 'plan',
         entries: [{ content: 'old', priority: 'medium', status: 'pending' }],
         _meta: {
-          qwenTodoPlan: { id: 'old-plan' },
-          qwenTranscript: { planToolCallId: 'old-call' },
+          canopyTodoPlan: { id: 'old-plan' },
+          canopyTranscript: { planToolCallId: 'old-call' },
         },
       });
       const bound = await runExitPlanModeApprovalPrompt();
       expect(bound.toolCall._meta).toEqual(
         expect.objectContaining({
-          qwenTodoApproval: { planId: 'old-plan', sourceCallId: 'old-call' },
+          canopyTodoApproval: { planId: 'old-plan', sourceCallId: 'old-call' },
         }),
       );
 
@@ -3270,7 +3270,7 @@ describe('Session', () => {
       const restored = await runExitPlanModeApprovalPrompt();
       expect(restored.toolCall._meta).toEqual(
         expect.not.objectContaining({
-          qwenTodoApproval: expect.anything(),
+          canopyTodoApproval: expect.anything(),
         }),
       );
     });
@@ -3334,7 +3334,7 @@ describe('Session', () => {
       vi.mocked(mockConfig.getAllConfiguredModels).mockReturnValue([
         {
           id: 'qwen3-coder-plus',
-          label: 'Qwen3 Coder Plus',
+          label: 'Canopy3 Coder Plus',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://default.example/v1',
         },
@@ -3374,7 +3374,7 @@ describe('Session', () => {
       });
 
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/model-update',
+        'canopy/notify/session/model-update',
         expect.objectContaining({
           v: 1,
           sessionId: 'test-session-id',
@@ -3444,12 +3444,12 @@ describe('Session', () => {
         'https://two.example/v1',
       );
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/model-update',
+        'canopy/notify/session/model-update',
         expect.objectContaining({ currentModelId: routeId }),
       );
       expect(response).toMatchObject({
         _meta: {
-          qwenModelSwitch: {
+          canopyModelSwitch: {
             modelId: 'shared-model',
             baseUrl: 'https://two.example/v1',
           },
@@ -3497,12 +3497,12 @@ describe('Session', () => {
         '',
       );
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/model-update',
+        'canopy/notify/session/model-update',
         expect.objectContaining({ currentModelId: routeId }),
       );
       expect(response).toMatchObject({
         _meta: {
-          qwenModelSwitch: {
+          canopyModelSwitch: {
             modelId: 'shared-model',
           },
         },
@@ -3518,7 +3518,7 @@ describe('Session', () => {
         }),
       ).rejects.toThrow();
       expect(mockClient.extNotification).not.toHaveBeenCalledWith(
-        'qwen/notify/session/model-update',
+        'canopy/notify/session/model-update',
         expect.anything(),
       );
     });
@@ -3539,7 +3539,7 @@ describe('Session', () => {
       await expect(
         session.setModel({
           sessionId: 'test-session-id',
-          modelId: 'qwen-route:v1:abcdefghijklmnop',
+          modelId: 'canopy-route:v1:abcdefghijklmnop',
         }),
       ).rejects.toThrow('Unknown or stale model route');
 
@@ -4467,7 +4467,7 @@ describe('Session', () => {
       });
 
       expect(result.stopReason).toBe('end_turn');
-      expect(result._meta?.['qwen.branchPoint']).toEqual(branchPoint);
+      expect(result._meta?.['canopy.branchPoint']).toEqual(branchPoint);
     });
 
     it('installs a trusted daemon context only for the root prompt', async () => {
@@ -4577,7 +4577,7 @@ describe('Session', () => {
           { type: 'image', data: 'AQID', mimeType: 'image/png' },
         ],
         _meta: {
-          'qwen.daemon.mediaReferences': [mediaReference],
+          'canopy.daemon.mediaReferences': [mediaReference],
         },
       });
 
@@ -4607,7 +4607,7 @@ describe('Session', () => {
         sessionId: 'test-session-id',
         prompt: [{ type: 'text', text: 'describe these' }],
         _meta: {
-          'qwen.daemon.mediaReferences': mediaReferences,
+          'canopy.daemon.mediaReferences': mediaReferences,
         },
       });
 
@@ -4868,7 +4868,7 @@ describe('Session', () => {
 
       expect(mockChat.sendMessageStream).toHaveBeenNthCalledWith(
         2,
-        'qwen3-code-plus',
+        'canopy3-code-plus',
         {
           message: [
             {
@@ -4903,7 +4903,7 @@ describe('Session', () => {
           },
           _meta: {
             source: 'background_notification',
-            qwenDiscreteMessage: true,
+            canopyDiscreteMessage: true,
             backgroundTask: {
               taskId: 'agent-1',
               status: 'completed',
@@ -4920,7 +4920,7 @@ describe('Session', () => {
           content: { type: 'text', text: 'I saw the background result.' },
           _meta: {
             source: 'background_notification_response',
-            qwenDiscreteMessage: true,
+            canopyDiscreteMessage: true,
             backgroundTask: {
               taskId: 'agent-1',
               status: 'completed',
@@ -4931,7 +4931,7 @@ describe('Session', () => {
         },
       });
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        '_qwencode/end_turn',
+        '_canopycode/end_turn',
         {
           sessionId: 'test-session-id',
           reason: 'end_turn',
@@ -5625,7 +5625,7 @@ describe('Session', () => {
       expect(notificationCompression.signal?.aborted).toBe(true);
       await vi.waitFor(() => {
         expect(mockClient.extNotification).toHaveBeenCalledWith(
-          '_qwencode/end_turn',
+          '_canopycode/end_turn',
           {
             sessionId: 'test-session-id',
             reason: 'cancelled',
@@ -6042,7 +6042,7 @@ describe('Session', () => {
           }),
         });
         expect(mockClient.extNotification).toHaveBeenCalledWith(
-          '_qwencode/end_turn',
+          '_canopycode/end_turn',
           {
             sessionId: 'test-session-id',
             reason: 'end_turn',
@@ -6195,7 +6195,7 @@ describe('Session', () => {
 
       expect(mockChat.sendMessageStream).toHaveBeenNthCalledWith(
         2,
-        'qwen3-code-plus',
+        'canopy3-code-plus',
         {
           message: [
             {
@@ -6216,7 +6216,7 @@ describe('Session', () => {
           },
           _meta: {
             source: 'background_notification',
-            qwenDiscreteMessage: true,
+            canopyDiscreteMessage: true,
             backgroundTask: {
               taskId: 'shell-1',
               status: 'completed',
@@ -6236,7 +6236,7 @@ describe('Session', () => {
           },
           _meta: {
             source: 'background_notification_response',
-            qwenDiscreteMessage: true,
+            canopyDiscreteMessage: true,
             backgroundTask: {
               taskId: 'shell-1',
               status: 'completed',
@@ -6304,7 +6304,7 @@ describe('Session', () => {
         prompt: [
           { type: 'text', text: 'internal channel instructions\n\nhello' },
         ],
-        _meta: { 'qwen.daemon.promptDisplayText': 'hello' },
+        _meta: { 'canopy.daemon.promptDisplayText': 'hello' },
       });
 
       expect(mockChatRecordingService.recordUserMessage).toHaveBeenCalledWith(
@@ -6373,7 +6373,7 @@ describe('Session', () => {
     });
 
     it('degrades an oversized inline image to a text placeholder before sending to the model', async () => {
-      const ENV_KEY = 'QWEN_CODE_MAX_INLINE_MEDIA_BYTES';
+      const ENV_KEY = 'CANOPY_CODE_MAX_INLINE_MEDIA_BYTES';
       const original = process.env[ENV_KEY];
       process.env[ENV_KEY] = '8';
       try {
@@ -6572,7 +6572,7 @@ describe('Session', () => {
     });
 
     it('rejects oversized ACP audio before decoding for the voice bridge', async () => {
-      const ENV_KEY = 'QWEN_CODE_MAX_INLINE_MEDIA_BYTES';
+      const ENV_KEY = 'CANOPY_CODE_MAX_INLINE_MEDIA_BYTES';
       const original = process.env[ENV_KEY];
       process.env[ENV_KEY] = String(20 * 1024 * 1024);
       mockConfig.getEffectiveInputModalities = vi.fn().mockReturnValue({});
@@ -6798,7 +6798,7 @@ describe('Session', () => {
       });
       expect(mockChat.sendMessageStream).toHaveBeenNthCalledWith(
         3,
-        'qwen3-code-plus',
+        'canopy3-code-plus',
         expect.any(Object),
         expect.any(String),
       );
@@ -6806,7 +6806,7 @@ describe('Session', () => {
     });
 
     it('clamps full-turn images before selecting the ACP route', async () => {
-      const ENV_KEY = 'QWEN_CODE_MAX_INLINE_MEDIA_BYTES';
+      const ENV_KEY = 'CANOPY_CODE_MAX_INLINE_MEDIA_BYTES';
       const original = process.env[ENV_KEY];
       process.env[ENV_KEY] = '8';
       try {
@@ -6830,7 +6830,7 @@ describe('Session', () => {
         });
 
         const firstCall = vi.mocked(mockChat.sendMessageStream).mock.calls[0];
-        expect(firstCall?.[0]).toBe('qwen3-code-plus');
+        expect(firstCall?.[0]).toBe('canopy3-code-plus');
         const firstMessage = firstCall?.[1].message;
         expect(
           Array.isArray(firstMessage) &&
@@ -6912,7 +6912,7 @@ describe('Session', () => {
     });
 
     it('preserves oversized inline images for the vision bridge', async () => {
-      const ENV_KEY = 'QWEN_CODE_MAX_INLINE_MEDIA_BYTES';
+      const ENV_KEY = 'CANOPY_CODE_MAX_INLINE_MEDIA_BYTES';
       const original = process.env[ENV_KEY];
       process.env[ENV_KEY] = '8';
       try {
@@ -7057,7 +7057,7 @@ describe('Session', () => {
 
     it('preserves unsupported image @ files for the vision bridge', async () => {
       const tempDir = await fs.realpath(
-        await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-resource-')),
+        await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-resource-')),
       );
       const imagePath = path.join(tempDir, 'image.png');
       await fs.writeFile(imagePath, 'image');
@@ -7125,7 +7125,7 @@ describe('Session', () => {
 
     it('resolves image @ paths from ACP text through the vision bridge', async () => {
       const tempDir = await fs.realpath(
-        await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-image-')),
+        await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-image-')),
       );
       const imagePath = path.join(tempDir, 'image.png');
       await fs.writeFile(imagePath, 'image');
@@ -7188,10 +7188,10 @@ describe('Session', () => {
 
     it('ignores non-image and relative ACP text @ paths', async () => {
       const tempDir = await fs.realpath(
-        await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-paths-')),
+        await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-paths-')),
       );
       const outsideDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-outside-'),
+        path.join(os.tmpdir(), 'canopy-acp-outside-'),
       );
       const textPath = path.join(tempDir, 'notes.txt');
       const relativeImagePath = 'relative.png';
@@ -7213,7 +7213,7 @@ describe('Session', () => {
       mockConfig.getFileService = vi.fn().mockReturnValue(fileService);
       mockConfig.getFileFilteringOptions = vi.fn().mockReturnValue({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       });
       const readManyFilesSpy = vi
         .spyOn(core, 'readManyFiles')
@@ -7249,7 +7249,7 @@ describe('Session', () => {
       ignored?: 'alias' | 'target',
     ) => {
       const tempDir = await fs.realpath(
-        await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-symlink-')),
+        await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-symlink-')),
       );
       const targetPath = path.join(tempDir, targetName);
       const imageAlias = path.join(tempDir, 'alias.png');
@@ -7309,10 +7309,10 @@ describe('Session', () => {
       'does not read an image symlink whose target is outside the workspace',
       async () => {
         const tempDir = await fs.realpath(
-          await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-workspace-')),
+          await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-workspace-')),
         );
         const outsideDir = await fs.realpath(
-          await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-outside-')),
+          await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-outside-')),
         );
         const imageAlias = path.join(tempDir, 'alias.png');
         await fs.writeFile(path.join(outsideDir, 'outside.png'), 'image');
@@ -7345,10 +7345,10 @@ describe('Session', () => {
       'revalidates an ACP text image after resolving extension context',
       async () => {
         const tempDir = await fs.realpath(
-          await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-revalidate-')),
+          await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-revalidate-')),
         );
         const outsideDir = await fs.realpath(
-          await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-outside-')),
+          await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-outside-')),
         );
         const imagePath = path.join(tempDir, 'image.png');
         const outsidePath = path.join(outsideDir, 'outside.png');
@@ -7401,7 +7401,7 @@ describe('Session', () => {
     it('keeps the user prompt as the final part after referenced file content', async () => {
       // Regression: JetBrains ACP attaches the active editor as a file
       // reference. Appending its content AFTER the prompt buried the actual
-      // instruction, and recency-biased local models (Ollama qwen) answered as
+      // instruction, and recency-biased local models (Ollama canopy) answered as
       // if the file were the task. The prompt must remain the last, prominent
       // part. See #resolvePrompt.
       const readManyFilesSpy = vi
@@ -7415,7 +7415,7 @@ describe('Session', () => {
         .fn()
         .mockResolvedValue(createEmptyStream());
       const targetDir = await fs.realpath(
-        await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-editor-')),
+        await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-editor-')),
       );
 
       try {
@@ -8764,8 +8764,8 @@ describe('Session', () => {
 
       it('detects invalid parameter loops in concurrent Agent batches and skips the calls after the batch', async () => {
         const previousMaxConcurrency =
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-        delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+        delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         try {
           mockConfig.getApprovalMode = vi
             .fn()
@@ -8861,9 +8861,9 @@ describe('Session', () => {
           );
         } finally {
           if (previousMaxConcurrency === undefined) {
-            delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+            delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
           } else {
-            process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+            process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
               previousMaxConcurrency;
           }
         }
@@ -8930,8 +8930,8 @@ describe('Session', () => {
 
       it('detects invalid parameter loops in Agent batches wider than the concurrency cap and skips the unstarted tail', async () => {
         const previousMaxConcurrency =
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '2';
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '2';
         try {
           mockConfig.getApprovalMode = vi
             .fn()
@@ -9038,9 +9038,9 @@ describe('Session', () => {
           );
         } finally {
           if (previousMaxConcurrency === undefined) {
-            delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+            delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
           } else {
-            process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+            process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
               previousMaxConcurrency;
           }
         }
@@ -9114,7 +9114,7 @@ describe('Session', () => {
     });
 
     describe('repeated tool execution failure guard', () => {
-      const guardModeEnv = 'QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
+      const guardModeEnv = 'CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
       let originalGuardMode: string | undefined;
 
       const recreateSessionWithGuardMode = (
@@ -9298,7 +9298,7 @@ describe('Session', () => {
               sessionId: 'test-session-id',
               prompt: [{ type: 'text', text: 'channel delivery task' }],
               _meta: {
-                'qwen.daemon.channelDelivery': {
+                'canopy.daemon.channelDelivery': {
                   deliveryId: 'prompt-guard-off-delivery',
                   target: {
                     channelName: 'dingtalk',
@@ -9318,7 +9318,7 @@ describe('Session', () => {
           expect(execute).toHaveBeenCalledTimes(9);
           expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(3);
           expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.anything(),
           );
         } finally {
@@ -9494,7 +9494,7 @@ describe('Session', () => {
               loop_type: core.LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
               prompt_id: 'test-session-id########1',
             }),
-            { recordToQwenLogger: false },
+            { recordToCanopyLogger: false },
           );
           const telemetryPromptIds =
             logRepeatedToolFailureGuardSpy.mock.calls.map(
@@ -9610,7 +9610,7 @@ describe('Session', () => {
             expect.objectContaining({
               loop_type: core.LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
             }),
-            { recordToQwenLogger: false },
+            { recordToCanopyLogger: false },
           );
         } finally {
           restoreGuardMode();
@@ -9937,7 +9937,7 @@ describe('Session', () => {
 
         expect(mockChat.sendMessageStream).not.toHaveBeenCalled();
         expect(compressedChat.sendMessageStream).toHaveBeenCalledWith(
-          'qwen3-code-plus',
+          'canopy3-code-plus',
           {
             message: expect.any(Array),
             config: { abortSignal: expect.any(AbortSignal) },
@@ -9968,7 +9968,7 @@ describe('Session', () => {
             content: {
               type: 'text',
               text:
-                'IMPORTANT: This conversation approached the input token limit for qwen3-code-plus. ' +
+                'IMPORTANT: This conversation approached the input token limit for canopy3-code-plus. ' +
                 'A compressed context will be sent for future messages (compressed from: 1200 to 450 tokens).',
             },
           },
@@ -9998,7 +9998,7 @@ describe('Session', () => {
             content: {
               type: 'text',
               text:
-                'IMPORTANT: This conversation accumulated enough tool screenshots to trigger compaction for qwen3-code-plus. ' +
+                'IMPORTANT: This conversation accumulated enough tool screenshots to trigger compaction for canopy3-code-plus. ' +
                 'A compressed context will be sent for future messages (compressed from: 1200 to 450 tokens).',
             },
           },
@@ -10024,7 +10024,7 @@ describe('Session', () => {
           expect.any(AbortSignal),
         );
         expect(mockChat.sendMessageStream).toHaveBeenCalledWith(
-          'qwen3-code-plus',
+          'canopy3-code-plus',
           {
             message: expect.any(Array),
             config: { abortSignal: expect.any(AbortSignal) },
@@ -10382,7 +10382,7 @@ describe('Session', () => {
             content: {
               type: 'text',
               text:
-                'IMPORTANT: This conversation approached the input token limit for qwen3-code-plus. ' +
+                'IMPORTANT: This conversation approached the input token limit for canopy3-code-plus. ' +
                 'A compressed context will be sent for future messages (compressed from: 1200 to 101 tokens).',
             },
           },
@@ -11062,7 +11062,7 @@ describe('Session', () => {
         // references replace — never the extra inline parts #resolvePrompt
         // adds for @-mentioned files, which the model also sees.
         const tempDir = await fs.realpath(
-          await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-midturn-media-')),
+          await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-midturn-media-')),
         );
         const mentionedPath = path.join(tempDir, 'mentioned.png');
         await fs.writeFile(mentionedPath, 'image');
@@ -12658,7 +12658,7 @@ describe('Session', () => {
         expect(capture.commitResponse).toHaveBeenCalledWith(false);
         expect(capture.writeToSpan).toHaveBeenCalledWith(agentTelemetry.span);
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -12697,7 +12697,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-1',
                 target: {
                   channelName: 'dingtalk',
@@ -12711,7 +12711,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             {
               sessionId: 'test-session-id',
               deliveryId: 'prompt-1',
@@ -12822,7 +12822,7 @@ describe('Session', () => {
           sessionId: 'test-session-id',
           prompt: [{ type: 'text', text: 'inspect it' }],
           _meta: {
-            'qwen.daemon.channelDelivery': {
+            'canopy.daemon.channelDelivery': {
               deliveryId: 'prompt-tool-final',
               target: {
                 channelName: 'dingtalk',
@@ -12835,7 +12835,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'prompt-tool-final',
               text: 'final answer',
@@ -12887,7 +12887,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'channel work' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-loop-channel',
                 target: {
                   channelName: 'dingtalk',
@@ -12912,7 +12912,7 @@ describe('Session', () => {
           {},
         );
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -12966,7 +12966,7 @@ describe('Session', () => {
           {},
         );
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13034,7 +13034,7 @@ describe('Session', () => {
           sessionId: 'test-session-id',
           prompt: [{ type: 'text', text: 'finish it' }],
           _meta: {
-            'qwen.daemon.channelDelivery': {
+            'canopy.daemon.channelDelivery': {
               deliveryId: 'prompt-stop-final',
               target: {
                 channelName: 'dingtalk',
@@ -13047,7 +13047,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'prompt-stop-final',
               text: 'continued final',
@@ -13092,7 +13092,7 @@ describe('Session', () => {
           sessionId: 'test-session-id',
           prompt: [{ type: 'text', text: 'hello' }],
           _meta: {
-            'qwen.daemon.channelDelivery': {
+            'canopy.daemon.channelDelivery': {
               deliveryId: 'prompt-continuation',
               target: {
                 channelName: 'dingtalk',
@@ -13105,7 +13105,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'prompt-continuation',
               text: 'first half second half',
@@ -13124,7 +13124,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-empty',
                 target: {
                   channelName: 'dingtalk',
@@ -13138,7 +13138,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'prompt-empty',
               text: '',
@@ -13171,7 +13171,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-failed-delivery',
                 target: {
                   channelName: 'dingtalk',
@@ -13184,7 +13184,7 @@ describe('Session', () => {
         ).resolves.toEqual({ stopReason: 'end_turn' });
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.anything(),
           );
         });
@@ -13215,7 +13215,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-transport-failure',
                 target: {
                   channelName: 'dingtalk',
@@ -13228,7 +13228,7 @@ describe('Session', () => {
         ).resolves.toEqual({ stopReason: 'end_turn' });
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.anything(),
           );
         });
@@ -13247,7 +13247,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-max-tokens',
                 target: {
                   channelName: 'dingtalk',
@@ -13261,7 +13261,7 @@ describe('Session', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13279,7 +13279,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-cancelled',
                 target: {
                   channelName: 'dingtalk',
@@ -13293,7 +13293,7 @@ describe('Session', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13308,7 +13308,7 @@ describe('Session', () => {
             sessionId: 'test-session-id',
             prompt: [{ type: 'text', text: 'hello' }],
             _meta: {
-              'qwen.daemon.channelDelivery': {
+              'canopy.daemon.channelDelivery': {
                 deliveryId: 'prompt-error',
                 target: {
                   channelName: 'dingtalk',
@@ -13322,7 +13322,7 @@ describe('Session', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13348,7 +13348,7 @@ describe('Session', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13425,7 +13425,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             {
               sessionId: 'test-session-id',
               deliveryId: 'task-1:1750000000000',
@@ -13565,7 +13565,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'task-tool:1750000000010',
               text: 'scheduled final',
@@ -13620,7 +13620,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extMethod).toHaveBeenCalledWith(
-            'qwen/control/channel-delivery',
+            'canopy/control/channel-delivery',
             expect.objectContaining({
               deliveryId: 'task-empty:1750000000011',
               text: '',
@@ -13685,7 +13685,7 @@ describe('Session', () => {
         });
 
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13769,7 +13769,7 @@ describe('Session', () => {
           expect(internals.cronProcessing).toBe(false);
         });
         expect(mockClient.extMethod).not.toHaveBeenCalledWith(
-          'qwen/control/channel-delivery',
+          'canopy/control/channel-delivery',
           expect.anything(),
         );
       });
@@ -13819,7 +13819,7 @@ describe('Session', () => {
         const tmpDir = await fs.mkdtemp(
           path.join(os.tmpdir(), 'loop-md-session-'),
         );
-        const loopMdPath = path.join(tmpDir, '.qwen', 'loop.md');
+        const loopMdPath = path.join(tmpDir, '.canopy', 'loop.md');
         await fs.mkdir(path.dirname(loopMdPath), { recursive: true });
         await fs.writeFile(loopMdPath, '- finish the migration');
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
@@ -13913,7 +13913,7 @@ describe('Session', () => {
         const tmpDir = await fs.mkdtemp(
           path.join(os.tmpdir(), 'loop-md-reminder-'),
         );
-        const loopMdPath = path.join(tmpDir, '.qwen', 'loop.md');
+        const loopMdPath = path.join(tmpDir, '.canopy', 'loop.md');
         await fs.mkdir(path.dirname(loopMdPath), { recursive: true });
         await fs.writeFile(loopMdPath, '- finish the migration');
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
@@ -14003,14 +14003,14 @@ describe('Session', () => {
         // model (the unchanged OLD content is re-served as a short reminder).
         const oldDir = await fs.mkdtemp(path.join(os.tmpdir(), 'loop-md-old-'));
         const newDir = await fs.mkdtemp(path.join(os.tmpdir(), 'loop-md-new-'));
-        await fs.mkdir(path.join(oldDir, '.qwen'), { recursive: true });
-        await fs.mkdir(path.join(newDir, '.qwen'), { recursive: true });
+        await fs.mkdir(path.join(oldDir, '.canopy'), { recursive: true });
+        await fs.mkdir(path.join(newDir, '.canopy'), { recursive: true });
         await fs.writeFile(
-          path.join(oldDir, '.qwen', 'loop.md'),
+          path.join(oldDir, '.canopy', 'loop.md'),
           '- task from OLD root',
         );
         await fs.writeFile(
-          path.join(newDir, '.qwen', 'loop.md'),
+          path.join(newDir, '.canopy', 'loop.md'),
           '- task from NEW root',
         );
 
@@ -14091,8 +14091,8 @@ describe('Session', () => {
       });
 
       it('does not expand the project loop.md sentinel in an untrusted folder', async () => {
-        // An untrusted folder's repo-controlled .qwen/loop.md must not be read
-        // and fed to the model. With no user-owned ~/.qwen/loop.md the tick is
+        // An untrusted folder's repo-controlled .canopy/loop.md must not be read
+        // and fed to the model. With no user-owned ~/.canopy/loop.md the tick is
         // absent, which converges on the autonomous preamble — and the repo task
         // block still never reaches the model.
         const tmpDir = await fs.mkdtemp(
@@ -14101,7 +14101,7 @@ describe('Session', () => {
         const fakeHome = await fs.mkdtemp(
           path.join(os.tmpdir(), 'loop-md-home-'),
         );
-        const loopMdPath = path.join(tmpDir, '.qwen', 'loop.md');
+        const loopMdPath = path.join(tmpDir, '.canopy', 'loop.md');
         await fs.mkdir(path.dirname(loopMdPath), { recursive: true });
         await fs.writeFile(loopMdPath, '- finish the migration');
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
@@ -14286,61 +14286,61 @@ describe('Session', () => {
         // Minimal containers with no HOME make os.homedir() === ''. With QWEN_HOME
         // unset the home confinement root must NOT collapse to '': isWithin('',
         // anyPath) is trivially true, so an empty root lets a home
-        // `~/.qwen/loop.md` symlink resolve anywhere and bypass the confinement.
-        // The guard falls back to the parent of the global qwen dir
-        // (Storage.getGlobalQwenDir(), itself empty-home-safe), which is the
-        // homeQwenDir Session passes to the resolver.
-        const homeQwenDir = path.join(os.tmpdir(), '.qwen');
+        // `~/.canopy/loop.md` symlink resolve anywhere and bypass the confinement.
+        // The guard falls back to the parent of the global canopy dir
+        // (Storage.getGlobalCanopyDir(), itself empty-home-safe), which is the
+        // homeCanopyDir Session passes to the resolver.
+        const homeCanopyDir = path.join(os.tmpdir(), '.canopy');
 
         const roots = resolveHomeLoopResolverRoots({
           homeDir: '',
-          homeQwenDir,
-          qwenHome: '',
+          homeCanopyDir,
+          canopyHome: '',
         });
 
-        // Without the `|| path.dirname(homeQwenDir)` guard this would be ''
+        // Without the `|| path.dirname(homeCanopyDir)` guard this would be ''
         // (os.homedir()); the guard makes it the non-empty parent of the
-        // empty-home-safe global qwen dir.
+        // empty-home-safe global canopy dir.
         expect(roots.homeConfineRoot).not.toBe('');
-        expect(roots.homeConfineRoot).toBe(path.dirname(homeQwenDir));
-        expect(roots.homeQwenDir).toBe(homeQwenDir);
+        expect(roots.homeConfineRoot).toBe(path.dirname(homeCanopyDir));
+        expect(roots.homeCanopyDir).toBe(homeCanopyDir);
       });
 
       it('confines the home loop resolver within QWEN_HOME when set', () => {
-        const homeQwenDir = path.join(os.tmpdir(), '.qwen-home');
+        const homeCanopyDir = path.join(os.tmpdir(), '.canopy-home');
 
         const roots = resolveHomeLoopResolverRoots({
           homeDir: path.join(os.tmpdir(), 'real-home'),
-          homeQwenDir,
-          qwenHome: homeQwenDir,
+          homeCanopyDir,
+          canopyHome: homeCanopyDir,
         });
 
-        expect(roots.homeConfineRoot).toBe(homeQwenDir);
-        expect(roots.homeQwenDir).toBe(homeQwenDir);
+        expect(roots.homeConfineRoot).toBe(homeCanopyDir);
+        expect(roots.homeCanopyDir).toBe(homeCanopyDir);
       });
 
-      it('reads the home loop.md from QWEN_HOME, not the real ~/.qwen', async () => {
+      it('reads the home loop.md from QWEN_HOME, not the real ~/.canopy', async () => {
         // The home/global candidate must honor QWEN_HOME (the relocated global
         // dir) instead of always reading the real OS home. Point QWEN_HOME at a
         // dir holding loop.md, leave the project dir and fake $HOME empty, and
         // confirm the relocated file's block reaches the model.
         const tmpDir = await fs.mkdtemp(
-          path.join(os.tmpdir(), 'loop-md-qwenhome-proj-'),
+          path.join(os.tmpdir(), 'loop-md-canopyhome-proj-'),
         );
         const fakeHome = await fs.mkdtemp(
-          path.join(os.tmpdir(), 'loop-md-qwenhome-home-'),
+          path.join(os.tmpdir(), 'loop-md-canopyhome-home-'),
         );
-        const qwenHome = await fs.mkdtemp(
-          path.join(os.tmpdir(), 'loop-md-qwenhome-dir-'),
+        const canopyHome = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'loop-md-canopyhome-dir-'),
         );
         await fs.writeFile(
-          path.join(qwenHome, 'loop.md'),
+          path.join(canopyHome, 'loop.md'),
           '- relocated home task',
         );
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
         const restoreHome = setFakeHome(fakeHome);
-        const prevQwenHome = process.env['QWEN_HOME'];
-        process.env['QWEN_HOME'] = qwenHome;
+        const prevCanopyHome = process.env['QWEN_HOME'];
+        process.env['QWEN_HOME'] = canopyHome;
 
         const scheduler = {
           size: 1,
@@ -14397,17 +14397,17 @@ describe('Session', () => {
           });
         } finally {
           restoreHome();
-          if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-          else process.env['QWEN_HOME'] = prevQwenHome;
+          if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+          else process.env['QWEN_HOME'] = prevCanopyHome;
           await fs.rm(tmpDir, { recursive: true, force: true });
           await fs.rm(fakeHome, { recursive: true, force: true });
-          await fs.rm(qwenHome, { recursive: true, force: true });
+          await fs.rm(canopyHome, { recursive: true, force: true });
         }
       });
 
       it('propagates a sentinel resolve() error (EACCES) without leaking the absolute path to the client', async () => {
         // #executeCronPrompt: when resolve() throws (e.g. EACCES on
-        // .qwen/loop.md) it logs a loop.md-specific warn and RE-THROWS into the
+        // .canopy/loop.md) it logs a loop.md-specific warn and RE-THROWS into the
         // cron catch. Regression guard: the failure must PROPAGATE (surface as a
         // cron error, never degrade to a default/normal tick sent to the model)
         // and the loop.md-tagged warn must fire so a resolution failure stays
@@ -14419,7 +14419,7 @@ describe('Session', () => {
         // message must be SANITIZED — relative label + errno code only, never the
         // absolute path. The full detail stays in the LOCAL debug warn.
         debugLoggerWarnSpy.mockClear();
-        const absoluteLoopMdPath = '/home/alice/project/.qwen/loop.md';
+        const absoluteLoopMdPath = '/home/alice/project/.canopy/loop.md';
         const eacces = Object.assign(
           new Error(`EACCES: permission denied, open '${absoluteLoopMdPath}'`),
           { code: 'EACCES' },
@@ -14461,7 +14461,7 @@ describe('Session', () => {
           // client).
           await vi.waitFor(() => {
             expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-              'loop.md sentinel resolution failed (mode=cron, code=EACCES) — check .qwen/loop.md permissions/IO',
+              'loop.md sentinel resolution failed (mode=cron, code=EACCES) — check .canopy/loop.md permissions/IO',
               eacces,
             );
           });
@@ -14494,7 +14494,7 @@ describe('Session', () => {
           for (const text of cronErrorTexts()) {
             // Relative label + errno code present...
             expect(text).toContain('EACCES');
-            expect(text).toContain('.qwen/loop.md (project)');
+            expect(text).toContain('.canopy/loop.md (project)');
             // ...and NO absolute path leaked to the client/API.
             expect(text).not.toContain(absoluteLoopMdPath);
             expect(text).not.toContain('/home/alice');
@@ -14518,8 +14518,8 @@ describe('Session', () => {
         }
       });
 
-      it('names the QWEN_HOME-aware home path in the sanitized resolve error, not a hardcoded ~/.qwen', async () => {
-        // Regression: the sanitized resolve-error hardcoded `~/.qwen/loop.md
+      it('names the QWEN_HOME-aware home path in the sanitized resolve error, not a hardcoded ~/.canopy', async () => {
+        // Regression: the sanitized resolve-error hardcoded `~/.canopy/loop.md
         // (home)`, but the resolver's home candidate is QWEN_HOME-aware. With
         // QWEN_HOME relocated OUTSIDE $HOME, the error reuses homeLoopLabel(),
         // which names it via the literal `$QWEN_HOME/loop.md` — leak-safe (never
@@ -14531,21 +14531,21 @@ describe('Session', () => {
         const fakeHome = await fs.mkdtemp(
           path.join(os.tmpdir(), 'loop-md-err-home-'),
         );
-        const qwenHome = await fs.mkdtemp(
-          path.join(os.tmpdir(), 'loop-md-err-qwenhome-'),
+        const canopyHome = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'loop-md-err-canopyhome-'),
         );
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
         const restoreHome = setFakeHome(fakeHome);
-        const prevQwenHome = process.env['QWEN_HOME'];
-        process.env['QWEN_HOME'] = qwenHome;
-        // qwenHome is under os.tmpdir() (not the OS home), so tildeifyPath is a
+        const prevCanopyHome = process.env['QWEN_HOME'];
+        process.env['QWEN_HOME'] = canopyHome;
+        // canopyHome is under os.tmpdir() (not the OS home), so tildeifyPath is a
         // no-op there. The label is MODEL/client-facing, so it must read as the
         // literal `$QWEN_HOME/loop.md`, never the resolved absolute path.
         const expectedHomeLabel = `$QWEN_HOME/loop.md (home)`;
 
         const eacces = Object.assign(
           new Error(
-            `EACCES: permission denied, open '${path.join(tmpDir, '.qwen', 'loop.md')}'`,
+            `EACCES: permission denied, open '${path.join(tmpDir, '.canopy', 'loop.md')}'`,
           ),
           { code: 'EACCES' },
         );
@@ -14603,32 +14603,32 @@ describe('Session', () => {
           for (const text of cronErrorTexts()) {
             // The QWEN_HOME-aware home path is named...
             expect(text).toContain(expectedHomeLabel);
-            expect(text).toContain('.qwen/loop.md (project)');
+            expect(text).toContain('.canopy/loop.md (project)');
             // ...and the old hardcoded label is gone.
-            expect(text).not.toContain('~/.qwen/loop.md');
+            expect(text).not.toContain('~/.canopy/loop.md');
             // Still leak-safe: neither the absolute project path nor the
             // resolved $QWEN_HOME global dir reaches the client/API.
-            expect(text).not.toContain(path.join(tmpDir, '.qwen', 'loop.md'));
-            expect(text).not.toContain(path.join(qwenHome, 'loop.md'));
+            expect(text).not.toContain(path.join(tmpDir, '.canopy', 'loop.md'));
+            expect(text).not.toContain(path.join(canopyHome, 'loop.md'));
           }
         } finally {
           resolveSpy.mockRestore();
           restoreHome();
-          if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-          else process.env['QWEN_HOME'] = prevQwenHome;
+          if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+          else process.env['QWEN_HOME'] = prevCanopyHome;
           await fs.rm(tmpDir, { recursive: true, force: true });
           await fs.rm(fakeHome, { recursive: true, force: true });
-          await fs.rm(qwenHome, { recursive: true, force: true });
+          await fs.rm(canopyHome, { recursive: true, force: true });
         }
       });
 
       it('omits the project candidate from the sanitized resolve error in an untrusted folder', async () => {
-        // An untrusted folder never reads `.qwen/loop.md` (the resolver gets
+        // An untrusted folder never reads `.canopy/loop.md` (the resolver gets
         // allowProjectFile=false), so the sanitized error must NOT claim the
         // project candidate was checked — it would be a lie. It still names the
         // QWEN_HOME-aware home candidate (the only one actually probed) and the
         // errno code, and stays leak-safe. Mutation guard: hardcoding
-        // `.qwen/loop.md (project)` back into the throw re-introduces the false
+        // `.canopy/loop.md (project)` back into the throw re-introduces the false
         // claim and fails this test.
         debugLoggerWarnSpy.mockClear();
         const tmpDir = await fs.mkdtemp(
@@ -14641,7 +14641,7 @@ describe('Session', () => {
         mockConfig.isTrustedFolder = vi.fn().mockReturnValue(false);
         const restoreHome = setFakeHome(fakeHome);
 
-        const absoluteLoopMdPath = path.join(tmpDir, '.qwen', 'loop.md');
+        const absoluteLoopMdPath = path.join(tmpDir, '.canopy', 'loop.md');
         const eacces = Object.assign(
           new Error(`EACCES: permission denied, open '${absoluteLoopMdPath}'`),
           { code: 'EACCES' },
@@ -14724,7 +14724,9 @@ describe('Session', () => {
         // trust arg (undefined), so the two no longer match.
         debugLoggerWarnSpy.mockClear();
         const eacces = Object.assign(
-          new Error("EACCES: permission denied, open '/home/x/.qwen/loop.md'"),
+          new Error(
+            "EACCES: permission denied, open '/home/x/.canopy/loop.md'",
+          ),
           { code: 'EACCES' },
         );
         const resolveSpy = vi
@@ -14860,7 +14862,7 @@ describe('Session', () => {
           expect(errorEchoes()).toHaveLength(0);
           // The real errno is still recorded in the LOCAL debug warn.
           expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-            'loop.md sentinel resolution failed (mode=dynamic, code=EIO) — check .qwen/loop.md permissions/IO',
+            'loop.md sentinel resolution failed (mode=dynamic, code=EIO) — check .canopy/loop.md permissions/IO',
             eio,
           );
           expect(debugLoggerDebugSpy).toHaveBeenCalledWith(
@@ -14998,7 +15000,7 @@ describe('Session', () => {
           // The loop did NOT surface an error (it survived).
           expect(errorEchoes()).toHaveLength(0);
           expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-            'loop.md sentinel resolution failed (mode=dynamic, code=EACCES) — check .qwen/loop.md permissions/IO',
+            'loop.md sentinel resolution failed (mode=dynamic, code=EACCES) — check .canopy/loop.md permissions/IO',
             eacces,
           );
         } finally {
@@ -15072,7 +15074,7 @@ describe('Session', () => {
           // The loop did NOT surface an error (it survived).
           expect(errorEchoes()).toHaveLength(0);
           expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-            'loop.md sentinel resolution failed (mode=dynamic, code=EISDIR) — check .qwen/loop.md permissions/IO',
+            'loop.md sentinel resolution failed (mode=dynamic, code=EISDIR) — check .canopy/loop.md permissions/IO',
             eisdir,
           );
         } finally {
@@ -15141,7 +15143,7 @@ describe('Session', () => {
           );
           expect(errorEchoes()).toHaveLength(0);
           expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-            'loop.md sentinel resolution failed (mode=dynamic, code=ENOTDIR) — check .qwen/loop.md permissions/IO',
+            'loop.md sentinel resolution failed (mode=dynamic, code=ENOTDIR) — check .canopy/loop.md permissions/IO',
             enotdir,
           );
         } finally {
@@ -15217,7 +15219,7 @@ describe('Session', () => {
           expect(sentToModel()).not.toContain('# /loop tick');
           // The real (unsanitized) bug is still recorded in the LOCAL debug warn.
           expect(debugLoggerWarnSpy).toHaveBeenCalledWith(
-            'loop.md sentinel resolution failed (mode=dynamic, code=unknown) — check .qwen/loop.md permissions/IO',
+            'loop.md sentinel resolution failed (mode=dynamic, code=unknown) — check .canopy/loop.md permissions/IO',
             bug,
           );
         } finally {
@@ -15410,7 +15412,7 @@ describe('Session', () => {
         const tmpDir = await fs.mkdtemp(
           path.join(os.tmpdir(), 'loop-md-compact-'),
         );
-        const loopMdPath = path.join(tmpDir, '.qwen', 'loop.md');
+        const loopMdPath = path.join(tmpDir, '.canopy', 'loop.md');
         await fs.mkdir(path.dirname(loopMdPath), { recursive: true });
         await fs.writeFile(loopMdPath, '- stable task list');
         mockConfig.getWorkingDir = vi.fn().mockReturnValue(tmpDir);
@@ -16605,7 +16607,7 @@ describe('Session', () => {
         // failure streak stops them through the graceful branch: end_turn
         // settlement plus the transcript stop message, never a rejection
         // that would pause the goal without a published turn_error.
-        const guardModeEnv = 'QWEN_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
+        const guardModeEnv = 'CANOPY_CODE_ACP_REPEATED_TOOL_FAILURE_GUARD';
         const previousGuardMode = process.env[guardModeEnv];
         process.env[guardModeEnv] = 'enforce';
         try {
@@ -16699,7 +16701,7 @@ describe('Session', () => {
               expect.objectContaining({
                 loop_type: core.LoopType.REPEATED_TOOL_EXECUTION_FAILURE,
               }),
-              { recordToQwenLogger: false },
+              { recordToCanopyLogger: false },
             );
           });
           // Graceful end_turn settles the iteration; the goal is not paused.
@@ -18151,7 +18153,7 @@ describe('Session', () => {
 
     it('passes resolved paths to read_many_files tool', async () => {
       const tempDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-session-'),
+        path.join(os.tmpdir(), 'canopy-acp-session-'),
       );
       const fileName = 'README.md';
       const filePath = path.join(tempDir, fileName);
@@ -18200,10 +18202,10 @@ describe('Session', () => {
 
     it('drops resource links that fail workspace revalidation', async () => {
       const tempDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-session-'),
+        path.join(os.tmpdir(), 'canopy-acp-session-'),
       );
       const outsideDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-outside-'),
+        path.join(os.tmpdir(), 'canopy-acp-outside-'),
       );
       const outsidePath = path.join(outsideDir, 'secret.png');
       const readManyFilesSpy = vi.spyOn(core, 'readManyFiles');
@@ -18241,7 +18243,9 @@ describe('Session', () => {
     });
 
     it('injects active extension context for @ext mentions', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-ext-'));
+      const tempDir = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'canopy-acp-ext-'),
+      );
       const contextFile = path.join(tempDir, 'context.md');
 
       try {
@@ -18327,10 +18331,10 @@ describe('Session', () => {
 
     it('caps extension context files and skips files outside the extension', async () => {
       const tempDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-ext-cap-'),
+        path.join(os.tmpdir(), 'canopy-acp-ext-cap-'),
       );
       const outsideDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'qwen-acp-ext-outside-'),
+        path.join(os.tmpdir(), 'canopy-acp-ext-outside-'),
       );
       const bigFile = path.join(tempDir, 'big.md');
       const outsideFile = path.join(outsideDir, 'secret.md');
@@ -18466,7 +18470,7 @@ describe('Session', () => {
     });
 
     it('never requests ACP permission for the trusted Live Appshot tool', async () => {
-      const directory = path.join(os.tmpdir(), 'qwen-live-appshot');
+      const directory = path.join(os.tmpdir(), 'canopy-live-appshot');
       await fs.mkdir(directory, { recursive: true, mode: 0o700 });
       const screenshotPath = path.join(directory, `${randomUUID()}.png`);
       await fs.writeFile(
@@ -18522,7 +18526,7 @@ describe('Session', () => {
         expect(permissionManager.evaluate).not.toHaveBeenCalled();
         expect(mockClient.requestPermission).not.toHaveBeenCalled();
         expect(mockClient.extMethod).toHaveBeenCalledWith(
-          'qwen/control/live/capture-screen-context',
+          'canopy/control/live/capture-screen-context',
           { callerSessionId: 'test-session-id' },
         );
       } finally {
@@ -18657,7 +18661,7 @@ describe('Session', () => {
       }
 
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        'qwen/notify/session/terminal-sequence',
+        'canopy/notify/session/terminal-sequence',
         {
           v: 1,
           sessionId: 'test-session-id',
@@ -19665,8 +19669,8 @@ describe('Session', () => {
             },
           ],
           _meta: {
-            qwenTodoPlan: { id: 'plan-1' },
-            qwenTranscript: { planToolCallId: 'todo-call-1' },
+            canopyTodoPlan: { id: 'plan-1' },
+            canopyTranscript: { planToolCallId: 'todo-call-1' },
           },
         };
         if (revisionSource === 'replay') {
@@ -19717,8 +19721,8 @@ describe('Session', () => {
             session.sendUpdate({
               ...planUpdate,
               _meta: {
-                qwenTodoPlan: { id: 'plan-2' },
-                qwenTranscript: { planToolCallId: 'todo-call-2' },
+                canopyTodoPlan: { id: 'plan-2' },
+                canopyTranscript: { planToolCallId: 'todo-call-2' },
               },
             }),
           ).rejects.toThrow('connection lost');
@@ -19761,13 +19765,13 @@ describe('Session', () => {
               rawInput: { plan: 'Original plan' },
               _meta: expectsRevision
                 ? expect.objectContaining({
-                    qwenTodoApproval: {
+                    canopyTodoApproval: {
                       planId: 'plan-1',
                       sourceCallId: 'todo-call-1',
                     },
                   })
                 : expect.not.objectContaining({
-                    qwenTodoApproval: expect.anything(),
+                    canopyTodoApproval: expect.anything(),
                   }),
             }),
           }),
@@ -19836,8 +19840,8 @@ describe('Session', () => {
           { content: 'Old cycle', priority: 'medium', status: 'pending' },
         ],
         _meta: {
-          qwenTodoPlan: { id: 'old-plan' },
-          qwenTranscript: { planToolCallId: 'old-call' },
+          canopyTodoPlan: { id: 'old-plan' },
+          canopyTranscript: { planToolCallId: 'old-call' },
         },
       });
 
@@ -19850,7 +19854,7 @@ describe('Session', () => {
       const request = await runExitPlanModeApprovalPrompt();
       expect(request.toolCall._meta).toEqual(
         expect.not.objectContaining({
-          qwenTodoApproval: expect.anything(),
+          canopyTodoApproval: expect.anything(),
         }),
       );
     });
@@ -19879,12 +19883,12 @@ describe('Session', () => {
         returnDisplay: 'ok',
       });
       const invocation = {
-        params: { file_path: '/repo/.qwen/settings.json', content: '{}' },
+        params: { file_path: '/repo/.canopy/settings.json', content: '{}' },
         getDefaultPermission: vi.fn().mockResolvedValue('ask'),
         getConfirmationDetails: vi.fn().mockResolvedValue({
           type: 'edit',
           title: 'Confirm file write',
-          fileName: '/repo/.qwen/settings.json',
+          fileName: '/repo/.canopy/settings.json',
           fileDiff: 'diff',
           onConfirm: vi.fn(),
         }),
@@ -19931,7 +19935,7 @@ describe('Session', () => {
                   id: 'call-protected-write',
                   name: core.ToolNames.WRITE_FILE,
                   args: {
-                    file_path: '/repo/.qwen/settings.json',
+                    file_path: '/repo/.canopy/settings.json',
                     content: '{}',
                   },
                 },
@@ -19954,7 +19958,7 @@ describe('Session', () => {
 
     it('routes ACP Bash(*) protected writes through AUTO review', async () => {
       const cwd = '/repo';
-      const command = "echo '{}' > .qwen/settings.json";
+      const command = "echo '{}' > .canopy/settings.json";
       let denialState = {
         consecutiveBlock: 0,
         consecutiveUnavailable: 0,
@@ -20053,7 +20057,7 @@ describe('Session', () => {
 
     it('blocks ACP Bash(*) protected writes when AUTO classifier denies', async () => {
       const cwd = '/repo';
-      const command = "echo '{}' > .qwen/settings.json";
+      const command = "echo '{}' > .canopy/settings.json";
       let denialState = {
         consecutiveBlock: 0,
         consecutiveUnavailable: 0,
@@ -20171,7 +20175,7 @@ describe('Session', () => {
 
     it('asks when the AUTO classifier is unavailable and can switch to Default', async () => {
       const cwd = '/repo';
-      const command = "echo '{}' > .qwen/settings.json";
+      const command = "echo '{}' > .canopy/settings.json";
       let approvalMode = ApprovalMode.AUTO;
       let denialState = {
         consecutiveBlock: 0,
@@ -20861,7 +20865,7 @@ describe('Session', () => {
                   stopReason: 'External stop hook feedback',
                   reason: 'Keep working on the active goal',
                   hookSpecificOutput: {
-                    qwenGoalHookId: 'goal-hook',
+                    canopyGoalHookId: 'goal-hook',
                   },
                 },
               })
@@ -21596,7 +21600,7 @@ describe('Session', () => {
             expect.anything(),
           );
           expect(mockClient.extNotification).toHaveBeenCalledWith(
-            'qwen/notify/session/artifact-event',
+            'canopy/notify/session/artifact-event',
             expect.objectContaining({
               sessionId: 'test-session-id',
               source: 'hook',
@@ -21802,7 +21806,7 @@ describe('Session', () => {
             }),
           );
           expect(mockClient.extNotification).toHaveBeenCalledWith(
-            'qwen/notify/session/artifact-event',
+            'canopy/notify/session/artifact-event',
             expect.objectContaining({
               sessionId: 'test-session-id',
               source: 'hook',
@@ -22005,8 +22009,8 @@ describe('Session', () => {
         'starts every %s call of a fan-out concurrently, past the loop-detection threshold',
         async (callName) => {
           const previousMaxConcurrency =
-            process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+            process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
           try {
             // Regression: the daemon once serialized the first three calls of a
             // large batch before widening concurrency, which stretched /review
@@ -22130,19 +22134,19 @@ describe('Session', () => {
             ).toEqual(ids);
           } finally {
             if (previousMaxConcurrency === undefined) {
-              delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+              delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
             } else {
-              process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+              process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
                 previousMaxConcurrency;
             }
           }
         },
       );
 
-      it('ignores malformed QWEN_CODE_MAX_TOOL_CONCURRENCY values', async () => {
+      it('ignores malformed CANOPY_CODE_MAX_TOOL_CONCURRENCY values', async () => {
         const previousMaxConcurrency =
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '1abc';
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '1abc';
         try {
           type Deferred<T> = {
             promise: Promise<T>;
@@ -22240,9 +22244,9 @@ describe('Session', () => {
           await promptPromise;
         } finally {
           if (previousMaxConcurrency === undefined) {
-            delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+            delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
           } else {
-            process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+            process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
               previousMaxConcurrency;
           }
         }
@@ -22663,7 +22667,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extNotification).toHaveBeenCalledWith(
-            '_qwencode/end_turn',
+            '_canopycode/end_turn',
             {
               sessionId: 'test-session-id',
               reason: 'end_turn',
@@ -22721,7 +22725,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extNotification).toHaveBeenCalledWith(
-            '_qwencode/end_turn',
+            '_canopycode/end_turn',
             {
               sessionId: 'test-session-id',
               reason: 'cancelled',
@@ -22756,7 +22760,7 @@ describe('Session', () => {
 
         await vi.waitFor(() => {
           expect(mockClient.extNotification).toHaveBeenCalledWith(
-            '_qwencode/end_turn',
+            '_canopycode/end_turn',
             {
               sessionId: 'test-session-id',
               reason: 'cancelled',
@@ -24195,7 +24199,7 @@ describe('Session', () => {
             entries: [
               expect.objectContaining({
                 content: 'Ship',
-                _meta: { qwenTodo: { id: '1' } },
+                _meta: { canopyTodo: { id: '1' } },
               }),
             ],
           }),
@@ -24482,8 +24486,8 @@ describe('Session', () => {
       expect(startToolSpanSpy).toHaveBeenCalledWith(
         core.ToolNames.READ_FILE,
         expect.objectContaining({
-          'tool.call_id': 'provider-call__qwen_dup_2',
-          call_id: 'provider-call__qwen_dup_2',
+          'tool.call_id': 'provider-call__canopy_dup_2',
+          call_id: 'provider-call__canopy_dup_2',
           'gen_ai.tool.call.id': 'provider-call',
         }),
         'read_file',
@@ -24661,7 +24665,7 @@ describe('Session', () => {
       expect(readExecute).not.toHaveBeenCalled();
       expect(result.parts.map((part) => part.functionResponse?.id)).toEqual([
         'write_before_entry',
-        'duplicate_read__qwen_dup_2',
+        'duplicate_read__canopy_dup_2',
         'enter_plan',
         'read_after_entry',
       ]);
@@ -24767,7 +24771,7 @@ describe('Session', () => {
         {
           id: 'write_memory',
           name: core.ToolNames.WRITE_FILE,
-          args: { file_path: '/workspace/.qwen/memory/project.md' },
+          args: { file_path: '/workspace/.canopy/memory/project.md' },
         },
       ]);
 
@@ -24778,7 +24782,7 @@ describe('Session', () => {
         [
           {
             toolName: core.ToolNames.WRITE_FILE,
-            args: { file_path: '/workspace/.qwen/memory/project.md' },
+            args: { file_path: '/workspace/.canopy/memory/project.md' },
             status: 'success',
           },
         ],
@@ -24835,13 +24839,13 @@ describe('Session', () => {
       );
     }
 
-    it('refreshes context-file instructions after ACP bare remember writes QWEN.md', async () => {
+    it('refreshes context-file instructions after ACP bare remember writes CANOPY.md', async () => {
       await markAcpContextRefreshIntent();
       refreshMemoryAfterManagedWriteSpy.mockClear();
       refreshMemoryInstructionSpy.mockClear();
 
       allowAcpWriteFile();
-      await runAcpWriteFile('/repo/QWEN.md', 'prompt-context-write');
+      await runAcpWriteFile('/repo/CANOPY.md', 'prompt-context-write');
 
       expect(refreshMemoryAfterManagedWriteSpy).toHaveBeenCalledTimes(1);
       expect(refreshMemoryInstructionSpy).toHaveBeenCalledWith(mockConfig, {
@@ -24856,12 +24860,12 @@ describe('Session', () => {
 
       allowAcpWriteFile();
       await runAcpWriteFile(
-        '/repo/QWEN.md',
+        '/repo/CANOPY.md',
         'prompt-context-write-1',
         'write_context_1',
       );
       await runAcpWriteFile(
-        '/repo/QWEN.md',
+        '/repo/CANOPY.md',
         'prompt-context-write-2',
         'write_context_2',
       );
@@ -24900,14 +24904,14 @@ describe('Session', () => {
         sessionId: 'test-session-id',
         prompt: [{ type: 'text', text: 'ordinary turn' }],
       });
-      await runAcpWriteFile('/repo/QWEN.md', 'prompt-ordinary-context-write');
+      await runAcpWriteFile('/repo/CANOPY.md', 'prompt-ordinary-context-write');
 
       expect(refreshMemoryInstructionSpy).not.toHaveBeenCalled();
     });
 
     it.each([
-      ['retry', { 'qwen.daemon.retry': true }, false],
-      ['continue', { 'qwen.daemon.continueLastTurn': true }, true],
+      ['retry', { 'canopy.daemon.retry': true }, false],
+      ['continue', { 'canopy.daemon.continueLastTurn': true }, true],
     ])(
       'preserves context-file refresh intent across an ACP %s turn',
       async (_label, meta, seedInterruptedHistory) => {
@@ -24940,7 +24944,7 @@ describe('Session', () => {
 
         allowAcpWriteFile();
         await runAcpWriteFile(
-          '/repo/QWEN.md',
+          '/repo/CANOPY.md',
           'prompt-preserved-context-write',
         );
 
@@ -24951,7 +24955,7 @@ describe('Session', () => {
       },
     );
 
-    it('does not refresh context-file instructions for ordinary ACP QWEN.md writes', async () => {
+    it('does not refresh context-file instructions for ordinary ACP CANOPY.md writes', async () => {
       const execute = vi.fn().mockResolvedValue({
         llmContent: 'wrote context',
         returnDisplay: 'wrote context',
@@ -24968,7 +24972,7 @@ describe('Session', () => {
           {
             id: 'write_context',
             name: core.ToolNames.WRITE_FILE,
-            args: { file_path: '/repo/QWEN.md' },
+            args: { file_path: '/repo/CANOPY.md' },
           },
         ],
       );
@@ -25018,7 +25022,7 @@ describe('Session', () => {
         ),
       ).toBe(false);
       expect(mockClient.extNotification).not.toHaveBeenCalledWith(
-        'qwen/notify/session/artifact-event',
+        'canopy/notify/session/artifact-event',
         expect.objectContaining({ hookEventName: 'PostToolBatch' }),
       );
     });
@@ -25997,8 +26001,8 @@ describe('Session', () => {
 
     it('lets sibling Agent calls in a small batch finish when loop detection fires', async () => {
       const previousMaxConcurrency =
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-      delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+      delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
       try {
         let firstSiblingSignal: AbortSignal | undefined;
         let secondSiblingSignal: AbortSignal | undefined;
@@ -26097,9 +26101,9 @@ describe('Session', () => {
         ]);
       } finally {
         if (previousMaxConcurrency === undefined) {
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         } else {
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
             previousMaxConcurrency;
         }
       }
@@ -26107,8 +26111,8 @@ describe('Session', () => {
 
     it('lets in-flight Agent calls of a wide batch finish when loop detection fires', async () => {
       const previousMaxConcurrency =
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '2';
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '2';
       try {
         let inFlightSignal: AbortSignal | undefined;
         const inFlightExecute = vi
@@ -26211,9 +26215,9 @@ describe('Session', () => {
         ]);
       } finally {
         if (previousMaxConcurrency === undefined) {
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         } else {
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
             previousMaxConcurrency;
         }
       }
@@ -26221,8 +26225,8 @@ describe('Session', () => {
 
     it('does not treat parent abort during nested Agent permission as explicit rejection', async () => {
       const previousMaxConcurrency =
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '1';
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '1';
       try {
         const eventEmitter = new EventEmitter();
         const respond = vi.fn().mockResolvedValue(undefined);
@@ -26322,9 +26326,9 @@ describe('Session', () => {
         );
       } finally {
         if (previousMaxConcurrency === undefined) {
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         } else {
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
             previousMaxConcurrency;
         }
       }
@@ -26405,8 +26409,8 @@ describe('Session', () => {
 
     it('skips unstarted Agent calls after nested ask_user_question cancellation', async () => {
       const previousMaxConcurrency =
-        process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] = '1';
+        process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] = '1';
       try {
         const eventEmitter = new EventEmitter();
         const respond = vi.fn().mockResolvedValue(undefined);
@@ -26491,9 +26495,9 @@ describe('Session', () => {
         });
       } finally {
         if (previousMaxConcurrency === undefined) {
-          delete process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'];
+          delete process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'];
         } else {
-          process.env['QWEN_CODE_MAX_TOOL_CONCURRENCY'] =
+          process.env['CANOPY_CODE_MAX_TOOL_CONCURRENCY'] =
             previousMaxConcurrency;
         }
       }
@@ -27091,13 +27095,13 @@ describe('Session', () => {
         complete: true,
         observations: [
           expect.objectContaining({
-            callId: 'shell_1__qwen_dup_2',
+            callId: 'shell_1__canopy_dup_2',
             providerDuplicate: true,
             executionStatus: 'not_started',
           }),
         ],
       });
-      expect(parts[0].functionResponse?.id).toBe('shell_1__qwen_dup_2');
+      expect(parts[0].functionResponse?.id).toBe('shell_1__canopy_dup_2');
       expect(parts[0].functionResponse?.response).toEqual({
         error: expect.stringContaining(
           'Duplicate provider tool call id "shell_1"',
@@ -27106,7 +27110,7 @@ describe('Session', () => {
       expect(mockChatRecordingService.recordToolResult).toHaveBeenCalledWith(
         parts,
         expect.objectContaining({
-          callId: 'shell_1__qwen_dup_2',
+          callId: 'shell_1__canopy_dup_2',
           status: 'error',
           resultDisplay: expect.stringContaining(
             'Duplicate provider tool call id "shell_1"',
@@ -27118,7 +27122,7 @@ describe('Session', () => {
         expect.objectContaining({
           update: expect.objectContaining({
             sessionUpdate: 'tool_call_update',
-            toolCallId: 'shell_1__qwen_dup_2',
+            toolCallId: 'shell_1__canopy_dup_2',
             status: 'failed',
           }),
         }),
@@ -27127,7 +27131,7 @@ describe('Session', () => {
         expect.objectContaining({
           update: expect.objectContaining({
             sessionUpdate: 'tool_call',
-            toolCallId: 'shell_1__qwen_dup_2',
+            toolCallId: 'shell_1__canopy_dup_2',
           }),
         }),
       );
@@ -27189,7 +27193,7 @@ describe('Session', () => {
       expect(execute).not.toHaveBeenCalled();
       expect(firstResult.parts).toHaveLength(1);
       expect(firstResult.parts[0].functionResponse?.id).toBe(
-        'shell_1__qwen_dup_2',
+        'shell_1__canopy_dup_2',
       );
       expect(firstResult.parts[0].functionResponse?.response).toEqual({
         error: expect.stringContaining(
@@ -27239,7 +27243,7 @@ describe('Session', () => {
       expect(mockToolRegistry.getTool).not.toHaveBeenCalled();
       const { parts } = result;
       expect(result.stopAfterPermissionCancel).toBe(false);
-      expect(parts[0].functionResponse?.id).toBe('todo_1__qwen_dup_2');
+      expect(parts[0].functionResponse?.id).toBe('todo_1__canopy_dup_2');
       expect(parts[0].functionResponse?.response).toEqual({
         error: expect.stringContaining(
           'Duplicate provider tool call id "todo_1"',
@@ -27249,7 +27253,7 @@ describe('Session', () => {
         expect.objectContaining({
           update: expect.objectContaining({
             sessionUpdate: 'tool_call_update',
-            toolCallId: 'todo_1__qwen_dup_2',
+            toolCallId: 'todo_1__canopy_dup_2',
             status: 'failed',
           }),
         }),
@@ -27264,7 +27268,7 @@ describe('Session', () => {
       expect(mockChatRecordingService.recordToolResult).toHaveBeenCalledWith(
         parts,
         expect.objectContaining({
-          callId: 'todo_1__qwen_dup_2',
+          callId: 'todo_1__canopy_dup_2',
           status: 'error',
         }),
       );
@@ -27321,7 +27325,7 @@ describe('Session', () => {
       expect(result.stopAfterPermissionCancel).toBe(false);
       expect(parts.map((part) => part.functionResponse?.id)).toEqual([
         'call_a',
-        'dup_mid__qwen_dup_2',
+        'dup_mid__canopy_dup_2',
         'call_c',
       ]);
       expect(parts[1].functionResponse?.response).toEqual({
@@ -27854,7 +27858,7 @@ describe('Session', () => {
         {
           sessionId: 'test-session-id',
           prompt: [{ type: 'text', text: 'retry after cancellation' }],
-          _meta: { 'qwen.daemon.retry': true },
+          _meta: { 'canopy.daemon.retry': true },
         } as Parameters<typeof session.prompt>[0],
         undefined,
         cancellation.signal,
@@ -28203,7 +28207,7 @@ describe('Session', () => {
         1, 2, 2,
       ]);
       expect(guardUpdates[0]?._meta).toMatchObject({
-        qwenDiscreteMessage: true,
+        canopyDiscreteMessage: true,
         maxAttempts: 2,
         unfinishedCount: 1,
       });
@@ -28302,7 +28306,7 @@ describe('Session', () => {
       await session.prompt({
         sessionId: 'test-session-id',
         prompt: [{ type: 'text', text: 'retry the failed stream' }],
-        _meta: { 'qwen.daemon.retry': true },
+        _meta: { 'canopy.daemon.retry': true },
       } as Parameters<typeof session.prompt>[0]);
 
       expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(5);
@@ -28494,7 +28498,7 @@ describe('Session', () => {
       await session.prompt({
         sessionId: 'test-session-id',
         prompt: [{ type: 'text', text: 'trusted retry after trust clear' }],
-        _meta: { 'qwen.daemon.retry': true },
+        _meta: { 'canopy.daemon.retry': true },
       } as Parameters<typeof session.prompt>[0]);
 
       expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(4);
@@ -30661,7 +30665,7 @@ describe('Session', () => {
       await session.prompt({
         sessionId: 'test-session-id',
         prompt: [{ type: 'text', text: 'trusted queued retry' }],
-        _meta: { 'qwen.daemon.retry': true },
+        _meta: { 'canopy.daemon.retry': true },
       } as Parameters<typeof session.prompt>[0]);
 
       expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(5);
@@ -33543,7 +33547,7 @@ describe('Session', () => {
         expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(4);
       });
       expect(mockClient.extNotification).toHaveBeenCalledWith(
-        '_qwencode/end_turn',
+        '_canopycode/end_turn',
         {
           sessionId: 'test-session-id',
           reason: 'end_turn',
@@ -33879,7 +33883,7 @@ describe('Session', () => {
       ).toBe(false);
       await vi.waitFor(() => {
         expect(mockClient.extNotification).toHaveBeenCalledWith(
-          '_qwencode/end_turn',
+          '_canopycode/end_turn',
           {
             sessionId: 'test-session-id',
             reason: 'end_turn',
@@ -34314,7 +34318,7 @@ describe('Session', () => {
 
       await vi.waitFor(() => {
         expect(mockClient.extNotification).toHaveBeenCalledWith(
-          'qwen/notify/session/prompt-suggestion',
+          'canopy/notify/session/prompt-suggestion',
           {
             v: 1,
             sessionId: 'test-session-id',
@@ -34351,7 +34355,7 @@ describe('Session', () => {
         (
           mockClient.extNotification as ReturnType<typeof vi.fn>
         ).mock.calls.find(
-          ([method]) => method === 'qwen/notify/session/prompt-suggestion',
+          ([method]) => method === 'canopy/notify/session/prompt-suggestion',
         ),
       ).toBeUndefined();
     });
@@ -34408,7 +34412,7 @@ describe('Session', () => {
         (
           mockClient.extNotification as ReturnType<typeof vi.fn>
         ).mock.calls.find(
-          ([method]) => method === 'qwen/notify/session/prompt-suggestion',
+          ([method]) => method === 'canopy/notify/session/prompt-suggestion',
         ),
       ).toBeUndefined();
     });

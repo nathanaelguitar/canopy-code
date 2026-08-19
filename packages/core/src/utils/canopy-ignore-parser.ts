@@ -10,16 +10,16 @@ import ignore from 'ignore';
 import { createDebugLogger } from './debugLogger.js';
 import { isPathWithinRoot } from './workspaceContext.js';
 
-const QWEN_IGNORE_FILE_NAME = '.qwenignore';
-const debugLogger = createDebugLogger('QWEN_IGNORE');
+const CANOPY_IGNORE_FILE_NAME = '.canopyignore';
+const debugLogger = createDebugLogger('CANOPY_IGNORE');
 
-export const DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES = [
+export const DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES = [
   '.agentignore',
   '.aiignore',
 ] as const;
 
-export function normalizeQwenCustomIgnoreFileNames(
-  ignoreFileNames: readonly string[] = DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES,
+export function normalizeCanopyCustomIgnoreFileNames(
+  ignoreFileNames: readonly string[] = DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES,
 ): string[] {
   const normalized: string[] = [];
   const seen = new Set<string>();
@@ -56,8 +56,8 @@ function getCustomIgnoreFileNameSkipReason(candidate: string): string | null {
   if (candidate.includes('\0')) {
     return 'null bytes are not allowed';
   }
-  if (candidate === QWEN_IGNORE_FILE_NAME) {
-    return '.qwenignore is always included';
+  if (candidate === CANOPY_IGNORE_FILE_NAME) {
+    return '.canopyignore is always included';
   }
   if (candidate.split('/').includes('..')) {
     return 'parent directory segments are not allowed';
@@ -65,28 +65,28 @@ function getCustomIgnoreFileNameSkipReason(candidate: string): string | null {
   return null;
 }
 
-export function getQwenIgnoreFileNames(
+export function getCanopyIgnoreFileNames(
   customIgnoreFileNames?: readonly string[],
 ): string[] {
   return [
-    QWEN_IGNORE_FILE_NAME,
-    ...normalizeQwenCustomIgnoreFileNames(customIgnoreFileNames),
+    CANOPY_IGNORE_FILE_NAME,
+    ...normalizeCanopyCustomIgnoreFileNames(customIgnoreFileNames),
   ];
 }
 
-export function formatQwenIgnoreFileNames(
+export function formatCanopyIgnoreFileNames(
   customIgnoreFileNames?: readonly string[],
 ): string {
-  return getQwenIgnoreFileNames(customIgnoreFileNames).join(', ');
+  return getCanopyIgnoreFileNames(customIgnoreFileNames).join(', ');
 }
 
-export interface QwenIgnoreFilter {
+export interface CanopyIgnoreFilter {
   isIgnored(filePath: string): boolean;
   getIgnoreFileNameForPath(filePath: string): string | undefined;
   getPatterns(): string[];
 }
 
-export class QwenIgnoreParser implements QwenIgnoreFilter {
+export class CanopyIgnoreParser implements CanopyIgnoreFilter {
   private projectRoot: string;
   private patterns: string[] = [];
   private readonly ignoreFileNames: string[];
@@ -97,7 +97,7 @@ export class QwenIgnoreParser implements QwenIgnoreFilter {
 
   constructor(projectRoot: string, customIgnoreFileNames?: readonly string[]) {
     this.projectRoot = path.resolve(projectRoot);
-    this.ignoreFileNames = getQwenIgnoreFileNames(customIgnoreFileNames);
+    this.ignoreFileNames = getCanopyIgnoreFileNames(customIgnoreFileNames);
     this.loadPatterns();
   }
 

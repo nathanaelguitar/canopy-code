@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -49,7 +49,7 @@ const MAX_DESCRIPTION_LENGTH = 40;
 export const MAX_RECENT_ACTIVITIES = 10;
 export const DEFAULT_MAX_CONCURRENT_BACKGROUND_AGENTS = 10;
 export const BACKGROUND_AGENT_CONCURRENCY_ENV =
-  'QWEN_CODE_MAX_BACKGROUND_AGENTS';
+  'CANOPY_CODE_MAX_BACKGROUND_AGENTS';
 
 function normalizeBackgroundApprovalOutcome(
   outcome: Parameters<BackgroundApproval['respond']>[0],

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ vi.mock('../utils/atomicFileWrite.js', () => ({
 
 vi.mock('../config/storage.js', () => ({
   Storage: {
-    getGlobalQwenDir: vi.fn(() => '/mock/home/.qwen'),
+    getGlobalCanopyDir: vi.fn(() => '/mock/home/.canopy'),
   },
 }));
 
@@ -57,7 +57,7 @@ describe('TrustedHooksManager', () => {
     });
   });
 
-  it('trustHooks writes the configPath under the global qwen dir', () => {
+  it('trustHooks writes the configPath under the global canopy dir', () => {
     const manager = new TrustedHooksManager();
     manager.trustHooks('/project/a', {
       PreToolUse: [
@@ -67,7 +67,7 @@ describe('TrustedHooksManager', () => {
 
     const [configPath] = vi.mocked(atomicWriteFileSync).mock.calls[0];
     expect(configPath).toBe(
-      path.join('/mock/home/.qwen', 'trusted_hooks.json'),
+      path.join('/mock/home/.canopy', 'trusted_hooks.json'),
     );
   });
 

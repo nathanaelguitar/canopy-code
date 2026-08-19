@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ import {
   SessionOrganizationService,
   SessionService,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   resetHomeEnvBootstrapForTesting,
   SettingScope,
@@ -680,8 +680,8 @@ const fakeWorkspace = {
   async getWorkspacePermissionsStatus() {
     return {
       v: 1,
-      user: { path: '/home/.qwen/settings.json', rules: emptyRules() },
-      workspace: { path: '/ws/.qwen/settings.json', rules: emptyRules() },
+      user: { path: '/home/.canopy/settings.json', rules: emptyRules() },
+      workspace: { path: '/ws/.canopy/settings.json', rules: emptyRules() },
       merged: emptyRules(),
       isTrusted: true,
     };
@@ -694,9 +694,9 @@ const fakeWorkspace = {
     };
     return {
       v: 1,
-      user: { path: '/home/.qwen/settings.json', rules: emptyRules() },
+      user: { path: '/home/.canopy/settings.json', rules: emptyRules() },
       workspace: {
-        path: '/ws/.qwen/settings.json',
+        path: '/ws/.canopy/settings.json',
         rules: {
           ...emptyRules(),
           ...(scope === 'workspace' ? { [ruleType]: rules } : {}),
@@ -748,7 +748,7 @@ const fakeWorkspace = {
     return { toolName, enabled };
   },
   async initWorkspace() {
-    return { path: '/ws/QWEN.md', action: 'created' as const };
+    return { path: '/ws/CANOPY.md', action: 'created' as const };
   },
   async restartMcpServer() {
     return { ok: true };
@@ -928,9 +928,11 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   let runtimeDir: string;
 
   beforeEach(async () => {
-    previousRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    runtimeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-archive-'));
-    process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+    previousRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    runtimeDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'canopy-acp-archive-'),
+    );
+    process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
     stdioMocks.writeStderrLine.mockClear();
     setupGithubMocks.setupGithub.mockReset();
     setupGithubMocks.setupGithub.mockResolvedValue({
@@ -938,7 +940,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       workspaceCwd: TEST_WORKSPACE,
       gitRepoRoot: TEST_WORKSPACE,
       releaseTag: 'v1.2.3',
-      readmeUrl: 'https://github.com/QwenLM/qwen-code-action',
+      readmeUrl: 'https://github.com/QwenLM/canopy-code-action',
       workflows: [],
       gitignore: { path: '.gitignore', status: 'unchanged' },
       warnings: [],
@@ -954,7 +956,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       lane: workspaceRememberLane,
       mutate: () => (_req, _res, next) => next(),
       parseClientId: (req, res) => {
-        const raw = req.get('x-qwen-client-id');
+        const raw = req.get('x-canopy-client-id');
         if (raw === undefined || raw === '') return undefined;
         if (!bridge.knownClientIdSet.has(raw)) {
           res.status(400).json({
@@ -1005,9 +1007,9 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     server.closeAllConnections?.();
     await new Promise<void>((r) => server.close(() => r()));
     if (previousRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = previousRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = previousRuntimeDir;
     }
     await fs.rm(runtimeDir, { recursive: true, force: true });
   });
@@ -1240,15 +1242,15 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(bad.status).toBe(404);
   });
 
-  it('initialize omits _qwen/session/shell by default', async () => {
+  it('initialize omits _canopy/session/shell by default', async () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).not.toContain(
-      '_qwen/session/shell',
+    expect(result.agentCapabilities._meta.canopy.methods).not.toContain(
+      '_canopy/session/shell',
     );
   });
 
@@ -1266,33 +1268,33 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
   });
 
-  it('initialize advertises _qwen/workspace/permissions methods', async () => {
+  it('initialize advertises _canopy/workspace/permissions methods', async () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/permissions',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/permissions',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/permissions/set',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/permissions/set',
     );
   });
 
-  it('initialize advertises _qwen/workspace/voice methods', async () => {
+  it('initialize advertises _canopy/workspace/voice methods', async () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/voice',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/voice',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/voice/set',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/voice/set',
     );
   });
 
@@ -1300,35 +1302,35 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/session/update_organization',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/session/update_organization',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/session_groups/list',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/session_groups/list',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/session_groups/create',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/session_groups/create',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/session_groups/update',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/session_groups/update',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/session_groups/delete',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/session_groups/delete',
     );
   });
 
-  it('initialize advertises _qwen/workspace/setup-github', async () => {
+  it('initialize advertises _canopy/workspace/setup-github', async () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/setup-github',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/setup-github',
     );
   });
 
@@ -1336,54 +1338,54 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/remember',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/remember',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/remember/get',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/remember/get',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/forget',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/forget',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/forget/get',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/forget/get',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/dream',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/dream',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/workspace/memory/dream/get',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/workspace/memory/dream/get',
     );
   });
 
-  it('initialize advertises _qwen/session/shell when enabled', async () => {
+  it('initialize advertises _canopy/session/shell when enabled', async () => {
     await restartServer({ sessionShellCommandEnabled: true });
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/session/shell',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/session/shell',
     );
-    expect(result.agentCapabilities._meta.qwen.methods).not.toContain(
-      '_qwen/session/rewind',
+    expect(result.agentCapabilities._meta.canopy.methods).not.toContain(
+      '_canopy/session/rewind',
     );
   });
 
-  it('initialize advertises _qwen/session/lsp', async () => {
+  it('initialize advertises _canopy/session/lsp', async () => {
     const { body } = await initializeRaw();
     const result = body['result'] as {
       agentCapabilities: {
-        _meta: { qwen: { methods: string[] } };
+        _meta: { canopy: { methods: string[] } };
       };
     };
-    expect(result.agentCapabilities._meta.qwen.methods).toContain(
-      '_qwen/session/lsp',
+    expect(result.agentCapabilities._meta.canopy.methods).toContain(
+      '_canopy/session/lsp',
     );
   });
 
@@ -1765,7 +1767,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await fresh.body?.cancel().catch(() => {});
   });
 
-  it('GET X-Qwen-Event-Epoch flows to subscribeEvents; invalid values degrade to "not provided"', async () => {
+  it('GET X-Canopy-Event-Epoch flows to subscribeEvents; invalid values degrade to "not provided"', async () => {
     const connId = await initialize();
     await newSession(connId);
 
@@ -1776,7 +1778,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         'acp-connection-id': connId,
         'acp-session-id': 'sess-1',
         'last-event-id': '42',
-        'x-qwen-event-epoch': 'epoch-abc',
+        'x-canopy-event-epoch': 'epoch-abc',
       },
     });
     await waitUntil(() => bridge.subscribeCalls.length >= 1);
@@ -1787,7 +1789,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
     // The stream advertises the CURRENT bus epoch back to the client so it
     // can pair future cursors with it (DAEMON-001).
-    expect(resumed.headers.get('x-qwen-event-epoch')).toBe('fake-epoch');
+    expect(resumed.headers.get('x-canopy-event-epoch')).toBe('fake-epoch');
     await resumed.body?.cancel().catch(() => {});
 
     // An out-of-charset token is rejected (logged) → treated as absent.
@@ -1797,7 +1799,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         'acp-connection-id': connId,
         'acp-session-id': 'sess-1',
         'last-event-id': '42',
-        'x-qwen-event-epoch': 'not a valid token!',
+        'x-canopy-event-epoch': 'not a valid token!',
       },
     });
     await waitUntil(() => bridge.subscribeCalls.length >= 2);
@@ -2167,7 +2169,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         params: { _meta: Record<string, { requestId: string }> };
       };
       expect(reqFrame.method).toBe('session/request_permission');
-      expect(reqFrame.params._meta['qwen'].requestId).toBe('perm-1');
+      expect(reqFrame.params._meta['canopy'].requestId).toBe('perm-1');
       // Client answers with a JSON-RPC response echoing the issued id.
       await post(connId, {
         jsonrpc: '2.0',
@@ -2514,13 +2516,13 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
           sessionId: 'sess-1',
           requestId: 'perm-meta-1',
           outcome: { outcome: 'selected', optionId: 'allow' },
-          _meta: { qwen: { trace: 't1' } },
+          _meta: { canopy: { trace: 't1' } },
         },
       });
       expect((await connReader.next()) as unknown).toMatchObject({ id: 46 });
       expect(seen.at(-1)).toEqual({
         outcome: { outcome: 'selected', optionId: 'allow' },
-        _meta: { qwen: { trace: 't1' } },
+        _meta: { canopy: { trace: 't1' } },
       });
       // Round 2: a non-object _meta (string) is dropped, not forwarded.
       await post(connId, {
@@ -3386,7 +3388,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(bridge.lastApprovalMode).toBe('yolo');
   });
 
-  it('_qwen/workspace/mcp introspection reaches the bridge', async () => {
+  it('_canopy/workspace/mcp introspection reaches the bridge', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -3394,7 +3396,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 12,
-      method: '_qwen/workspace/mcp',
+      method: '_canopy/workspace/mcp',
     });
     const [frame] = (await got) as Array<{
       id: number;
@@ -3578,7 +3580,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     }
   });
 
-  it('_qwen/sessions/archive rejects invalid batch params', async () => {
+  it('_canopy/sessions/archive rejects invalid batch params', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -3586,7 +3588,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 14,
-      method: '_qwen/sessions/archive',
+      method: '_canopy/sessions/archive',
       params: { sessionIds: 'not-an-array' },
     });
 
@@ -3599,7 +3601,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(frame.error.message).toContain('sessionIds');
   });
 
-  it('_qwen/sessions/unarchive returns per-id result buckets', async () => {
+  it('_canopy/sessions/unarchive returns per-id result buckets', async () => {
     const sessionId = '22222222-bbbb-cccc-dddd-eeeeeeeeeeee';
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -3608,7 +3610,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 15,
-      method: '_qwen/sessions/unarchive',
+      method: '_canopy/sessions/unarchive',
       params: { sessionIds: [sessionId] },
     });
 
@@ -3936,10 +3938,10 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     }
   });
 
-  it('session/load reports partial replay status under qwen _meta', async () => {
+  it('session/load reports partial replay status under canopy _meta', async () => {
     bridge.loadState = {
       replayed: true,
-      _meta: { qwen: { existing: 'kept' }, other: { value: 1 } },
+      _meta: { canopy: { existing: 'kept' }, other: { value: 1 } },
     };
     bridge.loadPartial = true;
     bridge.loadReplayError = 'replay boom';
@@ -3960,7 +3962,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         partial?: boolean;
         replayError?: string;
         _meta?: {
-          qwen?: {
+          canopy?: {
             existing?: string;
             sessionLoadReplay?: {
               partial?: boolean;
@@ -3975,7 +3977,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(frame.result).not.toHaveProperty('partial');
     expect(frame.result).not.toHaveProperty('replayError');
     expect(frame.result._meta).toEqual({
-      qwen: {
+      canopy: {
         existing: 'kept',
         sessionLoadReplay: {
           partial: true,
@@ -4003,7 +4005,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
           v: 1,
           id: 2,
           type: 'model_switched',
-          data: { modelId: 'qwen3' },
+          data: { modelId: 'canopy3' },
         } as BridgeEvent,
       ],
       liveJournal: [
@@ -4069,15 +4071,15 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       params: { update: { sessionUpdate: 'user_message_chunk' } },
     });
     expect(frames[1]).toMatchObject({
-      method: '_qwen/notify',
-      params: { kind: 'model_switched', data: { modelId: 'qwen3' } },
+      method: '_canopy/notify',
+      params: { kind: 'model_switched', data: { modelId: 'canopy3' } },
     });
     expect(frames[2]).toMatchObject({
       method: 'session/update',
       params: { update: { sessionUpdate: 'agent_message_chunk' } },
     });
     expect(frames[3]).toMatchObject({
-      method: '_qwen/notify',
+      method: '_canopy/notify',
       params: { kind: 'replay_complete' },
     });
   });
@@ -4136,7 +4138,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       data: { replayedCount: 0 },
     });
     await expect(sessionReader.next()).resolves.toMatchObject({
-      method: '_qwen/notify',
+      method: '_canopy/notify',
       params: { kind: 'replay_complete' },
     });
 
@@ -4326,7 +4328,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       params: { update: { sessionUpdate: 'agent_message_chunk' } },
     });
     expect(frames[1]).toMatchObject({
-      method: '_qwen/notify',
+      method: '_canopy/notify',
       params: { kind: 'replay_complete' },
     });
     expect(frames[2]).toMatchObject({
@@ -4412,7 +4414,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       params: { update: { sessionUpdate: 'agent_message_chunk' } },
     });
     expect(frames[1]).toMatchObject({
-      method: '_qwen/notify',
+      method: '_canopy/notify',
       params: { kind: 'replay_complete' },
     });
   });
@@ -4595,7 +4597,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         id: 213,
         error: {
           code: -32020,
-          message: 'This session is already open in another Qwen process.',
+          message: 'This session is already open in another Canopy process.',
           data: { errorKind: 'session_writer_conflict' },
         },
         jsonrpc: '2.0',
@@ -4641,7 +4643,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 213,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       expect(await reader.next()).toMatchObject({
@@ -4831,7 +4833,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 219,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       expect(await connReader.next()).toMatchObject({
@@ -4858,7 +4860,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
   });
 
-  it('_qwen/session/heartbeat does not wait for archive gate', async () => {
+  it('_canopy/session/heartbeat does not wait for archive gate', async () => {
     await withRuntimeDir(async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440130';
       await writeStoredSession(sessionId);
@@ -4890,7 +4892,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 221,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       await closeStartedPromise;
@@ -4898,7 +4900,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 222,
-        method: '_qwen/session/heartbeat',
+        method: '_canopy/session/heartbeat',
         params: { sessionId },
       });
       expect(await reader.next()).toMatchObject({
@@ -4929,7 +4931,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 230,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       expect(await reader.next()).toMatchObject({
@@ -4942,7 +4944,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 231,
-        method: '_qwen/sessions/unarchive',
+        method: '_canopy/sessions/unarchive',
         params: { sessionIds: [sessionId] },
       });
       expect(await reader.next()).toMatchObject({
@@ -4955,7 +4957,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 232,
-        method: '_qwen/session/update_organization',
+        method: '_canopy/session/update_organization',
         params: { sessionId, isPinned: true },
       });
       expect(await reader.next()).toMatchObject({
@@ -4968,7 +4970,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 233,
-        method: '_qwen/workspace/session_groups/create',
+        method: '_canopy/workspace/session_groups/create',
         params: { name: 'acp-group', color: 'blue' },
       });
       const created = (await reader.next()) as {
@@ -4982,7 +4984,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 236,
-        method: '_qwen/workspace/session_groups/update',
+        method: '_canopy/workspace/session_groups/update',
         params: { groupId, name: 'acp-group-renamed' },
       });
       expect(await reader.next()).toMatchObject({
@@ -4996,7 +4998,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 234,
-        method: '_qwen/workspace/session_groups/delete',
+        method: '_canopy/workspace/session_groups/delete',
         params: { groupId: 'missing-group' },
       });
       expect(await reader.next()).toMatchObject({
@@ -5008,7 +5010,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 235,
-        method: '_qwen/workspace/session_groups/delete',
+        method: '_canopy/workspace/session_groups/delete',
         params: { groupId },
       });
       expect(await reader.next()).toMatchObject({
@@ -5119,7 +5121,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 216,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       const archiveFrame = await reader.next();
@@ -5684,7 +5686,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       method: 'session/new',
       params: {
         _meta: {
-          'qwen-code/sessionId': '550E8400-E29B-41D4-A716-446655440000',
+          'canopy-code/sessionId': '550E8400-E29B-41D4-A716-446655440000',
         },
       },
     });
@@ -5702,9 +5704,9 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     const sessionId = '550e8400-e29b-41d4-a716-446655440004';
     await writeStoredSession(sessionId);
     const laterRuntimeDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-acp-later-runtime-'),
+      path.join(os.tmpdir(), 'canopy-acp-later-runtime-'),
     );
-    process.env['QWEN_RUNTIME_DIR'] = laterRuntimeDir;
+    process.env['CANOPY_RUNTIME_DIR'] = laterRuntimeDir;
 
     try {
       const connId = await initialize();
@@ -5715,7 +5717,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         id: 443,
         method: 'session/new',
         params: {
-          _meta: { 'qwen-code/sessionId': sessionId },
+          _meta: { 'canopy-code/sessionId': sessionId },
         },
       });
 
@@ -5732,7 +5734,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
       expect(bridge.lastRequestedSessionId).toBeUndefined();
     } finally {
-      process.env['QWEN_RUNTIME_DIR'] = runtimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = runtimeDir;
       await fs.rm(laterRuntimeDir, { recursive: true, force: true });
     }
   });
@@ -5745,7 +5747,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       jsonrpc: '2.0',
       id: 441,
       method: 'session/new',
-      params: { _meta: { 'qwen-code/sessionId': '../../escape' } },
+      params: { _meta: { 'canopy-code/sessionId': '../../escape' } },
     });
 
     const [frame] = (await got) as Array<{
@@ -5770,7 +5772,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       method: 'session/new',
       params: {
         _meta: {
-          'qwen-code/sessionId': '550e8400-e29b-41d4-a716-446655440000',
+          'canopy-code/sessionId': '550e8400-e29b-41d4-a716-446655440000',
         },
       },
     });
@@ -5798,7 +5800,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       method: 'session/new',
       params: {
         _meta: {
-          'qwen-code/sessionId': '550e8400-e29b-41d4-a716-446655440000',
+          'canopy-code/sessionId': '550e8400-e29b-41d4-a716-446655440000',
         },
       },
     });
@@ -6060,7 +6062,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(bridge.detached.some((d) => d.sessionId === 'sess-1')).toBe(false);
   });
 
-  it('_qwen/* introspection methods reach the bridge (conn-routed)', async () => {
+  it('_canopy/* introspection methods reach the bridge (conn-routed)', async () => {
     const connId = await initialize();
     await newSession(connId);
     const connStream = await openStream(connId);
@@ -6069,25 +6071,25 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 200,
-      method: '_qwen/session/context',
+      method: '_canopy/session/context',
       params: { sessionId: 'sess-1' },
     });
     await post(connId, {
       jsonrpc: '2.0',
       id: 201,
-      method: '_qwen/session/heartbeat',
+      method: '_canopy/session/heartbeat',
       params: { sessionId: 'sess-1' },
     });
     await post(connId, {
       jsonrpc: '2.0',
       id: 202,
-      method: '_qwen/workspace/skills',
+      method: '_canopy/workspace/skills',
     });
     const ids = ((await got) as Array<{ id?: number }>).map((f) => f.id);
     expect(ids).toEqual(expect.arrayContaining([200, 201, 202]));
   });
 
-  it('_qwen/workspace/set_tool_enabled + restart_mcp_server validate name', async () => {
+  it('_canopy/workspace/set_tool_enabled + restart_mcp_server validate name', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 3);
@@ -6095,19 +6097,19 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 210,
-      method: '_qwen/workspace/set_tool_enabled',
+      method: '_canopy/workspace/set_tool_enabled',
       params: { toolName: '', enabled: true },
     });
     await post(connId, {
       jsonrpc: '2.0',
       id: 211,
-      method: '_qwen/workspace/restart_mcp_server',
+      method: '_canopy/workspace/restart_mcp_server',
       params: { serverName: '' },
     });
     await post(connId, {
       jsonrpc: '2.0',
       id: 212,
-      method: '_qwen/workspace/set_tool_enabled',
+      method: '_canopy/workspace/set_tool_enabled',
       params: { toolName: 'shell', enabled: false },
     });
     const frames = (await got) as Array<{
@@ -6121,7 +6123,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(byId[212].result).toBeDefined();
   });
 
-  it('dispatches _qwen/workspace/trust', async () => {
+  it('dispatches _canopy/workspace/trust', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -6129,7 +6131,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 213,
-      method: '_qwen/workspace/trust',
+      method: '_canopy/workspace/trust',
       params: {},
     });
     const frames = (await got) as Array<{ id: number; result?: unknown }>;
@@ -6143,7 +6145,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
   });
 
-  it('dispatches _qwen/workspace/trust/request', async () => {
+  it('dispatches _canopy/workspace/trust/request', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -6151,7 +6153,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 214,
-      method: '_qwen/workspace/trust/request',
+      method: '_canopy/workspace/trust/request',
       params: { desiredState: 'untrusted', reason: 'remote user request' },
     });
     const frames = (await got) as Array<{ id: number; result?: unknown }>;
@@ -6179,7 +6181,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       message: `\`reason\` must be a string up to ${MAX_TRUST_REASON_LENGTH} chars`,
     },
   ])(
-    'rejects invalid _qwen/workspace/trust/request params: $message',
+    'rejects invalid _canopy/workspace/trust/request params: $message',
     async ({ params, message }) => {
       const requestSpy = vi.spyOn(fakeWorkspace, 'requestWorkspaceTrustChange');
       const connId = await initialize();
@@ -6189,7 +6191,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 215,
-        method: '_qwen/workspace/trust/request',
+        method: '_canopy/workspace/trust/request',
         params,
       });
       const frames = (await got) as Array<{
@@ -6205,7 +6207,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     },
   );
 
-  it('rejects _qwen/workspace/trust/request when folder trust is disabled', async () => {
+  it('rejects _canopy/workspace/trust/request when folder trust is disabled', async () => {
     const trustSpy = vi
       .spyOn(fakeWorkspace, 'getWorkspaceTrustStatus')
       .mockResolvedValueOnce({
@@ -6225,7 +6227,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 215,
-      method: '_qwen/workspace/trust/request',
+      method: '_canopy/workspace/trust/request',
       params: { desiredState: 'trusted' },
     });
 
@@ -6245,7 +6247,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     requestSpy.mockRestore();
   });
 
-  it('dispatches _qwen/workspace/permissions', async () => {
+  it('dispatches _canopy/workspace/permissions', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -6253,7 +6255,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 216,
-      method: '_qwen/workspace/permissions',
+      method: '_canopy/workspace/permissions',
       params: {},
     });
     const frames = (await got) as Array<{ id: number; result?: unknown }>;
@@ -6262,12 +6264,12 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       result: {
         v: 1,
         isTrusted: true,
-        workspace: { path: '/ws/.qwen/settings.json' },
+        workspace: { path: '/ws/.canopy/settings.json' },
       },
     });
   });
 
-  it('dispatches _qwen/workspace/permissions/set', async () => {
+  it('dispatches _canopy/workspace/permissions/set', async () => {
     const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspacePermissionRules');
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -6276,7 +6278,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 217,
-      method: '_qwen/workspace/permissions/set',
+      method: '_canopy/workspace/permissions/set',
       params: {
         scope: 'workspace',
         ruleType: 'deny',
@@ -6317,7 +6319,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       message: '`ruleType` must be "allow", "ask", or "deny"',
     },
   ])(
-    'rejects invalid _qwen/workspace/permissions/set params: $message',
+    'rejects invalid _canopy/workspace/permissions/set params: $message',
     async ({ params, message }) => {
       const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspacePermissionRules');
       const connId = await initialize();
@@ -6327,7 +6329,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 218,
-        method: '_qwen/workspace/permissions/set',
+        method: '_canopy/workspace/permissions/set',
         params,
       });
       const frames = (await got) as Array<{
@@ -6344,10 +6346,10 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   );
 
   it('preserves already-stored malformed permission rules through ACP permissions/set', async () => {
-    const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-acp-'));
+    const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-acp-'));
     const workspace = path.join(scratch, 'workspace');
     const home = path.join(scratch, 'home');
-    const originalQwenHome = process.env['QWEN_HOME'];
+    const originalCanopyHome = process.env['QWEN_HOME'];
     const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspacePermissionRules');
     try {
       process.env['QWEN_HOME'] = home;
@@ -6365,7 +6367,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 218,
-        method: '_qwen/workspace/permissions/set',
+        method: '_canopy/workspace/permissions/set',
         params: {
           scope: 'workspace',
           ruleType: 'allow',
@@ -6380,10 +6382,10 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         rules: ['Bash(git *', 'Bash(git status)'],
       });
     } finally {
-      if (originalQwenHome === undefined) {
+      if (originalCanopyHome === undefined) {
         delete process.env['QWEN_HOME'];
       } else {
-        process.env['QWEN_HOME'] = originalQwenHome;
+        process.env['QWEN_HOME'] = originalCanopyHome;
       }
       resetHomeEnvBootstrapForTesting();
       setSpy.mockRestore();
@@ -6391,7 +6393,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     }
   });
 
-  it('maps _qwen/workspace/permissions/set missing live session to INVALID_PARAMS', async () => {
+  it('maps _canopy/workspace/permissions/set missing live session to INVALID_PARAMS', async () => {
     const setSpy = vi
       .spyOn(fakeWorkspace, 'setWorkspacePermissionRules')
       .mockRejectedValueOnce(
@@ -6404,7 +6406,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 218,
-      method: '_qwen/workspace/permissions/set',
+      method: '_canopy/workspace/permissions/set',
       params: {
         scope: 'workspace',
         ruleType: 'deny',
@@ -6425,7 +6427,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('dispatches _qwen/workspace/voice', async () => {
+  it('dispatches _canopy/workspace/voice', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -6433,7 +6435,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 219,
-      method: '_qwen/workspace/voice',
+      method: '_canopy/workspace/voice',
       params: {},
     });
     const frames = (await got) as Array<{ id: number; result?: unknown }>;
@@ -6447,7 +6449,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
   });
 
-  it('dispatches _qwen/workspace/voice/set', async () => {
+  it('dispatches _canopy/workspace/voice/set', async () => {
     const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspaceVoiceSettings');
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -6456,7 +6458,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 219,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: {
         enabled: true,
         mode: 'tap',
@@ -6483,7 +6485,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('maps _qwen/workspace/voice/set validation errors to invalid params', async () => {
+  it('maps _canopy/workspace/voice/set validation errors to invalid params', async () => {
     const setSpy = vi
       .spyOn(fakeWorkspace, 'setWorkspaceVoiceSettings')
       .mockRejectedValueOnce(
@@ -6500,7 +6502,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 220,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: { voiceModel: 'missing' },
     });
     const frames = (await got) as Array<{
@@ -6517,7 +6519,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('maps _qwen/workspace/voice/set partial persist errors to structured internal errors', async () => {
+  it('maps _canopy/workspace/voice/set partial persist errors to structured internal errors', async () => {
     const setSpy = vi
       .spyOn(fakeWorkspace, 'setWorkspaceVoiceSettings')
       .mockRejectedValueOnce(
@@ -6540,7 +6542,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 223,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: { voiceModel: 'qwen3-asr-flash' },
     });
     const frames = (await got) as Array<{
@@ -6565,7 +6567,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('rejects overlong _qwen/workspace/voice/set voiceModel values', async () => {
+  it('rejects overlong _canopy/workspace/voice/set voiceModel values', async () => {
     const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspaceVoiceSettings');
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -6574,7 +6576,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 222,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: { voiceModel: 'x'.repeat(MAX_VOICE_MODEL_LENGTH + 1) },
     });
     const frames = (await got) as Array<{
@@ -6592,7 +6594,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('rejects _qwen/workspace/voice/set with no recognized update fields', async () => {
+  it('rejects _canopy/workspace/voice/set with no recognized update fields', async () => {
     const setSpy = vi.spyOn(fakeWorkspace, 'setWorkspaceVoiceSettings');
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -6601,7 +6603,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 221,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: { enabled_: true },
     });
     const frames = (await got) as Array<{
@@ -6620,7 +6622,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setSpy.mockRestore();
   });
 
-  it('dispatches _qwen/workspace/setup-github', async () => {
+  it('dispatches _canopy/workspace/setup-github', async () => {
     await restartServer({
       fsFactory: makeFileFsFactory({}),
       daemonEnv: { HTTPS_PROXY: 'http://runtime-proxy.example:8080' },
@@ -6632,7 +6634,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 221,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
     const frames = (await got) as Array<{ id: number; result?: unknown }>;
@@ -6662,7 +6664,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     );
   });
 
-  it('rejects _qwen/workspace/setup-github without consent', async () => {
+  it('rejects _canopy/workspace/setup-github without consent', async () => {
     await restartServer({ fsFactory: makeFileFsFactory({}) });
     const connId = await initialize();
     const connStream = await openStream(connId);
@@ -6671,7 +6673,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 222,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: false },
     });
     const frames = (await got) as Array<{
@@ -6689,7 +6691,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(setupGithubMocks.setupGithub).not.toHaveBeenCalled();
   });
 
-  it('maps _qwen/workspace/setup-github without fsFactory to an internal error', async () => {
+  it('maps _canopy/workspace/setup-github without fsFactory to an internal error', async () => {
     const connId = await initialize();
     const connStream = await openStream(connId);
     const got = takeFrames(connStream, 1);
@@ -6697,7 +6699,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 222,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
     const frames = (await got) as Array<{
@@ -6719,13 +6721,13 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       workspaceCwd: TEST_WORKSPACE,
       gitRepoRoot: TEST_WORKSPACE,
       releaseTag: 'v1.2.3',
-      readmeUrl: 'https://github.com/QwenLM/qwen-code-action',
+      readmeUrl: 'https://github.com/QwenLM/canopy-code-action',
       workflows: [
         {
-          sourcePath: 'qwen-invoke.yml',
-          path: '.github/workflows/qwen-invoke.yml',
+          sourcePath: 'canopy-invoke.yml',
+          path: '.github/workflows/canopy-invoke.yml',
           status: 'failed',
-          error: `ENOSPC: open ${path.join(TEST_WORKSPACE, '.github', 'workflows', 'qwen-invoke.yml')}`,
+          error: `ENOSPC: open ${path.join(TEST_WORKSPACE, '.github', 'workflows', 'canopy-invoke.yml')}`,
         },
       ],
       gitignore: { path: '.gitignore', status: 'created' },
@@ -6735,7 +6737,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     setupGithubMocks.setupGithub.mockRejectedValueOnce(
       new SetupGithubError(
         'github_workflow_write_failed',
-        'Unable to write .github/workflows/qwen-invoke.yml.',
+        'Unable to write .github/workflows/canopy-invoke.yml.',
         500,
         partial,
       ),
@@ -6748,7 +6750,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     await post(connId, {
       jsonrpc: '2.0',
       id: 222,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
     const frames = (await got) as Array<{
@@ -6760,7 +6762,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       workflows: [
         {
           ...partial.workflows[0],
-          error: `ENOSPC: open <workspace>${path.sep}.github${path.sep}workflows${path.sep}qwen-invoke.yml`,
+          error: `ENOSPC: open <workspace>${path.sep}.github${path.sep}workflows${path.sep}canopy-invoke.yml`,
         },
       ],
     };
@@ -6778,7 +6780,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
   });
 
-  it('translateEvent: stream_error + client_evicted → _qwen/notify with kind', async () => {
+  it('translateEvent: stream_error + client_evicted → _canopy/notify with kind', async () => {
     const connId = await initialize();
     await newSession(connId);
     const sess = await openStream(connId, 'sess-1');
@@ -6791,7 +6793,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       method: string;
       params: { kind: string };
     }>;
-    expect(frames.every((f) => f.method === '_qwen/notify')).toBe(true);
+    expect(frames.every((f) => f.method === '_canopy/notify')).toBe(true);
     const kinds = frames.map((f) => f.params.kind);
     expect(kinds).toEqual(
       expect.arrayContaining(['stream_error', 'client_evicted']),
@@ -7083,7 +7085,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     expect(after.status).toBe(404);
   });
 
-  // ── Wave 1+2: new _qwen/* method tests ──────────────────────────
+  // ── Wave 1+2: new _canopy/* method tests ──────────────────────────
 
   describe('protocol compliance', () => {
     it('POST non-JSON Content-Type → 415', async () => {
@@ -7130,7 +7132,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   });
 
   describe('session extension methods', () => {
-    it('_qwen/session/recap returns recap', async () => {
+    it('_canopy/session/recap returns recap', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7144,7 +7146,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 50,
-        method: '_qwen/session/recap',
+        method: '_canopy/session/recap',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7153,7 +7155,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/btw validates question length', async () => {
+    it('_canopy/session/btw validates question length', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7167,14 +7169,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 51,
-        method: '_qwen/session/btw',
+        method: '_canopy/session/btw',
         params: { sessionId: 'sess-1', question: '' },
       });
       const frames = await takeFrames(await streamRes, 2);
       expect(frames[1]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/session/btw returns answer', async () => {
+    it('_canopy/session/btw returns answer', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7188,7 +7190,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 52,
-        method: '_qwen/session/btw',
+        method: '_canopy/session/btw',
         params: { sessionId: 'sess-1', question: 'what?' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7197,14 +7199,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/shell returns stable disabled error by default', async () => {
+    it('_canopy/session/shell returns stable disabled error by default', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 53,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: '' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -7227,7 +7229,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       ).toBe(false);
     });
 
-    it('_qwen/session/shell rejects unowned session when enabled', async () => {
+    it('_canopy/session/shell rejects unowned session when enabled', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       const connId = await initialize();
       const streamRes = openStream(connId);
@@ -7235,7 +7237,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 54,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -7248,7 +7250,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       ).toBe(false);
     });
 
-    it('_qwen/session/shell requires an owned bridge-stamped clientId when enabled', async () => {
+    it('_canopy/session/shell requires an owned bridge-stamped clientId when enabled', async () => {
       const nextBridge = new FakeBridge();
       nextBridge.spawnClientId = undefined;
       await restartServer({
@@ -7268,7 +7270,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 55,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7281,7 +7283,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(bridge.shellCalls).toHaveLength(0);
     });
 
-    it('_qwen/session/shell rejects empty command when enabled', async () => {
+    it('_canopy/session/shell rejects empty command when enabled', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       const connId = await initialize();
       const streamRes = openStream(connId);
@@ -7296,7 +7298,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 56,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: '' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7304,7 +7306,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(bridge.shellCalls).toHaveLength(0);
     });
 
-    it('_qwen/session/shell returns result', async () => {
+    it('_canopy/session/shell returns result', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       const connId = await initialize();
       const streamRes = openStream(connId);
@@ -7320,7 +7322,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 57,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7345,7 +7347,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(bridge.shellCalls[0]?.signal?.aborted).toBe(false);
     });
 
-    it('_qwen/session/shell maps bridge shell policy errors to RPC errorKind', async () => {
+    it('_canopy/session/shell maps bridge shell policy errors to RPC errorKind', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       bridge.shellError = new SessionShellDisabledError();
       const connId = await initialize();
@@ -7361,7 +7363,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 58,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const disabledFrames = await takeFrames(await streamRes, 2);
@@ -7387,7 +7389,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId2, {
         jsonrpc: '2.0',
         id: 59,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const clientRequiredFrames = await takeFrames(await streamRes2, 2);
@@ -7399,7 +7401,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/shell preserves InvalidClientIdError invalid params mapping', async () => {
+    it('_canopy/session/shell preserves InvalidClientIdError invalid params mapping', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       bridge.shellError = new InvalidClientIdError('sess-1', 'client-2');
       const connId = await initialize();
@@ -7415,14 +7417,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 60,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const frames = await takeFrames(await streamRes, 2);
       expect(frames[1]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/session/shell does not map arbitrary error names as shell policy errors', async () => {
+    it('_canopy/session/shell does not map arbitrary error names as shell policy errors', async () => {
       await restartServer({ sessionShellCommandEnabled: true });
       bridge.shellError = Object.assign(new Error('fake policy'), {
         name: 'SessionShellDisabledError',
@@ -7440,7 +7442,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 61,
-        method: '_qwen/session/shell',
+        method: '_canopy/session/shell',
         params: { sessionId: 'sess-1', command: 'pwd' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7452,7 +7454,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/detach succeeds', async () => {
+    it('_canopy/session/detach succeeds', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7466,7 +7468,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 55,
-        method: '_qwen/session/detach',
+        method: '_canopy/session/detach',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7474,7 +7476,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(bridge.detached.length).toBeGreaterThan(0);
     });
 
-    it('_qwen/session/context_usage returns usage', async () => {
+    it('_canopy/session/context_usage returns usage', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7488,7 +7490,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 56,
-        method: '_qwen/session/context_usage',
+        method: '_canopy/session/context_usage',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7497,7 +7499,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/tasks returns tasks', async () => {
+    it('_canopy/session/tasks returns tasks', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7511,7 +7513,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 57,
-        method: '_qwen/session/tasks',
+        method: '_canopy/session/tasks',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7520,7 +7522,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/lsp returns status', async () => {
+    it('_canopy/session/lsp returns status', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7534,7 +7536,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 57,
-        method: '_qwen/session/lsp',
+        method: '_canopy/session/lsp',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7549,7 +7551,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts returns the session artifact snapshot', async () => {
+    it('_canopy/session/artifacts returns the session artifact snapshot', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7563,7 +7565,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 58,
-        method: '_qwen/session/artifacts',
+        method: '_canopy/session/artifacts',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7582,7 +7584,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/add forwards only public artifact fields', async () => {
+    it('_canopy/session/artifacts/add forwards only public artifact fields', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7596,7 +7598,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 58,
-        method: '_qwen/session/artifacts/add',
+        method: '_canopy/session/artifacts/add',
         params: {
           sessionId: 'sess-1',
           title: 'Lineage',
@@ -7642,7 +7644,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/add maps artifact validation errors to invalid params', async () => {
+    it('_canopy/session/artifacts/add maps artifact validation errors to invalid params', async () => {
       bridge.addSessionArtifact = async () => {
         throw new SessionArtifactValidationError(
           'url must use http or https',
@@ -7662,7 +7664,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 59,
-        method: '_qwen/session/artifacts/add',
+        method: '_canopy/session/artifacts/add',
         params: {
           sessionId: 'sess-1',
           title: 'Bad URL',
@@ -7678,7 +7680,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/remove forwards artifact id', async () => {
+    it('_canopy/session/artifacts/remove forwards artifact id', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7692,7 +7694,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 59,
-        method: '_qwen/session/artifacts/remove',
+        method: '_canopy/session/artifacts/remove',
         params: {
           sessionId: 'sess-1',
           artifactId: 'artifact-1',
@@ -7722,7 +7724,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/remove rejects missing artifact id', async () => {
+    it('_canopy/session/artifacts/remove rejects missing artifact id', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -7736,7 +7738,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 60,
-        method: '_qwen/session/artifacts/remove',
+        method: '_canopy/session/artifacts/remove',
         params: { sessionId: 'sess-1' },
       });
       const frames = await takeFrames(await streamRes, 2);
@@ -7749,7 +7751,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(bridge.lastRemovedArtifact).toBeUndefined();
     });
 
-    it('_qwen/session/artifacts/remove maps artifact authorization errors', async () => {
+    it('_canopy/session/artifacts/remove maps artifact authorization errors', async () => {
       bridge.removeSessionArtifact = async () => {
         throw new SessionArtifactAuthorizationError(
           'sess-1',
@@ -7771,7 +7773,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 61,
-        method: '_qwen/session/artifacts/remove',
+        method: '_canopy/session/artifacts/remove',
         params: { sessionId: 'sess-1', artifactId: 'artifact-1' },
       });
 
@@ -7789,7 +7791,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/add reports an archive conflict while mutating', async () => {
+    it('_canopy/session/artifacts/add reports an archive conflict while mutating', async () => {
       await withRuntimeDir(async () => {
         const sessionId = '550e8400-e29b-41d4-a716-446655440131';
         await writeStoredSession(sessionId);
@@ -7822,7 +7824,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 60,
-          method: '_qwen/session/artifacts/add',
+          method: '_canopy/session/artifacts/add',
           params: {
             sessionId,
             title: 'Lineage',
@@ -7834,7 +7836,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 61,
-          method: '_qwen/sessions/archive',
+          method: '_canopy/sessions/archive',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -7861,7 +7863,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/artifacts/remove reports an archive conflict while mutating', async () => {
+    it('_canopy/session/artifacts/remove reports an archive conflict while mutating', async () => {
       await withRuntimeDir(async () => {
         const sessionId = '550e8400-e29b-41d4-a716-446655440132';
         await writeStoredSession(sessionId);
@@ -7906,7 +7908,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 62,
-          method: '_qwen/session/artifacts/remove',
+          method: '_canopy/session/artifacts/remove',
           params: { sessionId, artifactId: 'artifact-1' },
         });
         await removeStartedPromise;
@@ -7914,7 +7916,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 63,
-          method: '_qwen/sessions/archive',
+          method: '_canopy/sessions/archive',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -7958,7 +7960,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 58,
-        method: '_qwen/session/recap',
+        method: '_canopy/session/recap',
         params: { sessionId: 'unknown-session' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -7977,7 +7979,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 592,
-        method: '_qwen/workspace/mcp',
+        method: '_canopy/workspace/mcp',
         params: {},
       });
 
@@ -8003,7 +8005,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 59,
-        method: '_qwen/workspace/memory/write',
+        method: '_canopy/workspace/memory/write',
         params: { content: 'blocked' },
       });
 
@@ -8020,15 +8022,15 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
 
     it.each([
       [
-        '_qwen/workspace/session_groups/create',
+        '_canopy/workspace/session_groups/create',
         { workspaceCwd: TEST_WORKSPACE, name: 'Blocked', color: 'blue' },
       ],
       [
-        '_qwen/workspace/session_groups/update',
+        '_canopy/workspace/session_groups/update',
         { workspaceCwd: TEST_WORKSPACE, groupId: 'blocked', name: 'Blocked' },
       ],
       [
-        '_qwen/workspace/session_groups/delete',
+        '_canopy/workspace/session_groups/delete',
         { workspaceCwd: TEST_WORKSPACE, groupId: 'blocked' },
       ],
     ])(
@@ -8088,7 +8090,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       const posting = post(connId, {
         jsonrpc: '2.0',
         id: 591,
-        method: '_qwen/workspace/mcp',
+        method: '_canopy/workspace/mcp',
         params: {},
       });
       await started;
@@ -8132,7 +8134,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 593,
-          method: '_qwen/workspace/session_groups/create',
+          method: '_canopy/workspace/session_groups/create',
           params: {
             workspaceCwd: TEST_WORKSPACE,
             name: 'Stale',
@@ -8156,14 +8158,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/workspace/tools returns tools', async () => {
+    it('_canopy/workspace/tools returns tools', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 60,
-        method: '_qwen/workspace/tools',
+        method: '_canopy/workspace/tools',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -8182,7 +8184,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 70,
-          method: '_qwen/workspace/session_groups/create',
+          method: '_canopy/workspace/session_groups/create',
           params: {
             workspaceCwd: TEST_WORKSPACE,
             name: 'Frontend',
@@ -8201,7 +8203,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 71,
-          method: '_qwen/session/update_organization',
+          method: '_canopy/session/update_organization',
           params: {
             sessionId,
             isPinned: true,
@@ -8242,7 +8244,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 73,
-          method: '_qwen/workspace/session_groups/delete',
+          method: '_canopy/workspace/session_groups/delete',
           params: { workspaceCwd: TEST_WORKSPACE, groupId: group.id },
         });
         expect(await reader.next()).toMatchObject({
@@ -8310,7 +8312,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 77,
-          method: '_qwen/sessions/archive',
+          method: '_canopy/sessions/archive',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -8328,7 +8330,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 80,
-          method: '_qwen/sessions/unarchive',
+          method: '_canopy/sessions/unarchive',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -8345,7 +8347,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 83,
-          method: '_qwen/sessions/delete',
+          method: '_canopy/sessions/delete',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -8362,7 +8364,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/session/update_organization assigns a color echoed by session/list', async () => {
+    it('_canopy/session/update_organization assigns a color echoed by session/list', async () => {
       await withRuntimeDir(async () => {
         const sessionId = '550e8400-e29b-41d4-a716-446655440011';
         await writeStoredSession(sessionId);
@@ -8374,7 +8376,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 80,
-          method: '_qwen/session/update_organization',
+          method: '_canopy/session/update_organization',
           params: { sessionId, color: 'purple' },
         });
         expect(await reader.next()).toMatchObject({
@@ -8458,7 +8460,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 82,
-          method: '_qwen/session/update_organization',
+          method: '_canopy/session/update_organization',
           params: { sessionId, color: 'red' },
         });
         expect(await reader.next()).toMatchObject({
@@ -8498,7 +8500,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 84,
-          method: '_qwen/workspace/session_groups/create',
+          method: '_canopy/workspace/session_groups/create',
           params: {
             workspaceCwd: TEST_WORKSPACE,
             name: 'Frontend',
@@ -8516,7 +8518,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 85,
-          method: '_qwen/session/update_organization',
+          method: '_canopy/session/update_organization',
           params: { sessionId, groupId, color: 'red' },
         });
         expect(await reader.next()).toMatchObject({
@@ -8667,7 +8669,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         message: '`color` must be a supported color or null',
       },
     ])(
-      '_qwen/session/update_organization rejects invalid params: $message',
+      '_canopy/session/update_organization rejects invalid params: $message',
       async ({ params, message }) => {
         const connId = await initialize();
         const streamRes = openStream(connId);
@@ -8675,7 +8677,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 76,
-          method: '_qwen/session/update_organization',
+          method: '_canopy/session/update_organization',
           params,
         });
         const frames = await takeFrames(await streamRes, 1);
@@ -8689,28 +8691,28 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       },
     );
 
-    it('_qwen/workspace/mcp/tools rejects missing serverName', async () => {
+    it('_canopy/workspace/mcp/tools rejects missing serverName', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 61,
-        method: '_qwen/workspace/mcp/tools',
+        method: '_canopy/workspace/mcp/tools',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/workspace/mcp/tools returns tools', async () => {
+    it('_canopy/workspace/mcp/tools returns tools', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 62,
-        method: '_qwen/workspace/mcp/tools',
+        method: '_canopy/workspace/mcp/tools',
         params: { serverName: 'fs' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -8719,28 +8721,28 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/workspace/mcp/resources rejects missing serverName', async () => {
+    it('_canopy/workspace/mcp/resources rejects missing serverName', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 64,
-        method: '_qwen/workspace/mcp/resources',
+        method: '_canopy/workspace/mcp/resources',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/workspace/mcp/resources returns resources', async () => {
+    it('_canopy/workspace/mcp/resources returns resources', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 65,
-        method: '_qwen/workspace/mcp/resources',
+        method: '_canopy/workspace/mcp/resources',
         params: { serverName: 'fs' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -8749,49 +8751,49 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/workspace/mcp/servers/add rejects missing name', async () => {
+    it('_canopy/workspace/mcp/servers/add rejects missing name', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 63,
-        method: '_qwen/workspace/mcp/servers/add',
+        method: '_canopy/workspace/mcp/servers/add',
         params: { config: {} },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/workspace/mcp/servers/remove rejects missing name', async () => {
+    it('_canopy/workspace/mcp/servers/remove rejects missing name', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 64,
-        method: '_qwen/workspace/mcp/servers/remove',
+        method: '_canopy/workspace/mcp/servers/remove',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/sessions/delete rejects non-array', async () => {
+    it('_canopy/sessions/delete rejects non-array', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 65,
-        method: '_qwen/sessions/delete',
+        method: '_canopy/sessions/delete',
         params: { sessionIds: 'not-array' },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/sessions/delete rejects >100 ids', async () => {
+    it('_canopy/sessions/delete rejects >100 ids', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
@@ -8799,14 +8801,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 66,
-        method: '_qwen/sessions/delete',
+        method: '_canopy/sessions/delete',
         params: { sessionIds: ids },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/sessions/delete sanitizes stderr close errors', async () => {
+    it('_canopy/sessions/delete sanitizes stderr close errors', async () => {
       const lineSep = '\u2028';
       const bidiOverride = '\u202e';
       bridge.closeError = new Error(
@@ -8818,7 +8820,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 67,
-        method: '_qwen/sessions/delete',
+        method: '_canopy/sessions/delete',
         params: { sessionIds: [`sess${lineSep}FAKE\r\x1b[31m`] },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -8838,7 +8840,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(deleteLog).not.toContain(bidiOverride);
     });
 
-    it('_qwen/sessions/delete sanitizes stderr remove errors', async () => {
+    it('_canopy/sessions/delete sanitizes stderr remove errors', async () => {
       const lineSep = '\u2028';
       const bidiOverride = '\u202e';
       const sessionId = '550e8400-e29b-41d4-a716-446655440127';
@@ -8856,7 +8858,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
           await post(connId, {
             jsonrpc: '2.0',
             id: 68,
-            method: '_qwen/sessions/delete',
+            method: '_canopy/sessions/delete',
             params: { sessionIds: [sessionId] },
           });
           const frames = await takeFrames(await streamRes, 1);
@@ -8884,7 +8886,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/sessions/delete deletes available ids when another id is loading', async () => {
+    it('_canopy/sessions/delete deletes available ids when another id is loading', async () => {
       await withRuntimeDir(async () => {
         const sidOk = '550e8400-e29b-41d4-a716-446655440128';
         const sidBusy = '550e8400-e29b-41d4-a716-446655440129';
@@ -8926,7 +8928,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 71,
-          method: '_qwen/sessions/delete',
+          method: '_canopy/sessions/delete',
           params: { sessionIds: [sidOk, sidBusy] },
         });
         expect(await reader.next()).toMatchObject({
@@ -8948,7 +8950,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/sessions/archive returns session_archiving while delete owns the gate', async () => {
+    it('_canopy/sessions/archive returns session_archiving while delete owns the gate', async () => {
       const sessionId = 'delete-archive-race';
       let firstCloseStarted!: () => void;
       let releaseFirstClose!: () => void;
@@ -8979,7 +8981,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       const deletePost = post(connId, {
         jsonrpc: '2.0',
         id: 69,
-        method: '_qwen/sessions/delete',
+        method: '_canopy/sessions/delete',
         params: { sessionIds: [sessionId] },
       });
       await deletePost;
@@ -8988,7 +8990,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       const archivePost = post(connId, {
         jsonrpc: '2.0',
         id: 70,
-        method: '_qwen/sessions/archive',
+        method: '_canopy/sessions/archive',
         params: { sessionIds: [sessionId] },
       });
       await archivePost;
@@ -9023,7 +9025,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/sessions/delete returns session_archiving during archive gate', async () => {
+    it('_canopy/sessions/delete returns session_archiving during archive gate', async () => {
       await withRuntimeDir(async () => {
         const sessionId = '550e8400-e29b-41d4-a716-446655440132';
         await writeStoredSession(sessionId);
@@ -9046,7 +9048,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 72,
-          method: '_qwen/sessions/archive',
+          method: '_canopy/sessions/archive',
           params: { sessionIds: [sessionId] },
         });
         await closeStartedPromise;
@@ -9054,7 +9056,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 73,
-          method: '_qwen/sessions/delete',
+          method: '_canopy/sessions/delete',
           params: { sessionIds: [sessionId] },
         });
         expect(await reader.next()).toMatchObject({
@@ -9078,14 +9080,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   });
 
   describe('auth methods', () => {
-    it('_qwen/workspace/auth/status returns empty when no registry', async () => {
+    it('_canopy/workspace/auth/status returns empty when no registry', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 70,
-        method: '_qwen/workspace/auth/status',
+        method: '_canopy/workspace/auth/status',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9094,14 +9096,14 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/workspace/auth/device_flow/start rejects without registry', async () => {
+    it('_canopy/workspace/auth/device_flow/start rejects without registry', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 71,
-        method: '_qwen/workspace/auth/device_flow/start',
+        method: '_canopy/workspace/auth/device_flow/start',
         params: { providerId: 'test' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9110,7 +9112,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   });
 
   describe('memory methods', () => {
-    it('_qwen/workspace/memory/remember queues and polls hidden tasks', async () => {
+    it('_canopy/workspace/memory/remember queues and polls hidden tasks', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       const reader = frameReader(await streamRes);
@@ -9118,7 +9120,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 79,
-          method: '_qwen/workspace/memory/remember',
+          method: '_canopy/workspace/memory/remember',
           params: { content: 'remember this', contextMode: 'clean' },
         });
         const queued = (await reader.next()) as {
@@ -9133,7 +9135,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 80,
-          method: '_qwen/workspace/memory/remember/get',
+          method: '_canopy/workspace/memory/remember/get',
           params: { taskId: queued.result.taskId },
         });
         const completed = (await reader.next()) as {
@@ -9148,7 +9150,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/workspace/memory/forget queues and polls hidden tasks', async () => {
+    it('_canopy/workspace/memory/forget queues and polls hidden tasks', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       const reader = frameReader(await streamRes);
@@ -9156,7 +9158,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 82,
-          method: '_qwen/workspace/memory/forget',
+          method: '_canopy/workspace/memory/forget',
           params: { query: 'old preference' },
         });
         const queued = (await reader.next()) as {
@@ -9170,7 +9172,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 83,
-          method: '_qwen/workspace/memory/forget/get',
+          method: '_canopy/workspace/memory/forget/get',
           params: { taskId: queued.result.taskId },
         });
         const completed = (await reader.next()) as {
@@ -9185,7 +9187,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/workspace/memory/forget rejects oversized queries', async () => {
+    it('_canopy/workspace/memory/forget rejects oversized queries', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       const reader = frameReader(await streamRes);
@@ -9193,7 +9195,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 85,
-          method: '_qwen/workspace/memory/forget',
+          method: '_canopy/workspace/memory/forget',
           params: { query: 'x'.repeat(64 * 1024 + 1) },
         });
         const frame = (await reader.next()) as {
@@ -9206,7 +9208,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/workspace/memory/dream queues and polls hidden tasks', async () => {
+    it('_canopy/workspace/memory/dream queues and polls hidden tasks', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       const reader = frameReader(await streamRes);
@@ -9214,7 +9216,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 84,
-          method: '_qwen/workspace/memory/dream',
+          method: '_canopy/workspace/memory/dream',
           params: {},
         });
         const queued = (await reader.next()) as {
@@ -9228,7 +9230,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 85,
-          method: '_qwen/workspace/memory/dream/get',
+          method: '_canopy/workspace/memory/dream/get',
           params: { taskId: queued.result.taskId },
         });
         const completed = (await reader.next()) as {
@@ -9255,7 +9257,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            'x-qwen-client-id': clientId,
+            'x-canopy-client-id': clientId,
           },
           body: JSON.stringify({
             content: 'remember via rest',
@@ -9273,7 +9275,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 81,
-          method: '_qwen/workspace/memory/remember/get',
+          method: '_canopy/workspace/memory/remember/get',
           params: { taskId: restTask.taskId },
         });
         let completed:
@@ -9310,42 +9312,42 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       }
     });
 
-    it('_qwen/workspace/memory/write rejects non-string content', async () => {
+    it('_canopy/workspace/memory/write rejects non-string content', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 80,
-        method: '_qwen/workspace/memory/write',
+        method: '_canopy/workspace/memory/write',
         params: { content: 123 },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/workspace/memory/write rejects invalid scope', async () => {
+    it('_canopy/workspace/memory/write rejects invalid scope', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 81,
-        method: '_qwen/workspace/memory/write',
+        method: '_canopy/workspace/memory/write',
         params: { content: 'hi', scope: 'invalid' },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/workspace/memory/write rejects invalid mode', async () => {
+    it('_canopy/workspace/memory/write rejects invalid mode', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 82,
-        method: '_qwen/workspace/memory/write',
+        method: '_canopy/workspace/memory/write',
         params: { content: 'hi', mode: 'invalid' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9354,35 +9356,35 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
   });
 
   describe('file methods', () => {
-    it('_qwen/file/read rejects without fsFactory (503-equivalent)', async () => {
+    it('_canopy/file/read rejects without fsFactory (503-equivalent)', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 90,
-        method: '_qwen/file/read',
+        method: '_canopy/file/read',
         params: { path: 'test.txt' },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32603 } });
     });
 
-    it('_qwen/file/read rejects missing path', async () => {
+    it('_canopy/file/read rejects missing path', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 91,
-        method: '_qwen/file/read',
+        method: '_canopy/file/read',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/file/read forwards valid window parameters', async () => {
+    it('_canopy/file/read forwards valid window parameters', async () => {
       const readText = vi.fn(async () => ({
         content: 'hello',
         meta: { truncated: false },
@@ -9396,7 +9398,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 92,
-        method: '_qwen/file/read',
+        method: '_canopy/file/read',
         params: { path: 'test.txt', maxBytes: 10, line: 2, limit: 1 },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9410,7 +9412,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/file/read preserves defaults when window parameters are omitted', async () => {
+    it('_canopy/file/read preserves defaults when window parameters are omitted', async () => {
       const readText = vi.fn(async () => ({
         content: 'hello',
         meta: { truncated: false },
@@ -9424,7 +9426,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 92,
-        method: '_qwen/file/read',
+        method: '_canopy/file/read',
         params: { path: 'test.txt' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9439,7 +9441,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       });
     });
 
-    it('_qwen/file/read forwards a valid cursor and returns paged content', async () => {
+    it('_canopy/file/read forwards a valid cursor and returns paged content', async () => {
       const readText = vi.fn(async () => ({
         content: 'page-two',
         meta: { truncated: true, nextCursor: 'cursor-2' },
@@ -9453,7 +9455,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 93,
-        method: '_qwen/file/read',
+        method: '_canopy/file/read',
         params: { path: 'test.txt', cursor: 'cursor-1' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9492,29 +9494,32 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       { cursor: '' },
       { cursor: 123 },
       { cursor: 'x'.repeat(MAX_TEXT_CURSOR_CHARS + 1) },
-    ])('_qwen/file/read rejects invalid window params (%j)', async (params) => {
-      const readText = vi.fn(async () => ({
-        content: 'hello',
-        meta: { truncated: false },
-      }));
-      await restartServer({
-        fsFactory: makeFileFsFactory({ readText }),
-      });
-      const connId = await initialize();
-      const streamRes = openStream(connId);
-      await new Promise((r) => setTimeout(r, 30));
-      await post(connId, {
-        jsonrpc: '2.0',
-        id: 92,
-        method: '_qwen/file/read',
-        params: { path: 'test.txt', ...params },
-      });
-      const frames = await takeFrames(await streamRes, 1);
-      expect(frames[0]).toMatchObject({ error: { code: -32602 } });
-      expect(readText).not.toHaveBeenCalled();
-    });
+    ])(
+      '_canopy/file/read rejects invalid window params (%j)',
+      async (params) => {
+        const readText = vi.fn(async () => ({
+          content: 'hello',
+          meta: { truncated: false },
+        }));
+        await restartServer({
+          fsFactory: makeFileFsFactory({ readText }),
+        });
+        const connId = await initialize();
+        const streamRes = openStream(connId);
+        await new Promise((r) => setTimeout(r, 30));
+        await post(connId, {
+          jsonrpc: '2.0',
+          id: 92,
+          method: '_canopy/file/read',
+          params: { path: 'test.txt', ...params },
+        });
+        const frames = await takeFrames(await streamRes, 1);
+        expect(frames[0]).toMatchObject({ error: { code: -32602 } });
+        expect(readText).not.toHaveBeenCalled();
+      },
+    );
 
-    it('_qwen/file/read_bytes forwards valid window parameters', async () => {
+    it('_canopy/file/read_bytes forwards valid window parameters', async () => {
       const readBytesWindow = vi.fn(async () => ({
         buffer: Buffer.from('ell'),
         offset: 1,
@@ -9531,7 +9536,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 93,
-        method: '_qwen/file/read_bytes',
+        method: '_canopy/file/read_bytes',
         params: { path: 'test.txt', offset: 1, maxBytes: 3 },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9550,7 +9555,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       );
     });
 
-    it('_qwen/file/read_bytes preserves defaults when window parameters are omitted', async () => {
+    it('_canopy/file/read_bytes preserves defaults when window parameters are omitted', async () => {
       const readBytesWindow = vi.fn(async () => ({
         buffer: Buffer.from('hello'),
         offset: 0,
@@ -9567,7 +9572,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 93,
-        method: '_qwen/file/read_bytes',
+        method: '_canopy/file/read_bytes',
         params: { path: 'test.txt' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9598,7 +9603,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       { maxBytes: '1' },
       { maxBytes: null },
     ])(
-      '_qwen/file/read_bytes rejects invalid window params (%j)',
+      '_canopy/file/read_bytes rejects invalid window params (%j)',
       async (params) => {
         const readBytesWindow = vi.fn(async () => ({
           buffer: Buffer.from('hello'),
@@ -9616,7 +9621,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 93,
-          method: '_qwen/file/read_bytes',
+          method: '_canopy/file/read_bytes',
           params: { path: 'test.txt', ...params },
         });
         const frames = await takeFrames(await streamRes, 1);
@@ -9625,28 +9630,28 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       },
     );
 
-    it('_qwen/file/write rejects missing content', async () => {
+    it('_canopy/file/write rejects missing content', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 92,
-        method: '_qwen/file/write',
+        method: '_canopy/file/write',
         params: { path: 'test.txt' },
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/file/edit rejects missing oldText/newText', async () => {
+    it('_canopy/file/edit rejects missing oldText/newText', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 93,
-        method: '_qwen/file/edit',
+        method: '_canopy/file/edit',
         params: { path: 'test.txt' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9655,11 +9660,11 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
 
     it.each([
       {
-        method: '_qwen/file/write',
+        method: '_canopy/file/write',
         params: { path: 'test.txt', content: 'new content' },
       },
       {
-        method: '_qwen/file/edit',
+        method: '_canopy/file/edit',
         params: { path: 'test.txt', oldText: 'old', newText: 'new' },
       },
     ])(
@@ -9702,21 +9707,21 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       },
     );
 
-    it('_qwen/file/glob rejects missing pattern', async () => {
+    it('_canopy/file/glob rejects missing pattern', async () => {
       const connId = await initialize();
       const streamRes = openStream(connId);
       await new Promise((r) => setTimeout(r, 30));
       await post(connId, {
         jsonrpc: '2.0',
         id: 94,
-        method: '_qwen/file/glob',
+        method: '_canopy/file/glob',
         params: {},
       });
       const frames = await takeFrames(await streamRes, 1);
       expect(frames[0]).toMatchObject({ error: { code: -32602 } });
     });
 
-    it('_qwen/file/glob honors a valid maxResults limit', async () => {
+    it('_canopy/file/glob honors a valid maxResults limit', async () => {
       const glob = vi.fn(async () => [
         resolvedPath('a'),
         resolvedPath('b'),
@@ -9729,7 +9734,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 95,
-        method: '_qwen/file/glob',
+        method: '_canopy/file/glob',
         params: { pattern: '**/*', maxResults: 2 },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9743,7 +9748,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       expect(glob).toHaveBeenCalledWith('**/*', { maxResults: 3 });
     });
 
-    it('_qwen/file/glob defaults maxResults when omitted', async () => {
+    it('_canopy/file/glob defaults maxResults when omitted', async () => {
       const glob = vi.fn(async () => []);
       await restartServer({ fsFactory: makeGlobFsFactory(glob) });
       const connId = await initialize();
@@ -9752,7 +9757,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
       await post(connId, {
         jsonrpc: '2.0',
         id: 95,
-        method: '_qwen/file/glob',
+        method: '_canopy/file/glob',
         params: { pattern: '**/*' },
       });
       const frames = await takeFrames(await streamRes, 1);
@@ -9767,7 +9772,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
     });
 
     it.each([0, -1, 1.5, 50_001, '2', null])(
-      '_qwen/file/glob rejects invalid maxResults (%s)',
+      '_canopy/file/glob rejects invalid maxResults (%s)',
       async (maxResults) => {
         const glob = vi.fn(async () => []);
         await restartServer({ fsFactory: makeGlobFsFactory(glob) });
@@ -9777,7 +9782,7 @@ describe('ACP Streamable HTTP transport (over the wire)', () => {
         await post(connId, {
           jsonrpc: '2.0',
           id: 95,
-          method: '_qwen/file/glob',
+          method: '_canopy/file/glob',
           params: { pattern: '**/*', maxResults },
         });
         const frames = await takeFrames(await streamRes, 1);
@@ -9799,7 +9804,7 @@ describe('ACP WebSocket transport security', () => {
   let previousCdpMcpCommand: string | undefined;
 
   beforeEach(() => {
-    previousCdpMcpCommand = process.env['QWEN_CDP_MCP_COMMAND'];
+    previousCdpMcpCommand = process.env['CANOPY_CDP_MCP_COMMAND'];
   });
 
   async function yieldImmediate(): Promise<void> {
@@ -9891,14 +9896,14 @@ describe('ACP WebSocket transport security', () => {
     server?.closeAllConnections?.();
     await new Promise<void>((r) => server?.close(() => r()) ?? r());
     if (previousCdpMcpCommand === undefined) {
-      delete process.env['QWEN_CDP_MCP_COMMAND'];
+      delete process.env['CANOPY_CDP_MCP_COMMAND'];
     } else {
-      process.env['QWEN_CDP_MCP_COMMAND'] = previousCdpMcpCommand;
+      process.env['CANOPY_CDP_MCP_COMMAND'] = previousCdpMcpCommand;
     }
   });
 
   function enableCdpMcpCommand() {
-    process.env['QWEN_CDP_MCP_COMMAND'] = process.execPath;
+    process.env['CANOPY_CDP_MCP_COMMAND'] = process.execPath;
   }
 
   function wsConnect(
@@ -9943,7 +9948,7 @@ describe('ACP WebSocket transport security', () => {
     return new Promise((resolve) => {
       const ws = new WebSocket(
         `ws://127.0.0.1:${lanPort}/acp`,
-        ['qwen-ws', bearerProto(token)],
+        ['canopy-ws', bearerProto(token)],
         {
           headers: {
             Origin: `http://127.0.0.1:${lanPort}`,
@@ -9973,7 +9978,7 @@ describe('ACP WebSocket transport security', () => {
       id,
       method: 'initialize',
       params: {
-        clientInfo: { name: 'qwen-cdp-bridge', version: '1.0.0' },
+        clientInfo: { name: 'canopy-cdp-bridge', version: '1.0.0' },
       },
     });
   }
@@ -10021,7 +10026,7 @@ describe('ACP WebSocket transport security', () => {
   });
 
   it('does not register chrome-devtools MCP without an explicit CDP MCP command', async () => {
-    delete process.env['QWEN_CDP_MCP_COMMAND'];
+    delete process.env['CANOPY_CDP_MCP_COMMAND'];
     stdioMocks.writeStderrLine.mockClear();
     await startServer({ cdpTunnelOverWs: true });
     const ws = await wsConnect();
@@ -10031,7 +10036,7 @@ describe('ACP WebSocket transport security', () => {
     expect(bridge.runtimeMcpAdds).toHaveLength(0);
     expect(bridge.runtimeMcpRemoves).toHaveLength(0);
     expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: set QWEN_CDP_MCP_COMMAND to enable browser automation MCP (no adapter is bundled)',
+      'canopy serve: set CANOPY_CDP_MCP_COMMAND to enable browser automation MCP (no adapter is bundled)',
     );
 
     ws.close();
@@ -10039,7 +10044,7 @@ describe('ACP WebSocket transport security', () => {
   });
 
   it('treats a whitespace-only CDP MCP command as unset', async () => {
-    process.env['QWEN_CDP_MCP_COMMAND'] = '   ';
+    process.env['CANOPY_CDP_MCP_COMMAND'] = '   ';
     stdioMocks.writeStderrLine.mockClear();
     await startServer({ cdpTunnelOverWs: true });
     const ws = await wsConnect();
@@ -10048,7 +10053,7 @@ describe('ACP WebSocket transport security', () => {
     await yieldImmediate();
     expect(bridge.runtimeMcpAdds).toHaveLength(0);
     expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: set QWEN_CDP_MCP_COMMAND to enable browser automation MCP (no adapter is bundled)',
+      'canopy serve: set CANOPY_CDP_MCP_COMMAND to enable browser automation MCP (no adapter is bundled)',
     );
 
     ws.close();
@@ -10084,10 +10089,10 @@ describe('ACP WebSocket transport security', () => {
   });
 
   it('passes a custom CDP MCP command through to the runtime config', async () => {
-    process.env['QWEN_CDP_MCP_COMMAND'] = '/opt/process/cdp-adapter';
+    process.env['CANOPY_CDP_MCP_COMMAND'] = '/opt/process/cdp-adapter';
     await startServer({
       cdpTunnelOverWs: true,
-      daemonEnv: { QWEN_CDP_MCP_COMMAND: '/opt/custom/cdp-adapter' },
+      daemonEnv: { CANOPY_CDP_MCP_COMMAND: '/opt/custom/cdp-adapter' },
     });
     const ws = await wsConnect();
     await initializeCdpBridge(ws);
@@ -10139,7 +10144,7 @@ describe('ACP WebSocket transport security', () => {
       originatorClientId: bridge.runtimeMcpAdds[0]?.originatorClientId,
     });
     expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: chrome-devtools runtime MCP skipped because settings already define it',
+      'canopy serve: chrome-devtools runtime MCP skipped because settings already define it',
     );
     ws.close();
     await new Promise<void>((resolve) => ws.once('close', () => resolve()));
@@ -10160,7 +10165,7 @@ describe('ACP WebSocket transport security', () => {
     await vi.waitFor(() => expect(bridge.runtimeMcpAdds).toHaveLength(1));
     expect(bridge.runtimeMcpRemoves).toHaveLength(0);
     expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: chrome-devtools runtime MCP skipped: budget_exceeded',
+      'canopy serve: chrome-devtools runtime MCP skipped: budget_exceeded',
     );
 
     bridge.runtimeMcpAddResult = {};
@@ -10208,7 +10213,7 @@ describe('ACP WebSocket transport security', () => {
 
     await vi.waitFor(() => {
       expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-        'qwen serve: failed to add chrome-devtools runtime MCP: add failed',
+        'canopy serve: failed to add chrome-devtools runtime MCP: add failed',
       );
     });
 
@@ -10266,7 +10271,7 @@ describe('ACP WebSocket transport security', () => {
     await vi.waitFor(
       () => {
         expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-          'qwen serve: failed to add chrome-devtools runtime MCP: no channel',
+          'canopy serve: failed to add chrome-devtools runtime MCP: no channel',
         );
       },
       { timeout: 7_000 },
@@ -10291,7 +10296,7 @@ describe('ACP WebSocket transport security', () => {
 
     expect(bridge.runtimeMcpAdds).toHaveLength(0);
     expect(stdioMocks.writeStderrLine).toHaveBeenCalledWith(
-      'qwen serve: chrome-devtools runtime MCP skipped because /cdp requires bearer auth',
+      'canopy serve: chrome-devtools runtime MCP skipped because /cdp requires bearer auth',
     );
     ws.close();
     await new Promise<void>((resolve) => ws.once('close', () => resolve()));
@@ -10346,14 +10351,14 @@ describe('ACP WebSocket transport security', () => {
 
   // ── Bearer token via Sec-WebSocket-Protocol (browser clients) ──────
   // Browsers can't set an Authorization header on a WebSocket, so the token
-  // rides in a `qwen-bearer.<base64url(token)>` subprotocol that the upgrade
+  // rides in a `canopy-bearer.<base64url(token)>` subprotocol that the upgrade
   // listener decodes (extractUpgradeBearer). Matches the web-shell encoder.
   function bearerProto(token: string): string {
-    return `qwen-bearer.${Buffer.from(token).toString('base64url')}`;
+    return `canopy-bearer.${Buffer.from(token).toString('base64url')}`;
   }
   // Non-secret marker the web-shell offers alongside the bearer subprotocol so
   // the daemon can select it (never the secret) and the handshake completes.
-  const WS_AUTH_SUBPROTOCOL = 'qwen-ws';
+  const WS_AUTH_SUBPROTOCOL = 'canopy-ws';
 
   it('accepts the pairing token and advertised Origin only on the LAN listener', async () => {
     await startServer({
@@ -10463,7 +10468,7 @@ describe('ACP WebSocket transport security', () => {
     expect(result.code).toBe(101);
     // The daemon selects the non-secret marker, never the bearer value.
     expect(result.protocol).toBe(WS_AUTH_SUBPROTOCOL);
-    expect(result.protocol).not.toContain('qwen-bearer.');
+    expect(result.protocol).not.toContain('canopy-bearer.');
   });
 
   it('selects a non-secret subprotocol, never the bearer one', async () => {
@@ -10491,7 +10496,7 @@ describe('ACP WebSocket transport security', () => {
     // token) — exercises the non-throwing decode + constant-time mismatch path.
     const result = await wsConnectWithSubprotocols([
       WS_AUTH_SUBPROTOCOL,
-      'qwen-bearer.----',
+      'canopy-bearer.----',
     ]);
     expect(result.code).toBe(401);
   });
@@ -10620,7 +10625,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/trust as a WS read method', async () => {
+  it('classifies _canopy/workspace/trust as a WS read method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10638,7 +10643,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/trust',
+      method: '_canopy/workspace/trust',
       params: {},
     });
 
@@ -10647,7 +10652,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/trust/request as a WS mutation method', async () => {
+  it('classifies _canopy/workspace/trust/request as a WS mutation method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10665,7 +10670,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/trust/request',
+      method: '_canopy/workspace/trust/request',
       params: { desiredState: 'untrusted' },
     });
 
@@ -10677,7 +10682,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/permissions as a WS read method', async () => {
+  it('classifies _canopy/workspace/permissions as a WS read method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10695,7 +10700,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/permissions',
+      method: '_canopy/workspace/permissions',
       params: {},
     });
 
@@ -10704,7 +10709,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/permissions/set as a WS mutation method', async () => {
+  it('classifies _canopy/workspace/permissions/set as a WS mutation method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10722,7 +10727,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/permissions/set',
+      method: '_canopy/workspace/permissions/set',
       params: {
         scope: 'workspace',
         ruleType: 'deny',
@@ -10738,7 +10743,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/voice as a WS read method', async () => {
+  it('classifies _canopy/workspace/voice as a WS read method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10756,7 +10761,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/voice',
+      method: '_canopy/workspace/voice',
       params: {},
     });
 
@@ -10765,7 +10770,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/voice/set as a WS mutation method', async () => {
+  it('classifies _canopy/workspace/voice/set as a WS mutation method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10783,7 +10788,7 @@ describe('ACP WebSocket transport security', () => {
     const res = await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/voice/set',
+      method: '_canopy/workspace/voice/set',
       params: { enabled: false },
     });
 
@@ -10795,7 +10800,7 @@ describe('ACP WebSocket transport security', () => {
     ws.close();
   });
 
-  it('classifies _qwen/workspace/setup-github as a WS mutation method', async () => {
+  it('classifies _canopy/workspace/setup-github as a WS mutation method', async () => {
     const tiers: string[] = [];
     await startServer({
       checkRate: (_key, tier) => {
@@ -10813,7 +10818,7 @@ describe('ACP WebSocket transport security', () => {
     await sendRpc(ws, {
       jsonrpc: '2.0',
       id: 2,
-      method: '_qwen/workspace/setup-github',
+      method: '_canopy/workspace/setup-github',
       params: { consent: true },
     });
 

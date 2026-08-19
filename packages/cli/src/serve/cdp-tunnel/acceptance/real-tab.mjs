@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Plan C real-Chrome local verification (issue #5626).
@@ -13,7 +13,7 @@
  * Prereqs:
  *   1. Build: `npm run build` (cli + extension).
  *   2. Start the daemon with the tunnel on:
- *        QWEN_SERVE_CDP_TUNNEL_OVER_WS=1 QWEN_SERVE_CLIENT_MCP_OVER_WS=1 \
+ *        CANOPY_SERVE_CDP_TUNNEL_OVER_WS=1 CANOPY_SERVE_CLIENT_MCP_OVER_WS=1 \
  *          npm start -- serve --port 4170 --hostname 127.0.0.1 --no-web \
  *          --workspace <abs-repo> --allow-origin chrome-extension://<ext-id>
  *   3. chrome://extensions → Load unpacked →

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   createGitHubPullRequest,
   fetchGitHubPullRequests,
   getDefaultBranch,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { AcpSessionBridge } from '../acp-session-bridge.js';
 import { sendBridgeError } from '../server/error-response.js';
 import {
@@ -22,8 +22,8 @@ import {
 } from '../workspace-registry.js';
 import { registerWorkspaceQualifiedGitHubPrsRoutes } from './workspace-github-prs.js';
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@qwen-code/qwen-code-core')>()),
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@canopy-code/canopy-code-core')>()),
   createGitHubPullRequest: vi.fn(),
   fetchGitHubPullRequests: vi.fn(),
   getDefaultBranch: vi.fn(),

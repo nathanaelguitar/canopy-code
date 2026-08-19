@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import { ICON } from '../../../constants.js';
 import { useKeypress } from '../../../hooks/useKeypress.js';
 import { keyMatchers, Command } from '../../../keyMatchers.js';
 import { t } from '../../../../i18n/index.js';
-import { MCPServerStatus } from '@qwen-code/qwen-code-core';
+import { MCPServerStatus } from '@canopy-code/canopy-code-core';
 import type { ServerListStepProps, MCPServerDisplayInfo } from '../types.js';
 import {
   groupServersBySource,
@@ -193,7 +193,7 @@ export const ServerListStep: React.FC<ServerListStepProps> = ({
       ) && (
         <Box marginTop={1}>
           <Text color={theme.status.warning}>
-            {ICON.REFERENCE} {t('Run qwen --debug to see error logs')}
+            {ICON.REFERENCE} {t('Run canopy --debug to see error logs')}
           </Text>
         </Box>
       )}

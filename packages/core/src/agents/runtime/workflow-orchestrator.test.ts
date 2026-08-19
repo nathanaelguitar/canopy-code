@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -104,7 +104,7 @@ const worktreeStubs = vi.hoisted(() => {
       ) => ({
         success: true,
         worktree: {
-          path: `/fake/repo/.qwen/worktrees/${slug}`,
+          path: `/fake/repo/.canopy/worktrees/${slug}`,
           branch: `worktree-${slug}`,
         },
       }),
@@ -958,8 +958,8 @@ describe('WorkflowOrchestrator', () => {
   });
 
   it('holds an agent-cap rejection behind the pause gate until resume', async () => {
-    const prev = process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '1';
+    const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '1';
     try {
       const scheduler = new WorkflowDispatchScheduler(1);
       scheduler.pause();
@@ -1001,8 +1001,8 @@ describe('WorkflowOrchestrator', () => {
       await vi.waitFor(() => expect(dispatchCalls).toBe(1));
     } finally {
       if (prev === undefined)
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-      else process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = prev;
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+      else process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = prev;
     }
   });
 
@@ -1065,8 +1065,8 @@ describe('WorkflowOrchestrator', () => {
 
   it('P-nested: nested agents share the parent agent-count cap', async () => {
     // Cap is read from env; set a tiny cap so parent(1) + nested(2) trips it.
-    const prev = process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '2';
+    const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '2';
     try {
       let dispatchCalls = 0;
       const orchestrator = new WorkflowOrchestrator(async () => {
@@ -1093,8 +1093,8 @@ describe('WorkflowOrchestrator', () => {
       expect(String(caught)).toMatch(/exceeded the maximum of 2 agent/);
     } finally {
       if (prev === undefined)
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-      else process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = prev;
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+      else process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = prev;
     }
   });
 
@@ -1537,8 +1537,8 @@ describe('WorkflowOrchestrator', () => {
     // run paused mid-flight executes nothing, so the watchdog must
     // suspend on pause and re-arm on resume instead of killing the run
     // mid-pause (after which resume is impossible).
-    const prev = process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'] = '0.4';
+    const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'] = '0.4';
     try {
       const scheduler = new WorkflowDispatchScheduler(1);
       let finishDispatch: ((value: string) => void) | undefined;
@@ -1575,8 +1575,8 @@ describe('WorkflowOrchestrator', () => {
       await expect(run).resolves.toMatchObject({ result: 'done' });
     } finally {
       if (prev === undefined)
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'];
-      else process.env['QWEN_CODE_MAX_WORKFLOW_SECONDS'] = prev;
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'];
+      else process.env['CANOPY_CODE_MAX_WORKFLOW_SECONDS'] = prev;
     }
   });
 
@@ -1712,8 +1712,8 @@ describe('WorkflowOrchestrator', () => {
   });
 
   it('P6: cached dispatches do NOT consume the agent-count cap', async () => {
-    const prev = process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-    process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '2';
+    const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+    process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '2';
     try {
       const { buildReplay } = await import('./workflow-journal.js');
       const entries: Array<import('./workflow-journal.js').JournalEntry> = [];
@@ -1724,7 +1724,7 @@ describe('WorkflowOrchestrator', () => {
         },
       } as unknown as import('./workflow-journal.js').WorkflowJournal;
       // Run 1 with a larger cap to record 3 agents.
-      process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '10';
+      process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '10';
       const orch1 = new WorkflowOrchestrator(async (p) => `r:${p}`);
       await orch1.run({
         script: `await agent('a'); await agent('b'); await agent('c'); return 1;`,
@@ -1733,7 +1733,7 @@ describe('WorkflowOrchestrator', () => {
       });
       // Run 2 (resume) with cap=2: all 3 are cached, so the cap (which
       // counts only LIVE dispatches) is never hit.
-      process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '2';
+      process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '2';
       const orch2 = new WorkflowOrchestrator(async () => 'LIVE');
       const outcome = await orch2.run({
         script: `await agent('a'); await agent('b'); await agent('c'); return 'ok';`,
@@ -1744,8 +1744,8 @@ describe('WorkflowOrchestrator', () => {
       expect(outcome.result).toBe('ok'); // no cap error despite 3 > 2
     } finally {
       if (prev === undefined)
-        delete process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-      else process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = prev;
+        delete process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+      else process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = prev;
     }
   });
 });
@@ -1936,10 +1936,10 @@ describe('createProductionDispatch', () => {
   // bounds from process.env, so delete the two knobs for this test — an
   // operator shell exporting them must not flip this hermetic assertion.
   it('passes bounded runConfig (max_turns + max_time_minutes)', async () => {
-    const prevTurns = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-    const prevMinutes = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-    delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-    delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+    const prevTurns = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+    const prevMinutes = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+    delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+    delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
     try {
       const dispatch = createProductionDispatch(fakeConfig());
       await dispatch('hello', { label: 'h1' });
@@ -1951,11 +1951,11 @@ describe('createProductionDispatch', () => {
       });
     } finally {
       if (prevTurns === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
       if (prevMinutes === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
     }
   });
 
@@ -1964,10 +1964,10 @@ describe('createProductionDispatch', () => {
   // numbers, so the wiring test above stays green either way. Stub the env
   // so the dispatched runConfig itself proves the resolver is wired in.
   it('fast-path dispatch honors the env-tunable subagent bounds', async () => {
-    const prevTurns = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-    const prevMinutes = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-    process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'] = '120';
-    process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = '45';
+    const prevTurns = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+    const prevMinutes = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+    process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'] = '120';
+    process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = '45';
     try {
       const dispatch = createProductionDispatch(fakeConfig());
       await dispatch('hello', { label: 'h1' });
@@ -1977,11 +1977,11 @@ describe('createProductionDispatch', () => {
       });
     } finally {
       if (prevTurns === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
       if (prevMinutes === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
     }
   });
 
@@ -2298,8 +2298,8 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
     // before any stage-2 starts, breaking the timing assumption. Force the
     // limit to 2 AND use a release gate so the assertion is timing-free.
     it('is staggered with no inter-stage barrier (item A reaches stage 2 while item B is still in stage 1)', async () => {
-      const envPrev = process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = '2';
+      const envPrev = process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = '2';
       try {
         let releaseItem1Stage1: () => void = () => {};
         const item1Stage1Gate = new Promise<void>((resolve) => {
@@ -2339,8 +2339,8 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
         expect(item0ReachedStage2).toBe(true);
       } finally {
         if (envPrev === undefined)
-          delete process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-        else process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = envPrev;
+          delete process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+        else process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = envPrev;
       }
     }, 10_000);
   });
@@ -2429,8 +2429,8 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
     // → unrecoverable deadlock (silent hang until the 30-min wall clock).
     // Forcing the window to 1 makes the worst case deterministic.
     it('a parallel() inside a pipeline() stage does not deadlock at concurrency=1', async () => {
-      const prev = process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
+      const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
       try {
         const orchestrator = new WorkflowOrchestrator(async (p) => `r:${p}`);
         const outcome = await orchestrator.run({
@@ -2442,14 +2442,14 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
         expect(outcome.result).toEqual([['r:a0'], ['r:a1'], ['r:a2']]);
       } finally {
         if (prev === undefined)
-          delete process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-        else process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = prev;
+          delete process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+        else process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = prev;
       }
     }, 15_000);
 
     it('parallel() of parallel() does not deadlock at concurrency=1', async () => {
-      const prev = process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-      process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
+      const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+      process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = '1';
       try {
         const orchestrator = new WorkflowOrchestrator(async (p) => `r:${p}`);
         const outcome = await orchestrator.run({
@@ -2462,8 +2462,8 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
         expect(outcome.result).toEqual([['r:x'], ['r:y']]);
       } finally {
         if (prev === undefined)
-          delete process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'];
-        else process.env['QWEN_CODE_MAX_WORKFLOW_CONCURRENCY'] = prev;
+          delete process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'];
+        else process.env['CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY'] = prev;
       }
     }, 15_000);
   });
@@ -2472,19 +2472,19 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
     it('resolveMaxAgentsPerRun defaults to 1000 and honors a valid override', () => {
       expect(resolveMaxAgentsPerRun({})).toBe(DEFAULT_MAX_AGENTS_PER_RUN);
       expect(
-        resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: '50' }),
+        resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: '50' }),
       ).toBe(50);
     });
 
     it('resolveMaxAgentsPerRun rejects a non-integer / <1 override and falls back', () => {
       expect(
-        resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: '0' }),
+        resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: '0' }),
       ).toBe(DEFAULT_MAX_AGENTS_PER_RUN);
       expect(
-        resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: 'abc' }),
+        resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: 'abc' }),
       ).toBe(DEFAULT_MAX_AGENTS_PER_RUN);
       expect(
-        resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: '2.5' }),
+        resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: '2.5' }),
       ).toBe(DEFAULT_MAX_AGENTS_PER_RUN);
     });
 
@@ -2493,7 +2493,7 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
       // Number.isInteger; only plain decimal integers should override the cap.
       for (const raw of ['0x10', '1e3', '1.0']) {
         expect(
-          resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: raw }),
+          resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: raw }),
         ).toBe(DEFAULT_MAX_AGENTS_PER_RUN);
       }
     });
@@ -2502,27 +2502,29 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
       // An invalid override falls back to the cpu-derived default in [1,16];
       // 0x10/1e2 must be rejected too, not parsed as 16/100.
       const cpuDefault = resolveConcurrencyLimit({
-        QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: '-1',
+        CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: '-1',
       });
       for (const raw of ['0x10', '1e2']) {
         expect(
-          resolveConcurrencyLimit({ QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: raw }),
+          resolveConcurrencyLimit({
+            CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: raw,
+          }),
         ).toBe(cpuDefault);
       }
     });
 
     // PR #4947 R1 T4 (wenshao): an env override above the hard ceiling must
     // be clamped, not honored — protects operators from a fat-finger
-    // QWEN_CODE_MAX_WORKFLOW_AGENTS=999999999 silently uncapping the run.
+    // CANOPY_CODE_MAX_WORKFLOW_AGENTS=999999999 silently uncapping the run.
     it('resolveMaxAgentsPerRun clamps an over-ceiling override to the hard maximum', () => {
       expect(
         resolveMaxAgentsPerRun({
-          QWEN_CODE_MAX_WORKFLOW_AGENTS: '999999999',
+          CANOPY_CODE_MAX_WORKFLOW_AGENTS: '999999999',
         }),
       ).toBe(10_000);
       // Just under the ceiling is preserved.
       expect(
-        resolveMaxAgentsPerRun({ QWEN_CODE_MAX_WORKFLOW_AGENTS: '9999' }),
+        resolveMaxAgentsPerRun({ CANOPY_CODE_MAX_WORKFLOW_AGENTS: '9999' }),
       ).toBe(9999);
     });
 
@@ -2539,23 +2541,25 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
         DEFAULT_WORKFLOW_SUBAGENT_MAX_TIME_MINUTES,
       );
       expect(
-        resolveSubagentMaxTurns({ QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS: '120' }),
+        resolveSubagentMaxTurns({
+          CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS: '120',
+        }),
       ).toBe(120);
       expect(
         resolveSubagentMaxTimeMinutes({
-          QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES: '45',
+          CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES: '45',
         }),
       ).toBe(45);
       // Literal anchors for the hard ceilings — comparing against the
       // HARD_* constants would assert them against themselves.
       expect(
         resolveSubagentMaxTurns({
-          QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS: '999999',
+          CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS: '999999',
         }),
       ).toBe(500);
       expect(
         resolveSubagentMaxTimeMinutes({
-          QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES: '999999',
+          CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES: '999999',
         }),
       ).toBe(100);
     });
@@ -2563,11 +2567,13 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
     it('per-subagent bounds reject non-decimal-integer overrides', () => {
       for (const raw of ['0', 'abc', '2.5', '0x10', '1e3']) {
         expect(
-          resolveSubagentMaxTurns({ QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS: raw }),
+          resolveSubagentMaxTurns({
+            CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS: raw,
+          }),
         ).toBe(DEFAULT_WORKFLOW_SUBAGENT_MAX_TURNS);
         expect(
           resolveSubagentMaxTimeMinutes({
-            QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES: raw,
+            CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES: raw,
           }),
         ).toBe(DEFAULT_WORKFLOW_SUBAGENT_MAX_TIME_MINUTES);
       }
@@ -2575,11 +2581,11 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
 
     it('resolveConcurrencyLimit honors a valid override and clamps the cpu default to [1,16]', () => {
       expect(
-        resolveConcurrencyLimit({ QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: '4' }),
+        resolveConcurrencyLimit({ CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: '4' }),
       ).toBe(4);
       // invalid → cpu-derived default, always within [1, 16]
       const fallback = resolveConcurrencyLimit({
-        QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: '-1',
+        CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: '-1',
       });
       expect(fallback).toBeGreaterThanOrEqual(1);
       expect(fallback).toBeLessThanOrEqual(16);
@@ -2591,18 +2597,18 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
     it('resolveConcurrencyLimit clamps an over-ceiling override to the hard maximum', () => {
       expect(
         resolveConcurrencyLimit({
-          QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: '999999',
+          CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: '999999',
         }),
       ).toBe(64);
       // Just under the ceiling is preserved.
       expect(
-        resolveConcurrencyLimit({ QWEN_CODE_MAX_WORKFLOW_CONCURRENCY: '63' }),
+        resolveConcurrencyLimit({ CANOPY_CODE_MAX_WORKFLOW_CONCURRENCY: '63' }),
       ).toBe(63);
     });
 
-    it('QWEN_CODE_MAX_WORKFLOW_AGENTS actually lowers the cap at run time', async () => {
-      const prev = process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-      process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = '3';
+    it('CANOPY_CODE_MAX_WORKFLOW_AGENTS actually lowers the cap at run time', async () => {
+      const prev = process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+      process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = '3';
       try {
         const orchestrator = new WorkflowOrchestrator(async () => 'ok');
         const outcome = await orchestrator.run({
@@ -2616,8 +2622,8 @@ describe('WorkflowOrchestrator P2 — parallel() / pipeline() / caps', () => {
         expect(arr.filter((v) => v === null)).toHaveLength(1);
       } finally {
         if (prev === undefined)
-          delete process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'];
-        else process.env['QWEN_CODE_MAX_WORKFLOW_AGENTS'] = prev;
+          delete process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'];
+        else process.env['CANOPY_CODE_MAX_WORKFLOW_AGENTS'] = prev;
       }
     });
   });
@@ -2715,7 +2721,7 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
       getTargetDir: () => '/fake/repo',
       getFileFilteringOptions: () => ({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
         customIgnoreFiles: ['.cursorignore'],
       }),
       getSessionId: () => 'sess_fake_test_id',
@@ -2742,7 +2748,7 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
             runtimeTargetDir: runtimeContext.getTargetDir(),
             runtimeIgnoreFiles: runtimeContext
               .getFileService?.()
-              .getQwenIgnoreFileNamesDisplay(),
+              .getCanopyIgnoreFileNamesDisplay(),
             options: { runConfigOverrides: options?.runConfigOverrides },
             eventEmitterAttached: options?.eventEmitter !== undefined,
           };
@@ -3225,10 +3231,10 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
   // runConfigOverrides handed to createAgentHeadless come from the
   // resolvers.
   it('override-path dispatch honors the env-tunable subagent bounds', async () => {
-    const prevTurns = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-    const prevMinutes = process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-    process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'] = '120';
-    process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = '45';
+    const prevTurns = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+    const prevMinutes = process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+    process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'] = '120';
+    process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = '45';
     try {
       const helper = fakeConfigWithMgr({
         onCreate: async () => ({ finalText: 'ok', terminateMode: 'GOAL' }),
@@ -3242,11 +3248,11 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
       });
     } finally {
       if (prevTurns === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_TURNS'] = prevTurns;
       if (prevMinutes === undefined)
-        delete process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
-      else process.env['QWEN_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
+        delete process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'];
+      else process.env['CANOPY_CODE_WORKFLOW_AGENT_MAX_MINUTES'] = prevMinutes;
     }
   });
 
@@ -3811,7 +3817,7 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
 
     await expect(
       createProductionDispatch(helper.config)('hi', {
-        workingDir: '.qwen/tmp/review-pr-7',
+        workingDir: '.canopy/tmp/review-pr-7',
       }),
     ).resolves.toBe('pinned');
 
@@ -3825,14 +3831,14 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
       onCreate: async () => ({ finalText: 'pinned', terminateMode: 'GOAL' }),
     });
     await createProductionDispatch(helper.config)('hi', {
-      workingDir: '.qwen/tmp/review-pr-7',
+      workingDir: '.canopy/tmp/review-pr-7',
     });
 
     // The subagent's Config answers with the pinned directory, not the
     // parent's '/fake/repo' — that rebind is what makes its file, shell and
     // search tools resolve inside the worktree.
     expect(helper.calls[0]!.runtimeTargetDir).toBe(
-      '/fake/repo/.qwen/tmp/review-pr-7',
+      '/fake/repo/.canopy/tmp/review-pr-7',
     );
     expect(helper.calls[0]!.runtimeContextSame).toBe(false);
     expect(helper.calls[0]!.runtimeIgnoreFiles).toContain('.cursorignore');
@@ -3873,7 +3879,7 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
 
     await expect(
       createProductionDispatch(helper.config)('hi', {
-        workingDir: '.qwen/tmp/review-pr-7',
+        workingDir: '.canopy/tmp/review-pr-7',
         isolation: 'worktree',
       }),
     ).rejects.toThrow(/incompatible options/);
@@ -3974,7 +3980,7 @@ describe('WorkflowOrchestrator P3 — agentType / model / isolation / schema', (
     });
     // Override getTargetDir to look nested-worktree-ish.
     (config as unknown as { getTargetDir: () => string }).getTargetDir = () =>
-      '/some/repo/.qwen/worktrees/agent-existing/inner';
+      '/some/repo/.canopy/worktrees/agent-existing/inner';
     const dispatch = createProductionDispatch(config);
     await expect(dispatch('hi', { isolation: 'worktree' })).rejects.toThrow(
       /already inside a worktree/,

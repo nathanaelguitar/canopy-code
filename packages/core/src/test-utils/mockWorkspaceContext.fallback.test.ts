@@ -27,7 +27,7 @@ vi.mock('node:fs', async () => {
 
 import { createMockWorkspaceContext } from './mockWorkspaceContext.js';
 
-const rootDir = mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+const rootDir = mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
 
 describe('createMockWorkspaceContext filesystem fallback', () => {
   it('uses lexical containment when canonicalization is unavailable', () => {

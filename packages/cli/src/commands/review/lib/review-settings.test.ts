@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -133,7 +133,9 @@ describe('operatorReviewSettings', () => {
     // read or parse, and this is now read while the plan is being captured —
     // the review's first step. A stray comma must not end the review.
     loadSettingsMock.mockImplementation(() => {
-      throw new Error('Error in /home/u/.qwen/settings.json: Unexpected token');
+      throw new Error(
+        'Error in /home/u/.canopy/settings.json: Unexpected token',
+      );
     });
     expect(operatorReviewSettings()).toEqual({
       attribution: true,
@@ -152,11 +154,13 @@ describe('operatorReviewSettings', () => {
     // The degrade exists so a broken settings file cannot end a review. If it
     // announces itself with the THROWING writer, the announcement can end the
     // review instead — `process.stderr.write` throws on EPIPE or a closed fd,
-    // which is reachable whenever the reader goes away (`qwen … | head`) or a
+    // which is reachable whenever the reader goes away (`canopy … | head`) or a
     // daemon redirects its stderr. Both failures at once is exactly the case
     // this path was written for.
     loadSettingsMock.mockImplementation(() => {
-      throw new Error('Error in /home/u/.qwen/settings.json: Unexpected token');
+      throw new Error(
+        'Error in /home/u/.canopy/settings.json: Unexpected token',
+      );
     });
     stderr.mockImplementation(() => {
       throw Object.assign(new Error('write EPIPE'), { code: 'EPIPE' });

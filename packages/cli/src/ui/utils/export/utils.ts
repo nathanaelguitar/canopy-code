@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,5 +9,5 @@
  */
 export function generateExportFilename(extension: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return `qwen-code-export-${timestamp}.${extension}`;
+  return `canopy-code-export-${timestamp}.${extension}`;
 }

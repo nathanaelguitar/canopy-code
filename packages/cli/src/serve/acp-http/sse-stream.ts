@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import type { DeliveryResult, TransportStream } from './transport-stream.js';
 /**
  * A long-lived Server-Sent-Events writer for the ACP-over-HTTP transport.
  *
- * Unlike the REST `/session/:id/events` stream (qwen event envelopes), the
+ * Unlike the REST `/session/:id/events` stream (canopy event envelopes), the
  * ACP transport carries raw JSON-RPC 2.0 objects as the SSE `data:` payload
  * — one object per frame. The RFD keeps these streams open for the life of
  * the connection/session, so the writer must:
@@ -122,7 +122,7 @@ export class SseStream implements TransportStream {
       this.onClose?.();
     } catch (err) {
       writeStderrLine(
-        `qwen serve: /acp SSE onClose threw: ${
+        `canopy serve: /acp SSE onClose threw: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -147,7 +147,7 @@ export class SseStream implements TransportStream {
       .catch((err: unknown) => {
         if (!this.closed) {
           writeStderrLine(
-            `qwen serve: /acp SSE write failed, closing stream: ${
+            `canopy serve: /acp SSE write failed, closing stream: ${
               err instanceof Error ? err.message : String(err)
             }`,
           );

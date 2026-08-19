@@ -55,7 +55,7 @@ export interface ContentGenerator {
 
 export enum AuthType {
   USE_OPENAI = 'openai',
-  QWEN_OAUTH = 'qwen-oauth',
+  CANOPY_OAUTH = 'canopy-oauth',
   USE_GEMINI = 'gemini',
   USE_VERTEX_AI = 'vertex-ai',
   USE_ANTHROPIC = 'anthropic',
@@ -300,8 +300,8 @@ export function validateModelConfig(
 ): ModelConfigValidationResult {
   const errors: Error[] = [];
 
-  // Qwen OAuth doesn't need validation - it uses dynamic tokens
-  if (config.authType === AuthType.QWEN_OAUTH) {
+  // Canopy OAuth doesn't need validation - it uses dynamic tokens
+  if (config.authType === AuthType.CANOPY_OAUTH) {
     return { valid: true, errors: [] };
   }
 
@@ -393,8 +393,8 @@ function wrapProviderLoadError(error: unknown, authType: AuthType): unknown {
   }
 
   return new Error(
-    `Qwen Code was updated in the background and needs to be restarted.\n` +
-      `Please exit and restart Qwen Code to use the '${authType}' provider.`,
+    `Canopy Code was updated in the background and needs to be restarted.\n` +
+      `Please exit and restart Canopy Code to use the '${authType}' provider.`,
     { cause: moduleNotFoundError },
   );
 }
@@ -516,21 +516,25 @@ export async function createContentGenerator(
         );
         return createOpenAIContentGenerator(generatorConfig, config);
       };
-    } else if (authType === AuthType.QWEN_OAUTH) {
-      const { getQwenOAuthClient: getQwenOauthClient } = await import(
-        '../qwen/qwenOAuth2.js'
+    } else if (authType === AuthType.CANOPY_OAUTH) {
+      const { getCanopyOAuthClient: getCanopyOauthClient } = await import(
+        '../canopy/canopy-oauth2.js'
       );
 
       try {
-        const qwenClient = await getQwenOauthClient(
+        const canopyClient = await getCanopyOauthClient(
           config,
           isInitialAuth ? { requireCachedCredentials: true } : undefined,
         );
         loadBaseGenerator = async () => {
-          const { QwenContentGenerator } = await import(
-            '../qwen/qwenContentGenerator.js'
+          const { CanopyContentGenerator } = await import(
+            '../canopy/canopy-content-generator.js'
           );
-          return new QwenContentGenerator(qwenClient, generatorConfig, config);
+          return new CanopyContentGenerator(
+            canopyClient,
+            generatorConfig,
+            config,
+          );
         };
       } catch (error) {
         if (getModuleNotFoundError(error)) {

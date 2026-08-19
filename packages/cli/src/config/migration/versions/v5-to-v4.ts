@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ import type { SettingsMigration } from '../types.js';
  */
 const PROVIDER_KEY_TO_PROTOCOL: Record<string, string> = {
   openai: 'openai',
-  'qwen-oauth': 'qwen-oauth',
+  'canopy-oauth': 'canopy-oauth',
   gemini: 'gemini',
   'vertex-ai': 'gemini',
   anthropic: 'anthropic',

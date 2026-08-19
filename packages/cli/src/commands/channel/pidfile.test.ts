@@ -15,7 +15,9 @@ const fsFds = vi.hoisted(() => {
   };
   return fds;
 });
-const mockGlobalQwenDir = vi.hoisted(() => '/tmp/qwen-pidfile-test/.qwen');
+const mockGlobalCanopyDir = vi.hoisted(
+  () => '/tmp/canopy-pidfile-test/.canopy',
+);
 const fsControls = vi.hoisted(() => ({ failUnlink: false }));
 
 vi.mock('node:fs', () => {
@@ -88,9 +90,9 @@ vi.mock('node:fs', () => {
   return { ...mock, default: mock };
 });
 
-vi.mock('@qwen-code/qwen-code-core', () => ({
+vi.mock('@canopy-code/canopy-code-core', () => ({
   Storage: {
-    getGlobalQwenDir: () => mockGlobalQwenDir,
+    getGlobalCanopyDir: () => mockGlobalCanopyDir,
   },
 }));
 
@@ -109,7 +111,7 @@ import {
 const originalKill = process.kill;
 
 function getPidFilePath() {
-  return join(mockGlobalQwenDir, 'channels', 'service.pid');
+  return join(mockGlobalCanopyDir, 'channels', 'service.pid');
 }
 
 beforeEach(() => {

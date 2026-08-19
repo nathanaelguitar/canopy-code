@@ -8,7 +8,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import {
   clearPromptStash,
   loadPromptStash,
@@ -21,7 +21,7 @@ describe('prompt stash', () => {
   const targetDir = '/workspace/project';
 
   beforeEach(() => {
-    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-prompt-stash-'));
+    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-prompt-stash-'));
     vi.spyOn(Storage, 'getRuntimeBaseDir').mockReturnValue(runtimeDir);
   });
 

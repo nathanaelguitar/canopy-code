@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -249,18 +249,18 @@ describe('HookEventHandler', () => {
       );
 
       await hookEventHandler.fireInstructionsLoadedEvent(
-        '/repo/.qwen/QWEN.local.md',
+        '/repo/.canopy/CANOPY.local.md',
         'local',
         'include',
         {
-          parentFilePath: '/repo/QWEN.md',
+          parentFilePath: '/repo/CANOPY.md',
         },
       );
 
       expect(mockHookPlanner.createExecutionPlan).toHaveBeenCalledWith(
         HookEventName.InstructionsLoaded,
         {
-          filePath: '/repo/.qwen/QWEN.local.md',
+          filePath: '/repo/.canopy/CANOPY.local.md',
         },
       );
 
@@ -272,10 +272,10 @@ describe('HookEventHandler', () => {
         load_reason: string;
         parent_file_path?: string;
       };
-      expect(input.file_path).toBe('/repo/.qwen/QWEN.local.md');
+      expect(input.file_path).toBe('/repo/.canopy/CANOPY.local.md');
       expect(input.memory_type).toBe('local');
       expect(input.load_reason).toBe('include');
-      expect(input.parent_file_path).toBe('/repo/QWEN.md');
+      expect(input.parent_file_path).toBe('/repo/CANOPY.md');
     });
   });
 
@@ -2380,7 +2380,7 @@ describe('HookEventHandler', () => {
       );
 
       await hookEventHandler.fireNotificationEvent(
-        'Qwen Code needs your permission to use Bash',
+        'Canopy Code needs your permission to use Bash',
         NotificationType.PermissionPrompt,
         'Permission needed',
       );
@@ -2393,7 +2393,9 @@ describe('HookEventHandler', () => {
         title?: string;
       };
 
-      expect(input.message).toBe('Qwen Code needs your permission to use Bash');
+      expect(input.message).toBe(
+        'Canopy Code needs your permission to use Bash',
+      );
       expect(input.notification_type).toBe('permission_prompt');
       expect(input.title).toBe('Permission needed');
     });
@@ -2409,7 +2411,7 @@ describe('HookEventHandler', () => {
       );
 
       await hookEventHandler.fireNotificationEvent(
-        'Qwen Code is waiting for your input',
+        'Canopy Code is waiting for your input',
         NotificationType.IdlePrompt,
         'Waiting for input',
       );
@@ -2995,7 +2997,7 @@ describe('HookEventHandler', () => {
 
       await hookEventHandler.fireSubagentStartEvent(
         'agent-456',
-        'qwen-tester',
+        'canopy-tester',
         PermissionMode.Plan,
       );
 
@@ -3009,7 +3011,7 @@ describe('HookEventHandler', () => {
       };
 
       expect(input.agent_id).toBe('agent-456');
-      expect(input.agent_type).toBe('qwen-tester');
+      expect(input.agent_type).toBe('canopy-tester');
       expect(input.permission_mode).toBe(PermissionMode.Plan);
       expect(input.hook_event_name).toBe(HookEventName.SubagentStart);
     });
@@ -3158,7 +3160,7 @@ describe('HookEventHandler', () => {
 
       await hookEventHandler.fireSubagentStopEvent(
         'agent-456',
-        'qwen-tester',
+        'canopy-tester',
         '/transcript/path.jsonl',
         'last message from agent',
         true,
@@ -3178,7 +3180,7 @@ describe('HookEventHandler', () => {
       };
 
       expect(input.agent_id).toBe('agent-456');
-      expect(input.agent_type).toBe('qwen-tester');
+      expect(input.agent_type).toBe('canopy-tester');
       expect(input.agent_transcript_path).toBe('/transcript/path.jsonl');
       expect(input.last_assistant_message).toBe('last message from agent');
       expect(input.stop_hook_active).toBe(true);

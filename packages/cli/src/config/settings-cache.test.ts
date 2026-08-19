@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@ vi.mock('node:os', async (importOriginal) => {
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { ideContextStore } from '@qwen-code/qwen-code-core';
+import { ideContextStore } from '@canopy-code/canopy-code-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearSettingsCacheForTesting,
@@ -42,12 +42,12 @@ const TEST_ENV_PREFIX = 'SETTINGS_CACHE_TEST_';
 describe('loadSettingsCached', () => {
   let tmpRoot: string;
   let homeDir: string;
-  let qwenHome: string;
+  let canopyHome: string;
   let workspaceDir: string;
 
-  const userSettingsPath = () => path.join(qwenHome, 'settings.json');
+  const userSettingsPath = () => path.join(canopyHome, 'settings.json');
   const workspaceSettingsPath = (ws = workspaceDir) =>
-    path.join(ws, '.qwen', 'settings.json');
+    path.join(ws, '.canopy', 'settings.json');
 
   const writeJson = (filePath: string, value: unknown) => {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -77,22 +77,22 @@ describe('loadSettingsCached', () => {
       fs.mkdtempSync(path.join(os.tmpdir(), 'settings-cache-test-')),
     );
     homeDir = path.join(tmpRoot, 'home');
-    qwenHome = path.join(tmpRoot, 'qwen-home');
+    canopyHome = path.join(tmpRoot, 'canopy-home');
     workspaceDir = path.join(tmpRoot, 'project', 'app');
     fs.mkdirSync(homeDir, { recursive: true });
-    fs.mkdirSync(qwenHome, { recursive: true });
+    fs.mkdirSync(canopyHome, { recursive: true });
     fs.mkdirSync(workspaceDir, { recursive: true });
     mockHome.dir = homeDir;
 
     // Sandbox every settings path inside tmpRoot: user/workspace via
     // QWEN_HOME + cwd, system/system-defaults via their test overrides.
-    vi.stubEnv('QWEN_HOME', qwenHome);
+    vi.stubEnv('QWEN_HOME', canopyHome);
     vi.stubEnv(
-      'QWEN_CODE_SYSTEM_SETTINGS_PATH',
+      'CANOPY_CODE_SYSTEM_SETTINGS_PATH',
       path.join(tmpRoot, 'system', 'settings.json'),
     );
     vi.stubEnv(
-      'QWEN_CODE_SYSTEM_DEFAULTS_PATH',
+      'CANOPY_CODE_SYSTEM_DEFAULTS_PATH',
       path.join(tmpRoot, 'system', 'system-defaults.json'),
     );
     resetModuleState();
@@ -166,7 +166,7 @@ describe('loadSettingsCached', () => {
   });
 
   it('reloads when a discovered home .env file changes', () => {
-    const homeEnvPath = path.join(qwenHome, '.env');
+    const homeEnvPath = path.join(canopyHome, '.env');
     fs.writeFileSync(homeEnvPath, `${TEST_ENV_PREFIX}A=1\n`);
 
     const first = loadSettingsCached(workspaceDir);
@@ -188,12 +188,12 @@ describe('loadSettingsCached', () => {
     const first = loadSettingsCached(workspaceDir);
     expect(first.merged.model?.name).toBe('home-one');
 
-    const otherQwenHome = path.join(tmpRoot, 'qwen-home-2');
+    const otherCanopyHome = path.join(tmpRoot, 'canopy-home-2');
     writeJson(
-      path.join(otherQwenHome, 'settings.json'),
+      path.join(otherCanopyHome, 'settings.json'),
       versioned({ model: { name: 'home-two' } }),
     );
-    vi.stubEnv('QWEN_HOME', otherQwenHome);
+    vi.stubEnv('QWEN_HOME', otherCanopyHome);
 
     const second = loadSettingsCached(workspaceDir);
     expect(second).not.toBe(first);

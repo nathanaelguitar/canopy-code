@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { Application, Request, Response } from 'express';
-import { FatalConfigError } from '@qwen-code/qwen-code-core';
+import { FatalConfigError } from '@canopy-code/canopy-code-core';
 import type { DaemonWorkspaceService } from '../workspace-service/types.js';
 import { MAX_TRUST_REASON_LENGTH } from '../validation-limits.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
@@ -97,7 +97,7 @@ function trustStatusV2(
 function sendTrustError(res: Response, route: string, err: unknown): void {
   if (sendGenerationClosedError(res, err)) return;
   writeStderrLine(
-    `qwen serve: ${route} error: ${
+    `canopy serve: ${route} error: ${
       err instanceof Error ? err.message : String(err)
     }`,
   );

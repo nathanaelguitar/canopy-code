@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,21 +13,21 @@ import {
   getLatestGitHubRelease,
   isGitHubRepositoryAsync,
 } from '../utils/gitUtils.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { loadUndici } from '../utils/load-undici.js';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
 
 const debugLogger = createDebugLogger('SETUP_GITHUB');
 
 export const GITHUB_WORKFLOW_PATHS = [
-  'qwen-dispatch/qwen-dispatch.yml',
-  'qwen-assistant/qwen-invoke.yml',
-  'issue-triage/qwen-triage.yml',
-  'issue-triage/qwen-scheduled-triage.yml',
-  'pr-review/qwen-review.yml',
+  'canopy-dispatch/canopy-dispatch.yml',
+  'canopy-assistant/canopy-invoke.yml',
+  'issue-triage/canopy-triage.yml',
+  'issue-triage/canopy-scheduled-triage.yml',
+  'pr-review/canopy-review.yml',
 ];
 
-const GITIGNORE_ENTRIES = ['.qwen/', 'gha-creds-*.json'];
+const GITIGNORE_ENTRIES = ['.canopy/', 'gha-creds-*.json'];
 export const MAX_WORKFLOW_DOWNLOAD_BYTES = 5 * 1024 * 1024;
 
 export type GithubSetupGitignoreStatus =
@@ -203,22 +203,22 @@ export async function setupGithub(
     releaseTag = await getLatestGitHubRelease(options.proxy);
   } catch (error) {
     writeStderrLine(
-      `qwen setup-github: failed to determine latest qwen-code-action release: ${
+      `canopy setup-github: failed to determine latest canopy-code-action release: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
     debugLogger.debug(
-      'Failed to determine latest qwen-code-action release:',
+      'Failed to determine latest canopy-code-action release:',
       error,
     );
     throw new SetupGithubError(
       'github_release_lookup_failed',
-      'Unable to determine the latest qwen-code-action release on GitHub.',
+      'Unable to determine the latest canopy-code-action release on GitHub.',
       502,
     );
   }
 
-  const readmeUrl = `https://github.com/QwenLM/qwen-code-action/blob/${releaseTag}/README.md#quick-start`;
+  const readmeUrl = `https://github.com/QwenLM/canopy-code-action/blob/${releaseTag}/README.md#quick-start`;
   const secretsUrl = await resolveSecretsUrl(cwd);
   const downloads = await downloadWorkflows({
     releaseTag,
@@ -383,10 +383,13 @@ async function downloadWorkflows(options: {
   } catch (error) {
     internalAbort.abort();
     const message = error instanceof Error ? error.message : String(error);
-    debugLogger.debug('Failed to download qwen-code-action workflows:', error);
+    debugLogger.debug(
+      'Failed to download canopy-code-action workflows:',
+      error,
+    );
     throw new SetupGithubError(
       'github_workflow_download_failed',
-      `Unable to download qwen-code-action workflows from GitHub. ${message}`,
+      `Unable to download canopy-code-action workflows from GitHub. ${message}`,
       502,
     );
   }

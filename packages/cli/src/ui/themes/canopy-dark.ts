@@ -7,7 +7,7 @@
 import { type ColorsTheme, Theme } from './theme.js';
 import { darkSemanticColors } from './semantic-tokens.js';
 
-const qwenDarkColors: ColorsTheme = {
+const canopyDarkColors: ColorsTheme = {
   type: 'dark',
   Background: '#0b0e14',
   Foreground: '#bfbdb6',
@@ -27,78 +27,78 @@ const qwenDarkColors: ColorsTheme = {
   GradientColors: ['#FFD700', '#da7959'],
 };
 
-export const QwenDark: Theme = new Theme(
-  'Qwen Dark',
+export const CanopyDark: Theme = new Theme(
+  'Canopy Dark',
   'dark',
   {
     hljs: {
       display: 'block',
       overflowX: 'auto',
       padding: '0.5em',
-      background: qwenDarkColors.Background,
-      color: qwenDarkColors.Foreground,
+      background: canopyDarkColors.Background,
+      color: canopyDarkColors.Foreground,
     },
     'hljs-keyword': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-literal': {
-      color: qwenDarkColors.AccentPurple,
+      color: canopyDarkColors.AccentPurple,
     },
     'hljs-symbol': {
-      color: qwenDarkColors.AccentCyan,
+      color: canopyDarkColors.AccentCyan,
     },
     'hljs-name': {
-      color: qwenDarkColors.LightBlue,
+      color: canopyDarkColors.LightBlue,
     },
     'hljs-link': {
-      color: qwenDarkColors.AccentBlue,
+      color: canopyDarkColors.AccentBlue,
     },
     'hljs-function .hljs-keyword': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-subst': {
-      color: qwenDarkColors.Foreground,
+      color: canopyDarkColors.Foreground,
     },
     'hljs-string': {
-      color: qwenDarkColors.AccentGreen,
+      color: canopyDarkColors.AccentGreen,
     },
     'hljs-title': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-type': {
-      color: qwenDarkColors.AccentBlue,
+      color: canopyDarkColors.AccentBlue,
     },
     'hljs-attribute': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-bullet': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-addition': {
-      color: qwenDarkColors.AccentGreen,
+      color: canopyDarkColors.AccentGreen,
     },
     'hljs-variable': {
-      color: qwenDarkColors.Foreground,
+      color: canopyDarkColors.Foreground,
     },
     'hljs-template-tag': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-template-variable': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-comment': {
-      color: qwenDarkColors.Comment,
+      color: canopyDarkColors.Comment,
       fontStyle: 'italic',
     },
     'hljs-quote': {
-      color: qwenDarkColors.AccentCyan,
+      color: canopyDarkColors.AccentCyan,
       fontStyle: 'italic',
     },
     'hljs-deletion': {
-      color: qwenDarkColors.AccentRed,
+      color: canopyDarkColors.AccentRed,
     },
     'hljs-meta': {
-      color: qwenDarkColors.AccentYellow,
+      color: canopyDarkColors.AccentYellow,
     },
     'hljs-doctag': {
       fontWeight: 'bold',
@@ -110,6 +110,6 @@ export const QwenDark: Theme = new Theme(
       fontStyle: 'italic',
     },
   },
-  qwenDarkColors,
+  canopyDarkColors,
   darkSemanticColors,
 );

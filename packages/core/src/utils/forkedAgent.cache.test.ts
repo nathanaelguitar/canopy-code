@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -638,7 +638,7 @@ describe('runForkedAgent (cache path)', () => {
       getModel: vi.fn().mockReturnValue('parent-model'),
       getContentGeneratorConfig: vi.fn().mockReturnValue({
         model: 'parent-model',
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
       }),
       getFastModel: vi.fn().mockReturnValue(undefined),
       getAllConfiguredModels: vi.fn(() => []),

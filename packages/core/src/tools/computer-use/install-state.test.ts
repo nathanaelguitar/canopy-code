@@ -13,7 +13,7 @@ describe('install-state', () => {
   let tmpHome: string;
 
   beforeEach(() => {
-    tmpHome = mkdtempSync(pathJoin(tmpdir(), 'qwen-cu-test-'));
+    tmpHome = mkdtempSync(pathJoin(tmpdir(), 'canopy-cu-test-'));
   });
 
   afterEach(() => {
@@ -65,7 +65,7 @@ describe('install-state', () => {
   it('installStatePathFor returns correct path', () => {
     const path = installStatePathFor(tmpHome);
     expect(path).toBe(
-      pathJoin(tmpHome, '.qwen', 'computer-use', 'installed.json'),
+      pathJoin(tmpHome, '.canopy', 'computer-use', 'installed.json'),
     );
   });
 });

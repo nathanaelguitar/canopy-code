@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ import {
   DEFAULT_CONTEXT_FILENAME,
   Storage,
   setGeminiMdFilename,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { createMutationGate } from './auth.js';
 import {
   InvalidClientIdError,
@@ -136,11 +136,11 @@ function buildApp(opts: {
     ...(opts.collectStatus ? { collectStatus: opts.collectStatus } : {}),
     mutate,
     parseClientId: (req, res) => {
-      const raw = req.get('x-qwen-client-id');
+      const raw = req.get('x-canopy-client-id');
       if (raw === undefined || raw === '') return undefined;
       if (raw.length > 128 || !/^[A-Za-z0-9._:-]+$/.test(raw)) {
         res.status(400).json({
-          error: '`X-Qwen-Client-Id` must be a non-empty token',
+          error: '`X-Canopy-Client-Id` must be a non-empty token',
           code: 'invalid_client_id',
         });
         return null;
@@ -173,27 +173,27 @@ describe('workspace memory routes', () => {
   let tmp: string;
   let workspace: string;
   let globalDir: string;
-  let getGlobalQwenDirSpy: MockInstance<typeof Storage.getGlobalQwenDir>;
+  let getGlobalCanopyDirSpy: MockInstance<typeof Storage.getGlobalCanopyDir>;
 
   beforeEach(async () => {
-    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-serve-memory-'));
+    tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-serve-memory-'));
     workspace = path.join(tmp, 'workspace');
     globalDir = path.join(tmp, 'global');
     await fs.mkdir(workspace, { recursive: true });
-    getGlobalQwenDirSpy = vi
-      .spyOn(Storage, 'getGlobalQwenDir')
+    getGlobalCanopyDirSpy = vi
+      .spyOn(Storage, 'getGlobalCanopyDir')
       .mockReturnValue(globalDir);
     resetContextFilenames();
   });
 
   afterEach(async () => {
     resetContextFilenames();
-    getGlobalQwenDirSpy.mockRestore();
+    getGlobalCanopyDirSpy.mockRestore();
     await fs.rm(tmp, { recursive: true, force: true });
   });
 
   describe('GET /workspace/memory', () => {
-    it('returns idle status when no QWEN.md or AGENTS.md exists anywhere', async () => {
+    it('returns idle status when no CANOPY.md or AGENTS.md exists anywhere', async () => {
       const bridge = buildBridgeStub();
       const app = buildApp({ bridge, boundWorkspace: workspace });
       const res = await request(app).get('/workspace/memory');
@@ -209,13 +209,13 @@ describe('workspace memory routes', () => {
       });
     });
 
-    it('reports workspace and global QWEN.md files with byte counts', async () => {
-      const wsFile = path.join(workspace, 'QWEN.md');
+    it('reports workspace and global CANOPY.md files with byte counts', async () => {
+      const wsFile = path.join(workspace, 'CANOPY.md');
       const wsContent = 'workspace memory\n';
       await fs.writeFile(wsFile, wsContent, 'utf8');
 
       await fs.mkdir(globalDir, { recursive: true });
-      const globalFile = path.join(globalDir, 'QWEN.md');
+      const globalFile = path.join(globalDir, 'CANOPY.md');
       const globalContent = 'global memory\n';
       await fs.writeFile(globalFile, globalContent, 'utf8');
 
@@ -238,7 +238,7 @@ describe('workspace memory routes', () => {
   });
 
   describe('POST /workspace/memory', () => {
-    it('appends to workspace QWEN.md and emits memory_changed', async () => {
+    it('appends to workspace CANOPY.md and emits memory_changed', async () => {
       const bridge = buildBridgeStub();
       const app = buildApp({ bridge, boundWorkspace: workspace });
       const res = await request(app)
@@ -248,10 +248,10 @@ describe('workspace memory routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
       expect(res.body.mode).toBe('append');
-      expect(res.body.filePath).toBe(path.join(workspace, 'QWEN.md'));
+      expect(res.body.filePath).toBe(path.join(workspace, 'CANOPY.md'));
 
       const written = await fs.readFile(
-        path.join(workspace, 'QWEN.md'),
+        path.join(workspace, 'CANOPY.md'),
         'utf8',
       );
       expect(written).toContain('- entry one');
@@ -262,13 +262,13 @@ describe('workspace memory routes', () => {
       const data = events[0]?.data as Record<string, unknown>;
       expect(data['scope']).toBe('workspace');
       expect(data['mode']).toBe('append');
-      expect(data['filePath']).toBe(path.join(workspace, 'QWEN.md'));
+      expect(data['filePath']).toBe(path.join(workspace, 'CANOPY.md'));
     });
 
-    it('replaces workspace QWEN.md when mode=replace', async () => {
+    it('replaces workspace CANOPY.md when mode=replace', async () => {
       const bridge = buildBridgeStub();
       const app = buildApp({ bridge, boundWorkspace: workspace });
-      const filePath = path.join(workspace, 'QWEN.md');
+      const filePath = path.join(workspace, 'CANOPY.md');
       await fs.writeFile(filePath, 'old\n', 'utf8');
 
       const res = await request(app)
@@ -280,7 +280,7 @@ describe('workspace memory routes', () => {
       expect(written).toBe('new\n');
     });
 
-    it('writes to the global ~/.qwen directory when scope=global', async () => {
+    it('writes to the global ~/.canopy directory when scope=global', async () => {
       const bridge = buildBridgeStub();
       const app = buildApp({ bridge, boundWorkspace: workspace });
       const res = await request(app)
@@ -288,9 +288,9 @@ describe('workspace memory routes', () => {
         .send({ scope: 'global', mode: 'append', content: '- global note' });
 
       expect(res.status).toBe(200);
-      expect(res.body.filePath).toBe(path.join(globalDir, 'QWEN.md'));
+      expect(res.body.filePath).toBe(path.join(globalDir, 'CANOPY.md'));
       const written = await fs.readFile(
-        path.join(globalDir, 'QWEN.md'),
+        path.join(globalDir, 'CANOPY.md'),
         'utf8',
       );
       expect(written).toContain('- global note');
@@ -351,12 +351,12 @@ describe('workspace memory routes', () => {
       expect(res.body.code).toBe('token_required');
     });
 
-    it('rejects 400 invalid_client_id when X-Qwen-Client-Id is unknown', async () => {
+    it('rejects 400 invalid_client_id when X-Canopy-Client-Id is unknown', async () => {
       const bridge = buildBridgeStub({ knownIds: ['client_known'] });
       const app = buildApp({ bridge, boundWorkspace: workspace });
       const res = await request(app)
         .post('/workspace/memory')
-        .set('X-Qwen-Client-Id', 'client_unknown')
+        .set('X-Canopy-Client-Id', 'client_unknown')
         .send({ scope: 'workspace', content: '- x' });
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('invalid_client_id');
@@ -374,11 +374,11 @@ describe('workspace memory routes', () => {
       expect(events).toHaveLength(0);
     });
 
-    it('returns 413 memory_file_too_large when existing QWEN.md exceeds the 16 MB cap', async () => {
-      // Write a 17 MB existing QWEN.md, then attempt append. The
+    it('returns 413 memory_file_too_large when existing CANOPY.md exceeds the 16 MB cap', async () => {
+      // Write a 17 MB existing CANOPY.md, then attempt append. The
       // helper's pre-read `fs.stat` must refuse with the typed
       // error → the route maps it to 413.
-      const filePath = path.join(workspace, 'QWEN.md');
+      const filePath = path.join(workspace, 'CANOPY.md');
       // 17 MB of `x` characters. Bypass the helper's mutex / cap by
       // writing directly via fs (simulating an externally-grown file
       // outside the daemon's control).
@@ -418,7 +418,7 @@ describe('workspace memory routes', () => {
       const bridge = buildBridgeStub();
       const app = buildApp({ bridge, boundWorkspace: workspace });
 
-      // Force a 500 by making the workspace QWEN.md unwritable. We
+      // Force a 500 by making the workspace CANOPY.md unwritable. We
       // chmod the WORKSPACE directory (not the file) so `mkdir` and
       // `writeFile` will fail with EACCES.
       const before = await fs.stat(workspace);
@@ -475,7 +475,7 @@ describe('workspace memory routes', () => {
       const app = buildApp({ bridge, boundWorkspace: workspace });
       const res = await request(app)
         .post('/workspace/memory')
-        .set('X-Qwen-Client-Id', 'client_a')
+        .set('X-Canopy-Client-Id', 'client_a')
         .send({ scope: 'workspace', mode: 'append', content: '- x' });
       expect(res.status).toBe(200);
       const events = (bridge as unknown as { events: RecordedEvent[] }).events;

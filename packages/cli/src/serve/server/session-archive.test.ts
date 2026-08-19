@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   getCronFilePath,
   readCronTasks,
   updateCronTasks,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   SessionArchivedError,
   SessionArchivingError,
@@ -41,8 +41,8 @@ describe('assertSessionLoadable', () => {
   let workspaceDir: string;
 
   beforeEach(() => {
-    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-archive-test-'));
-    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-archive-test-'));
+    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -85,7 +85,7 @@ describe('assertSessionLoadable', () => {
   it('ignores archived files that do not belong to this project', async () => {
     const sessionId = '550e8400-e29b-41d4-a716-446655440010';
     const otherWorkspace = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-other-workspace-'),
+      path.join(os.tmpdir(), 'canopy-other-workspace-'),
     );
     try {
       writeSessionFile(workspaceDir, sessionId, 'archived', otherWorkspace);
@@ -254,8 +254,8 @@ describe('archiveDaemonSessions', () => {
   let workspaceDir: string;
 
   beforeEach(() => {
-    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-archive-test-'));
-    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-archive-test-'));
+    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -688,8 +688,8 @@ describe('unarchiveDaemonSessions', () => {
   let workspaceDir: string;
 
   beforeEach(() => {
-    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-archive-test-'));
-    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-archive-test-'));
+    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -931,8 +931,8 @@ describe('deleteDaemonSessions', () => {
   let workspaceDir: string;
 
   beforeEach(() => {
-    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-archive-test-'));
-    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-workspace-'));
+    runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-archive-test-'));
+    workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-workspace-'));
     Storage.setRuntimeBaseDir(runtimeDir);
   });
 
@@ -997,7 +997,7 @@ describe('deleteDaemonSessions', () => {
     expect(result.errors).toEqual([
       {
         sessionId,
-        error: 'This session is already open in another Qwen process.',
+        error: 'This session is already open in another Canopy process.',
       },
     ]);
     expect(fs.existsSync(sessionPath(workspaceDir, sessionId, 'active'))).toBe(

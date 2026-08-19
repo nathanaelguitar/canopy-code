@@ -34,8 +34,8 @@ import { clearCiEnv } from './test-utils/ci-env.js';
 import type { CliArgs } from './config/config.js';
 import { type LoadedSettings } from './config/settings.js';
 import { appEvents, AppEvent } from './utils/events.js';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { ApprovalMode, OutputFormat } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { ApprovalMode, OutputFormat } from '@canopy-code/canopy-code-core';
 import { EXTERNAL_TOOL_GUARD_REQUIRED_VALUE } from '@qwen-code/acp-bridge/externalToolGuard';
 
 const mockWriteStderrLine = vi.hoisted(() => vi.fn());
@@ -115,9 +115,9 @@ vi.mock('./config/settings.js', async (importOriginal) => {
   };
 });
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     registerSession: (...args: unknown[]) => mockRegisterSession(...args),
@@ -293,8 +293,8 @@ function withLspDisabledConfig<T extends object>(
 describe('gemini.tsx main function', () => {
   let originalEnvGeminiSandbox: string | undefined;
   let originalEnvSandbox: string | undefined;
-  let originalEnvQwenSandboxImage: string | undefined;
-  let originalEnvQwenCodeSimple: string | undefined;
+  let originalEnvCanopySandboxImage: string | undefined;
+  let originalEnvCanopyCodeSimple: string | undefined;
   let initialUnhandledRejectionListeners: NodeJS.UnhandledRejectionListener[] =
     [];
 
@@ -304,20 +304,20 @@ describe('gemini.tsx main function', () => {
     lspConfigWatcherMock.instances.length = 0;
     mockUpdateBeforeRelaunch.mockResolvedValue(true);
     mockGetInstallationInfo.mockReturnValue({
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
     });
     // Store and clear sandbox-related env variables to ensure a consistent test environment
-    originalEnvGeminiSandbox = process.env['QWEN_SANDBOX'];
+    originalEnvGeminiSandbox = process.env['CANOPY_SANDBOX'];
     originalEnvSandbox = process.env['SANDBOX'];
-    // QWEN_SANDBOX_IMAGE selects the custom-image relaunch branch in main(),
+    // CANOPY_SANDBOX_IMAGE selects the custom-image relaunch branch in main(),
     // which skips the host-update capability computation; CI environments that
     // export a resolved sandbox image (e.g. the autofix runner) would otherwise
     // flip these tests' code path.
-    originalEnvQwenSandboxImage = process.env['QWEN_SANDBOX_IMAGE'];
-    originalEnvQwenCodeSimple = process.env['QWEN_CODE_SIMPLE'];
-    delete process.env['QWEN_SANDBOX'];
+    originalEnvCanopySandboxImage = process.env['CANOPY_SANDBOX_IMAGE'];
+    originalEnvCanopyCodeSimple = process.env['QWEN_CODE_SIMPLE'];
+    delete process.env['CANOPY_SANDBOX'];
     delete process.env['SANDBOX'];
-    delete process.env['QWEN_SANDBOX_IMAGE'];
+    delete process.env['CANOPY_SANDBOX_IMAGE'];
     delete process.env['QWEN_CODE_SIMPLE'];
 
     initialUnhandledRejectionListeners =
@@ -327,22 +327,22 @@ describe('gemini.tsx main function', () => {
   afterEach(() => {
     // Restore original env variables
     if (originalEnvGeminiSandbox !== undefined) {
-      process.env['QWEN_SANDBOX'] = originalEnvGeminiSandbox;
+      process.env['CANOPY_SANDBOX'] = originalEnvGeminiSandbox;
     } else {
-      delete process.env['QWEN_SANDBOX'];
+      delete process.env['CANOPY_SANDBOX'];
     }
     if (originalEnvSandbox !== undefined) {
       process.env['SANDBOX'] = originalEnvSandbox;
     } else {
       delete process.env['SANDBOX'];
     }
-    if (originalEnvQwenSandboxImage !== undefined) {
-      process.env['QWEN_SANDBOX_IMAGE'] = originalEnvQwenSandboxImage;
+    if (originalEnvCanopySandboxImage !== undefined) {
+      process.env['CANOPY_SANDBOX_IMAGE'] = originalEnvCanopySandboxImage;
     } else {
-      delete process.env['QWEN_SANDBOX_IMAGE'];
+      delete process.env['CANOPY_SANDBOX_IMAGE'];
     }
-    if (originalEnvQwenCodeSimple !== undefined) {
-      process.env['QWEN_CODE_SIMPLE'] = originalEnvQwenCodeSimple;
+    if (originalEnvCanopyCodeSimple !== undefined) {
+      process.env['QWEN_CODE_SIMPLE'] = originalEnvCanopyCodeSimple;
     } else {
       delete process.env['QWEN_CODE_SIMPLE'];
     }
@@ -370,7 +370,7 @@ describe('gemini.tsx main function', () => {
     const { loadSandboxConfig } = await import('./config/sandboxConfig.js');
     vi.mocked(loadSandboxConfig).mockResolvedValue(undefined);
     vi.mocked(parseArguments).mockResolvedValue({ acp: true } as CliArgs);
-    vi.stubEnv('QWEN_CODE_PRIVATE_ACP_CAPABILITY', 'private-capability');
+    vi.stubEnv('CANOPY_CODE_PRIVATE_ACP_CAPABILITY', 'private-capability');
     vi.stubEnv(
       'QWEN_CODE_PRIVATE_EXTERNAL_TOOL_GUARD',
       EXTERNAL_TOOL_GUARD_REQUIRED_VALUE,
@@ -385,12 +385,14 @@ describe('gemini.tsx main function', () => {
         expect(
           process.env['QWEN_CODE_EXTERNAL_TOOL_GUARD_TOKEN'],
         ).toBeUndefined();
-        expect(process.env['QWEN_CODE_PRIVATE_ACP_CAPABILITY']).toBeUndefined();
+        expect(
+          process.env['CANOPY_CODE_PRIVATE_ACP_CAPABILITY'],
+        ).toBeUndefined();
         expect(
           process.env['QWEN_CODE_PRIVATE_EXTERNAL_TOOL_GUARD'],
         ).toBeUndefined();
         expect(options?.childEnv).toEqual({
-          QWEN_CODE_PRIVATE_ACP_CAPABILITY: 'private-capability',
+          CANOPY_CODE_PRIVATE_ACP_CAPABILITY: 'private-capability',
           QWEN_CODE_PRIVATE_EXTERNAL_TOOL_GUARD:
             EXTERNAL_TOOL_GUARD_REQUIRED_VALUE,
         });
@@ -458,7 +460,7 @@ describe('gemini.tsx main function', () => {
       [],
       expect.objectContaining({
         childEnv: {
-          QWEN_CODE_PRIVATE_ACP_CAPABILITY: 'private-capability',
+          CANOPY_CODE_PRIVATE_ACP_CAPABILITY: 'private-capability',
           QWEN_CODE_PRIVATE_EXTERNAL_TOOL_GUARD:
             EXTERNAL_TOOL_GUARD_REQUIRED_VALUE,
         },
@@ -540,7 +542,7 @@ describe('gemini.tsx main function', () => {
     [
       'ACP without bootstrap marker',
       { acp: true },
-      { QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE: undefined },
+      { CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE: undefined },
       '1',
       undefined,
     ],
@@ -548,7 +550,7 @@ describe('gemini.tsx main function', () => {
     'manages Electron bootstrap env %s',
     async (_name, argv, extraEnv, expectedElectron, expectedMarker) => {
       vi.stubEnv('ELECTRON_RUN_AS_NODE', '1');
-      vi.stubEnv('QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE', '1');
+      vi.stubEnv('CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE', '1');
       vi.stubEnv('QWEN_CODE_NO_RELAUNCH', '');
       for (const [key, value] of Object.entries(extraEnv)) {
         vi.stubEnv(key, value);
@@ -559,7 +561,7 @@ describe('gemini.tsx main function', () => {
       vi.mocked(parseArguments).mockResolvedValue(argv as CliArgs);
       vi.mocked(loadSettings).mockImplementation(() => {
         expect(process.env['ELECTRON_RUN_AS_NODE']).toBe(expectedElectron);
-        expect(process.env['QWEN_CODE_SCRUB_ELECTRON_RUN_AS_NODE']).toBe(
+        expect(process.env['CANOPY_CODE_SCRUB_ELECTRON_RUN_AS_NODE']).toBe(
           expectedMarker,
         );
         throw new Error('stop after env check');
@@ -1257,7 +1259,7 @@ describe('gemini.tsx main function', () => {
     } as never);
     vi.mocked(loadSandboxConfig).mockResolvedValue({
       command,
-      image: 'ghcr.io/qwenlm/qwen-code:1.0.0',
+      image: 'ghcr.io/qwenlm/canopy-code:1.0.0',
     });
     vi.mocked(loadCliConfig).mockResolvedValue({
       getModelsConfig: () => ({ getCurrentAuthType: () => null }),
@@ -1310,7 +1312,7 @@ describe('gemini.tsx main function', () => {
   });
 
   it('passes host update capability into a container sandbox', async () => {
-    const originalCapability = process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'];
+    const originalCapability = process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'];
 
     try {
       await runSandboxRelaunch(
@@ -1323,12 +1325,12 @@ describe('gemini.tsx main function', () => {
         expect.any(String),
         true,
       );
-      expect(process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH']).toBe('true');
+      expect(process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH']).toBe('true');
     } finally {
       if (originalCapability === undefined) {
-        delete process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'];
+        delete process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'];
       } else {
-        process.env['QWEN_CODE_HOST_UPDATE_RELAUNCH'] = originalCapability;
+        process.env['CANOPY_CODE_HOST_UPDATE_RELAUNCH'] = originalCapability;
       }
     }
   });
@@ -1959,7 +1961,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       ...sessionRegistryConfigStub,
       isInteractive: () => true,
       getQuestion: () => '',
-      getInputFile: () => '/tmp/qwen-input.jsonl',
+      getInputFile: () => '/tmp/canopy-input.jsonl',
       getSandbox: () => false,
       getDebugMode: () => false,
       getListExtensions: () => false,
@@ -3179,7 +3181,7 @@ describe('startInteractiveUI', () => {
       // Arena's agent-suffixed IDs are also accepted by --resume.
       [
         'an agent-suffixed session ID',
-        'b2a1c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d-agent-qwen',
+        'b2a1c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d-agent-canopy',
       ],
     ])('echoes the resume command for %s', async (_, sessionId) => {
       const projectDir = mkdtempSync(join(tmpdir(), 'resume-echo-'));
@@ -3194,7 +3196,7 @@ describe('startInteractiveUI', () => {
         // tests run the real initializeI18n('auto') and leave the machine
         // locale's dictionary in the i18n module state.
         expect(mockWriteStdoutLine).toHaveBeenCalledWith(
-          expect.stringContaining(`qwen --resume ${sessionId}`),
+          expect.stringContaining(`canopy --resume ${sessionId}`),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
@@ -3212,7 +3214,7 @@ describe('startInteractiveUI', () => {
         await runCleanup(makeRecordingConfig(sessionId, sessionFile));
 
         expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen --resume'),
+          expect.stringContaining('canopy --resume'),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
@@ -3228,7 +3230,7 @@ describe('startInteractiveUI', () => {
         await runCleanup(makeRecordingConfig(sessionId, sessionFile));
 
         expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen --resume'),
+          expect.stringContaining('canopy --resume'),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
@@ -3256,7 +3258,7 @@ describe('startInteractiveUI', () => {
         await runCleanup(makeRecordingConfig(sessionId, sessionFile));
 
         expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen --resume'),
+          expect.stringContaining('canopy --resume'),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
@@ -3277,7 +3279,7 @@ describe('startInteractiveUI', () => {
         } as unknown as Config);
 
         expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen --resume'),
+          expect.stringContaining('canopy --resume'),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
@@ -3299,7 +3301,7 @@ describe('startInteractiveUI', () => {
         await runCleanup(makeRecordingConfig(sessionId, sessionFile));
 
         expect(mockWriteStdoutLine).not.toHaveBeenCalledWith(
-          expect.stringContaining('qwen --resume'),
+          expect.stringContaining('canopy --resume'),
         );
       } finally {
         rmSync(projectDir, { recursive: true, force: true });

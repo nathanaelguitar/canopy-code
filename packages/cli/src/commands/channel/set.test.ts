@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ import { setCommand } from './set.js';
 
 async function runHandler(argv: Record<string, unknown>): Promise<void> {
   if (!setCommand.handler) throw new Error('set handler missing');
-  await setCommand.handler({ _: [], $0: 'qwen', ...argv } as never);
+  await setCommand.handler({ _: [], $0: 'canopy', ...argv } as never);
 }
 
 describe('channel set command', () => {

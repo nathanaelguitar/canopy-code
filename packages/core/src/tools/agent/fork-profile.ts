@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { parseDocument } from 'yaml';
-import { QWEN_DIR } from '../../config/storage.js';
+import { CANOPY_DIR } from '../../config/storage.js';
 import { normalizeContent } from '../../utils/textUtils.js';
 import { validateForkToolList } from './fork-subagent.js';
 
@@ -84,7 +84,7 @@ export function loadForkProfile(
 
   const profilePath = path.join(
     projectRoot,
-    QWEN_DIR,
+    CANOPY_DIR,
     FORK_PROFILE_DIR,
     `${requestedName}.md`,
   );
@@ -100,7 +100,7 @@ export function loadForkProfile(
 
   const resolvedProfileDir = path.join(
     resolvedProjectRoot,
-    QWEN_DIR,
+    CANOPY_DIR,
     FORK_PROFILE_DIR,
   );
   if (!isWithinDirectory(resolvedProfileDir, resolvedProfilePath)) {

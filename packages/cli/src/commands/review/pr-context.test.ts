@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -92,7 +92,7 @@ describe('isLegacySuggestionSummary', () => {
   it('does not match an ordinary comment', () => {
     expect(isLegacySuggestionSummary('no marker here')).toBe(false);
     expect(
-      isLegacySuggestionSummary('mentions qwen-review-suggestion-summary'),
+      isLegacySuggestionSummary('mentions canopy-review-suggestion-summary'),
     ).toBe(false);
   });
 
@@ -229,9 +229,9 @@ describe('fullCommentBody', () => {
 });
 
 describe('isReviewWorthShowing', () => {
-  const LEGACY_FOOTER = '_— qwen3.7-max via Qwen Code /review_';
+  const LEGACY_FOOTER = '_— qwen3.7-max via Canopy Code /review_';
   const VERSIONED_FOOTER =
-    '_— qwen3.8-max-preview via Qwen Code /review (v0.21.2)_';
+    '_— qwen3.8-max-preview via Canopy Code /review (v0.21.2)_';
 
   it('filters the exact canonical LGTM template, with or without either footer', () => {
     expect(isReviewWorthShowing('No issues found. LGTM! ✅')).toBe(false);
@@ -390,7 +390,7 @@ describe('buildMarkdown — truncation refs are copy-runnable with real coordina
     const issue = [{ id: 31, user: { login: 'r' }, body: 'y'.repeat(400) }];
     const md = buildMarkdown(
       '6711',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       inline,
       issue,
@@ -398,13 +398,13 @@ describe('buildMarkdown — truncation refs are copy-runnable with real coordina
     );
     // A markerless blocker past the snippet cap is recoverable only through
     // the named fetch — and the emitted command must not need filling in.
-    // The full prefix is pinned too: without `"${QWEN_CODE_CLI:-qwen}" review`
+    // The full prefix is pinned too: without `"${CANOPY_CODE_CLI:-canopy}" review`
     // the emitted text is an unrunnable bare subcommand name.
     expect(md).toContain(
-      '"${QWEN_CODE_CLI:-qwen}" review comment-body 21 --kind inline --repo QwenLM/qwen-code',
+      '"${CANOPY_CODE_CLI:-canopy}" review comment-body 21 --kind inline --repo CanopyLM/canopy-code',
     );
     expect(md).toContain(
-      'comment-body 31 --kind issue --repo QwenLM/qwen-code',
+      'comment-body 31 --kind issue --repo CanopyLM/canopy-code',
     );
     expect(md).not.toContain('{owner}');
   });
@@ -412,7 +412,7 @@ describe('buildMarkdown — truncation refs are copy-runnable with real coordina
   it('a capped review body names the filled-in review fetch', () => {
     const md = buildMarkdown(
       '6711',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       [],
       [],
@@ -426,7 +426,7 @@ describe('buildMarkdown — truncation refs are copy-runnable with real coordina
       ],
     );
     expect(md).toContain(
-      'comment-body 7 --kind review --pr 6711 --repo QwenLM/qwen-code',
+      'comment-body 7 --kind review --pr 6711 --repo CanopyLM/canopy-code',
     );
   });
 
@@ -500,7 +500,7 @@ describe('buildMarkdown — a markerless maintainer blocker must not render as a
   const render = () =>
     buildMarkdown(
       '6486',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       [],
       [
@@ -567,7 +567,7 @@ describe('buildMarkdown — a markerless maintainer blocker must not render as a
     // and each false promotion spends the read budget the real blocker needs.
     const md = buildMarkdown(
       '6486',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       [],
       [
@@ -902,7 +902,7 @@ describe('blockerSection — both channels, and the budget', () => {
     });
     const md = buildMarkdown(
       '6486',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       [],
       [big(1), big(2), big(3)],
@@ -915,7 +915,9 @@ describe('blockerSection — both channels, and the budget', () => {
     }
     // The one past the budget is a snippet, and it names the exact fetch.
     expect(md).toContain('section budget spent');
-    expect(md).toContain('comment-body 3 --kind issue --repo QwenLM/qwen-code');
+    expect(md).toContain(
+      'comment-body 3 --kind issue --repo CanopyLM/canopy-code',
+    );
   });
 
   it('renders the bodies that fit in FULL and only degrades past the budget', () => {
@@ -929,7 +931,7 @@ describe('blockerSection — both channels, and the budget', () => {
     });
     const md = buildMarkdown(
       '6486',
-      'QwenLM/qwen-code',
+      'CanopyLM/canopy-code',
       meta,
       [],
       [big(1), big(2), big(3)],
@@ -1052,7 +1054,7 @@ describe('prContextCommand builder', () => {
 
 describe('latestLedger — the split trust surface', () => {
   const marker = (round: number) =>
-    `LGTM <!-- qwen-review-ledger {"v":1,"round":${round},"findings":[{"id":"R${round}-1","sev":"C","file":"a.ts","title":"t"}]} -->`;
+    `LGTM <!-- canopy-review-ledger {"v":1,"round":${round},"findings":[{"id":"R${round}-1","sev":"C","file":"a.ts","title":"t"}]} -->`;
   const review = (login: string, at: string, body: string) => ({
     id: 1,
     user: { login },
@@ -1261,7 +1263,7 @@ describe('latestLedger — the split trust surface', () => {
     // cannot violate `id round <= marker round`: a round stamps its own ids
     // and carries OLDER ones forward.
     const squatting =
-      'LGTM <!-- qwen-review-ledger {"v":1,"round":3,"findings":[' +
+      'LGTM <!-- canopy-review-ledger {"v":1,"round":3,"findings":[' +
       '{"id":"R4-1","sev":"C","file":"a.ts","title":"squat"},' +
       '{"id":"R3-1","sev":"C","file":"b.ts","title":"own"},' +
       '{"id":"R1-2","sev":"S","file":"c.ts","title":"carried"},' +
@@ -1285,11 +1287,11 @@ describe('latestLedger — the split trust surface', () => {
     // they exited the marker chain for every later round. The union keeps
     // own entries in every recovery a foreign round wins.
     const own =
-      'LGTM <!-- qwen-review-ledger {"v":1,"round":7,"findings":[' +
+      'LGTM <!-- canopy-review-ledger {"v":1,"round":7,"findings":[' +
       '{"id":"R7-1","sev":"C","file":"a.ts","title":"certified critical"}' +
       ']} -->';
     const emptyForeign =
-      'x <!-- qwen-review-ledger {"v":1,"round":8,"findings":[]} -->';
+      'x <!-- canopy-review-ledger {"v":1,"round":8,"findings":[]} -->';
     const wiped = recoverLedger(
       [
         review('maintainer', '2026-01-01T00:00:00Z', own),
@@ -1304,7 +1306,7 @@ describe('latestLedger — the split trust surface', () => {
     // The doctored variant — copy the own list minus the entry to suppress —
     // fails the same way: the union restores it.
     const doctored =
-      'x <!-- qwen-review-ledger {"v":1,"round":8,"findings":[' +
+      'x <!-- canopy-review-ledger {"v":1,"round":8,"findings":[' +
       '{"id":"R7-2","sev":"S","file":"b.ts","title":"kept"}' +
       ']} -->';
     const restored = recoverLedger(
@@ -1322,7 +1324,7 @@ describe('latestLedger — the split trust surface', () => {
     // And an id collision cannot rewrite an own claim: the OWN entry is
     // authoritative.
     const tampered =
-      'x <!-- qwen-review-ledger {"v":1,"round":8,"findings":[' +
+      'x <!-- canopy-review-ledger {"v":1,"round":8,"findings":[' +
       '{"id":"R7-1","sev":"S","file":"a.ts","title":"nothing to see"}' +
       ']} -->';
     const kept = recoverLedger(
@@ -1387,7 +1389,7 @@ describe('latestLedger — the split trust surface', () => {
     // any poster wins every recovery from then on — and at 2^53 the increment
     // stops advancing, so every later round re-stamps the same ids against
     // different findings. Fail-quiet, like every other malformation here.
-    const huge = `LGTM <!-- qwen-review-ledger {"v":1,"round":9007199254740991,"findings":[]} -->`;
+    const huge = `LGTM <!-- canopy-review-ledger {"v":1,"round":9007199254740991,"findings":[]} -->`;
     expect(
       latestLedger([review('stranger', '2026-01-09T00:00:00Z', huge)], 'bot'),
     ).toBeNull();
@@ -1473,7 +1475,7 @@ describe('latestLedger — the split trust surface', () => {
     ).toBeNull();
     expect(
       latestLedger(
-        [review('bot', '2026-01-01', '<!-- qwen-review-ledger nope -->')],
+        [review('bot', '2026-01-01', '<!-- canopy-review-ledger nope -->')],
         'bot',
       ),
     ).toBeNull();
@@ -1519,8 +1521,8 @@ describe('renderLedgerSection', () => {
       round: 2,
       findings: [{ id: 'R2-1', sev: 'C', file: 'a.ts', title: 't' }],
     };
-    const foreign = renderLedgerSection(ledger, 'qwen-code-ci-bot');
-    expect(foreign).toContain('**@qwen-code-ci-bot**');
+    const foreign = renderLedgerSection(ledger, 'canopy-code-ci-bot');
+    expect(foreign).toContain('**@canopy-code-ci-bot**');
     expect(foreign).toContain('THEIR claims');
     expect(foreign).toContain('no incremental anchor');
 
@@ -1642,7 +1644,7 @@ describe('ledger marker vs the canonical-LGTM filter', () => {
     // CANONICAL_LGTM_RE is ^…$-anchored: a trailing marker made every no-op
     // round "worth showing", so prior rounds started rendering in full.
     const marker =
-      '<!-- qwen-review-ledger {"v":1,"round":2,"findings":[]} -->';
+      '<!-- canopy-review-ledger {"v":1,"round":2,"findings":[]} -->';
     const md = buildMarkdown(
       '1',
       'o/r',
@@ -1753,10 +1755,10 @@ describe('buildMarkdown host baking', () => {
       [],
       [longReview],
       ledger,
-      'qwen-code-ci-bot',
+      'canopy-code-ci-bot',
       'ghe.example.com',
     );
-    expect(md).toContain("**@qwen-code-ci-bot**'s last posted review");
+    expect(md).toContain("**@canopy-code-ci-bot**'s last posted review");
     expect(md).toContain(
       'comment-body 7 --kind review --pr 6711 --repo o/r --host ghe.example.com',
     );
@@ -1855,7 +1857,7 @@ describe('runPrContext identity failure (handler level)', () => {
     });
     await (prContextCommand.handler as (a: unknown) => Promise<void>)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '6711',
       owner_repo: 'o/r',
       out: '/tmp/ctx.md',
@@ -1873,7 +1875,7 @@ describe('runPrContext identity failure (handler level)', () => {
     currentUserMock.mockReturnValue('');
     await (prContextCommand.handler as (a: unknown) => Promise<void>)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '6711',
       owner_repo: 'o/r',
       out: '/tmp/ctx.md',
@@ -1928,7 +1930,7 @@ describe('runPrContext host baking (handler level)', () => {
   async function runHandler(extra: Record<string, unknown>) {
     await (prContextCommand.handler as (a: unknown) => Promise<void>)({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '6711',
       owner_repo: 'o/r',
       out: '/tmp/ctx.md',

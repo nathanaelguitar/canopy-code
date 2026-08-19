@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * @fileoverview Declarative-agent frontmatter schema constants and parsers.
  *
  * Mirrors Claude Code 2.1.168's `.claude/agents/<name>.md` schema verbatim so
- * a user can drop a Claude Code agent file into `.qwen/agents/` and have it
+ * a user can drop a Claude Code agent file into `.canopy/agents/` and have it
  * parse identically. The internal verification source (DL7 / Ig5 / GN / kc /
  * P37 / _Y) is documented in `docs/design/declarative-agents-port.md`.
  *
@@ -17,7 +17,7 @@
  * deciding whether a dropped field surfaces a warning. This intentionally
  * differs from the strict throw-on-invalid posture used for `approvalMode`
  * elsewhere in the loader, because that field predates this port and changing
- * its semantics would break existing `.qwen/agents/*.md` files.
+ * its semantics would break existing `.canopy/agents/*.md` files.
  */
 
 /** Permission mode enum (DL7 `$E` / `kc` constant). */
@@ -45,7 +45,7 @@ export const COLOR_VALUES = [
 export type ColorValue = (typeof COLOR_VALUES)[number];
 
 /**
- * Mapping from Claude Code permissionMode → qwen-code approvalMode.
+ * Mapping from Claude Code permissionMode → canopy-code approvalMode.
  *
  * Note: Claude's `dontAsk` denies any tool call that would prompt the user,
  * making it restrictive. We map it to `default` (which also requires approval)
@@ -66,14 +66,14 @@ const PERMISSION_MODE_TO_APPROVAL_MODE = new Map<string, string>([
 ]);
 
 /**
- * Map a Claude Code `permissionMode` frontmatter value to a qwen-code
+ * Map a Claude Code `permissionMode` frontmatter value to a canopy-code
  * `approvalMode` value. Returns `undefined` for unknown / falsy input.
  *
  * Disambiguated from `packages/core/src/tools/agent/agent.ts`'s internal
- * `permissionModeToApprovalMode`, which maps the qwen `PermissionMode` enum
- * to the qwen `ApprovalMode` enum (different domain entirely). Importing the
+ * `permissionModeToApprovalMode`, which maps the canopy `PermissionMode` enum
+ * to the canopy `ApprovalMode` enum (different domain entirely). Importing the
  * wrong symbol via IDE auto-complete would silently return `undefined` for
- * every qwen enum value, hence the longer name.
+ * every canopy enum value, hence the longer name.
  */
 export function claudePermissionModeToApprovalMode(
   permissionMode: string | undefined,
@@ -120,10 +120,10 @@ export function isColor(value: unknown): value is ColorValue {
 
 /**
  * Parse a frontmatter `mcpServers` value into the record-of-specs shape
- * qwen-code's MCP layer expects. Matches CC `gS8`'s shallow validation:
+ * canopy-code's MCP layer expects. Matches CC `gS8`'s shallow validation:
  *
  *   - non-object / array / null → undefined (whole field dropped)
- *   - string (CC's server-name reference form) → undefined; qwen-code does
+ *   - string (CC's server-name reference form) → undefined; canopy-code does
  *     not support the reference form yet, so it is rejected at this layer
  *     rather than silently passed through and later confusing the MCP loader
  *   - record-of-records → keep entries whose value is a plain object,
@@ -158,7 +158,7 @@ export function parseAgentMcpServers(
 
 /**
  * Parse a frontmatter `hooks` value into the record-of-event-matchers shape
- * qwen-code's hook layer expects. Matches CC `TKO` / `_u`'s shallow
+ * canopy-code's hook layer expects. Matches CC `TKO` / `_u`'s shallow
  * validation:
  *
  *   - non-object / array / null → undefined (whole field dropped)

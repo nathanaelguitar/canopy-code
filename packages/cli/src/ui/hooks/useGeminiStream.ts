@@ -72,7 +72,7 @@ import {
   finalizeToolResponses,
   endInteractionSpan,
   getActiveInteractionSpan,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { type Part, type PartListUnion, FinishReason } from '@google/genai';
 import type {
   HistoryItem,
@@ -5355,7 +5355,7 @@ export const useGeminiStream = (
       try {
         // Enable durable (file-backed) cron support (loads tasks from the
         // user's per-project runtime dir, acquires the lock). The tasks file
-        // lives under ~/.qwen, not the working tree, so it's user-owned
+        // lives under ~/.canopy, not the working tree, so it's user-owned
         // rather than project-controlled — no folder-trust gate needed; the
         // user's own loops run regardless of how the folder is trusted.
         // Missed one-shots arrive as late fires through the start() callback.
@@ -5634,10 +5634,11 @@ export const useGeminiStream = (
   // otherwise a stale TeamManager could keep pushing into
   // the active queue ref after team recreation/remount.
   useEffect(() => {
-    let boundManager: import('@qwen-code/qwen-code-core').TeamManager | null =
-      null;
+    let boundManager:
+      | import('@canopy-code/canopy-code-core').TeamManager
+      | null = null;
     const handleManagerChange = (
-      manager: import('@qwen-code/qwen-code-core').TeamManager | null,
+      manager: import('@canopy-code/canopy-code-core').TeamManager | null,
     ) => {
       if (boundManager && boundManager !== manager) {
         boundManager.setLeaderMessageCallback(null);

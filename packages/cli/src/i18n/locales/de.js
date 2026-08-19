@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// German translations for Qwen Code CLI
-// Deutsche Übersetzungen für Qwen Code CLI
+// German translations for Canopy Code CLI
+// Deutsche Übersetzungen für Canopy Code CLI
 
 export default {
   // ============================================================================
@@ -65,7 +65,7 @@ export default {
   'For a full list of shortcuts, see {{docPath}}':
     'Eine vollständige Liste der Tastenkürzel finden Sie unter {{docPath}}',
   'docs/keyboard-shortcuts.md': 'docs/keyboard-shortcuts.md',
-  'for help on Qwen Code': 'für Hilfe zu Qwen Code',
+  'for help on Canopy Code': 'für Hilfe zu Canopy Code',
   'show version info': 'Versionsinformationen anzeigen',
   'submit a bug report': 'Fehlerbericht einreichen',
   Status: 'Status',
@@ -73,7 +73,7 @@ export default {
   // ============================================================================
   // System Information Fields
   // ============================================================================
-  'Qwen Code': 'Qwen Code',
+  'Canopy Code': 'Canopy Code',
   Runtime: 'Laufzeit',
   OS: 'Betriebssystem',
   Auth: 'Authentifizierung',
@@ -89,26 +89,26 @@ export default {
   // ============================================================================
   // Commands - General
   // ============================================================================
-  'Analyzes the project and creates a tailored QWEN.md file.':
-    'Analysiert das Projekt und erstellt eine maßgeschneiderte QWEN.md-Datei.',
-  'List available Qwen Code tools. Usage: /tools [desc]':
-    'Verfügbare Qwen Code Werkzeuge auflisten. Verwendung: /tools [desc]',
+  'Analyzes the project and creates a tailored CANOPY.md file.':
+    'Analysiert das Projekt und erstellt eine maßgeschneiderte CANOPY.md-Datei.',
+  'List available Canopy Code tools. Usage: /tools [desc]':
+    'Verfügbare Canopy Code Werkzeuge auflisten. Verwendung: /tools [desc]',
   'Open the skills panel (browse, search, toggle, pick).':
     'Skills-Panel öffnen (durchsuchen, suchen, ein/aus, auswählen).',
   'Manage Skills': 'Skills verwalten',
   'Skills configuration saved.': 'Skills-Konfiguration gespeichert.',
   'Skills configuration saved, but refresh failed: {{error}}. Restart to ensure the new state is applied.':
     'Skills-Konfiguration gespeichert, aber Aktualisierung fehlgeschlagen: {{error}}. Bitte neu starten, um den neuen Zustand zu übernehmen.',
-  'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.qwen/settings.json directly to manage skills at user scope.':
-    'Arbeitsbereich ist nicht vertrauenswürdig; Arbeitsbereichseinstellungen werden in der zusammengeführten Konfiguration ignoriert. Führe zuerst /trust aus oder bearbeite ~/.qwen/settings.json direkt, um Skills auf Benutzerebene zu verwalten.',
+  'Workspace is untrusted; workspace settings are ignored by the merged config. Run /trust first to persist skills changes here, or edit ~/.canopy/settings.json directly to manage skills at user scope.':
+    'Arbeitsbereich ist nicht vertrauenswürdig; Arbeitsbereichseinstellungen werden in der zusammengeführten Konfiguration ignoriert. Führe zuerst /trust aus oder bearbeite ~/.canopy/settings.json direkt, um Skills auf Benutzerebene zu verwalten.',
   'SkillManager not available.': 'SkillManager nicht verfügbar.',
   'Loading skills…': 'Skills werden geladen…',
   'Failed to load skills: {{error}}':
     'Skills konnten nicht geladen werden: {{error}}',
   'Failed to save skills configuration: {{error}}':
     'Speichern der Skill-Konfiguration fehlgeschlagen: {{error}}',
-  'All available skills are disabled. Edit ~/.qwen/settings.json or .qwen/settings.json (skills.disabled) to re-enable.':
-    'Alle verfügbaren Skills sind deaktiviert. Bearbeite ~/.qwen/settings.json oder .qwen/settings.json (skills.disabled), um sie wieder zu aktivieren.',
+  'All available skills are disabled. Edit ~/.canopy/settings.json or .canopy/settings.json (skills.disabled) to re-enable.':
+    'Alle verfügbaren Skills sind deaktiviert. Bearbeite ~/.canopy/settings.json oder .canopy/settings.json (skills.disabled), um sie wieder zu aktivieren.',
   'Press esc to close.': 'Esc drücken, um zu schließen.',
   '{{count}} skills · ': '{{count}} Skills · ',
   '{{matched}} / {{total}} skills · ': '{{matched}} / {{total}} Skills · ',
@@ -128,7 +128,7 @@ export default {
   '↑/↓ navigate · backspace edits search':
     '↑/↓ navigieren · Rücktaste bearbeitet Suche',
   Bundled: 'Mitgeliefert',
-  'Available Qwen Code CLI tools:': 'Verfügbare Qwen Code CLI-Werkzeuge:',
+  'Available Canopy Code CLI tools:': 'Verfügbare Canopy Code CLI-Werkzeuge:',
   'No tools available': 'Keine Werkzeuge verfügbar',
   'View or change the approval mode for tool usage':
     'Genehmigungsmodus für Werkzeugnutzung anzeigen oder ändern',
@@ -203,8 +203,8 @@ export default {
     'Gesprächsverlauf löschen und Kontext freigeben',
   'Compresses the context by replacing it with a summary.':
     'Komprimiert den Kontext durch Ersetzen mit einer Zusammenfassung.',
-  'open full Qwen Code documentation in your browser':
-    'Vollständige Qwen Code Dokumentation im Browser öffnen',
+  'open full Canopy Code documentation in your browser':
+    'Vollständige Canopy Code Dokumentation im Browser öffnen',
   'Configuration not available.': 'Konfiguration nicht verfügbar.',
   'Connect an LLM provider': 'LLM-Anbieter verbinden',
   'Copy the last AI response to clipboard (/copy N for Nth-latest)':
@@ -301,8 +301,8 @@ export default {
   // ============================================================================
   // Agents - Creation Wizard
   // ============================================================================
-  'Project Level (.qwen/agents/)': 'Projektebene (.qwen/agents/)',
-  'User Level (~/.qwen/agents/)': 'Benutzerebene (~/.qwen/agents/)',
+  'Project Level (.canopy/agents/)': 'Projektebene (.canopy/agents/)',
+  'User Level (~/.canopy/agents/)': 'Benutzerebene (~/.canopy/agents/)',
   '✓ Subagent Created Successfully!': '✓ Unteragent erfolgreich erstellt!',
   'Subagent "{{name}}" has been saved to {{level}} level.':
     'Unteragent "{{name}}" wurde auf {{level}}-Ebene gespeichert.',
@@ -324,8 +324,8 @@ export default {
   'Step {{n}}: Choose Location': 'Schritt {{n}}: Speicherort wählen',
   'Step {{n}}: Choose Generation Method':
     'Schritt {{n}}: Generierungsmethode wählen',
-  'Generate with Qwen Code (Recommended)':
-    'Mit Qwen Code generieren (Empfohlen)',
+  'Generate with Canopy Code (Recommended)':
+    'Mit Canopy Code generieren (Empfohlen)',
   'Manual Creation': 'Manuelle Erstellung',
   'Describe what this subagent should do and when it should be used. (Be comprehensive for best results)':
     'Beschreiben Sie, was dieser Unteragent tun soll und wann er verwendet werden soll. (Ausführliche Beschreibung für beste Ergebnisse)',
@@ -387,11 +387,11 @@ export default {
   // ============================================================================
   // Commands - General (continued)
   // ============================================================================
-  'View and edit Qwen Code settings':
-    'Qwen Code Einstellungen anzeigen und bearbeiten',
+  'View and edit Canopy Code settings':
+    'Canopy Code Einstellungen anzeigen und bearbeiten',
   Settings: 'Einstellungen',
-  'To see changes, Qwen Code must be restarted. Press r to exit and apply changes now.':
-    'Um Änderungen zu sehen, muss Qwen Code neu gestartet werden. Drücken Sie r, um jetzt zu beenden und Änderungen anzuwenden.',
+  'To see changes, Canopy Code must be restarted. Press r to exit and apply changes now.':
+    'Um Änderungen zu sehen, muss Canopy Code neu gestartet werden. Drücken Sie r, um jetzt zu beenden und Änderungen anzuwenden.',
   // ============================================================================
   // Settings Labels
   // ============================================================================
@@ -414,8 +414,8 @@ export default {
   'Custom Witty Phrases': 'Benutzerdefinierte Witzige Sprüche',
   'Show Welcome Back Dialog': 'Willkommen-zurück-Dialog anzeigen',
   'Enable User Feedback': 'Benutzerfeedback aktivieren',
-  'How is Qwen doing this session? (optional)':
-    'Wie macht sich Qwen in dieser Sitzung? (optional)',
+  'How is Canopy doing this session? (optional)':
+    'Wie macht sich Canopy in dieser Sitzung? (optional)',
   Bad: 'Schlecht',
   Fine: 'In Ordnung',
   Good: 'Gut',
@@ -432,7 +432,7 @@ export default {
   'Load Memory From Include Directories':
     'Speicher aus Include-Verzeichnissen laden',
   'Respect .gitignore': '.gitignore beachten',
-  'Respect .qwenignore': '.qwenignore beachten',
+  'Respect .canopyignore': '.canopyignore beachten',
   'Enable Recursive File Search': 'Rekursive Dateisuche aktivieren',
   'Interactive Shell (PTY)': 'Interaktive Shell (PTY)',
   'Show Color': 'Farbe anzeigen',
@@ -549,16 +549,16 @@ export default {
   local: 'lokal',
   'This extension will add the following commands: {{commands}}.':
     'Diese Erweiterung wird folgende Befehle hinzufügen: {{commands}}.',
-  'This extension will append info to your QWEN.md context using {{fileName}}':
-    'Diese Erweiterung wird Informationen zu Ihrem QWEN.md-Kontext mit {{fileName}} hinzufügen',
+  'This extension will append info to your CANOPY.md context using {{fileName}}':
+    'Diese Erweiterung wird Informationen zu Ihrem CANOPY.md-Kontext mit {{fileName}} hinzufügen',
   'This extension will install the following skills:':
     'Diese Erweiterung wird folgende Fähigkeiten installieren:',
   'This extension will install the following subagents:':
     'Diese Erweiterung wird folgende Unteragenten installieren:',
   'Installation cancelled for "{{name}}".':
     'Installation von "{{name}}" abgebrochen.',
-  'You are installing an extension from {{originSource}}. Some features may not work perfectly with Qwen Code.':
-    'Sie installieren eine Erweiterung von {{originSource}}. Einige Funktionen funktionieren möglicherweise nicht perfekt mit Qwen Code.',
+  'You are installing an extension from {{originSource}}. Some features may not work perfectly with Canopy Code.':
+    'Sie installieren eine Erweiterung von {{originSource}}. Einige Funktionen funktionieren möglicherweise nicht perfekt mit Canopy Code.',
   '--ref and --auto-update are not applicable for marketplace extensions.':
     '--ref und --auto-update sind nicht anwendbar für Marketplace-Erweiterungen.',
   'Extension "{{name}}" installed successfully and enabled.':
@@ -669,8 +669,8 @@ export default {
     'Erforderlichen IDE-Begleiter für {{ideName}} installieren',
   'enable IDE integration': 'IDE-Integration aktivieren',
   'disable IDE integration': 'IDE-Integration deaktivieren',
-  'IDE integration is not supported in your current environment. To use this feature, run Qwen Code in one of these supported IDEs: VS Code or VS Code forks.':
-    'IDE-Integration wird in Ihrer aktuellen Umgebung nicht unterstützt. Um diese Funktion zu nutzen, führen Sie Qwen Code in einer dieser unterstützten IDEs aus: VS Code oder VS Code-Forks.',
+  'IDE integration is not supported in your current environment. To use this feature, run Canopy Code in one of these supported IDEs: VS Code or VS Code forks.':
+    'IDE-Integration wird in Ihrer aktuellen Umgebung nicht unterstützt. Um diese Funktion zu nutzen, führen Sie Canopy Code in einer dieser unterstützten IDEs aus: VS Code oder VS Code-Forks.',
   'Set up GitHub Actions': 'GitHub Actions einrichten',
   'Configure terminal keybindings for multiline input (VS Code, Cursor, Windsurf, Trae)':
     'Terminal-Tastenbelegungen für mehrzeilige Eingabe konfigurieren (VS Code, Cursor, Windsurf, Trae)',
@@ -705,7 +705,7 @@ export default {
   // ============================================================================
   // Commands - Hooks
   // ============================================================================
-  'Manage Qwen Code hooks': 'Qwen Code-Hooks verwalten',
+  'Manage Canopy Code hooks': 'Canopy Code-Hooks verwalten',
   'List all configured hooks': 'Alle konfigurierten Hooks auflisten',
   // Hooks - Dialog
   Hooks: 'Hooks',
@@ -721,16 +721,16 @@ export default {
   'No hook events found.': 'Keine Hook-Ereignisse gefunden.',
   '{{count}} hook configured': '{{count}} Hook konfiguriert',
   '{{count}} hooks configured': '{{count}} Hooks konfiguriert',
-  'This menu is read-only. To add or modify hooks, edit settings.json directly or ask Qwen Code.':
-    'Dieses Menü ist schreibgeschützt. Um Hooks hinzuzufügen oder zu ändern, bearbeiten Sie settings.json direkt oder fragen Sie Qwen Code.',
+  'This menu is read-only. To add or modify hooks, edit settings.json directly or ask Canopy Code.':
+    'Dieses Menü ist schreibgeschützt. Um Hooks hinzuzufügen oder zu ändern, bearbeiten Sie settings.json direkt oder fragen Sie Canopy Code.',
   'Enter to select · Esc to cancel': 'Enter zum Auswählen · Esc zum Abbrechen',
   // Hooks - Detail Step
   'Exit codes:': 'Exit-Codes:',
   'Configured hooks:': 'Konfigurierte Hooks:',
   'No hooks configured for this event.':
     'Für dieses Ereignis sind keine Hooks konfiguriert.',
-  'To add hooks, edit settings.json directly or ask Qwen.':
-    'Um Hooks hinzuzufügen, bearbeiten Sie settings.json direkt oder fragen Sie Qwen.',
+  'To add hooks, edit settings.json directly or ask Canopy.':
+    'Um Hooks hinzuzufügen, bearbeiten Sie settings.json direkt oder fragen Sie Canopy.',
   'Enter to select · Esc to go back': 'Enter zum Auswählen · Esc zum Zurück',
   // Hooks - Config Detail Step
   'Hook details': 'Hook-Details',
@@ -738,8 +738,8 @@ export default {
   'Extension:': 'Erweiterung:',
   'Desc:': 'Beschreibung:',
   'No hook config selected': 'Keine Hook-Konfiguration ausgewählt',
-  'To modify or remove this hook, edit settings.json directly or ask Qwen to help.':
-    'Um diesen Hook zu ändern oder zu entfernen, bearbeiten Sie settings.json direkt oder fragen Sie Qwen.',
+  'To modify or remove this hook, edit settings.json directly or ask Canopy to help.':
+    'Um diesen Hook zu ändern oder zu entfernen, bearbeiten Sie settings.json direkt oder fragen Sie Canopy.',
   // Hooks - Disabled Step
   'Hook Configuration - Disabled': 'Hook-Konfiguration - Deaktiviert',
   'All hooks are currently disabled. You have {{count}} that are not running.':
@@ -751,8 +751,8 @@ export default {
   'StatusLine will not be displayed': 'StatusLine wird nicht angezeigt',
   'Tool operations will proceed without hook validation':
     'Tool-Operationen werden ohne Hook-Validierung fortgesetzt',
-  'To re-enable hooks, remove "disableAllHooks" from settings.json or ask Qwen Code.':
-    'Um Hooks wieder zu aktivieren, entfernen Sie "disableAllHooks" aus settings.json oder fragen Sie Qwen Code.',
+  'To re-enable hooks, remove "disableAllHooks" from settings.json or ask Canopy Code.':
+    'Um Hooks wieder zu aktivieren, entfernen Sie "disableAllHooks" aus settings.json oder fragen Sie Canopy Code.',
   // Hooks - Source
   Project: 'Projekt',
   User: 'Benutzer',
@@ -773,8 +773,8 @@ export default {
   'When a slash command expands into a prompt':
     'Wenn ein Slash-Befehl zu einem Prompt erweitert wird',
   'When a new session is started': 'Wenn eine neue Sitzung gestartet wird',
-  'Right before Qwen Code concludes its response':
-    'Direkt bevor Qwen Code seine Antwort abschließt',
+  'Right before Canopy Code concludes its response':
+    'Direkt bevor Canopy Code seine Antwort abschließt',
   'When a subagent (Agent tool call) is started':
     'Wenn ein Subagent (Agent-Tool-Aufruf) gestartet wird',
   'Right before a subagent concludes its response':
@@ -830,7 +830,7 @@ export default {
     'Verarbeitung blockieren, ursprünglichen Prompt löschen und stderr nur dem Benutzer anzeigen',
   'block expanded prompt submission and show stderr to user only':
     'Einreichen des erweiterten Prompts blockieren und stderr nur dem Benutzer anzeigen',
-  'stdout shown to Qwen': 'stdout dem Qwen anzeigen',
+  'stdout shown to Canopy': 'stdout dem Canopy anzeigen',
   'show stderr to user only (blocking errors ignored)':
     'stderr nur dem Benutzer anzeigen (Blockierungsfehler ignoriert)',
   'command completes successfully': 'Befehl erfolgreich abgeschlossen',
@@ -984,8 +984,8 @@ export default {
   // =========================================================
   // Commands - Summary
   // ============================================================================
-  'Generate a project summary and save it to .qwen/PROJECT_SUMMARY.md':
-    'Projektzusammenfassung generieren und in .qwen/PROJECT_SUMMARY.md speichern',
+  'Generate a project summary and save it to .canopy/PROJECT_SUMMARY.md':
+    'Projektzusammenfassung generieren und in .canopy/PROJECT_SUMMARY.md speichern',
   'No chat client available to generate summary.':
     'Kein Chat-Client verfügbar, um Zusammenfassung zu generieren.',
   'Already generating summary, wait for previous request to complete':
@@ -1066,8 +1066,8 @@ export default {
     'Der Befehl /directory add wird in restriktiven Sandbox-Profilen nicht unterstützt. Bitte verwenden Sie --include-directories beim Starten der Sitzung.',
   "Error adding '{{path}}': {{error}}":
     "Fehler beim Hinzufügen von '{{path}}': {{error}}",
-  'Successfully added QWEN.md files from the following directories if there are:\n- {{directories}}':
-    'QWEN.md-Dateien aus folgenden Verzeichnissen erfolgreich hinzugefügt, falls vorhanden:\n- {{directories}}',
+  'Successfully added CANOPY.md files from the following directories if there are:\n- {{directories}}':
+    'CANOPY.md-Dateien aus folgenden Verzeichnissen erfolgreich hinzugefügt, falls vorhanden:\n- {{directories}}',
   'Error refreshing memory: {{error}}':
     'Fehler beim Aktualisieren des Speichers: {{error}}',
   'Successfully added directories:\n- {{directories}}':
@@ -1144,8 +1144,8 @@ export default {
   servers: 'Server',
   'Add MCP servers to your settings to get started.':
     'Fügen Sie MCP servers zu Ihren Einstellungen hinzu, um zu beginnen.',
-  'Run qwen --debug to see error logs':
-    'Führen Sie qwen --debug aus, um Fehlerprotokolle anzuzeigen',
+  'Run canopy --debug to see error logs':
+    'Führen Sie canopy --debug aus, um Fehlerprotokolle anzuzeigen',
 
   // MCP OAuth Authentication
   'OAuth Authentication': 'OAuth-Authentifizierung',
@@ -1231,15 +1231,15 @@ export default {
     'Sie müssen einen Anbieter verbinden, um fortzufahren. Drücken Sie erneut Ctrl+C zum Beenden.',
   'Terms of Services and Privacy Notice':
     'Nutzungsbedingungen und Datenschutzhinweis',
-  'Qwen OAuth': 'Qwen OAuth',
+  'Canopy OAuth': 'Canopy OAuth',
   'Discontinued — switch to Coding Plan or API Key':
     'Eingestellt — wechseln Sie zu Coding Plan oder API Key',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Please select Coding Plan or API Key instead.':
-    'Das kostenlose Qwen OAuth-Kontingent wurde am 2026-04-15 eingestellt. Bitte wählen Sie Coding Plan oder API Key.',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.':
-    'Das kostenlose Qwen OAuth-Angebot wurde am 2026-04-15 eingestellt. Bitte wählen Sie ein Modell eines anderen Anbieter oder führen Sie /auth aus, um zu wechseln.',
-  '\n⚠ Qwen OAuth free tier was discontinued on 2026-04-15. Please select another option.\n':
-    '\n⚠ Das kostenlose Qwen OAuth-Kontingent wurde am 2026-04-15 eingestellt. Bitte wählen Sie eine andere Option.\n',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Please select Coding Plan or API Key instead.':
+    'Das kostenlose Canopy OAuth-Kontingent wurde am 2026-04-15 eingestellt. Bitte wählen Sie Coding Plan oder API Key.',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.':
+    'Das kostenlose Canopy OAuth-Angebot wurde am 2026-04-15 eingestellt. Bitte wählen Sie ein Modell eines anderen Anbieter oder führen Sie /auth aus, um zu wechseln.',
+  '\n⚠ Canopy OAuth free tier was discontinued on 2026-04-15. Please select another option.\n':
+    '\n⚠ Das kostenlose Canopy OAuth-Kontingent wurde am 2026-04-15 eingestellt. Bitte wählen Sie eine andere Option.\n',
   'Paid \u00B7 Up to 6,000 requests/5 hrs \u00B7 All Alibaba Cloud Coding Plan Models':
     'Kostenpflichtig \u00B7 Bis zu 6.000 Anfragen/5 Std. \u00B7 Alle Alibaba Cloud Coding Plan Modelle',
   'Alibaba Cloud Coding Plan': 'Alibaba Cloud Coding Plan',
@@ -1248,19 +1248,19 @@ export default {
     'Browserbasierte Authentifizierung mit externen Anbietern (z. B. OpenRouter, ModelScope)',
   'Authentication is enforced to be {{enforcedType}}, but you are currently using {{currentType}}.':
     'Authentifizierung ist auf {{enforcedType}} festgelegt, aber Sie verwenden derzeit {{currentType}}.',
-  'Qwen OAuth Authentication': 'Qwen OAuth-Authentifizierung',
+  'Canopy OAuth Authentication': 'Canopy OAuth-Authentifizierung',
   'Please visit this URL to authorize:':
     'Bitte besuchen Sie diese URL zur Autorisierung:',
   'Waiting for authorization': 'Warten auf Autorisierung',
   'Time remaining:': 'Verbleibende Zeit:',
-  'Qwen OAuth Authentication Timeout':
-    'Qwen OAuth-Authentifizierung abgelaufen',
+  'Canopy OAuth Authentication Timeout':
+    'Canopy OAuth-Authentifizierung abgelaufen',
   'OAuth token expired (over {{seconds}} seconds). Please select authentication method again.':
     'OAuth-Token abgelaufen (über {{seconds}} Sekunden). Bitte wählen Sie erneut eine Authentifizierungsmethode.',
   'Press any key to return to authentication type selection.':
     'Drücken Sie eine beliebige Taste, um zur Authentifizierungstypauswahl zurückzukehren.',
-  'Waiting for Qwen OAuth authentication...':
-    'Warten auf Qwen OAuth-Authentifizierung...',
+  'Waiting for Canopy OAuth authentication...':
+    'Warten auf Canopy OAuth-Authentifizierung...',
   'Authentication timed out. Please try again.':
     'Authentifizierung abgelaufen. Bitte versuchen Sie es erneut.',
   'Waiting for auth... (Press ESC or CTRL+C to cancel)':
@@ -1283,8 +1283,8 @@ export default {
     'Authentifizierung fehlgeschlagen. Meldung: {{message}}',
   'Authenticated successfully with {{authType}} credentials.':
     'Erfolgreich mit {{authType}}-Anmeldedaten authentifiziert.',
-  'Invalid QWEN_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}':
-    'Ungültiger QWEN_DEFAULT_AUTH_TYPE-Wert: "{{value}}". Gültige Werte sind: {{validValues}}',
+  'Invalid CANOPY_DEFAULT_AUTH_TYPE value: "{{value}}". Valid values are: {{validValues}}':
+    'Ungültiger CANOPY_DEFAULT_AUTH_TYPE-Wert: "{{value}}". Gültige Werte sind: {{validValues}}',
   // ============================================================================
   // Dialogs - Model
   // ============================================================================
@@ -1312,12 +1312,12 @@ export default {
   Ask: 'Fragen',
   Deny: 'Verweigern',
   Workspace: 'Arbeitsbereich',
-  "Qwen Code won't ask before using allowed tools.":
-    'Qwen Code fragt nicht, bevor erlaubte Tools verwendet werden.',
-  'Qwen Code will ask before using these tools.':
-    'Qwen Code fragt, bevor diese Tools verwendet werden.',
-  'Qwen Code is not allowed to use denied tools.':
-    'Qwen Code darf verweigerte Tools nicht verwenden.',
+  "Canopy Code won't ask before using allowed tools.":
+    'Canopy Code fragt nicht, bevor erlaubte Tools verwendet werden.',
+  'Canopy Code will ask before using these tools.':
+    'Canopy Code fragt, bevor diese Tools verwendet werden.',
+  'Canopy Code is not allowed to use denied tools.':
+    'Canopy Code darf verweigerte Tools nicht verwenden.',
   'Manage trusted directories for this workspace.':
     'Vertrauenswürdige Verzeichnisse für diesen Arbeitsbereich verwalten.',
   'Any use of the {{tool}} tool': 'Jede Verwendung des {{tool}}-Tools',
@@ -1327,9 +1327,10 @@ export default {
   'From project settings': 'Aus Projekteinstellungen',
   'From session': 'Aus Sitzung',
   'Project settings': 'Projekteinstellungen',
-  'Checked in at .qwen/settings.json': 'Eingecheckt in .qwen/settings.json',
+  'Checked in at .canopy/settings.json': 'Eingecheckt in .canopy/settings.json',
   'User settings': 'Benutzereinstellungen',
-  'Saved in at ~/.qwen/settings.json': 'Gespeichert in ~/.qwen/settings.json',
+  'Saved in at ~/.canopy/settings.json':
+    'Gespeichert in ~/.canopy/settings.json',
   'Add a new rule…': 'Neue Regel hinzufügen…',
   'Add {{type}} permission rule': '{{type}} permission rule hinzufügen',
   'Permission rules are a tool name, optionally followed by a specifier in parentheses.':
@@ -1352,10 +1353,10 @@ export default {
   // Workspace directory management
   'Add directory…': 'Verzeichnis hinzufügen…',
   'Add directory to workspace': 'Verzeichnis zum Arbeitsbereich hinzufügen',
-  'Qwen Code can read files in the workspace, and make edits when auto-accept edits is on.':
-    'Qwen Code kann Dateien im Arbeitsbereich lesen und Bearbeitungen vornehmen, wenn die automatische Akzeptierung aktiviert ist.',
-  'Qwen Code will be able to read files in this directory and make edits when auto-accept edits is on.':
-    'Qwen Code kann Dateien in diesem Verzeichnis lesen und Bearbeitungen vornehmen, wenn die automatische Akzeptierung aktiviert ist.',
+  'Canopy Code can read files in the workspace, and make edits when auto-accept edits is on.':
+    'Canopy Code kann Dateien im Arbeitsbereich lesen und Bearbeitungen vornehmen, wenn die automatische Akzeptierung aktiviert ist.',
+  'Canopy Code will be able to read files in this directory and make edits when auto-accept edits is on.':
+    'Canopy Code kann Dateien in diesem Verzeichnis lesen und Bearbeitungen vornehmen, wenn die automatische Akzeptierung aktiviert ist.',
   'Enter the path to the directory:': 'Pfad zum Verzeichnis eingeben:',
   'Enter directory path…': 'Verzeichnispfad eingeben…',
   'Tab to complete · Enter to add · Esc to cancel':
@@ -1754,20 +1755,20 @@ export default {
     'Verwenden Sie /bug, um Probleme an die Betreuer zu melden, wenn etwas schiefgeht.',
   'Switch auth type quickly with /auth.':
     'Wechseln Sie den Authentifizierungstyp schnell mit /auth.',
-  'You can run any shell commands from Qwen Code using ! (e.g. !ls).':
-    'Sie können beliebige Shell-Befehle in Qwen Code mit ! ausführen (z. B. !ls).',
+  'You can run any shell commands from Canopy Code using ! (e.g. !ls).':
+    'Sie können beliebige Shell-Befehle in Canopy Code mit ! ausführen (z. B. !ls).',
   'Type / to open the command popup; Tab autocompletes slash commands and saved prompts.':
     'Geben Sie / ein, um das Befehlsmenü zu öffnen; Tab vervollständigt Slash-Befehle und gespeicherte Prompts.',
-  'You can resume a previous conversation by running qwen --continue or qwen --resume.':
-    'Sie können eine frühere Unterhaltung mit qwen --continue oder qwen --resume fortsetzen.',
+  'You can resume a previous conversation by running canopy --continue or canopy --resume.':
+    'Sie können eine frühere Unterhaltung mit canopy --continue oder canopy --resume fortsetzen.',
   'You can switch permission mode quickly with Shift+Tab or /approval-mode.':
     'Sie können den Berechtigungsmodus schnell mit Shift+Tab oder /approval-mode wechseln.',
   'You can switch permission mode quickly with Tab or /approval-mode.':
     'Sie können den Berechtigungsmodus schnell mit Tab oder /approval-mode wechseln.',
   'Try /insight to generate personalized insights from your chat history.':
     'Probieren Sie /insight, um personalisierte Erkenntnisse aus Ihrem Chatverlauf zu erstellen.',
-  'Add a QWEN.md file to give Qwen Code persistent project context.':
-    'Fügen Sie eine QWEN.md-Datei hinzu, um Qwen Code dauerhaften Projektkontext zu geben.',
+  'Add a CANOPY.md file to give Canopy Code persistent project context.':
+    'Fügen Sie eine CANOPY.md-Datei hinzu, um Canopy Code dauerhaften Projektkontext zu geben.',
   'Use /btw to ask a quick side question without disrupting the conversation.':
     'Verwenden Sie /btw, um eine kurze Nebenfrage zu stellen, ohne die Unterhaltung zu unterbrechen.',
   'Context is almost full! Run /compress now or start /new to continue.':
@@ -1857,7 +1858,7 @@ export default {
     '↑/↓: Navigieren | ←/→: Tabs wechseln | Enter: Auswählen',
   '↑/↓: Navigate | Enter: Select | Esc: Cancel':
     '↑/↓: Navigieren | Enter: Auswählen | Esc: Abbrechen',
-  'Authenticate using Qwen OAuth': 'Mit Qwen OAuth authentifizieren',
+  'Authenticate using Canopy OAuth': 'Mit Canopy OAuth authentifizieren',
   'Authenticate using Alibaba Cloud Coding Plan':
     'Mit Alibaba Cloud Coding Plan authentifizieren',
   'Region for Coding Plan (china/global)':
@@ -1867,12 +1868,12 @@ export default {
     'Aktuellen Authentifizierungsstatus anzeigen',
   'Authentication completed successfully.':
     'Authentifizierung erfolgreich abgeschlossen.',
-  'Starting Qwen OAuth authentication...':
-    'Qwen OAuth-Authentifizierung wird gestartet...',
-  'Successfully authenticated with Qwen OAuth.':
-    'Erfolgreich mit Qwen OAuth authentifiziert.',
-  'Failed to authenticate with Qwen OAuth: {{error}}':
-    'Authentifizierung mit Qwen OAuth fehlgeschlagen: {{error}}',
+  'Starting Canopy OAuth authentication...':
+    'Canopy OAuth-Authentifizierung wird gestartet...',
+  'Successfully authenticated with Canopy OAuth.':
+    'Erfolgreich mit Canopy OAuth authentifiziert.',
+  'Failed to authenticate with Canopy OAuth: {{error}}':
+    'Authentifizierung mit Canopy OAuth fehlgeschlagen: {{error}}',
   'Processing Alibaba Cloud Coding Plan authentication...':
     'Alibaba Cloud Coding Plan-Authentifizierung wird verarbeitet...',
   'Successfully authenticated with Alibaba Cloud Coding Plan.':
@@ -1891,18 +1892,18 @@ export default {
     '⚠  Keine Authentifizierungsmethode konfiguriert.\n',
   'Run one of the following commands to get started:\n':
     'Führen Sie einen der folgenden Befehle aus, um zu beginnen:\n',
-  '  qwen auth qwen-oauth     - Authenticate with Qwen OAuth (discontinued)':
-    '  qwen auth qwen-oauth     - Mit Qwen OAuth authentifizieren (eingestellt)',
+  '  canopy auth canopy-oauth     - Authenticate with Canopy OAuth (discontinued)':
+    '  canopy auth canopy-oauth     - Mit Canopy OAuth authentifizieren (eingestellt)',
   'Or simply run:': 'Oder einfach ausführen:',
-  '  qwen auth                - Interactive authentication setup\n':
-    '  qwen auth                - Interaktive Authentifizierungseinrichtung\n',
-  '✓ Authentication Method: Qwen OAuth':
-    '✓ Authentifizierungsmethode: Qwen OAuth',
+  '  canopy auth                - Interactive authentication setup\n':
+    '  canopy auth                - Interaktive Authentifizierungseinrichtung\n',
+  '✓ Authentication Method: Canopy OAuth':
+    '✓ Authentifizierungsmethode: Canopy OAuth',
   '  Type: Free tier (discontinued 2026-04-15)':
     '  Typ: Kostenloses Kontingent (eingestellt 2026-04-15)',
   '  Limit: No longer available': '  Limit: Nicht mehr verfügbar',
-  'Qwen OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan, OpenRouter, Fireworks AI, or another provider.':
-    'Das kostenlose Qwen OAuth-Kontingent wurde am 2026-04-15 eingestellt. Führen Sie /auth aus, um zu Coding Plan, OpenRouter, Fireworks AI oder einem anderen Anbieter zu wechseln.',
+  'Canopy OAuth free tier was discontinued on 2026-04-15. Run /auth to switch to Coding Plan, OpenRouter, Fireworks AI, or another provider.':
+    'Das kostenlose Canopy OAuth-Kontingent wurde am 2026-04-15 eingestellt. Führen Sie /auth aus, um zu Coding Plan, OpenRouter, Fireworks AI oder einem anderen Anbieter zu wechseln.',
   '✓ Authentication Method: Alibaba Cloud Coding Plan':
     '✓ Authentifizierungsmethode: Alibaba Cloud Coding Plan',
   'Global - Alibaba Cloud': 'Global - Alibaba Cloud',
@@ -1914,8 +1915,8 @@ export default {
     '⚠  Authentifizierungsmethode: Alibaba Cloud Coding Plan (Unvollständig)',
   '  Issue: API key not found in environment or settings\n':
     '  Problem: API Key nicht in Umgebung oder Einstellungen gefunden\n',
-  '  Run `qwen auth coding-plan` to re-configure.\n':
-    '  Führen Sie `qwen auth coding-plan` aus, um neu zu konfigurieren.\n',
+  '  Run `canopy auth coding-plan` to re-configure.\n':
+    '  Führen Sie `canopy auth coding-plan` aus, um neu zu konfigurieren.\n',
   '✓ Authentication Method: {{type}}': '✓ Authentifizierungsmethode: {{type}}',
   '  Status: Configured\n': '  Status: Konfiguriert\n',
   'Failed to check authentication status: {{error}}':
@@ -1938,7 +1939,8 @@ export default {
     'Bereits im Plan-Modus. Verwenden Sie "/plan exit", um den Plan-Modus zu verlassen.',
   'Not in plan mode. Use "/plan" to enter plan mode first.':
     'Nicht im Plan-Modus. Verwenden Sie "/plan", um zuerst in den Plan-Modus zu gelangen.',
-  "Set up Qwen Code's status line UI": 'Qwen Codes Statusleisten-UI einrichten',
+  "Set up Canopy Code's status line UI":
+    'Canopy Codes Statusleisten-UI einrichten',
 
   // === Core: added from PR #3328 ===
   'Open the memory manager.': 'Den Speicher-Manager öffnen.',
@@ -2171,13 +2173,14 @@ export default {
   out: 'aus',
   'In/Out': 'Ein/Aus',
   // Update command
-  'Check for Qwen Code updates and install if available':
-    'Auf Qwen Code-Updates prüfen und installieren, falls verfügbar',
-  'Qwen Code update available! {{current}} → {{latest}}':
-    'Qwen Code-Update verfügbar! {{current}} → {{latest}}',
-  'A new version of Qwen Code is available! {{current}} → {{latest}}':
-    'Eine neue Version von Qwen Code ist verfügbar! {{current}} → {{latest}}',
-  'Qwen Code {{version}} is up to date!': 'Qwen Code {{version}} ist aktuell!',
+  'Check for Canopy Code updates and install if available':
+    'Auf Canopy Code-Updates prüfen und installieren, falls verfügbar',
+  'Canopy Code update available! {{current}} → {{latest}}':
+    'Canopy Code-Update verfügbar! {{current}} → {{latest}}',
+  'A new version of Canopy Code is available! {{current}} → {{latest}}':
+    'Eine neue Version von Canopy Code ist verfügbar! {{current}} → {{latest}}',
+  'Canopy Code {{version}} is up to date!':
+    'Canopy Code {{version}} ist aktuell!',
   'Failed to check for updates ({{reason}}). Please check your network or registry configuration.':
     'Suche nach Updates fehlgeschlagen ({{reason}}). Bitte Netzwerk- oder Registry-Konfiguration prüfen.',
   'Update check skipped ({{reason}}) — run /update to retry.':
@@ -2194,8 +2197,8 @@ export default {
     'Update heruntergeladen. Es wird nach dem Beenden dieser Sitzung angewendet.',
   'Update failed: {{error}}': 'Update fehlgeschlagen: {{error}}',
   'Downloading update...': 'Update wird heruntergeladen...',
-  'Update successful! Please restart Qwen Code to use the new version. Switching model providers before restarting may not work correctly.':
-    'Update erfolgreich! Bitte starten Sie Qwen Code neu, um die neue Version zu verwenden. Das Wechseln von Modellanbietern vor dem Neustart funktioniert möglicherweise nicht korrekt.',
+  'Update successful! Please restart Canopy Code to use the new version. Switching model providers before restarting may not work correctly.':
+    'Update erfolgreich! Bitte starten Sie Canopy Code neu, um die neue Version zu verwenden. Das Wechseln von Modellanbietern vor dem Neustart funktioniert möglicherweise nicht korrekt.',
   'Automatic update failed. Please try updating manually.':
     'Automatisches Update fehlgeschlagen. Bitte versuchen Sie, manuell zu aktualisieren.',
   'Automatic update failed: {{error}}. Re-run the installer to update manually.':
@@ -2221,12 +2224,12 @@ export default {
   'Run the following to update:': 'Führen Sie Folgendes zum Aktualisieren aus:',
   'Unable to auto-update this standalone installation. Please reinstall from:':
     'Diese Standalone-Installation kann nicht automatisch aktualisiert werden. Bitte neu installieren von:',
-  'Manual update required. Please reinstall Qwen Code.':
-    'Manuelles Update erforderlich. Bitte installieren Sie Qwen Code neu.',
-  'This session uses the custom sandbox image {{image}}. Update that image and restart Qwen Code.':
-    'Diese Sitzung verwendet das benutzerdefinierte Sandbox-Image {{image}}. Aktualisieren Sie das Image und starten Sie Qwen Code neu.',
-  'Update Qwen Code on the host, then restart the sandbox.':
-    'Aktualisieren Sie Qwen Code auf dem Host und starten Sie anschließend die Sandbox neu.',
+  'Manual update required. Please reinstall Canopy Code.':
+    'Manuelles Update erforderlich. Bitte installieren Sie Canopy Code neu.',
+  'This session uses the custom sandbox image {{image}}. Update that image and restart Canopy Code.':
+    'Diese Sitzung verwendet das benutzerdefinierte Sandbox-Image {{image}}. Aktualisieren Sie das Image und starten Sie Canopy Code neu.',
+  'Update Canopy Code on the host, then restart the sandbox.':
+    'Aktualisieren Sie Canopy Code auf dem Host und starten Sie anschließend die Sandbox neu.',
   'The update will be installed after you exit this session.':
     'Das Update wird nach dem Beenden dieser Sitzung installiert.',
   'Run /update to install the update on the host.':

@@ -5,7 +5,7 @@
  */
 
 /**
- * Converter for Claude Code plugins to Qwen Code format.
+ * Converter for Claude Code plugins to Canopy Code format.
  */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -178,45 +178,45 @@ function parseStringOrArray(value: unknown): string[] | undefined {
 }
 
 /**
- * Converts a Claude agent config to Qwen Code subagent format.
+ * Converts a Claude agent config to Canopy Code subagent format.
  * @param claudeAgent Claude agent configuration
- * @returns Converted agent config compatible with Qwen Code SubagentConfig
+ * @returns Converted agent config compatible with Canopy Code SubagentConfig
  */
 export function convertClaudeAgentConfig(
   claudeAgent: ClaudeAgentConfig,
 ): Record<string, unknown> {
   // Base config with required fields
-  const qwenAgent: Record<string, unknown> = {
+  const canopyAgent: Record<string, unknown> = {
     name: claudeAgent.name,
     description: claudeAgent.description,
   };
 
   if (claudeAgent.color) {
-    qwenAgent['color'] = claudeAgent.color;
+    canopyAgent['color'] = claudeAgent.color;
   }
 
   // Convert system prompt if present
   if (claudeAgent.systemPrompt) {
-    qwenAgent['systemPrompt'] = claudeAgent.systemPrompt;
+    canopyAgent['systemPrompt'] = claudeAgent.systemPrompt;
   }
 
   // Convert tools using claudeBuildInToolsTransform
   if (claudeAgent.tools && claudeAgent.tools.length > 0) {
-    qwenAgent['tools'] = claudeBuildInToolsTransform(claudeAgent.tools);
+    canopyAgent['tools'] = claudeBuildInToolsTransform(claudeAgent.tools);
   }
 
   // Preserve Claude's top-level model selector.
   if (claudeAgent.model) {
-    qwenAgent['model'] = claudeAgent.model;
+    canopyAgent['model'] = claudeAgent.model;
   }
 
-  // Map Claude permission mode aliases to Qwen ApprovalMode values.
+  // Map Claude permission mode aliases to Canopy ApprovalMode values.
   // Note: Claude's `dontAsk` denies any tool call that would prompt the user,
   // making it restrictive. We map it to `default` (which also requires approval)
   // rather than `auto-edit` (which auto-approves), preserving the restrictive
   // intent. `bypassPermissions` is the Claude mode that auto-approves everything.
   if (claudeAgent.permissionMode) {
-    const claudeToQwenMode: Record<string, string> = {
+    const claudeToCanopyMode: Record<string, string> = {
       default: 'default',
       plan: 'plan',
       acceptEdits: 'auto-edit',
@@ -225,28 +225,28 @@ export function convertClaudeAgentConfig(
       auto: 'auto-edit',
     };
     const mapped =
-      claudeToQwenMode[claudeAgent.permissionMode] ??
+      claudeToCanopyMode[claudeAgent.permissionMode] ??
       claudeAgent.permissionMode;
-    qwenAgent['approvalMode'] = mapped;
+    canopyAgent['approvalMode'] = mapped;
   }
   if (claudeAgent.hooks) {
-    qwenAgent['hooks'] = claudeAgent.hooks;
+    canopyAgent['hooks'] = claudeAgent.hooks;
   }
   if (claudeAgent.mcpServers) {
-    qwenAgent['mcpServers'] = claudeAgent.mcpServers;
+    canopyAgent['mcpServers'] = claudeAgent.mcpServers;
   }
   if (claudeAgent.skills && claudeAgent.skills.length > 0) {
-    qwenAgent['skills'] = claudeAgent.skills;
+    canopyAgent['skills'] = claudeAgent.skills;
   }
   if (claudeAgent.disallowedTools && claudeAgent.disallowedTools.length > 0) {
-    qwenAgent['disallowedTools'] = claudeAgent.disallowedTools;
+    canopyAgent['disallowedTools'] = claudeAgent.disallowedTools;
   }
 
-  return qwenAgent;
+  return canopyAgent;
 }
 
 /**
- * Converts all agent files in a directory from Claude format to Qwen format.
+ * Converts all agent files in a directory from Claude format to Canopy format.
  * Parses the YAML frontmatter, converts the configuration, and writes back.
  * @param agentsDir Directory containing agent markdown files
  */
@@ -296,12 +296,12 @@ async function convertAgentFiles(agentsDir: string): Promise<void> {
         systemPrompt: body.trim(),
       };
 
-      // Convert to Qwen format
-      const qwenAgent = convertClaudeAgentConfig(claudeAgent);
+      // Convert to Canopy format
+      const canopyAgent = convertClaudeAgentConfig(claudeAgent);
 
       // Build new frontmatter (excluding systemPrompt as it goes in body).
       const newFrontmatter: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(qwenAgent)) {
+      for (const [key, value] of Object.entries(canopyAgent)) {
         if (key !== 'systemPrompt' && value !== undefined) {
           newFrontmatter[key] = value;
         }
@@ -313,7 +313,8 @@ async function convertAgentFiles(agentsDir: string): Promise<void> {
       // `subagent-manager.ts:serializeSubagent` produces — without `.trim()`
       // the converter emits an extra blank line before the closing `---`.
       const newYaml = stringifyYaml(newFrontmatter).trim();
-      const systemPrompt = (qwenAgent['systemPrompt'] as string) || body.trim();
+      const systemPrompt =
+        (canopyAgent['systemPrompt'] as string) || body.trim();
       const newContent = `---
 ${newYaml}
 ---
@@ -331,11 +332,11 @@ ${systemPrompt}
 }
 
 /**
- * Maps a single Claude `.mcp.json` server entry to Qwen's MCPServerConfig shape.
+ * Maps a single Claude `.mcp.json` server entry to Canopy's MCPServerConfig shape.
  * Claude discriminates transport with a `type` field (`http`/`sse`/`stdio`),
- * whereas Qwen keys off which field is set: `httpUrl` (streamable HTTP),
+ * whereas Canopy keys off which field is set: `httpUrl` (streamable HTTP),
  * `url` (SSE) or `command` (stdio). A Claude `type: 'http'` entry therefore has
- * to move its `url` to `httpUrl`. Qwen reserves `type` for `'sdk'`, so any other
+ * to move its `url` to `httpUrl`. Canopy reserves `type` for `'sdk'`, so any other
  * `type` value (Claude's transport discriminator) is dropped while `'sdk'` —
  * which `isSdkMcpServerConfig` depends on — is always preserved.
  */
@@ -343,7 +344,7 @@ export function normalizeClaudeMcpServer(
   raw: MCPServerConfig,
 ): MCPServerConfig {
   const server = raw as unknown as Record<string, unknown>;
-  // stdio / already-Qwen-shaped configs pass through; only a non-sdk `type`
+  // stdio / already-Canopy-shaped configs pass through; only a non-sdk `type`
   // (Claude's transport discriminator) is stripped.
   if (server['command'] || server['httpUrl'] || server['tcp']) {
     if (server['type'] === undefined || server['type'] === 'sdk') {
@@ -370,7 +371,7 @@ export function normalizeClaudeMcpServer(
 }
 
 /**
- * Maps Claude `.mcp.json` server entries to Qwen's MCPServerConfig shape.
+ * Maps Claude `.mcp.json` server entries to Canopy's MCPServerConfig shape.
  * @see normalizeClaudeMcpServer for the per-server transport mapping.
  */
 function normalizeClaudeMcpServers(
@@ -384,11 +385,11 @@ function normalizeClaudeMcpServers(
 }
 
 /**
- * Converts a Claude plugin config to Qwen Code format.
+ * Converts a Claude plugin config to Canopy Code format.
  * @param claudeConfig Claude plugin configuration
- * @returns Qwen ExtensionConfig
+ * @returns Canopy ExtensionConfig
  */
-export function convertClaudeToQwenConfig(
+export function convertClaudeToCanopyConfig(
   claudeConfig: ClaudePluginConfig,
 ): ExtensionConfig {
   // Validate required fields
@@ -441,9 +442,9 @@ export function convertClaudeToQwenConfig(
 }
 
 /**
- * Converts a complete Claude plugin package to Qwen Code format.
+ * Converts a complete Claude plugin package to Canopy Code format.
  * Creates a new temporary directory with:
- * 1. Converted qwen-extension.json
+ * 1. Converted canopy-extension.json
  * 2. Commands, skills, and agents collected to respective folders
  * 3. MCP servers resolved from JSON files if needed
  * 4. All other files preserved
@@ -548,7 +549,7 @@ export async function convertClaudePluginPackage(
     mergedConfig = marketplacePlugin as ClaudePluginConfig;
   }
 
-  const converted = await buildQwenExtensionFromPlugin(
+  const converted = await buildCanopyExtensionFromPlugin(
     pluginSource,
     mergedConfig,
   );
@@ -594,12 +595,12 @@ export function resolvePluginRelativeFile(
 }
 
 /**
- * Builds a converted Qwen extension directory from a resolved Claude plugin
+ * Builds a converted Canopy extension directory from a resolved Claude plugin
  * source directory and its merged config. Shared by the marketplace-based
  * (`convertClaudePluginPackage`) and standalone (`convertClaudePluginStandalone`)
  * conversion paths.
  */
-export async function buildQwenExtensionFromPlugin(
+export async function buildCanopyExtensionFromPlugin(
   pluginSource: string,
   mergedConfig: ClaudePluginConfig,
 ): Promise<{ config: ExtensionConfig; convertedDir: string }> {
@@ -697,17 +698,17 @@ export async function buildQwenExtensionFromPlugin(
     const agentsDestDir = path.join(tmpDir, 'agents');
     await convertAgentFiles(agentsDestDir);
 
-    const qwenConfig = convertClaudeToQwenConfig(mergedConfig);
+    const canopyConfig = convertClaudeToCanopyConfig(mergedConfig);
 
-    const qwenConfigPath = path.join(tmpDir, 'qwen-extension.json');
+    const canopyConfigPath = path.join(tmpDir, 'canopy-extension.json');
     fs.writeFileSync(
-      qwenConfigPath,
-      JSON.stringify(qwenConfig, null, 2),
+      canopyConfigPath,
+      JSON.stringify(canopyConfig, null, 2),
       'utf-8',
     );
 
     return {
-      config: qwenConfig,
+      config: canopyConfig,
       convertedDir: tmpDir,
     };
   } catch (error) {
@@ -721,7 +722,7 @@ export async function buildQwenExtensionFromPlugin(
 }
 
 /**
- * Converts a standalone Claude plugin to Qwen Code format. A standalone plugin
+ * Converts a standalone Claude plugin to Canopy Code format. A standalone plugin
  * is a repo whose root holds `.claude-plugin/plugin.json` (no marketplace.json),
  * as produced by installing a Claude Code plugin directly from a git URL.
  *
@@ -802,7 +803,7 @@ export async function convertClaudePluginStandalone(
     }
   }
 
-  return buildQwenExtensionFromPlugin(extensionDir, mergedConfig);
+  return buildCanopyExtensionFromPlugin(extensionDir, mergedConfig);
 }
 
 /**

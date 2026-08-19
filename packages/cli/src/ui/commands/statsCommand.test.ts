@@ -32,7 +32,7 @@ import {
   Storage,
   getTokenUsageFilePath,
   recordTokenUsageFromApiResponse,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const fsPromisesMock = vi.hoisted(() => ({
   open: vi.fn<typeof import('node:fs/promises').open>(),
@@ -73,9 +73,9 @@ describe('statsCommand', () => {
     fsPromisesMock.open.mockImplementation(actualFs.open);
     fsPromisesMock.rename.mockReset();
     fsPromisesMock.rename.mockImplementation(actualFs.rename);
-    originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    tempDir = await mkdtemp(path.join(tmpdir(), 'qwen-stats-command-'));
-    process.env['QWEN_RUNTIME_DIR'] = tempDir;
+    originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    tempDir = await mkdtemp(path.join(tmpdir(), 'canopy-stats-command-'));
+    process.env['CANOPY_RUNTIME_DIR'] = tempDir;
 
     // 1. Create the mock context with all default values
     mockContext = createMockCommandContext();
@@ -88,9 +88,9 @@ describe('statsCommand', () => {
     vi.useRealTimers();
     await setLanguageAsync('en');
     if (originalRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
     }
     Storage.setRuntimeBaseDir(null);
     await rm(tempDir, { recursive: true, force: true });
@@ -762,10 +762,10 @@ describe('statsCommand', () => {
         messageType: 'info',
       });
       expect(result.content).toContain(
-        'Token usage exported to CSV: qwen-token-usage-month-2025-07.csv',
+        'Token usage exported to CSV: canopy-token-usage-month-2025-07.csv',
       );
       const csv = await readFile(
-        path.join(tempDir, 'qwen-token-usage-month-2025-07.csv'),
+        path.join(tempDir, 'canopy-token-usage-month-2025-07.csv'),
         'utf-8',
       );
       expect(csv).toContain(
@@ -979,7 +979,7 @@ describe('statsCommand', () => {
       }
 
       const outsideDir = await mkdtemp(
-        path.join(tmpdir(), 'qwen-stats-outside-'),
+        path.join(tmpdir(), 'canopy-stats-outside-'),
       );
       try {
         const linkPath = path.join(tempDir, 'linked-outside');
@@ -1019,7 +1019,7 @@ describe('statsCommand', () => {
       }
 
       const outsideDir = await mkdtemp(
-        path.join(tmpdir(), 'qwen-stats-outside-'),
+        path.join(tmpdir(), 'canopy-stats-outside-'),
       );
       try {
         const outsideFile = path.join(outsideDir, 'usage.csv');
@@ -1087,7 +1087,7 @@ describe('statsCommand', () => {
       }
 
       const outsideDir = await mkdtemp(
-        path.join(tmpdir(), 'qwen-stats-outside-'),
+        path.join(tmpdir(), 'canopy-stats-outside-'),
       );
       try {
         const outsideFile = path.join(outsideDir, 'usage.csv');

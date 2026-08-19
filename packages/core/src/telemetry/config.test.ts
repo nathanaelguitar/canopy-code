@@ -94,15 +94,15 @@ describe('telemetry/config helpers', () => {
         outfile: 'settings.log',
       };
       const env = {
-        QWEN_TELEMETRY_ENABLED: '1',
-        QWEN_TELEMETRY_TARGET: 'gcp',
-        QWEN_TELEMETRY_OTLP_ENDPOINT: 'http://env:4317',
-        QWEN_TELEMETRY_OTLP_PROTOCOL: 'http',
-        QWEN_TELEMETRY_LOG_PROMPTS: 'true',
-        QWEN_TELEMETRY_USER_ID: 'env-user',
-        QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: 'true',
-        QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '2048',
-        QWEN_TELEMETRY_OUTFILE: 'env.log',
+        CANOPY_TELEMETRY_ENABLED: '1',
+        CANOPY_TELEMETRY_TARGET: 'gcp',
+        CANOPY_TELEMETRY_OTLP_ENDPOINT: 'http://env:4317',
+        CANOPY_TELEMETRY_OTLP_PROTOCOL: 'http',
+        CANOPY_TELEMETRY_LOG_PROMPTS: 'true',
+        CANOPY_TELEMETRY_USER_ID: 'env-user',
+        CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: 'true',
+        CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '2048',
+        CANOPY_TELEMETRY_OUTFILE: 'env.log',
       } as Record<string, string>;
       const argv = {
         telemetry: false,
@@ -169,7 +169,7 @@ describe('telemetry/config helpers', () => {
       expect(resolvedFromSettings.userId).toBe('user α  beta');
 
       const resolvedFromEnv = await resolveTelemetrySettings({
-        env: { QWEN_TELEMETRY_USER_ID: '  0  ' },
+        env: { CANOPY_TELEMETRY_USER_ID: '  0  ' },
         settings: { userId: 'settings-user' },
       });
       expect(resolvedFromEnv.userId).toBe('0');
@@ -177,7 +177,7 @@ describe('telemetry/config helpers', () => {
 
     it('falls back to settings when the telemetry user ID env var is blank', async () => {
       const resolved = await resolveTelemetrySettings({
-        env: { QWEN_TELEMETRY_USER_ID: '   ' },
+        env: { CANOPY_TELEMETRY_USER_ID: '   ' },
         settings: { userId: ' settings-user ' },
       });
 
@@ -186,7 +186,7 @@ describe('telemetry/config helpers', () => {
 
     it('omits the telemetry user ID when both sources are blank', async () => {
       const resolved = await resolveTelemetrySettings({
-        env: { QWEN_TELEMETRY_USER_ID: '\t' },
+        env: { CANOPY_TELEMETRY_USER_ID: '\t' },
         settings: { userId: ' ' },
       });
 
@@ -220,7 +220,7 @@ describe('telemetry/config helpers', () => {
 
       const resolvedEnvTrue = await resolveTelemetrySettings({
         env: {
-          QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: '1',
+          CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: '1',
         },
         settings: { includeSensitiveSpanAttributes: false },
       });
@@ -228,7 +228,7 @@ describe('telemetry/config helpers', () => {
 
       const resolvedEnvFalse = await resolveTelemetrySettings({
         env: {
-          QWEN_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: 'false',
+          CANOPY_TELEMETRY_INCLUDE_SENSITIVE_SPAN_ATTRIBUTES: 'false',
         },
         settings: { includeSensitiveSpanAttributes: true },
       });
@@ -243,7 +243,7 @@ describe('telemetry/config helpers', () => {
 
       const resolvedFromEnv = await resolveTelemetrySettings({
         env: {
-          QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '131072',
+          CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '131072',
         },
         settings: { sensitiveSpanAttributeMaxLength: 65_536 },
       });
@@ -263,7 +263,7 @@ describe('telemetry/config helpers', () => {
 
       const resolvedFromEnv = await resolveTelemetrySettings({
         env: {
-          QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: String(
+          CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: String(
             SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT,
           ),
         },
@@ -336,74 +336,74 @@ describe('telemetry/config helpers', () => {
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '',
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got ''/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got ''/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '   ',
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '   ',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got ' {3}'/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got ' {3}'/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: 'abc',
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: 'abc',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got 'abc'/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got 'abc'/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '1e3',
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '1e3',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '1e3'/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '1e3'/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '0',
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: '0',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '0'/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '0'/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH:
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH:
               '9007199254740992',
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '9007199254740992'/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*got '9007199254740992'/,
       );
 
       await expect(
         resolveTelemetrySettings({
           env: {
-            QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: String(
+            CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: String(
               SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT + 1,
             ),
           },
         }),
       ).rejects.toThrow(
-        /QWEN_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*104857600/,
+        /CANOPY_TELEMETRY_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH.*104857600/,
       );
     });
 
@@ -417,7 +417,7 @@ describe('telemetry/config helpers', () => {
     });
 
     it('throws on unknown protocol values', async () => {
-      const env = { QWEN_TELEMETRY_OTLP_PROTOCOL: 'unknown' } as Record<
+      const env = { CANOPY_TELEMETRY_OTLP_PROTOCOL: 'unknown' } as Record<
         string,
         string
       >;
@@ -427,7 +427,7 @@ describe('telemetry/config helpers', () => {
     });
 
     it('throws on unknown target values', async () => {
-      const env = { QWEN_TELEMETRY_TARGET: 'unknown' } as Record<
+      const env = { CANOPY_TELEMETRY_TARGET: 'unknown' } as Record<
         string,
         string
       >;
@@ -448,16 +448,16 @@ describe('telemetry/config helpers', () => {
       expect(resolved.otlpMetricsEndpoint).toBeUndefined();
     });
 
-    it('QWEN_ env vars take precedence over OTEL_ vars for per-signal endpoints', async () => {
+    it('CANOPY_ env vars take precedence over OTEL_ vars for per-signal endpoints', async () => {
       const env = {
-        QWEN_TELEMETRY_OTLP_TRACES_ENDPOINT:
-          'http://qwen-traces:4318/v1/traces',
+        CANOPY_TELEMETRY_OTLP_TRACES_ENDPOINT:
+          'http://canopy-traces:4318/v1/traces',
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'http://otel-traces:4318/v1/traces',
       } as Record<string, string>;
 
       const resolved = await resolveTelemetrySettings({ env });
       expect(resolved.otlpTracesEndpoint).toBe(
-        'http://qwen-traces:4318/v1/traces',
+        'http://canopy-traces:4318/v1/traces',
       );
     });
 
@@ -641,7 +641,7 @@ describe('telemetry/config helpers', () => {
 
     it('reads from env (override settings)', async () => {
       const resolved = await resolveTelemetrySettings({
-        env: { QWEN_TELEMETRY_METRICS_INCLUDE_SESSION_ID: 'true' },
+        env: { CANOPY_TELEMETRY_METRICS_INCLUDE_SESSION_ID: 'true' },
         settings: { metrics: { includeSessionId: false } },
       });
       expect(resolved.metrics?.includeSessionId).toBe(true);
@@ -649,7 +649,7 @@ describe('telemetry/config helpers', () => {
 
     it('explicit env=false overrides settings=true', async () => {
       const resolved = await resolveTelemetrySettings({
-        env: { QWEN_TELEMETRY_METRICS_INCLUDE_SESSION_ID: 'false' },
+        env: { CANOPY_TELEMETRY_METRICS_INCLUDE_SESSION_ID: 'false' },
         settings: { metrics: { includeSessionId: true } },
       });
       expect(resolved.metrics?.includeSessionId).toBe(false);

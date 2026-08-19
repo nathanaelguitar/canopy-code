@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,7 +13,7 @@ import {
   type Extension,
   getExtensionDisplayName,
   getExtensionDescription,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useTerminalSize } from '../../../hooks/useTerminalSize.js';
 import { t, getCurrentLanguage } from '../../../../i18n/index.js';
 import { ExtensionUpdateState } from '../../../state/extensions.js';

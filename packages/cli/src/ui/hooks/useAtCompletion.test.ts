@@ -13,12 +13,12 @@ import type {
   Config,
   FileSearch,
   FileSystemStructure,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   FileSearchFactory,
   createTmpDir,
   cleanupTmpDir,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useState } from 'react';
 import type { Suggestion } from '../components/SuggestionsDisplay.js';
 
@@ -58,7 +58,7 @@ describe('useAtCompletion', () => {
     mockConfig = {
       getFileFilteringOptions: vi.fn(() => ({
         respectGitIgnore: true,
-        respectQwenIgnore: true,
+        respectCanopyIgnore: true,
       })),
       getEnableRecursiveFileSearch: () => true,
       getFileFilteringEnableFuzzySearch: () => true,
@@ -219,7 +219,7 @@ describe('useAtCompletion', () => {
         projectRoot: testRootDir,
         ignoreDirs: [],
         useGitignore: true,
-        useQwenignore: true,
+        useCanopyignore: true,
         cache: false,
         cacheTtl: 0,
         enableRecursiveFileSearch: true,
@@ -422,7 +422,7 @@ describe('useAtCompletion', () => {
       ]);
     });
 
-    it('should respect configured custom qwen ignore files', async () => {
+    it('should respect configured custom canopy ignore files', async () => {
       const structure: FileSystemStructure = {
         '.cursorignore': 'cursor-secret.txt',
         '.agentignore': 'agent-secret.txt',
@@ -436,7 +436,7 @@ describe('useAtCompletion', () => {
         getEnableRecursiveFileSearch: () => true,
         getFileFilteringOptions: vi.fn(() => ({
           respectGitIgnore: true,
-          respectQwenIgnore: true,
+          respectCanopyIgnore: true,
           customIgnoreFiles: ['.cursorignore'],
         })),
         getFileFilteringEnableFuzzySearch: () => true,
@@ -544,7 +544,7 @@ describe('useAtCompletion', () => {
         getEnableRecursiveFileSearch: () => false,
         getFileFilteringOptions: vi.fn(() => ({
           respectGitIgnore: true,
-          respectQwenIgnore: true,
+          respectCanopyIgnore: true,
         })),
         getFileFilteringEnableFuzzySearch: () => true,
       } as unknown as Config;

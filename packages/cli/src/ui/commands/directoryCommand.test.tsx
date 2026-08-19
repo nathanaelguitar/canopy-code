@@ -10,7 +10,7 @@ import {
   expandHomeDir,
   type Config,
   type WorkspaceContext,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { CommandContext, SlashCommandActionReturn } from './types.js';
 import { SettingScope } from '../../config/settings.js';
 import * as os from 'node:os';
@@ -443,7 +443,7 @@ describe('getDirPathCompletions', () => {
       }
     }
 
-    tempTestDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-dir-test-'));
+    tempTestDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-dir-test-'));
     // Create a nested directory structure: root/sub1, root/sub2, root/sub1/deep
     fs.mkdirSync(tempTestDir, { recursive: true });
     fs.mkdirSync(path.join(tempTestDir, 'sub1'), { recursive: true });
@@ -515,7 +515,7 @@ describe('getDirPathCompletions', () => {
 
     it('should complete Windows-style home-relative paths', () => {
       const homeSubdir = fs.mkdtempSync(
-        path.join(os.homedir(), `qwen-dir-complete-${process.pid}-`),
+        path.join(os.homedir(), `canopy-dir-complete-${process.pid}-`),
       );
       const partialName = path.basename(homeSubdir).slice(0, -2);
 

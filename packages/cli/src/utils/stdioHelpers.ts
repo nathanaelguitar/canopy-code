@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,10 +8,10 @@
  * Utility functions for writing to stdout/stderr in CLI commands.
  *
  * These helpers are used instead of console.log/console.error in standalone
- * CLI commands (like `qwen extensions list`) where the output IS the user-facing
+ * CLI commands (like `canopy extensions list`) where the output IS the user-facing
  * result, not debug logging.
  *
- * For debug/diagnostic logging, use `createDebugLogger()` from @qwen-code/qwen-code-core.
+ * For debug/diagnostic logging, use `createDebugLogger()` from @canopy-code/canopy-code-core.
  */
 
 /**
@@ -37,7 +37,7 @@ export const writeStderrLine = (message: string): void => {
  *
  * Same contract as `writeStderrLineSafe`: use it where the write is
  * incidental to the work in hand — an informational block whose reader
- * going away (`qwen … | head`) must not fail the command.
+ * going away (`canopy … | head`) must not fail the command.
  */
 export const writeStdoutLineSafe = (message: string): void => {
   try {
@@ -51,7 +51,7 @@ export const writeStdoutLineSafe = (message: string): void => {
  * `writeStderrLine` that cannot throw.
  *
  * `process.stderr.write` throws on EPIPE or a closed fd — reachable whenever
- * the reader goes away (`qwen … | head`) or a daemon redirects its stderr. Most
+ * the reader goes away (`canopy … | head`) or a daemon redirects its stderr. Most
  * of the CLI *wants* that to be loud, so this is not the default.
  *
  * Use it only where the write is incidental to the work in hand and failing it

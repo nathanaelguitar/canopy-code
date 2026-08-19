@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@ import {
   ToolDisplayNamesMigration,
   type MemoryDiagnostics,
   type ToolResultRetentionStats,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { formatMemoryUsage } from '../utils/formatters.js';
 
 const debugLogger = createDebugLogger('DOCTOR_MEMORY');
@@ -178,7 +178,7 @@ export const doctorCommand: SlashCommand = {
           if (isHighHeapPressure(latestDiagnostics)) {
             throw new Error(
               t(
-                'Heap snapshot skipped: V8 heap pressure is already high, and writing a synchronous heap snapshot could make the process unresponsive or trigger OOM. Restart Qwen Code first if it is unstable, or retry before memory pressure reaches the warning threshold.',
+                'Heap snapshot skipped: V8 heap pressure is already high, and writing a synchronous heap snapshot could make the process unresponsive or trigger OOM. Restart Canopy Code first if it is unstable, or retry before memory pressure reaches the warning threshold.',
               ),
             );
           }
@@ -334,7 +334,7 @@ async function memoryDoctorAction(context: CommandContext, args = '') {
   try {
     const diagnostics = await collectMemoryDiagnostics({
       sessionId: context.services.config?.getSessionId(),
-      qwenVersion: context.services.config?.getCliVersion(),
+      canopyVersion: context.services.config?.getCliVersion(),
     });
 
     if (context.abortSignal?.aborted) {
@@ -735,10 +735,10 @@ async function cpuProfileDoctorAction(
       const infoMsg =
         process.platform === 'win32'
           ? t(
-              'CPU profile was stopped externally. Check ~/.qwen/cpu-profiles/ for the output.',
+              'CPU profile was stopped externally. Check ~/.canopy/cpu-profiles/ for the output.',
             )
           : t(
-              'CPU profile was stopped externally (e.g., via SIGUSR1). Check ~/.qwen/cpu-profiles/ for the output.',
+              'CPU profile was stopped externally (e.g., via SIGUSR1). Check ~/.canopy/cpu-profiles/ for the output.',
             );
       if (executionMode === 'interactive') {
         context.ui.addItem({ type: 'info', text: infoMsg }, Date.now());
@@ -778,7 +778,7 @@ function rollbackDoctorAction(context: CommandContext) {
 
   if (process.platform === 'win32') {
     const winMsg = t(
-      'Rollback on Windows requires manual intervention. Rename qwen-code.old to qwen-code in your installation directory.',
+      'Rollback on Windows requires manual intervention. Rename canopy-code.old to canopy-code in your installation directory.',
     );
     if (context.executionMode === 'interactive') {
       context.ui.addItem({ type: 'info', text: winMsg }, Date.now());

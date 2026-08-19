@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ describe('WorkspaceChannelSettingsStore', () => {
   let testRoot: string;
   let workspace: string;
   let settingsPath: string;
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
 
   const writeWorkspaceSettings = (contents: string) => {
     fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
@@ -105,10 +105,10 @@ describe('WorkspaceChannelSettingsStore', () => {
   });
 
   beforeEach(() => {
-    originalQwenHome = process.env['QWEN_HOME'];
+    originalCanopyHome = process.env['QWEN_HOME'];
     testRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'channel-settings-'));
     workspace = path.join(testRoot, 'workspace');
-    settingsPath = path.join(workspace, '.qwen', 'settings.json');
+    settingsPath = path.join(workspace, '.canopy', 'settings.json');
     process.env['QWEN_HOME'] = path.join(testRoot, 'home');
     resetHomeEnvBootstrapForTesting();
     writeWorkspaceSettings(`{
@@ -129,10 +129,10 @@ describe('WorkspaceChannelSettingsStore', () => {
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) {
+    if (originalCanopyHome === undefined) {
       delete process.env['QWEN_HOME'];
     } else {
-      process.env['QWEN_HOME'] = originalQwenHome;
+      process.env['QWEN_HOME'] = originalCanopyHome;
     }
     resetHomeEnvBootstrapForTesting();
     fs.rmSync(testRoot, { recursive: true, force: true });

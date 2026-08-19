@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * Daemon-host implementation of the `DaemonStatusProvider` interface
  * (declared in `@qwen-code/acp-bridge/bridgeOptions`). Production
- * `qwen serve` wires this into `BridgeOptions.statusProvider` so the
+ * `canopy serve` wires this into `BridgeOptions.statusProvider` so the
  * bridge factory can pull env / preflight cells without importing
  * daemon-host-specific modules directly.
  *
@@ -18,7 +18,7 @@
  */
 
 import { promises as fs } from 'node:fs';
-import { canUseRipgrep } from '@qwen-code/qwen-code-core';
+import { canUseRipgrep } from '@canopy-code/canopy-code-core';
 import {
   type DaemonStatusProvider,
   mapDomainErrorToErrorKind,
@@ -32,7 +32,7 @@ import { buildEnvStatusFromEnv, snapshotProcessEnv } from './env-snapshot.js';
 const REQUIRED_NODE_MAJOR = 22;
 
 /**
- * Construct the production `DaemonStatusProvider` for `qwen serve`.
+ * Construct the production `DaemonStatusProvider` for `canopy serve`.
  * Returns a fresh provider per call; provider is stateless so callers
  * can cache if hot-path overhead matters (currently both methods are
  * called only from the route handlers, so per-request allocation is
@@ -148,7 +148,7 @@ async function buildDaemonPreflightCells(
       status: 'error',
       errorKind: 'missing_binary',
       error: 'Cannot determine CLI entry path for spawning the ACP child.',
-      hint: 'Set QWEN_CLI_ENTRY to the absolute path of the qwen entry script.',
+      hint: 'Set QWEN_CLI_ENTRY to the absolute path of the canopy entry script.',
       locality: 'daemon',
     };
   };

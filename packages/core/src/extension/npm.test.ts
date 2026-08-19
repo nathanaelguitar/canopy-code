@@ -318,7 +318,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.example.com',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     );
 
     expect(vi.mocked(https.get).mock.calls[0]?.[1]).toMatchObject({
@@ -336,7 +336,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.npmjs.org/custom-path',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     );
 
     expect(vi.mocked(https.get).mock.calls[0]?.[1]).toMatchObject({
@@ -354,7 +354,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://user:token@registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow(
       'npm registry request failed with status 404: https://***REDACTED***@registry.example.com/@scope%2fpkg',
@@ -387,7 +387,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toBe(responseError);
   });
@@ -419,7 +419,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('npm package metadata exceeded maximum size');
     expect(response.destroy).toHaveBeenCalledOnce();
@@ -458,7 +458,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('Failed to download npm tarball: status 503');
     expect(response.destroy).toHaveBeenCalled();
@@ -476,7 +476,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
         controller.signal,
       ),
     ).rejects.toBe(reason);
@@ -498,7 +498,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'HTTPS://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).resolves.toEqual({ version: '1.0.0', type: 'npm' });
     expect(https.get).toHaveBeenCalledTimes(2);
@@ -526,7 +526,7 @@ describe('downloadFromNpmRegistry', () => {
           registryUrl: 'https://registry.example.com',
           networkPolicy: 'public',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('must use HTTPS');
 
@@ -568,7 +568,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).resolves.toEqual({ version: '1.0.0', type: 'npm' });
     expect(vi.mocked(https.get).mock.calls[1]?.[0]).toBe(
@@ -600,7 +600,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('Invalid npm redirect URL: http://[');
     expect(tar.t).not.toHaveBeenCalled();
@@ -628,7 +628,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('Too many redirects while fetching npm package metadata');
     expect(https.get).toHaveBeenCalledTimes(11);
@@ -668,7 +668,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).resolves.toEqual({ version: '1.0.0', type: 'npm' });
     expect(vi.mocked(https.get).mock.calls[2]?.[0]).toBe(
@@ -702,7 +702,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('Too many redirects while downloading npm package');
     expect(https.get).toHaveBeenCalledTimes(12);
@@ -754,7 +754,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.example.com',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
       controller.signal,
     );
     await vi.waitFor(() => expect(requestCount).toBe(3));
@@ -789,7 +789,7 @@ describe('downloadFromNpmRegistry', () => {
             type: 'npm',
             registryUrl: 'https://registry.example.com',
           },
-          '/tmp/qwen-extension',
+          '/tmp/canopy-extension',
         ),
       ).rejects.toThrow(
         'Tar archive contains unsupported link entry: package/escape',
@@ -815,7 +815,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       );
     } catch (error) {
       message = error instanceof Error ? error.message : String(error);
@@ -848,7 +848,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow(
       'Tar archive contains unsupported link entry: <sanitized empty path>',
@@ -876,7 +876,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow(
       'Tar archive contains 2 unsupported link entries: package/first-link, package/second-link',
@@ -902,7 +902,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow('more than 100 unsupported link entries');
     expect(tar.x).not.toHaveBeenCalled();
@@ -923,7 +923,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
         controller.signal,
       ),
     ).rejects.toBe(reason);
@@ -943,7 +943,7 @@ describe('downloadFromNpmRegistry', () => {
           type: 'npm',
           registryUrl: 'https://registry.example.com',
         },
-        '/tmp/qwen-extension',
+        '/tmp/canopy-extension',
       ),
     ).rejects.toThrow(
       'npm extension archive download exceeded maximum size of 104857600 bytes',
@@ -997,7 +997,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.example.com',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     ).catch((error: unknown) => error);
     await vi.advanceTimersByTimeAsync(120_000);
 
@@ -1037,7 +1037,7 @@ describe('downloadFromNpmRegistry', () => {
         registryUrl: 'https://registry.example.com',
         networkPolicy: 'public',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     ).catch((error: unknown) => error);
     await vi.waitFor(() => expect(lookup).toHaveBeenCalledTimes(2));
     await vi.advanceTimersByTimeAsync(120_000);
@@ -1094,7 +1094,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.example.com',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     ).catch((error: unknown) => error);
     await vi.advanceTimersByTimeAsync(120_000);
 
@@ -1166,7 +1166,7 @@ describe('downloadFromNpmRegistry', () => {
         type: 'npm',
         registryUrl: 'https://registry.example.com',
       },
-      '/tmp/qwen-extension',
+      '/tmp/canopy-extension',
     ).catch((error: unknown) => error);
     await vi.advanceTimersByTimeAsync(120_000);
 

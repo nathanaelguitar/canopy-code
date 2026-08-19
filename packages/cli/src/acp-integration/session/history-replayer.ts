@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,12 +9,12 @@ import type {
   GoalSnapshotV2,
   GoalStateCause,
   HistoryGap,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   parseGoalSnapshotV2,
   parseGoalStateCause,
   projectGoalStateToLegacy,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   createTranscriptReplayMachine,
   MISSING_TRANSCRIPT_TOOL_RESULT_MESSAGE,
@@ -238,7 +238,7 @@ export class HistoryReplayer {
           diagnostic.path ===
             'systemPayload.outputHistoryItems.goalStatus.condition'
         ) {
-          writeStderrLineSafe(`qwen: ${diagnostic.message}`);
+          writeStderrLineSafe(`canopy: ${diagnostic.message}`);
         }
       },
     });

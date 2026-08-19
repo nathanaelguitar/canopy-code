@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -164,7 +164,7 @@ function mockWorkspaceService(
       .fn()
       .mockResolvedValue({ toolName: 'Bash', enabled: true }),
     initWorkspace: vi.fn().mockResolvedValue({
-      path: path.resolve(WS_BOUND, 'QWEN.md'),
+      path: path.resolve(WS_BOUND, 'CANOPY.md'),
       action: 'created',
     }),
     restartMcpServer: vi.fn().mockResolvedValue({
@@ -353,7 +353,7 @@ describe('workspace service REST integration', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
-        path: path.resolve(WS_BOUND, 'QWEN.md'),
+        path: path.resolve(WS_BOUND, 'CANOPY.md'),
         action: 'created',
       });
       expect(workspace.initWorkspace).toHaveBeenCalledTimes(1);
@@ -396,7 +396,7 @@ describe('workspace service REST integration', () => {
         .post('/workspace/init')
         .set(hostHeader())
         .set('Authorization', 'Bearer test-secret')
-        .set('X-Qwen-Client-Id', 'my-client')
+        .set('X-Canopy-Client-Id', 'my-client')
         .send({});
 
       const ctx = (workspace.initWorkspace as ReturnType<typeof vi.fn>).mock

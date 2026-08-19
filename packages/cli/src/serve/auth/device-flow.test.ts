@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -105,7 +105,7 @@ function makeClockAndScheduler(): {
 }
 
 class FakeProvider implements DeviceFlowProvider {
-  readonly providerId: DeviceFlowProviderId = 'qwen-oauth';
+  readonly providerId: DeviceFlowProviderId = 'canopy-oauth';
   startCount = 0;
   pollCount = 0;
   pollScript: DeviceFlowPollResult[] = [];
@@ -227,7 +227,7 @@ function buildRegistry(provider: FakeProvider) {
   const registry = new DeviceFlowRegistry({
     events: events.sink,
     audit: { record: (line) => auditLines.push({ ...line }) },
-    resolveProvider: (id) => (id === 'qwen-oauth' ? provider : undefined),
+    resolveProvider: (id) => (id === 'canopy-oauth' ? provider : undefined),
     now: env.now,
     schedule: env.schedule as never,
     scheduleInterval: env.scheduleInterval as never,
@@ -317,7 +317,7 @@ describe('DeviceFlowRegistry — start / public view', () => {
 
   it('emits started + returns redacted public view', async () => {
     const { view, attached } = await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
     });
     expect(attached).toBe(false);
     expect(view.status).toBe('pending');
@@ -335,10 +335,10 @@ describe('DeviceFlowRegistry — start / public view', () => {
   });
 
   it('idempotent take-over for the same providerId', async () => {
-    const first = await registry.start({ providerId: 'qwen-oauth' });
+    const first = await registry.start({ providerId: 'canopy-oauth' });
     expect(first.attached).toBe(false);
     expect(provider.startCount).toBe(1);
-    const second = await registry.start({ providerId: 'qwen-oauth' });
+    const second = await registry.start({ providerId: 'canopy-oauth' });
     expect(second.attached).toBe(true);
     expect(second.view.deviceFlowId).toBe(first.view.deviceFlowId);
     // Critical: provider.start should NOT have been called a second time.
@@ -347,12 +347,12 @@ describe('DeviceFlowRegistry — start / public view', () => {
 
   it('take-over by a different clientId emits a take-over audit (fold-in 6 #6)', async () => {
     await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       initiatorClientId: 'sdk-client-A',
     });
     auditLines.length = 0;
     await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       initiatorClientId: 'sdk-client-B',
     });
     const takeoverAudit = auditLines.find(
@@ -368,12 +368,12 @@ describe('DeviceFlowRegistry — start / public view', () => {
 
   it('take-over by the SAME clientId does not emit a take-over audit', async () => {
     await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       initiatorClientId: 'sdk-client-A',
     });
     auditLines.length = 0;
     await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
       initiatorClientId: 'sdk-client-A',
     });
     expect(
@@ -391,9 +391,9 @@ describe('DeviceFlowRegistry — start / public view', () => {
     // provider.start (two IdP round-trips), and the second's byProvider
     // write would clobber the first — leaking an orphan poll timer.
     const [first, second, third] = await Promise.all([
-      registry.start({ providerId: 'qwen-oauth' }),
-      registry.start({ providerId: 'qwen-oauth' }),
-      registry.start({ providerId: 'qwen-oauth' }),
+      registry.start({ providerId: 'canopy-oauth' }),
+      registry.start({ providerId: 'canopy-oauth' }),
+      registry.start({ providerId: 'canopy-oauth' }),
     ]);
     expect(provider.startCount).toBe(1);
     // All three observers should agree on the same deviceFlowId.
@@ -519,7 +519,7 @@ describe('DeviceFlowRegistry — polling state machine', () => {
   it('honors slow_down by bumping intervalMs and emits throttled', async () => {
     provider.pollScript = [{ kind: 'slow_down' }];
     const { view: started } = await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
     });
     // Advance past one polling interval and flush.
     env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
@@ -552,7 +552,7 @@ describe('DeviceFlowRegistry — polling state machine', () => {
       },
     ];
     const { view: started } = await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
     });
     env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
     env.scheduler.flushDue(env.clock.now);
@@ -574,7 +574,7 @@ describe('DeviceFlowRegistry — polling state machine', () => {
       { kind: 'error', errorKind: 'access_denied', hint: 'user said no' },
     ];
     const { view: started } = await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
     });
     env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
     env.scheduler.flushDue(env.clock.now);
@@ -599,7 +599,7 @@ describe('DeviceFlowRegistry — polling state machine', () => {
       { kind: 'error', errorKind: 'expired_token' },
     ];
     const { view: started } = await registry.start({
-      providerId: 'qwen-oauth',
+      providerId: 'canopy-oauth',
     });
     // Drive to terminal.
     env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
@@ -631,7 +631,7 @@ describe('DeviceFlowRegistry — polling state machine', () => {
     const dir = path.dirname(fileURLToPath(import.meta.url));
     const sources = [
       fs.readFileSync(path.join(dir, 'device-flow.ts'), 'utf8'),
-      fs.readFileSync(path.join(dir, 'qwen-device-flow-provider.ts'), 'utf8'),
+      fs.readFileSync(path.join(dir, 'canopy-device-flow-provider.ts'), 'utf8'),
     ];
     const forbiddenPatterns = [
       // Static imports
@@ -664,7 +664,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env } = built;
     try {
-      const startPromise = registry.start({ providerId: 'qwen-oauth' });
+      const startPromise = registry.start({ providerId: 'canopy-oauth' });
       // Let the registry register its race timer.
       await flushAsync();
       env.clock.tick(DEVICE_FLOW_START_TIMEOUT_MS + 1);
@@ -675,7 +675,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       // hung promise.
       provider.startHangs = false;
       await expect(
-        registry.start({ providerId: 'qwen-oauth' }),
+        registry.start({ providerId: 'canopy-oauth' }),
       ).resolves.toMatchObject({ attached: false });
     } finally {
       registry.dispose();
@@ -694,7 +694,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       // Trigger the first poll tick.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
@@ -720,7 +720,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       expect(failed).toBeDefined();
       if (failed && failed.emission.type === 'failed') {
         expect(failed.emission.data.errorKind).toBe('upstream_error');
-        // PR #4291 follow-up review (qwen-latest, #2): the SSE/HTTP
+        // PR #4291 follow-up review (canopy-latest, #2): the SSE/HTTP
         // hint must distinguish a registry-side timeout from a
         // provider throw. At 3 AM, on-call reading "provider.poll()
         // threw" would grep the provider source for a non-existent
@@ -736,7 +736,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       // Audit captures the timeout for the operator. The hint must
       // NOT route through the misleading `provider.poll() threw (raw)`
       // template (that's reserved for real provider throws), and —
-      // PR #4291 follow-up review (qwen-latest, round-4 #5) — the hint
+      // PR #4291 follow-up review (canopy-latest, round-4 #5) — the hint
       // MUST be present so operators reading the durable audit trail
       // can distinguish timeout from generic upstream_error. Audit
       // hint must match the SSE hint exactly.
@@ -750,7 +750,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       expect(auditHint).not.toContain('provider.poll() threw (raw)');
       expect(auditHint).toContain('timed out after');
       expect(auditHint).toContain('check IdP connectivity');
-      // PR #4291 follow-up review (qwen-latest, round-4 #3): the
+      // PR #4291 follow-up review (canopy-latest, round-4 #3): the
       // timeout sentinel built ONCE per timer-fire — `signal.reason`
       // and the rejection should be the SAME instance. Pin: the
       // signal we observed is aborted with a DeviceFlowPollTimeoutError
@@ -758,7 +758,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       expect(provider.lastPollSignal?.aborted).toBe(true);
       const reason = provider.lastPollSignal?.reason as unknown;
       expect(reason).toBeInstanceOf(DeviceFlowPollTimeoutError);
-      // PR #4291 follow-up review (Qwen Code review summary):
+      // PR #4291 follow-up review (Canopy Code review summary):
       // poll-tick must NOT reschedule itself after a timeout-driven
       // upstream_error (the entry has already transitioned to error
       // state; another poll would be a `entry.status !== 'pending'`
@@ -770,7 +770,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
   });
 
   it('records lost_late_poll_after_timeout when provider.poll() resolves AFTER the registry race timeout (follow-up review #5)', async () => {
-    // PR #4291 follow-up review (qwen-latest, #5): symmetric with
+    // PR #4291 follow-up review (canopy-latest, #5): symmetric with
     // `lost_success_after_timeout` on the persist path. A flaky IdP
     // that responds 1s past the 30s ceiling should leave an audit
     // breadcrumb saying "IdP IS responsive, just slow" — without
@@ -790,7 +790,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -826,7 +826,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       expect(lateAudit?.['hint']).toContain(
         `${DEVICE_FLOW_POLL_TIMEOUT_MS}ms ceiling`,
       );
-      // PR #4291 follow-up review (qwen-latest, N1): kind=pending is a
+      // PR #4291 follow-up review (canopy-latest, N1): kind=pending is a
       // real late response (the IdP eventually responded), so the
       // "responsive but slow" hint is appropriate here. The negative
       // is the kind === 'error' branch (separately tested below).
@@ -837,8 +837,8 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     }
   });
 
-  it('records lost_late_poll_after_timeout with abort-driven hint when late resolution is kind=error (qwen-latest review N1)', async () => {
-    // PR #4291 follow-up review (qwen-latest, N1): when the registry
+  it('records lost_late_poll_after_timeout with abort-driven hint when late resolution is kind=error (canopy-latest review N1)', async () => {
+    // PR #4291 follow-up review (canopy-latest, N1): when the registry
     // race timer aborts `entry.cancelController.signal`, a cooperative
     // provider's `pollDeviceToken({signal})` typically throws
     // AbortError; the provider's catch then resolves to
@@ -859,7 +859,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -892,8 +892,8 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     }
   });
 
-  it('records lost_late_poll_after_timeout when provider.poll() REJECTS after the race timeout (qwen-latest review N2)', async () => {
-    // PR #4291 follow-up review (qwen-latest, N2): the late observer
+  it('records lost_late_poll_after_timeout when provider.poll() REJECTS after the race timeout (canopy-latest review N2)', async () => {
+    // PR #4291 follow-up review (canopy-latest, N2): the late observer
     // also has an `onRejected` branch covering three sub-paths that
     // were previously zero-tested:
     //   1. `if (lateErr instanceof DeviceFlowPollTimeoutError) return;`
@@ -916,7 +916,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -945,7 +945,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       const auditHint = lateAudit?.['hint'] as string;
       expect(auditHint).toContain('rejected after');
       expect(auditHint).toContain(`${DEVICE_FLOW_POLL_TIMEOUT_MS}ms ceiling`);
-      // PR #4291 follow-up review (qwen-latest, round-4 #7): the
+      // PR #4291 follow-up review (canopy-latest, round-4 #7): the
       // late-rejection observer must use the `name + length` pattern,
       // NOT the raw message slice. Hard-negate the seeded device_code
       // to pin the security regression — a future change that goes
@@ -960,7 +960,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
   });
 
   it('audits a provider-thrown DeviceFlowPollTimeoutError as a real failure (round-6 #4: brand-aware self-filter)', async () => {
-    // Round-6 review (qwen-latest, #4): the self-filter guard in the
+    // Round-6 review (canopy-latest, #4): the self-filter guard in the
     // late-rejection observer must check the runtime brand
     // (`_isRegistryTimeout === true`), NOT bare `instanceof`. Reason:
     // `DeviceFlowPollTimeoutError` is `export class` (the test file
@@ -993,7 +993,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1050,7 +1050,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       // Drive the first poll. Provider returns synchronously; wrapper
       // resolves, finally clears the timer.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
@@ -1092,7 +1092,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1140,7 +1140,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1167,7 +1167,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
   });
 
   it('survives a throwing audit sink in the late-poll observer (round-6 #2: terminal .catch())', async () => {
-    // PR #4291 follow-up review (qwen-latest, round-6 #2): the late-poll
+    // PR #4291 follow-up review (canopy-latest, round-6 #2): the late-poll
     // `void tracked.then(...)` was missing a terminal `.catch(() => {})`.
     // If `audit.record` throws synchronously inside either handler (a
     // misbehaving sink: throwing on backpressure, on a malformed
@@ -1205,7 +1205,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
           }
         },
       },
-      resolveProvider: (id) => (id === 'qwen-oauth' ? provider : undefined),
+      resolveProvider: (id) => (id === 'canopy-oauth' ? provider : undefined),
       now: env.now,
       schedule: env.schedule as never,
       scheduleInterval: env.scheduleInterval as never,
@@ -1213,7 +1213,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
       clearScheduledInterval: env.clearScheduledInterval as never,
     });
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1233,7 +1233,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
   });
 
   it('sanitizes rawProviderError before interpolating into the audit hint (round-6 #3)', async () => {
-    // PR #4291 follow-up review (qwen-latest, round-6 #3): the
+    // PR #4291 follow-up review (canopy-latest, round-6 #3): the
     // `case 'error'` audit branch interpolates the captured
     // `rawProviderError` (raw `err.message`) into the hint. Per ES2019+
     // `JSON.stringify` no longer escapes U+2028 / U+2029 (they're
@@ -1252,7 +1252,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1289,7 +1289,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       // Drive the first poll → success → enters persist race.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
@@ -1318,7 +1318,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       const ttlMs = (view.expiresAt ?? 0) - env.clock.now;
       expect(ttlMs).toBeLessThanOrEqual(DEVICE_FLOW_MAX_EXPIRES_IN_SEC * 1000);
       expect(ttlMs).toBeGreaterThan(0);
@@ -1333,7 +1333,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       expect(view.intervalMs).toBeLessThanOrEqual(DEVICE_FLOW_MAX_INTERVAL_MS);
     } finally {
       registry.dispose();
@@ -1352,7 +1352,7 @@ describe('DeviceFlowRegistry — authoritative timeouts (fold-in 7)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1399,7 +1399,7 @@ describe('DeviceFlowRegistry — abort propagation to provider.poll', () => {
     const { registry, env } = built;
     try {
       const { view: started } = await registry.start({
-        providerId: 'qwen-oauth',
+        providerId: 'canopy-oauth',
       });
       // Drive one polling tick so the provider records its signal.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
@@ -1413,7 +1413,7 @@ describe('DeviceFlowRegistry — abort propagation to provider.poll', () => {
 
       // Cancel the flow — registry should abort the entry's
       // cancelController, which is the SAME signal the provider's
-      // `poll` saw. A real Qwen provider passes this to `fetch`, so
+      // `poll` saw. A real Canopy provider passes this to `fetch`, so
       // an in-flight HTTP socket gets torn down immediately.
       registry.cancel(started.deviceFlowId);
       expect(provider.lastPollSignal!.aborted).toBe(true);
@@ -1426,7 +1426,7 @@ describe('DeviceFlowRegistry — abort propagation to provider.poll', () => {
     const provider = new FakeProvider();
     const built = buildRegistry(provider);
     const { registry, env } = built;
-    await registry.start({ providerId: 'qwen-oauth' });
+    await registry.start({ providerId: 'canopy-oauth' });
     env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
     env.scheduler.flushDue(env.clock.now);
     await Promise.resolve();
@@ -1460,7 +1460,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1509,7 +1509,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       // First poll tick: enters success → persist starts.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
@@ -1573,7 +1573,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1630,7 +1630,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
       await flushAsync();
@@ -1692,7 +1692,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, auditLines } = built;
     try {
-      await registry.start({ providerId: 'qwen-oauth' });
+      await registry.start({ providerId: 'canopy-oauth' });
       // Drive first poll → success → enter persist race.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
@@ -1744,7 +1744,7 @@ describe('DeviceFlowRegistry — persist failure paths (fold-in 10 #1)', () => {
     const built = buildRegistry(provider);
     const { registry, env, events, auditLines } = built;
     try {
-      const { view } = await registry.start({ providerId: 'qwen-oauth' });
+      const { view } = await registry.start({ providerId: 'canopy-oauth' });
       // Drive first poll → success → persist begins.
       env.clock.tick(DEVICE_FLOW_DEFAULT_INTERVAL_MS + 1);
       env.scheduler.flushDue(env.clock.now);
@@ -1790,7 +1790,7 @@ describe('DeviceFlowRegistry — cancel', () => {
     const { registry, events } = built;
     try {
       const { view: started } = await registry.start({
-        providerId: 'qwen-oauth',
+        providerId: 'canopy-oauth',
       });
 
       const result = registry.cancel(started.deviceFlowId, 'client-X');
@@ -1825,7 +1825,7 @@ describe('DeviceFlowRegistry — dispose', () => {
     const provider = new FakeProvider();
     const built = buildRegistry(provider);
     const { registry, env } = built;
-    await registry.start({ providerId: 'qwen-oauth' });
+    await registry.start({ providerId: 'canopy-oauth' });
     expect(env.scheduler.callbacks.some((c) => !c.cancelled)).toBe(true);
     expect(env.scheduler.intervals.some((i) => !i.cancelled)).toBe(true);
     registry.dispose();

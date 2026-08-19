@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,13 +11,13 @@ export const idealabProvider: ProviderConfig = {
   id: 'idealab',
   label: 'Idealab API Key',
   description:
-    'Alibaba internal LLM service (Qwen3.6-Plus-DogFooding, DeepSeek V4, Kimi K2.6)',
+    'Alibaba internal LLM service (Canopy3.6-Plus-DogFooding, DeepSeek V4, Kimi K2.6)',
   protocol: AuthType.USE_OPENAI,
   baseUrl: 'https://idealab.alibaba-inc.com/api/openai/v1',
   envKey: 'IDEALAB_API_KEY',
   models: [
     {
-      id: 'Qwen3.6-Plus-DogFooding',
+      id: 'Canopy3.6-Plus-DogFooding',
       contextWindowSize: 1000000,
       enableThinking: true,
       modalities: { image: true, video: true },

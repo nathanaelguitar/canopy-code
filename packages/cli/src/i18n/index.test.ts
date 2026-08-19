@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 
 describe('bundled locale fallback', () => {
   beforeEach(() => {
@@ -21,15 +21,15 @@ describe('bundled locale fallback', () => {
   });
 
   it('loads bundled builtin translations when locale files are absent on disk', async () => {
-    const qwenLocalePathPattern =
-      /([\\/]\.qwen|[\\/]i18n)[\\/]locales([\\/]|$)/;
+    const canopyLocalePathPattern =
+      /([\\/]\.canopy|[\\/]i18n)[\\/]locales([\\/]|$)/;
 
     vi.doMock('node:fs', async (importOriginal) => {
       const actualFs = await importOriginal<typeof import('node:fs')>();
       return {
         ...actualFs,
         existsSync: (target: Parameters<typeof actualFs.existsSync>[0]) => {
-          if (qwenLocalePathPattern.test(String(target))) {
+          if (canopyLocalePathPattern.test(String(target))) {
             return false;
           }
           return actualFs.existsSync(target);
@@ -52,7 +52,7 @@ describe('bundled locale fallback', () => {
 
   it('falls back to bundled translations when a user locale default export is null', async () => {
     const tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-i18n-null-locale-'),
+      path.join(os.tmpdir(), 'canopy-i18n-null-locale-'),
     );
     const localesDir = path.join(tempDir, 'locales');
     await fs.mkdir(localesDir, { recursive: true });
@@ -62,7 +62,7 @@ describe('bundled locale fallback', () => {
       'utf-8',
     );
 
-    vi.spyOn(Storage, 'getGlobalQwenDir').mockReturnValue(tempDir);
+    vi.spyOn(Storage, 'getGlobalCanopyDir').mockReturnValue(tempDir);
 
     const { setLanguageAsync, t } = await import('./index.js');
     await setLanguageAsync('zh');
@@ -74,7 +74,7 @@ describe('bundled locale fallback', () => {
 
   it('falls back to bundled translations when a user locale default export is an array', async () => {
     const tempDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-i18n-array-locale-'),
+      path.join(os.tmpdir(), 'canopy-i18n-array-locale-'),
     );
     const localesDir = path.join(tempDir, 'locales');
     await fs.mkdir(localesDir, { recursive: true });
@@ -84,7 +84,7 @@ describe('bundled locale fallback', () => {
       'utf-8',
     );
 
-    vi.spyOn(Storage, 'getGlobalQwenDir').mockReturnValue(tempDir);
+    vi.spyOn(Storage, 'getGlobalCanopyDir').mockReturnValue(tempDir);
 
     const { setLanguageAsync, t } = await import('./index.js');
     await setLanguageAsync('zh');
@@ -193,7 +193,7 @@ describe('localizeToolDisplayName', () => {
     const { setLanguageAsync, localizeToolDisplayName } = await import(
       './index.js'
     );
-    const { ToolDisplayNames } = await import('@qwen-code/qwen-code-core');
+    const { ToolDisplayNames } = await import('@canopy-code/canopy-code-core');
     await setLanguageAsync('zh');
 
     // Guards against a new tool landing without a `toolDisplayName.*` entry:

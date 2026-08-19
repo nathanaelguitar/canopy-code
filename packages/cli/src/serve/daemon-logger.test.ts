@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -171,15 +171,15 @@ describe('buildDaemonLogLine', () => {
 });
 
 describe('initDaemonLogger opt-out', () => {
-  const originalEnv = process.env['QWEN_DAEMON_LOG_FILE'];
+  const originalEnv = process.env['CANOPY_DAEMON_LOG_FILE'];
   afterEach(() => {
-    if (originalEnv === undefined) delete process.env['QWEN_DAEMON_LOG_FILE'];
-    else process.env['QWEN_DAEMON_LOG_FILE'] = originalEnv;
+    if (originalEnv === undefined) delete process.env['CANOPY_DAEMON_LOG_FILE'];
+    else process.env['CANOPY_DAEMON_LOG_FILE'] = originalEnv;
   });
 
   for (const val of ['0', 'false', 'off', 'no', 'False', ' OFF ']) {
-    it(`returns stderr-only logger when QWEN_DAEMON_LOG_FILE=${JSON.stringify(val)}`, async () => {
-      process.env['QWEN_DAEMON_LOG_FILE'] = val;
+    it(`returns stderr-only logger when CANOPY_DAEMON_LOG_FILE=${JSON.stringify(val)}`, async () => {
+      process.env['CANOPY_DAEMON_LOG_FILE'] = val;
       const stderr: string[] = [];
       const root = mkdtempSync(path.join(os.tmpdir(), 'daemon-log-optout-'));
       const baseDir = path.join(root, 'must-not-exist');
@@ -208,7 +208,7 @@ describe('initDaemonLogger opt-out', () => {
   }
 
   it('adds sampled recording trace context in stderr-only mode', async () => {
-    process.env['QWEN_DAEMON_LOG_FILE'] = 'off';
+    process.env['CANOPY_DAEMON_LOG_FILE'] = 'off';
     const getActiveSpan = vi
       .spyOn(trace, 'getActiveSpan')
       .mockReturnValue(fakeSpan());

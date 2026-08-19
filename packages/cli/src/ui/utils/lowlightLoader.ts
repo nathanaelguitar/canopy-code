@@ -9,7 +9,7 @@
  *
  * Kept in its own module — with zero imports beyond `lowlight` itself — so
  * that priming the cache from `test-setup.ts` does not transitively pull
- * `themeManager`, settings, or `@qwen-code/qwen-code-core` into every test
+ * `themeManager`, settings, or `@canopy-code/canopy-code-core` into every test
  * file's module graph. That cascade was observed to alter theme/config test
  * outcomes (e.g. theme-manager auto-detection and QWEN_HOME env tests).
  */

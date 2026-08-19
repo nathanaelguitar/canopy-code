@@ -15,7 +15,7 @@ import { t } from '../../i18n/index.js';
 export const toolsCommand: SlashCommand = {
   name: 'tools',
   get description() {
-    return t('List available Qwen Code tools. Usage: /tools [desc]');
+    return t('List available Canopy Code tools. Usage: /tools [desc]');
   },
   kind: CommandKind.BUILT_IN,
   action: async (context: CommandContext, args?: string): Promise<void> => {

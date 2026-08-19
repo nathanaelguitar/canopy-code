@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ function git(cwd: string, ...args: string[]): string {
 }
 
 function makeRepo(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitbranches-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitbranches-'));
   tmpRoots.push(dir);
   git(dir, 'init', '-q', '-b', 'master');
   git(dir, 'config', 'user.email', 'test@example.com');
@@ -42,7 +42,7 @@ function makeRepo(): string {
 }
 
 function makeBareRemote(): string {
-  const remote = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitremote-'));
+  const remote = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitremote-'));
   tmpRoots.push(remote);
   git(remote, 'init', '-q', '--bare');
   git(remote, 'symbolic-ref', 'HEAD', 'refs/heads/master');
@@ -463,7 +463,7 @@ describe('gitPull', () => {
     git(dir, 'push', '-q', 'origin', 'HEAD');
 
     // Create a divergent commit on the remote via a second clone.
-    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitclone-'));
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitclone-'));
     tmpRoots.push(clone);
     git(clone, 'clone', '-q', remote, '.');
     git(clone, 'config', 'user.email', 'other@example.com');
@@ -493,7 +493,7 @@ describe('gitPull', () => {
     git(dir, 'remote', 'add', 'origin', remote);
     git(dir, 'push', '-q', '-u', 'origin', 'HEAD');
 
-    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitclone-'));
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitclone-'));
     tmpRoots.push(clone);
     git(clone, 'clone', '-q', remote, '.');
     git(clone, 'config', 'user.email', 'other@example.com');
@@ -519,7 +519,7 @@ describe('gitPull', () => {
     git(dir, 'remote', 'add', 'origin', remote);
     git(dir, 'push', '-q', '-u', 'origin', 'HEAD');
 
-    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitclone-'));
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitclone-'));
     tmpRoots.push(clone);
     git(clone, 'clone', '-q', remote, '.');
     git(clone, 'config', 'user.email', 'other@example.com');
@@ -574,7 +574,7 @@ describe('gitCommit index rollback (R10 #1)', () => {
     git(dir, 'push', '-q', 'origin', 'HEAD');
 
     // Create a conflicting change on the remote.
-    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitclone-'));
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitclone-'));
     tmpRoots.push(clone);
     git(clone, 'clone', '-q', remote, '.');
     git(clone, 'config', 'user.email', 'other@example.com');
@@ -624,7 +624,7 @@ describe('gitCommit index rollback (R10 #1)', () => {
 
 describe('gitCheckout remote-tracking refs (R10 #4)', () => {
   function advanceRemote(remote: string, fileName: string): string {
-    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-gitclone-'));
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-gitclone-'));
     tmpRoots.push(clone);
     git(clone, 'clone', '-q', remote, '.');
     git(clone, 'config', 'user.email', 'other@example.com');

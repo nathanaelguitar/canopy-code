@@ -24,7 +24,7 @@ describe('team auto-memory paths', () => {
 
   beforeEach(() => {
     // A temp dir with a .git directory so it reads as the canonical git root.
-    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-team-'));
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-team-'));
     fs.mkdirSync(path.join(projectRoot, '.git'));
   });
 
@@ -33,17 +33,17 @@ describe('team auto-memory paths', () => {
     clearAutoMemoryRootCache();
   });
 
-  it('anchors the team root inside the repo .qwen directory', () => {
+  it('anchors the team root inside the repo .canopy directory', () => {
     expect(getTeamAutoMemoryRoot(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', TEAM_AUTO_MEMORY_DIRNAME),
+      path.join(projectRoot, '.canopy', TEAM_AUTO_MEMORY_DIRNAME),
     );
   });
 
   it('uses the current linked worktree root instead of the common git root', () => {
-    const main = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-main-'));
-    const worktree = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-wt-'));
+    const main = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-main-'));
+    const worktree = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-wt-'));
     try {
-      const worktreeGitDir = path.join(main, '.git', 'worktrees', 'qwen-wt');
+      const worktreeGitDir = path.join(main, '.git', 'worktrees', 'canopy-wt');
       fs.mkdirSync(worktreeGitDir, { recursive: true });
       fs.writeFileSync(
         path.join(worktree, '.git'),
@@ -56,7 +56,7 @@ describe('team auto-memory paths', () => {
       );
 
       expect(getTeamAutoMemoryRoot(worktree)).toBe(
-        path.join(worktree, '.qwen', TEAM_AUTO_MEMORY_DIRNAME),
+        path.join(worktree, '.canopy', TEAM_AUTO_MEMORY_DIRNAME),
       );
     } finally {
       fs.rmSync(main, { recursive: true, force: true });
@@ -66,7 +66,7 @@ describe('team auto-memory paths', () => {
 
   it('places MEMORY.md at the team root', () => {
     expect(getTeamAutoMemoryIndexPath(projectRoot)).toBe(
-      path.join(projectRoot, '.qwen', TEAM_AUTO_MEMORY_DIRNAME, 'MEMORY.md'),
+      path.join(projectRoot, '.canopy', TEAM_AUTO_MEMORY_DIRNAME, 'MEMORY.md'),
     );
   });
 
@@ -97,9 +97,9 @@ describe('team auto-memory paths', () => {
   });
 
   it('classifies all managed roots for read retention and rejects symlink escapes', () => {
-    const previousBaseDir = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+    const previousBaseDir = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     const memoryBaseDir = path.join(projectRoot, '.runtime');
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = memoryBaseDir;
     clearAutoMemoryRootCache();
     try {
       const projectMemory = path.join(
@@ -136,9 +136,9 @@ describe('team auto-memory paths', () => {
       expect(isManagedMemoryPath(escaped, projectRoot)).toBe(false);
     } finally {
       if (previousBaseDir === undefined) {
-        delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+        delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
       } else {
-        process.env['QWEN_CODE_MEMORY_BASE_DIR'] = previousBaseDir;
+        process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = previousBaseDir;
       }
       clearAutoMemoryRootCache();
     }
@@ -146,7 +146,7 @@ describe('team auto-memory paths', () => {
 
   it('recognizes a first-ever write before the team-memory dir exists', () => {
     const root = getTeamAutoMemoryRoot(projectRoot);
-    // Normal first-write state: nothing under .qwen has been created yet, so
+    // Normal first-write state: nothing under .canopy has been created yet, so
     // realpathNearestExisting must walk up to an existing ancestor (the repo
     // root) and still classify the not-yet-created file as a team path.
     expect(fs.existsSync(root)).toBe(false);
@@ -184,19 +184,19 @@ describe('team auto-memory paths', () => {
   it('clearAutoMemoryRootCache invalidates the team root cache', () => {
     // A fresh dir with no git ancestor, so the first resolution falls back to
     // the nested path itself; adding a `.git` later changes the canonical root.
-    const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-cache-'));
+    const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-cache-'));
     const nested = path.join(fresh, 'pkg');
     fs.mkdirSync(nested, { recursive: true });
     try {
       // Primes the cache with the no-git fallback (nested itself).
       expect(getTeamAutoMemoryRoot(nested)).toBe(
-        path.join(nested, '.qwen', TEAM_AUTO_MEMORY_DIRNAME),
+        path.join(nested, '.canopy', TEAM_AUTO_MEMORY_DIRNAME),
       );
       fs.mkdirSync(path.join(fresh, '.git'));
       clearAutoMemoryRootCache();
       // After clearing, it must re-resolve to the new git root.
       expect(getTeamAutoMemoryRoot(nested)).toBe(
-        path.join(fresh, '.qwen', TEAM_AUTO_MEMORY_DIRNAME),
+        path.join(fresh, '.canopy', TEAM_AUTO_MEMORY_DIRNAME),
       );
     } finally {
       fs.rmSync(fresh, { recursive: true, force: true });

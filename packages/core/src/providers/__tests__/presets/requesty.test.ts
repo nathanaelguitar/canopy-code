@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
 // Re-import via the relative source path so the new ownsModel envKey gate
-// is exercised even before dist/ is rebuilt (the @qwen-code/qwen-code-core
+// is exercised even before dist/ is rebuilt (the @canopy-code/canopy-code-core
 // package resolves to dist/ on a fresh branch).
 import { requestyProvider, REQUESTY_ENV_KEY } from '../../presets/requesty.js';
 
@@ -61,8 +61,8 @@ describe('requestyProvider', () => {
 
   it('declares customHeaders for attribution', () => {
     expect(requestyProvider.customHeaders).toEqual({
-      'HTTP-Referer': 'https://github.com/QwenLM/qwen-code.git',
-      'X-Title': 'Qwen Code',
+      'HTTP-Referer': 'https://github.com/QwenLM/canopy-code.git',
+      'X-Title': 'Canopy Code',
     });
   });
 });

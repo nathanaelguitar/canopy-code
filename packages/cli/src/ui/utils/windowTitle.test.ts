@@ -25,9 +25,9 @@ describe('computeWindowTitle', () => {
     process.env = originalEnv;
   });
 
-  it('should use default Qwen title when CLI_TITLE is not set', () => {
+  it('should use default Canopy title when CLI_TITLE is not set', () => {
     const result = computeWindowTitle();
-    expect(result).toBe('Qwen - qwen');
+    expect(result).toBe('Canopy - canopy');
   });
 
   it('should use CLI_TITLE environment variable when set', () => {
@@ -36,9 +36,9 @@ describe('computeWindowTitle', () => {
     expect(result).toBe('Custom Title');
   });
 
-  it('should use Qwen prefix with folder name when CLI_TITLE is not set', () => {
+  it('should use Canopy prefix with folder name when CLI_TITLE is not set', () => {
     const result = computeWindowTitle('my-project');
-    expect(result).toBe('Qwen - my-project');
+    expect(result).toBe('Canopy - my-project');
   });
 
   it('should prefer CLI_TITLE over folder name', () => {
@@ -62,7 +62,7 @@ describe('computeWindowTitle', () => {
 
   it('should fall back to default when folderName is empty string', () => {
     const result = computeWindowTitle('');
-    expect(result).toBe('Qwen - qwen');
+    expect(result).toBe('Canopy - canopy');
   });
 });
 
@@ -98,9 +98,9 @@ describe('writeTerminalTitle', () => {
     vi.stubEnv('DVTM', undefined);
     const write = vi.fn();
 
-    writeTerminalTitle(write, 'qwen');
+    writeTerminalTitle(write, 'canopy');
 
-    const padded = 'qwen'.padEnd(80, ' ');
+    const padded = 'canopy'.padEnd(80, ' ');
     expect(write).toHaveBeenCalledWith(
       `\x1b]0;${padded}\x07\x1b]2;${padded}\x07`,
     );
@@ -197,7 +197,7 @@ describe('formatSessionWindowTitle', () => {
 
   it('should fall back to computeWindowTitle when sessionName is null', () => {
     expect(formatSessionWindowTitle(null, 'my-project')).toBe(
-      'Qwen - my-project',
+      'Canopy - my-project',
     );
   });
 
@@ -211,7 +211,7 @@ describe('formatSessionWindowTitle', () => {
   });
 
   it('should use default title when sessionName is null and no folder', () => {
-    expect(formatSessionWindowTitle(null)).toBe('Qwen - qwen');
+    expect(formatSessionWindowTitle(null)).toBe('Canopy - canopy');
   });
 
   it('should prepend a status prefix when provided', () => {
@@ -222,7 +222,7 @@ describe('formatSessionWindowTitle', () => {
 
   it('should prepend status prefix to the fallback title too', () => {
     expect(formatSessionWindowTitle(null, 'my-project', '✳\uFE0E ')).toBe(
-      '✳\uFE0E Qwen - my-project',
+      '✳\uFE0E Canopy - my-project',
     );
   });
 

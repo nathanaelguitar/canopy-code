@@ -16,7 +16,7 @@ import type {
   AgentResultDisplay,
   Config,
   ToolCallConfirmationDetails,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { TOOL_STATUS } from '../../constants.js';
 import { ConfigContext } from '../../contexts/ConfigContext.js';
 // Global compact mode was removed (#5666); type-based tool rendering no longer

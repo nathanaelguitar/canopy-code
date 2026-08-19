@@ -5,7 +5,7 @@
  */
 
 import * as childProcess from 'node:child_process';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { loadUndici } from './load-undici.js';
 
 const debugLogger = createDebugLogger('GIT');
@@ -122,11 +122,11 @@ export const getLatestGitHubRelease = async (
     return releaseTag;
   } catch (_error) {
     debugLogger.debug(
-      `Failed to determine latest qwen-code-action release:`,
+      `Failed to determine latest canopy-code-action release:`,
       _error,
     );
     throw new Error(
-      `Unable to determine the latest qwen-code-action release on GitHub.`,
+      `Unable to determine the latest canopy-code-action release on GitHub.`,
     );
   }
 };

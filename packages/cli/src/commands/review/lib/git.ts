@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Thin wrapper around `git` for the `qwen review` subcommands. Same
+// Thin wrapper around `git` for the `canopy review` subcommands. Same
 // `execFileSync` pattern as `lib/gh.ts` so quoting / escaping is consistent
 // across platforms.
 
@@ -170,14 +170,14 @@ export function worktreeReleaseResult(
  * `reason` when it is still there.
  *
  * `git worktree remove` needs the directory. A user reclaiming disk with
- * `rm -rf .qwen/tmp` leaves the worktree *registered but missing*, and from then
+ * `rm -rf .canopy/tmp` leaves the worktree *registered but missing*, and from then
  * on git refuses both of the things the next review needs:
  *
- *     $ git worktree add .qwen/tmp/review-pr-6457 qwen-review/pr-6457
+ *     $ git worktree add .canopy/tmp/review-pr-6457 canopy-review/pr-6457
  *     fatal: '...' is a missing but already registered worktree;
  *     use 'add -f' to override, or 'prune' or 'remove' to clear
  *
- * and `git branch -D qwen-review/pr-6457`, because the branch is still checked
+ * and `git branch -D canopy-review/pr-6457`, because the branch is still checked
  * out in that phantom. So `/review <same PR>` never runs again until someone
  * prunes by hand. `git worktree prune` is the only thing that clears the
  * registration and a no-op when nothing is stale — run it unconditionally, and

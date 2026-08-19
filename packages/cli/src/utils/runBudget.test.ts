@@ -103,7 +103,7 @@ describe('validateMaxToolCalls', () => {
   });
 
   it('rejects NaN — yargs coerces non-numeric flag values to NaN', () => {
-    // `qwen -p '...' --max-tool-calls abc` would otherwise silently
+    // `canopy -p '...' --max-tool-calls abc` would otherwise silently
     // disable the budget; the >= 0 gate in tickToolCall is false for NaN.
     expect(() => validateMaxToolCalls(Number.NaN)).toThrow();
   });

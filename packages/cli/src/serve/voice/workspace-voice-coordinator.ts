@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -152,7 +152,7 @@ export class WorkspaceVoiceCoordinator {
     }
     if (timedOut && state.leases.size > 0) {
       process.stderr.write(
-        `qwen serve: Voice runtime disposal timed out with ${state.leases.size} active lease(s).\n`,
+        `canopy serve: Voice runtime disposal timed out with ${state.leases.size} active lease(s).\n`,
       );
     }
   }

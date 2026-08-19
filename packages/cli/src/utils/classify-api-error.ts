@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { StopFailureErrorType } from '@qwen-code/qwen-code-core';
+import type { StopFailureErrorType } from '@canopy-code/canopy-code-core';
 
 export function classifyApiError(error: {
   message: string;

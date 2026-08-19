@@ -356,7 +356,7 @@ export function splitCommands(command: string): string[] {
  * the expansion into a non-string (or empty) token, `getCommandRoot` returns
  * undefined, and the shell tool hard-refuses the command before any approval
  * mode is consulted — including YOLO. Dogfooded live: the bundled /review
- * skill invokes every command as `"${QWEN_CODE_CLI:-qwen}" review …`, and each
+ * skill invokes every command as `"${CANOPY_CODE_CLI:-canopy}" review …`, and each
  * run opened with "Could not identify command root to obtain permission from
  * user" until the model hand-resolved the variable itself.
  *
@@ -512,9 +512,9 @@ export function stripShellWrapper(command: string): string {
 }
 
 const SELF_KILL_PROCESS_PATTERN =
-  /(^|[^a-z0-9_-])(node(?:\.exe)?|qwen(?:-code)?(?:\.exe)?)(?=$|[^a-z0-9_-])/i;
-const QWEN_PROCESS_PATTERN =
-  /(^|[^a-z0-9_-])qwen(?:-code)?(?:\.exe)?(?=$|[^a-z0-9_-])/i;
+  /(^|[^a-z0-9_-])(node(?:\.exe)?|canopy(?:-code)?(?:\.exe)?)(?=$|[^a-z0-9_-])/i;
+const CANOPY_PROCESS_PATTERN =
+  /(^|[^a-z0-9_-])canopy(?:-code)?(?:\.exe)?(?=$|[^a-z0-9_-])/i;
 const TASKKILL_IMAGE_FILTER_PATTERN = /\bimagename\s+eq\s+(.+)$/i;
 
 const SUDO_OPTIONS_WITH_VALUES = new Set([
@@ -604,7 +604,7 @@ const XARGS_OPTIONS_WITH_VALUES = new Set([
 ]);
 
 export const SHELL_SELF_KILL_REJECTION =
-  'Blocked: this command may terminate the running qwen-code process because it targets all node/qwen-code processes. Use task_stop for managed background shells, or kill a specific PID instead.';
+  'Blocked: this command may terminate the running canopy-code process because it targets all node/canopy-code processes. Use task_stop for managed background shells, or kill a specific PID instead.';
 
 function parseShellSegment(segment: string): string[] | null {
   try {
@@ -659,8 +659,8 @@ function matchesSelfProcessPattern(value: string): boolean {
   return SELF_KILL_PROCESS_PATTERN.test(value);
 }
 
-function matchesQwenProcessPattern(value: string): boolean {
-  return QWEN_PROCESS_PATTERN.test(value);
+function matchesCanopyProcessPattern(value: string): boolean {
+  return CANOPY_PROCESS_PATTERN.test(value);
 }
 
 function isBroadNodeFullPattern(value: string): boolean {
@@ -872,7 +872,7 @@ function pkillTargetsSelf(tokens: string[]): boolean {
 
   if (usesFullCommandLine) {
     return args.some(
-      (arg) => matchesQwenProcessPattern(arg) || isBroadNodeFullPattern(arg),
+      (arg) => matchesCanopyProcessPattern(arg) || isBroadNodeFullPattern(arg),
     );
   }
 

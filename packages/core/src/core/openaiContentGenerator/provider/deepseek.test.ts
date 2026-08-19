@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -179,7 +179,7 @@ describe('DeepSeekOpenAICompatibleProvider', () => {
       });
     });
 
-    // https://github.com/QwenLM/qwen-code/issues/3695 — DeepSeek's thinking
+    // https://github.com/QwenLM/canopy-code/issues/3695 — DeepSeek's thinking
     // mode rejects subsequent requests when any prior assistant turn omits
     // reasoning_content, even if the model itself returned no reasoning text.
     // The provider must always send the field.

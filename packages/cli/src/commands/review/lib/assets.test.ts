@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -79,12 +79,12 @@ describe('rawAssetUrl', () => {
 describe('parseAssetsRepo', () => {
   it('refuses an unset designation with an explanation, not a crash', () => {
     const r = parseAssetsRepo(undefined);
-    expect('error' in r && r.error).toMatch(/QWEN_REVIEW_ASSETS_REPO/);
+    expect('error' in r && r.error).toMatch(/CANOPY_REVIEW_ASSETS_REPO/);
   });
 
   it('accepts owner/repo and nothing fancier', () => {
-    expect(parseAssetsRepo('QwenLM/qwen-code')).toEqual({
-      repo: 'QwenLM/qwen-code',
+    expect(parseAssetsRepo('CanopyLM/canopy-code')).toEqual({
+      repo: 'CanopyLM/canopy-code',
     });
     for (const bad of [
       'just-a-name',

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { parseRule } from '@qwen-code/qwen-code-core';
+import { parseRule } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from './settings.js';
 
 export const PERMISSION_RULE_TYPES = ['allow', 'ask', 'deny'] as const;
@@ -25,7 +25,7 @@ export interface PermissionSettingsScopeState {
   rules: PermissionRuleSet;
 }
 
-export interface QwenPermissionSettings {
+export interface CanopyPermissionSettings {
   v: 1;
   user: PermissionSettingsScopeState;
   workspace: PermissionSettingsScopeState;
@@ -144,7 +144,7 @@ export function normalizePermissionRuleInputs(value: unknown): string[] {
 
 export function buildPermissionSettings(
   settings: LoadedSettings,
-): QwenPermissionSettings {
+): CanopyPermissionSettings {
   return {
     v: 1,
     user: {

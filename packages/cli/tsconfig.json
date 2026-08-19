@@ -7,11 +7,11 @@
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "types": ["node", "vitest/globals"],
     "paths": {
-      "@qwen-code/qwen-code-core": ["../core/src/index.ts"],
-      "@qwen-code/qwen-code-core/transcriptRecords": [
+      "@canopy-code/canopy-code-core": ["../core/src/index.ts"],
+      "@canopy-code/canopy-code-core/transcriptRecords": [
         "../core/src/utils/transcript-records.ts"
       ],
-      "@qwen-code/qwen-code-core/*": ["../core/src/*"],
+      "@canopy-code/canopy-code-core/*": ["../core/src/*"],
       "@qwen-code/acp-bridge": ["../acp-bridge/src/index.ts"],
       "@qwen-code/acp-bridge/transcriptReplay": [
         "../acp-bridge/src/transcript-replay.ts"

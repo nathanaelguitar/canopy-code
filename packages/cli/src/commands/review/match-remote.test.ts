@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,8 +35,8 @@ function git(...args: string[]): void {
 
 function run(overrides: Record<string, unknown> = {}): void {
   runMatchRemote({
-    owner: 'QwenLM',
-    repo: 'qwen-code',
+    owner: 'CanopyLM',
+    repo: 'canopy-code',
     host: 'github.com',
     ...overrides,
   } as never);
@@ -59,7 +59,7 @@ afterEach(() => {
 
 describe('runMatchRemote (real git)', () => {
   it('prints the matching remote and exits 0', () => {
-    git('remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git');
+    git('remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git');
     process.chdir(repo);
     run();
     expect(stdoutSpy).toHaveBeenCalledWith('origin');
@@ -67,8 +67,8 @@ describe('runMatchRemote (real git)', () => {
   });
 
   it('picks the upstream in a fork layout', () => {
-    git('remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git');
-    git('remote', 'add', 'wenshao', 'git@github.com:wenshao/qwen-code.git');
+    git('remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git');
+    git('remote', 'add', 'wenshao', 'git@github.com:wenshao/canopy-code.git');
     process.chdir(repo);
     run();
     expect(stdoutSpy).toHaveBeenCalledWith('origin');
@@ -76,7 +76,7 @@ describe('runMatchRemote (real git)', () => {
   });
 
   it('prints none and exits 6 when no remote matches', () => {
-    git('remote', 'add', 'wenshao', 'git@github.com:wenshao/qwen-code.git');
+    git('remote', 'add', 'wenshao', 'git@github.com:wenshao/canopy-code.git');
     process.chdir(repo);
     run({ owner: 'shao' }); // the substring-decoy owner: must NOT match `wenshao`
     expect(stdoutSpy).toHaveBeenCalledWith('none');
@@ -84,8 +84,13 @@ describe('runMatchRemote (real git)', () => {
   });
 
   it('prints every match and exits 7 when several remotes serve the repo', () => {
-    git('remote', 'add', 'upstream', 'https://github.com/QwenLM/qwen-code.git');
-    git('remote', 'add', 'mirror', 'git@github.com:QwenLM/qwen-code.git');
+    git(
+      'remote',
+      'add',
+      'upstream',
+      'https://github.com/QwenLM/canopy-code.git',
+    );
+    git('remote', 'add', 'mirror', 'git@github.com:CanopyLM/canopy-code.git');
     process.chdir(repo);
     run();
     expect(stdoutSpy).toHaveBeenCalledWith('upstream');
@@ -95,7 +100,7 @@ describe('runMatchRemote (real git)', () => {
   });
 
   it('does not match across hosts', () => {
-    git('remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git');
+    git('remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git');
     process.chdir(repo);
     run({ host: 'ghe.example.com' });
     expect(stdoutSpy).toHaveBeenCalledWith('none');
@@ -130,7 +135,7 @@ describe('runMatchRemote (real git)', () => {
       execFileSync('git', ['init', '-q', '--bare', bareRepo]);
       execFileSync(
         'git',
-        ['remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git'],
+        ['remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git'],
         { cwd: bareRepo, stdio: 'ignore' },
       );
       process.chdir(bareRepo);
@@ -147,7 +152,7 @@ describe('runMatchRemote (real git)', () => {
     // Intentional fall-through (resolveGhHost): a templated CI export of
     // GH_HOST= must read as "no host", not route matching at a host named
     // "" and hard-stop.
-    git('remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git');
+    git('remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git');
     process.chdir(repo);
     const savedGhHost = process.env['GH_HOST'];
     try {
@@ -167,7 +172,12 @@ describe('runMatchRemote (real git)', () => {
   it('inherits an operator-exported GH_HOST when --host is absent', () => {
     // The bare-PR-number path omits --host; a GHE operator who exports
     // GH_HOST must not be rematched against github.com and hard-stopped.
-    git('remote', 'add', 'origin', 'git@ghe.example.com:QwenLM/qwen-code.git');
+    git(
+      'remote',
+      'add',
+      'origin',
+      'git@ghe.example.com:CanopyLM/canopy-code.git',
+    );
     process.chdir(repo);
     const savedGhHost = process.env['GH_HOST'];
     process.env['GH_HOST'] = 'ghe.example.com';
@@ -185,7 +195,7 @@ describe('runMatchRemote (real git)', () => {
     // The skill runs every subcommand from the main checkout; a run that
     // happens to start in a subdirectory must see the same remotes, exactly
     // like `git remote -v` typed there.
-    git('remote', 'add', 'origin', 'git@github.com:QwenLM/qwen-code.git');
+    git('remote', 'add', 'origin', 'git@github.com:CanopyLM/canopy-code.git');
     const sub = join(repo, 'packages', 'core');
     mkdirSync(sub, { recursive: true });
     process.chdir(sub);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -212,8 +212,8 @@ export class ZoomImageTool extends BaseDeclarativeTool<
       return 'y1 must be less than y2.';
     }
     const fileService = this.config.getFileService();
-    if (fileService.shouldQwenIgnoreFile(params.file_path)) {
-      return `File path '${params.file_path}' is ignored by ${fileService.getQwenIgnoreFileDisplayForPath(params.file_path)} pattern(s).`;
+    if (fileService.shouldCanopyIgnoreFile(params.file_path)) {
+      return `File path '${params.file_path}' is ignored by ${fileService.getCanopyIgnoreFileDisplayForPath(params.file_path)} pattern(s).`;
     }
     return null;
   }

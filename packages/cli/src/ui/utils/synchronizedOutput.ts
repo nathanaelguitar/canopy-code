@@ -35,15 +35,15 @@ export function terminalSupportsSynchronizedOutput(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (
-    env['QWEN_CODE_DISABLE_SYNCHRONIZED_OUTPUT'] === '1' ||
-    env['QWEN_CODE_SYNCHRONIZED_OUTPUT'] === '0'
+    env['CANOPY_CODE_DISABLE_SYNCHRONIZED_OUTPUT'] === '1' ||
+    env['CANOPY_CODE_SYNCHRONIZED_OUTPUT'] === '0'
   ) {
     return false;
   }
 
   if (
-    env['QWEN_CODE_FORCE_SYNCHRONIZED_OUTPUT'] === '1' ||
-    env['QWEN_CODE_SYNCHRONIZED_OUTPUT'] === '1'
+    env['CANOPY_CODE_FORCE_SYNCHRONIZED_OUTPUT'] === '1' ||
+    env['CANOPY_CODE_SYNCHRONIZED_OUTPUT'] === '1'
   ) {
     return true;
   }

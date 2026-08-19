@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review issue-context`: fetch a PR's linked-issue evidence in one
+// `canopy review issue-context`: fetch a PR's linked-issue evidence in one
 // pass — the closing-issue references, then each issue's title, body and
 // comment thread — and render them as a single Markdown file for the Issue
 // Fidelity agent. This absorbs the two `gh` commands that used to live in

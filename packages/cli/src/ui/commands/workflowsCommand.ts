@@ -1,15 +1,18 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { WorkflowTask, WorkflowSnapshot } from '@qwen-code/qwen-code-core';
+import type {
+  WorkflowTask,
+  WorkflowSnapshot,
+} from '@canopy-code/canopy-code-core';
 import {
   isActiveWorkflowStatus,
   isTerminalWorkflowStatus,
   listWorkflowSnapshots,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { SlashCommand } from './types.js';
 import { CommandKind } from './types.js';
 import { t } from '../../i18n/index.js';

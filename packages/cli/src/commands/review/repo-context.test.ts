@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -124,7 +124,7 @@ function planAt(root: string, plan: object): string {
 
 function writeManifest(worktree: string, paths = ['src/**']): void {
   write(
-    join(worktree, '.qwen', 'review-context.json'),
+    join(worktree, '.canopy', 'review-context.json'),
     JSON.stringify({
       version: 1,
       label: 'Manifest project',
@@ -199,7 +199,7 @@ describe('repo-context providers and trust boundary', () => {
       ),
     ).toThrow(
       'is missing — recreate the review worktree ' +
-        '(for PR targets: re-run `qwen review fetch-pr`)',
+        '(for PR targets: re-run `canopy review fetch-pr`)',
     );
   });
 
@@ -425,7 +425,7 @@ describe('repo-context providers and trust boundary', () => {
       const worktree = join(root, 'repository');
       initGit(worktree);
       write(
-        join(worktree, '.qwen', 'manifest.json'),
+        join(worktree, '.canopy', 'manifest.json'),
         JSON.stringify({
           version: 1,
           label: 'Manifest project',
@@ -434,7 +434,7 @@ describe('repo-context providers and trust boundary', () => {
       );
       symlinkSync(
         'manifest.json',
-        join(worktree, '.qwen', 'review-context.json'),
+        join(worktree, '.canopy', 'review-context.json'),
       );
       write(join(worktree, 'src', 'change.ts'), 'base\n');
       const base = commitAll(worktree);
@@ -464,10 +464,10 @@ describe('repo-context providers and trust boundary', () => {
       const worktree = join(root, 'repository');
       initGit(worktree);
       write(join(worktree, 'outside.json'), '{}');
-      mkdirSync(join(worktree, '.qwen'), { recursive: true });
+      mkdirSync(join(worktree, '.canopy'), { recursive: true });
       symlinkSync(
         '../../outside.json',
-        join(worktree, '.qwen', 'review-context.json'),
+        join(worktree, '.canopy', 'review-context.json'),
       );
       write(join(worktree, 'src', 'change.ts'), 'base\n');
       const base = commitAll(worktree);
@@ -488,14 +488,14 @@ describe('repo-context providers and trust boundary', () => {
       const root = temp();
       const worktree = join(root, 'repository');
       initGit(worktree);
-      mkdirSync(join(worktree, '.qwen'), { recursive: true });
+      mkdirSync(join(worktree, '.canopy'), { recursive: true });
       symlinkSync(
         'loop-b.json',
-        join(worktree, '.qwen', 'review-context.json'),
+        join(worktree, '.canopy', 'review-context.json'),
       );
       symlinkSync(
         'review-context.json',
-        join(worktree, '.qwen', 'loop-b.json'),
+        join(worktree, '.canopy', 'loop-b.json'),
       );
       write(join(worktree, 'src', 'change.ts'), 'base\n');
       const base = commitAll(worktree);
@@ -766,7 +766,10 @@ describe('repo-context providers and trust boundary', () => {
     const root = temp();
     const worktree = join(root, 'repository');
     initGit(worktree);
-    write(join(worktree, '.qwen', 'review-context.json', 'inner.txt'), '{}\n');
+    write(
+      join(worktree, '.canopy', 'review-context.json', 'inner.txt'),
+      '{}\n',
+    );
     write(join(worktree, 'src', 'change.ts'), 'base\n');
     const base = commitAll(worktree);
     const { outPath } = run(root, worktree, {
@@ -786,7 +789,7 @@ describe('repo-context providers and trust boundary', () => {
       const worktree = join(root, 'repository');
       initGit(worktree);
       write(
-        join(worktree, '.qwen', 'manifest.json'),
+        join(worktree, '.canopy', 'manifest.json'),
         JSON.stringify({
           version: 1,
           label: 'Manifest project',
@@ -795,7 +798,7 @@ describe('repo-context providers and trust boundary', () => {
       );
       symlinkSync(
         'manifest.json/',
-        join(worktree, '.qwen', 'review-context.json'),
+        join(worktree, '.canopy', 'review-context.json'),
       );
       write(join(worktree, 'src', 'change.ts'), 'base\n');
       const base = commitAll(worktree);
@@ -1024,7 +1027,7 @@ describe('repo-context providers and trust boundary', () => {
     const root = temp();
     const worktree = join(root, 'worktree');
     write(
-      join(worktree, '.qwen', 'review-context.json'),
+      join(worktree, '.canopy', 'review-context.json'),
       `"${'x'.repeat(MAX_IDENTITY_BYTES)}"`,
     );
     expect(() =>
@@ -1107,8 +1110,8 @@ describe('repo-context providers and trust boundary', () => {
       const root = temp();
       const worktree = join(root, 'repository');
       initGit(worktree);
-      write(join(worktree, '.qwen', 'a'), '{}');
-      symlinkSync('a/.', join(worktree, '.qwen', 'review-context.json'));
+      write(join(worktree, '.canopy', 'a'), '{}');
+      symlinkSync('a/.', join(worktree, '.canopy', 'review-context.json'));
       write(join(worktree, 'src', 'change.ts'), 'base\n');
       const base = commitAll(worktree);
       const pr = run(join(root, 'pr'), worktree, {
@@ -1291,8 +1294,8 @@ describe('the plan mtime is the run epoch — enrichment must not advance it', (
       const mtimeBefore = statSync(planPath).mtimeMs;
       // The ledger `fetch-pr` writes an orchestrator turn before this command
       // runs: S0 is the interrupted attempt, S1 the continuation reading it.
-      appendRunSession(planPath, { QWEN_CODE_SESSION_ID: 'S0' });
-      recordResume(planPath, { QWEN_CODE_SESSION_ID: 'S1' });
+      appendRunSession(planPath, { CANOPY_CODE_SESSION_ID: 'S0' });
+      recordResume(planPath, { CANOPY_CODE_SESSION_ID: 'S1' });
       // The fixture is only meaningful if this filesystem actually keeps the
       // fraction; on one that does not, the integer case above already covers
       // it.
@@ -1312,9 +1315,9 @@ describe('the plan mtime is the run epoch — enrichment must not advance it', (
       // strictly less than 1ms) would ALSO pass this assertion — the fence's
       // tolerance is what makes that regression benign, and this test pins
       // the end-to-end visibility, not the float restore itself.
-      expect(priorSessionIds(planPath, { QWEN_CODE_SESSION_ID: 'S1' })).toEqual(
-        ['S0'],
-      );
+      expect(
+        priorSessionIds(planPath, { CANOPY_CODE_SESSION_ID: 'S1' }),
+      ).toEqual(['S0']);
       // And no WARNING: the verification compares floats that survived a
       // filesystem round trip, so an exact-equality check reports failure on
       // every enrichment that changed anything.

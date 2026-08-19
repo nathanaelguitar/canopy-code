@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +24,7 @@ export type {
 
 // `SubagentErrorCode` is both a value (the const enum-like object used
 // at runtime) and a type. Re-export both shapes so callers like the
-// `qwen serve` workspace-agents route can use it as a value without
+// `canopy serve` workspace-agents route can use it as a value without
 // reaching into `./types.js` directly.
 export { SubagentError, SubagentErrorCode } from './types.js';
 

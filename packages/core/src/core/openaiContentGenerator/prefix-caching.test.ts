@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,18 +35,18 @@ describe('supportsOpenAIPrefixCaching', () => {
     );
   });
 
-  it('keeps Qwen OAuth on its existing DashScope path', () => {
+  it('keeps Canopy OAuth on its existing DashScope path', () => {
     expect(
       supportsOpenAIPrefixCaching(
         config(
-          AuthType.QWEN_OAUTH,
+          AuthType.CANOPY_OAUTH,
           'https://dashscope.aliyuncs.com/compatible-mode/v1',
         ),
       ),
     ).toBe(true);
     expect(
       supportsOpenAIPrefixCaching(
-        config(AuthType.QWEN_OAUTH, 'https://proxy.example/v1'),
+        config(AuthType.CANOPY_OAUTH, 'https://proxy.example/v1'),
       ),
     ).toBe(true);
   });
@@ -67,7 +67,7 @@ describe('official OpenAI prompt caching', () => {
     ).toBe(false);
     expect(
       isOfficialOpenAIEndpoint(
-        config(AuthType.QWEN_OAUTH, 'https://api.openai.com/v1'),
+        config(AuthType.CANOPY_OAUTH, 'https://api.openai.com/v1'),
       ),
     ).toBe(false);
   });
@@ -105,7 +105,7 @@ describe('official OpenAI prompt caching', () => {
       prompt_cache_options?: { mode?: string };
     };
 
-    expect(result.prompt_cache_key).toBe('qwen-code:session-123');
+    expect(result.prompt_cache_key).toBe('canopy-code:session-123');
     expect(result.prompt_cache_options).toEqual({ mode: 'explicit' });
     expect(result.messages[1]?.content).toEqual([
       {
@@ -142,7 +142,7 @@ describe('official OpenAI prompt caching', () => {
       prompt_cache_options?: unknown;
     };
 
-    expect(result.prompt_cache_key).toBe('qwen-code:session-123');
+    expect(result.prompt_cache_key).toBe('canopy-code:session-123');
     expect(result.prompt_cache_options).toBeUndefined();
     expect(result.messages).toEqual(request.messages);
   });
@@ -164,7 +164,7 @@ describe('official OpenAI prompt caching', () => {
       prompt_cache_options?: unknown;
     };
 
-    expect(result.prompt_cache_key).toBe('qwen-code:session-123');
+    expect(result.prompt_cache_key).toBe('canopy-code:session-123');
     expect(result.prompt_cache_options).toBeUndefined();
     expect(result.messages).toEqual(request.messages);
   });
@@ -183,7 +183,7 @@ describe('official OpenAI prompt caching', () => {
     );
 
     expect(result.prompt_cache_key).toBe(
-      'qwen-code:session-123:Explore-a1b2c3d4',
+      'canopy-code:session-123:Explore-a1b2c3d4',
     );
   });
 
@@ -205,7 +205,7 @@ describe('official OpenAI prompt caching', () => {
       prompt_cache_options?: unknown;
     };
 
-    expect(result.prompt_cache_key).toBe('qwen-code:session-123');
+    expect(result.prompt_cache_key).toBe('canopy-code:session-123');
     expect(result.prompt_cache_options).toBeUndefined();
     expect(result.messages).toEqual(request.messages);
   });

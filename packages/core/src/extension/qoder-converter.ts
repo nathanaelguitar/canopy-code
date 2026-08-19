@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import type { MCPServerConfig } from '../config/config.js';
 import type { ExtensionConfig } from './extensionManager.js';
 import {
-  buildQwenExtensionFromPlugin,
+  buildCanopyExtensionFromPlugin,
   normalizeClaudeMcpServer,
   resolvePluginRelativeFile,
   type ClaudePluginConfig,
@@ -189,7 +189,7 @@ function resolveContextFiles(
   }
   addContextFile('system-prompt.md');
   if (contextFiles.length > 0) {
-    addContextFile('QWEN.md', true);
+    addContextFile('CANOPY.md', true);
   }
   return contextFiles.length > 0 ? contextFiles : undefined;
 }
@@ -199,7 +199,7 @@ export async function convertQoderPlugin(
 ): Promise<{ config: ExtensionConfig; convertedDir: string }> {
   const config = loadQoderConfig(extensionDir);
   config.mcpServers = resolveMcpServers(extensionDir, config.mcpServers);
-  const converted = await buildQwenExtensionFromPlugin(
+  const converted = await buildCanopyExtensionFromPlugin(
     extensionDir,
     config as ClaudePluginConfig,
   );
@@ -207,7 +207,7 @@ export async function convertQoderPlugin(
     converted.convertedDir,
     config.contextFileName,
   );
-  const qwenConfig: ExtensionConfig = {
+  const canopyConfig: ExtensionConfig = {
     ...converted.config,
     displayName: config.displayName,
     contextFileName,
@@ -215,12 +215,12 @@ export async function convertQoderPlugin(
   try {
     fs.writeFileSync(
       path.join(converted.convertedDir, EXTENSIONS_CONFIG_FILENAME),
-      JSON.stringify(qwenConfig, null, 2),
+      JSON.stringify(canopyConfig, null, 2),
       'utf-8',
     );
   } catch (error) {
     fs.rmSync(converted.convertedDir, { recursive: true, force: true });
     throw error;
   }
-  return { ...converted, config: qwenConfig };
+  return { ...converted, config: canopyConfig };
 }

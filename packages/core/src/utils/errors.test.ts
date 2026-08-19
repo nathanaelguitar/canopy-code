@@ -99,10 +99,10 @@ describe('getErrorMessage cause unwrapping', () => {
     expect(
       getErrorMessage({
         code: -32603,
-        message: 'path escapes workspace: /root/.qwen/skills/example.md',
+        message: 'path escapes workspace: /root/.canopy/skills/example.md',
         data: { errorKind: 'path_outside_workspace' },
       }),
-    ).toBe('path escapes workspace: /root/.qwen/skills/example.md');
+    ).toBe('path escapes workspace: /root/.canopy/skills/example.md');
   });
 
   it('surfaces cause details from plain error-like objects', () => {

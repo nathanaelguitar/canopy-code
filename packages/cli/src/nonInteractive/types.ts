@@ -5,7 +5,7 @@ import type {
   SubagentConfig,
   McpToolProgressData,
   ShellProgressData,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 /**
  * Annotation for attaching metadata to content blocks
@@ -147,7 +147,7 @@ export interface CLISystemMessage {
   model?: string;
   permission_mode?: string;
   slash_commands?: string[];
-  qwen_code_version?: string;
+  canopy_code_version?: string;
   output_style?: string;
   agents?: string[];
   skills?: string[];

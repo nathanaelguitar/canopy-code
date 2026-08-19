@@ -27,15 +27,15 @@ export class FileTokenStorage
 
   constructor(serviceName: string) {
     super(serviceName);
-    const configDir = Storage.getGlobalQwenDir();
+    const configDir = Storage.getGlobalCanopyDir();
     this.tokenFilePath = path.join(configDir, 'mcp-oauth-tokens-v2.json');
     this.secretFilePath = path.join(configDir, 'extension-secrets-v1.json');
     this.encryptionKey = this.deriveEncryptionKey();
   }
 
   private deriveEncryptionKey(): Buffer {
-    const salt = `${os.hostname()}-${os.userInfo().username}-qwen-code`;
-    return crypto.scryptSync('qwen-code-oauth', salt, 32);
+    const salt = `${os.hostname()}-${os.userInfo().username}-canopy-code`;
+    return crypto.scryptSync('canopy-code-oauth', salt, 32);
   }
 
   private encrypt(text: string): string {

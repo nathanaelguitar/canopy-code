@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -42,9 +42,9 @@ export interface TranscriptRecordInput {
 }
 
 export const USER_PROMPT_SUBMIT_CONTEXT_OPEN =
-  '<qwen:user-prompt-submit-context>';
+  '<canopy:user-prompt-submit-context>';
 export const USER_PROMPT_SUBMIT_CONTEXT_CLOSE =
-  '</qwen:user-prompt-submit-context>';
+  '</canopy:user-prompt-submit-context>';
 
 export interface UserTranscriptDisplayProjection<TPart = unknown> {
   /**

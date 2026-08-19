@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -49,7 +49,7 @@ function writeLiveHostDiagnostic(
   event: string,
   details: Readonly<Record<string, string | number | boolean | undefined>>,
 ): void {
-  if (process.env['QWEN_LIVE_DIAGNOSTICS'] !== '1') return;
+  if (process.env['CANOPY_LIVE_DIAGNOSTICS'] !== '1') return;
   process.stderr.write(
     `${JSON.stringify({
       timestamp: new Date().toISOString(),
@@ -647,14 +647,14 @@ export class LiveHostCoordinator {
     const host = this.host;
     if (!host?.hello || !this.isLeaseHealthy(host)) {
       return Promise.reject(
-        new Error('Qwen Live Host must be connected to change the shortcut.'),
+        new Error('Canopy Live Host must be connected to change the shortcut.'),
       );
     }
     const requestId = randomUUID();
     return new Promise<LiveStatus>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.rejectPendingShortcut(
-          new Error('Qwen Live Host did not confirm the shortcut change.'),
+          new Error('Canopy Live Host did not confirm the shortcut change.'),
         );
       }, DEFAULT_SHORTCUT_TIMEOUT_MS);
       timer.unref?.();
@@ -673,7 +673,7 @@ export class LiveHostCoordinator {
         })
       ) {
         this.rejectPendingShortcut(
-          new Error('Qwen Live Host is unavailable for shortcut changes.'),
+          new Error('Canopy Live Host is unavailable for shortcut changes.'),
         );
       }
     });
@@ -921,9 +921,9 @@ export class LiveHostCoordinator {
       return appshot.message;
     }
     const messages: Record<NonNullable<LiveStatus['blocker']>, string> = {
-      host_missing: 'Qwen Live Host is not connected.',
-      host_disconnected: 'Qwen Live Host disconnected.',
-      host_version: 'Qwen Live Host is not protocol-compatible.',
+      host_missing: 'Canopy Live Host is not connected.',
+      host_disconnected: 'Canopy Live Host disconnected.',
+      host_version: 'Canopy Live Host is not protocol-compatible.',
       microphone_permission: 'Microphone permission is required.',
       accessibility_permission: 'Accessibility permission is required.',
       screen_recording_permission: 'Screen Recording permission is required.',
@@ -993,7 +993,7 @@ export class LiveHostCoordinator {
     clearTimeout(pending.timer);
     if (message.shortcut !== pending.shortcut) {
       pending.reject(
-        new Error('Qwen Live Host returned a mismatched shortcut.'),
+        new Error('Canopy Live Host returned a mismatched shortcut.'),
       );
       return;
     }
@@ -1291,8 +1291,8 @@ export class LiveHostCoordinator {
     this.host = undefined;
     this.clearLeaseTimers(lease);
     this.lastHostFailure = failure;
-    this.rejectPendingAppshots(new Error('Qwen Live Host disconnected.'));
-    this.rejectPendingShortcut(new Error('Qwen Live Host disconnected.'));
+    this.rejectPendingAppshots(new Error('Canopy Live Host disconnected.'));
+    this.rejectPendingShortcut(new Error('Canopy Live Host disconnected.'));
     this.stopForReadinessLoss();
   }
 

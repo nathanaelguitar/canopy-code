@@ -229,11 +229,11 @@ let cachedPngResultsBytes = 0;
 export function detectTerminalImageProtocol(
   env: NodeJS.ProcessEnv = process.env,
 ): TerminalImageProtocol | null {
-  if (env['QWEN_CODE_DISABLE_MERMAID_IMAGES'] === '1') {
+  if (env['CANOPY_CODE_DISABLE_MERMAID_IMAGES'] === '1') {
     return null;
   }
 
-  const forced = env['QWEN_CODE_MERMAID_IMAGE_PROTOCOL']?.toLowerCase();
+  const forced = env['CANOPY_CODE_MERMAID_IMAGE_PROTOCOL']?.toLowerCase();
   if (forced === 'off' || forced === 'none' || forced === '0') {
     return null;
   }
@@ -356,14 +356,14 @@ export function readPngSize(png: Buffer): PngSize | null {
 }
 
 function isMermaidImageRenderingDisabled(env: NodeJS.ProcessEnv): boolean {
-  return env['QWEN_CODE_DISABLE_MERMAID_IMAGES'] === '1';
+  return env['CANOPY_CODE_DISABLE_MERMAID_IMAGES'] === '1';
 }
 
 function unavailableImageRenderingDisabled(): MermaidImageUnavailableResult {
   return {
     kind: 'unavailable',
     reason:
-      'Mermaid image rendering is disabled via QWEN_CODE_DISABLE_MERMAID_IMAGES.',
+      'Mermaid image rendering is disabled via CANOPY_CODE_DISABLE_MERMAID_IMAGES.',
   };
 }
 
@@ -381,7 +381,7 @@ export function renderMermaidImageSync({
     return unavailableImageRenderingDisabled();
   }
 
-  const imageRendering = env['QWEN_CODE_MERMAID_IMAGE_RENDERING'];
+  const imageRendering = env['CANOPY_CODE_MERMAID_IMAGE_RENDERING'];
   if (
     imageRendering !== '1' &&
     imageRendering?.toLowerCase() !== 'on' &&
@@ -390,7 +390,7 @@ export function renderMermaidImageSync({
     return {
       kind: 'unavailable',
       reason:
-        'Mermaid image rendering is disabled by default. Set QWEN_CODE_MERMAID_IMAGE_RENDERING=1 to enable external renderers.',
+        'Mermaid image rendering is disabled by default. Set CANOPY_CODE_MERMAID_IMAGE_RENDERING=1 to enable external renderers.',
       showReason: false,
     };
   }
@@ -410,7 +410,7 @@ export function renderMermaidImageSync({
     return {
       kind: 'unavailable',
       reason:
-        'Mermaid CLI (mmdc) was not found. Install @mermaid-js/mermaid-cli, set QWEN_CODE_MERMAID_MMD_CLI, or set QWEN_CODE_MERMAID_ALLOW_NPX=1.',
+        'Mermaid CLI (mmdc) was not found. Install @mermaid-js/mermaid-cli, set CANOPY_CODE_MERMAID_MMD_CLI, or set CANOPY_CODE_MERMAID_ALLOW_NPX=1.',
     };
   }
 
@@ -518,7 +518,7 @@ export async function renderMermaidImageAsync({
     return unavailableImageRenderingDisabled();
   }
 
-  const imageRendering = env['QWEN_CODE_MERMAID_IMAGE_RENDERING'];
+  const imageRendering = env['CANOPY_CODE_MERMAID_IMAGE_RENDERING'];
   if (
     imageRendering !== '1' &&
     imageRendering?.toLowerCase() !== 'on' &&
@@ -527,7 +527,7 @@ export async function renderMermaidImageAsync({
     return {
       kind: 'unavailable',
       reason:
-        'Mermaid image rendering is disabled by default. Set QWEN_CODE_MERMAID_IMAGE_RENDERING=1 to enable external renderers.',
+        'Mermaid image rendering is disabled by default. Set CANOPY_CODE_MERMAID_IMAGE_RENDERING=1 to enable external renderers.',
       showReason: false,
     };
   }
@@ -556,7 +556,7 @@ export async function renderMermaidImageAsync({
     return {
       kind: 'unavailable',
       reason:
-        'Mermaid CLI (mmdc) was not found. Install @mermaid-js/mermaid-cli, set QWEN_CODE_MERMAID_MMD_CLI, or set QWEN_CODE_MERMAID_ALLOW_NPX=1.',
+        'Mermaid CLI (mmdc) was not found. Install @mermaid-js/mermaid-cli, set CANOPY_CODE_MERMAID_MMD_CLI, or set CANOPY_CODE_MERMAID_ALLOW_NPX=1.',
     };
   }
 
@@ -843,14 +843,14 @@ function estimatePngResultBytes(
 }
 
 function findMmdc(env: NodeJS.ProcessEnv): string | null {
-  const explicit = env['QWEN_CODE_MERMAID_MMD_CLI'];
+  const explicit = env['CANOPY_CODE_MERMAID_MMD_CLI'];
   if (explicit && isExecutable(explicit)) return explicit;
 
   const mmdc = findExecutable('mmdc', env);
   if (mmdc) return mmdc;
 
   if (
-    env['QWEN_CODE_MERMAID_ALLOW_NPX'] === '1' &&
+    env['CANOPY_CODE_MERMAID_ALLOW_NPX'] === '1' &&
     findExecutable('npx', env)
   ) {
     return NPX_MERMAID_CLI;
@@ -876,7 +876,7 @@ export function findExecutable(
   };
 
   const allowLocalRenderers =
-    env['QWEN_CODE_MERMAID_ALLOW_LOCAL_RENDERERS'] === '1';
+    env['CANOPY_CODE_MERMAID_ALLOW_LOCAL_RENDERERS'] === '1';
   const localRendererDir = normalizeExecutableDir(
     process.cwd(),
     'node_modules',
@@ -924,7 +924,7 @@ function renderPngWithMmdc(
   mmdc: string,
   env: NodeJS.ProcessEnv,
 ): { ok: true; png: Buffer } | { ok: false; error: string } {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mermaid-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mermaid-'));
   const inputPath = path.join(tempDir, 'diagram.mmd');
   const outputPath = path.join(tempDir, 'diagram.png');
   const renderWidth = getMermaidRenderWidth(env);
@@ -988,7 +988,7 @@ async function renderPngWithMmdcAsync(
   signal?: AbortSignal,
 ): Promise<{ ok: true; png: Buffer } | { ok: false; error: string }> {
   const tempDir = await fs.promises.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-mermaid-'),
+    path.join(os.tmpdir(), 'canopy-mermaid-'),
   );
   const inputPath = path.join(tempDir, 'diagram.mmd');
   const outputPath = path.join(tempDir, 'diagram.png');
@@ -1054,7 +1054,7 @@ export function shouldRunThroughShell(command: string): boolean {
 }
 
 function getMermaidRenderWidth(env: NodeJS.ProcessEnv): number {
-  const configuredWidth = Number(env['QWEN_CODE_MERMAID_RENDER_WIDTH']);
+  const configuredWidth = Number(env['CANOPY_CODE_MERMAID_RENDER_WIDTH']);
   if (Number.isFinite(configuredWidth) && configuredWidth > 0) {
     return Math.max(320, Math.min(1800, Math.round(configuredWidth)));
   }
@@ -1062,7 +1062,9 @@ function getMermaidRenderWidth(env: NodeJS.ProcessEnv): number {
 }
 
 function getMermaidRenderTimeout(env: NodeJS.ProcessEnv): number {
-  const configuredTimeout = Number(env['QWEN_CODE_MERMAID_RENDER_TIMEOUT_MS']);
+  const configuredTimeout = Number(
+    env['CANOPY_CODE_MERMAID_RENDER_TIMEOUT_MS'],
+  );
   if (Number.isFinite(configuredTimeout) && configuredTimeout > 0) {
     return Math.min(Math.round(configuredTimeout), MAX_RENDER_TIMEOUT_MS);
   }
@@ -1087,7 +1089,7 @@ export function createRendererChildEnv(
 
 function getMermaidCellAspectRatio(env: NodeJS.ProcessEnv): number {
   const configuredAspectRatio = Number(
-    env['QWEN_CODE_MERMAID_CELL_ASPECT_RATIO'],
+    env['CANOPY_CODE_MERMAID_CELL_ASPECT_RATIO'],
   );
   if (Number.isFinite(configuredAspectRatio) && configuredAspectRatio > 0) {
     return Math.max(0.2, Math.min(configuredAspectRatio, 2));
@@ -1102,7 +1104,7 @@ function renderPngWithChafa(
   chafa: string,
   env: NodeJS.ProcessEnv,
 ): { ok: true; output: string } | { ok: false; error: string } {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mermaid-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mermaid-'));
   const imagePath = path.join(tempDir, 'diagram.png');
 
   try {
@@ -1150,7 +1152,7 @@ async function renderPngWithChafaAsync(
   signal?: AbortSignal,
 ): Promise<{ ok: true; output: string } | { ok: false; error: string }> {
   const tempDir = await fs.promises.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-mermaid-'),
+    path.join(os.tmpdir(), 'canopy-mermaid-'),
   );
   const imagePath = path.join(tempDir, 'diagram.png');
 

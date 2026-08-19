@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -96,7 +96,7 @@ describe('capture-local (command boundary)', () => {
   });
 
   it('creates the output directory the caller chose', () => {
-    // It created `.qwen/tmp` — its own — and then wrote to the caller's path,
+    // It created `.canopy/tmp` — its own — and then wrote to the caller's path,
     // which may be elsewhere. `--out reports/plan.json` answered with ENOENT.
     capture();
     run(join('reports', 'nested', 'plan.json'));

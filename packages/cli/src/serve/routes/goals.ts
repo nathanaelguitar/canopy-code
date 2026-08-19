@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@
  * Workspace-wide `/goal` listing — the daemon-side surface behind the Web Shell
  * "Goals" page.
  *
- * The canonical Goal runtime is session scoped and owned by each `qwen --acp`
+ * The canonical Goal runtime is session scoped and owned by each `canopy --acp`
  * child. The serve process holds no mutable copy, so this route fans out one
  * `sessionGoalGet` ext-method call per live session and collects the answers.
  *
@@ -160,7 +160,7 @@ export function registerGoalsRoutes(
       }
       if (dropped.length > 0) {
         writeStderrLine(
-          `qwen serve: GET /goals could not probe ${dropped.length} of ${sessions.length} session(s): ${dropped.join('; ')}`,
+          `canopy serve: GET /goals could not probe ${dropped.length} of ${sessions.length} session(s): ${dropped.join('; ')}`,
         );
       }
 
@@ -175,7 +175,7 @@ export function registerGoalsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /goals failed: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: GET /goals failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       res.status(500).json({
         error: 'Failed to list active goals',

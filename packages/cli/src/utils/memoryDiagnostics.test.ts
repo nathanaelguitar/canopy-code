@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -133,7 +133,7 @@ describe('memoryDiagnostics', () => {
     expect(report).toContain('Status: warn');
     expect(report).toContain('Heap pressure: 85.4%');
     expect(report).toContain('V8 heap usage is high');
-    expect(report).toContain('restart Qwen Code to recover memory');
+    expect(report).toContain('restart Canopy Code to recover memory');
     expect(report).toContain('capture a heap snapshot');
   });
 
@@ -174,7 +174,7 @@ describe('memoryDiagnostics', () => {
   });
 
   it('writes heap snapshots to a diagnostics directory with stable filenames', () => {
-    const outputDir = path.join(os.tmpdir(), 'qwen-memory-diagnostics-test');
+    const outputDir = path.join(os.tmpdir(), 'canopy-memory-diagnostics-test');
     const writtenPath = writeMemoryHeapSnapshot({
       outputDir,
       now: new Date('2026-05-15T12:00:00.000Z'),
@@ -187,7 +187,7 @@ describe('memoryDiagnostics', () => {
     expect(writtenPath).toBe(
       path.join(
         outputDir,
-        `qwen-code-heap-${process.pid}-2026-05-15T12-00-00-000Z.heapsnapshot`,
+        `canopy-code-heap-${process.pid}-2026-05-15T12-00-00-000Z.heapsnapshot`,
       ),
     );
   });
@@ -195,7 +195,7 @@ describe('memoryDiagnostics', () => {
   it('refuses heap snapshots when estimated heap dump would leave little free disk', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-disk-${process.pid}`,
+      `canopy-memory-diagnostics-disk-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
 
@@ -221,7 +221,7 @@ describe('memoryDiagnostics', () => {
   it('rate-limits repeated heap snapshot writes in the same directory', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-rate-limit-${process.pid}`,
+      `canopy-memory-diagnostics-rate-limit-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
 
@@ -252,18 +252,18 @@ describe('memoryDiagnostics', () => {
   it('keeps only the newest heap snapshots after writing', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-cleanup-${process.pid}`,
+      `canopy-memory-diagnostics-cleanup-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
 
     const oldSnapshot = path.join(
       outputDir,
-      `qwen-code-heap-${process.pid}-2026-05-15T11-00-00-000Z.heapsnapshot`,
+      `canopy-code-heap-${process.pid}-2026-05-15T11-00-00-000Z.heapsnapshot`,
     );
     const newerSnapshot = path.join(
       outputDir,
-      `qwen-code-heap-${process.pid}-2026-05-15T11-30-00-000Z.heapsnapshot`,
+      `canopy-code-heap-${process.pid}-2026-05-15T11-30-00-000Z.heapsnapshot`,
     );
     fs.writeFileSync(oldSnapshot, 'old');
     fs.writeFileSync(newerSnapshot, 'newer');
@@ -290,18 +290,18 @@ describe('memoryDiagnostics', () => {
   it('orders heap snapshot cleanup by modification time across process ids', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-mtime-cleanup-${process.pid}`,
+      `canopy-memory-diagnostics-mtime-cleanup-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
 
     const newerLowPidSnapshot = path.join(
       outputDir,
-      'qwen-code-heap-9-2026-05-15T12-30-00-000Z.heapsnapshot',
+      'canopy-code-heap-9-2026-05-15T12-30-00-000Z.heapsnapshot',
     );
     const olderHighPidSnapshot = path.join(
       outputDir,
-      'qwen-code-heap-12345-2026-05-15T12-00-00-000Z.heapsnapshot',
+      'canopy-code-heap-12345-2026-05-15T12-00-00-000Z.heapsnapshot',
     );
     fs.writeFileSync(newerLowPidSnapshot, 'newer');
     fs.writeFileSync(olderHighPidSnapshot, 'older');
@@ -338,18 +338,18 @@ describe('memoryDiagnostics', () => {
   it('uses filename timestamps to break equal-mtime cleanup ties', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-equal-mtime-cleanup-${process.pid}`,
+      `canopy-memory-diagnostics-equal-mtime-cleanup-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
 
     const olderSnapshot = path.join(
       outputDir,
-      'qwen-code-heap-1-2026-05-15T11-00-00-000Z.heapsnapshot',
+      'canopy-code-heap-1-2026-05-15T11-00-00-000Z.heapsnapshot',
     );
     const newerSnapshot = path.join(
       outputDir,
-      'qwen-code-heap-1-2026-05-15T12-00-00-000Z.heapsnapshot',
+      'canopy-code-heap-1-2026-05-15T12-00-00-000Z.heapsnapshot',
     );
     fs.writeFileSync(olderSnapshot, 'older');
     fs.writeFileSync(newerSnapshot, 'newer');
@@ -379,13 +379,13 @@ describe('memoryDiagnostics', () => {
   it('keeps successful heap snapshot writes when cleanup fails', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-cleanup-fail-${process.pid}`,
+      `canopy-memory-diagnostics-cleanup-fail-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
     const brokenSymlink = path.join(
       outputDir,
-      'qwen-code-heap-999-2026-05-15T11-00-00-000Z.heapsnapshot',
+      'canopy-code-heap-999-2026-05-15T11-00-00-000Z.heapsnapshot',
     );
     fs.symlinkSync('missing-target.heapsnapshot', brokenSymlink);
 
@@ -410,7 +410,7 @@ describe('memoryDiagnostics', () => {
   it('removes partial heap snapshot files after a failed write', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-partial-${process.pid}`,
+      `canopy-memory-diagnostics-partial-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     let partialPath = '';
@@ -437,7 +437,7 @@ describe('memoryDiagnostics', () => {
   it('creates heap snapshot directories and files with private permissions', () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-private-${process.pid}`,
+      `canopy-memory-diagnostics-private-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
 
@@ -465,7 +465,7 @@ describe('memoryDiagnostics', () => {
   it('refuses heap snapshot writes when free disk space cannot be read', async () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-statfs-fallback-${process.pid}`,
+      `canopy-memory-diagnostics-statfs-fallback-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     vi.resetModules();
@@ -502,7 +502,7 @@ describe('memoryDiagnostics', () => {
   it('falls back to process heap total when V8 heap statistics are unavailable for snapshot sizing', async () => {
     const outputDir = path.join(
       os.tmpdir(),
-      `qwen-memory-diagnostics-estimate-fallback-${process.pid}`,
+      `canopy-memory-diagnostics-estimate-fallback-${process.pid}`,
     );
     fs.rmSync(outputDir, { recursive: true, force: true });
     vi.resetModules();

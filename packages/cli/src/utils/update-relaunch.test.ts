@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Code
+ * Copyright 2026 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -49,7 +49,7 @@ describe('updateBeforeRelaunch', () => {
       },
     });
     getInstallationInfo.mockReturnValue({
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
     });
   });
 
@@ -107,7 +107,7 @@ describe('updateBeforeRelaunch', () => {
   it('waits for a standalone host update before relaunching', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/qwen',
+      standaloneDir: '/canopy',
     });
     let finishUpdate: (result: 'done') => void;
     performStandaloneUpdate.mockReturnValue(
@@ -118,7 +118,7 @@ describe('updateBeforeRelaunch', () => {
 
     const update = updateBeforeRelaunch(settings, '/repo', false);
     await vi.waitFor(() =>
-      expect(performStandaloneUpdate).toHaveBeenCalledWith('/qwen', '2.0.0'),
+      expect(performStandaloneUpdate).toHaveBeenCalledWith('/canopy', '2.0.0'),
     );
     expect(handleAutoUpdate).not.toHaveBeenCalled();
 
@@ -129,7 +129,7 @@ describe('updateBeforeRelaunch', () => {
   it('exits the supervisor for a deferred standalone update', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/qwen',
+      standaloneDir: '/canopy',
     });
     performStandaloneUpdate.mockResolvedValue('deferred');
 

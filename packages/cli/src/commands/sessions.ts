@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { psCommand } from './sessions/ps.js';
 
 export const sessionsCommand: CommandModule = {
   command: 'sessions',
-  describe: 'Manage Qwen Code sessions',
+  describe: 'Manage Canopy Code sessions',
   builder: (yargs: Argv) =>
     yargs
       .command(listCommand)

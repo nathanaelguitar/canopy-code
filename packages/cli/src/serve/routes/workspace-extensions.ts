@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -18,7 +18,7 @@ import {
   type ExtensionManager,
   type ClaudeMarketplaceConfig,
   type ExtensionSetting,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import express, {
   type Application,
   type Request,
@@ -537,7 +537,7 @@ export function registerWorkspaceExtensionRoutes(
             appliedGenerationByWorkspaceId.set(workspaceId, generation);
           } else {
             writeStderrLine(
-              `qwen serve: extension generation reconciliation failed for workspace ${runtimes[index]!.workspaceId}: ${redactUrlCredentials(
+              `canopy serve: extension generation reconciliation failed for workspace ${runtimes[index]!.workspaceId}: ${redactUrlCredentials(
                 result.reason instanceof Error
                   ? result.reason.message
                   : String(result.reason),
@@ -553,7 +553,7 @@ export function registerWorkspaceExtensionRoutes(
         }
       } catch (error) {
         writeStderrLine(
-          `qwen serve: extension generation reconciliation failed: ${redactUrlCredentials(
+          `canopy serve: extension generation reconciliation failed: ${redactUrlCredentials(
             error instanceof Error ? error.message : String(error),
           )}`,
         );
@@ -795,7 +795,7 @@ export function registerWorkspaceExtensionRoutes(
               let failure: Error | undefined;
               try {
                 uploadDir = await fs.mkdtemp(
-                  path.join(os.tmpdir(), 'qwen-extension-upload-'),
+                  path.join(os.tmpdir(), 'canopy-extension-upload-'),
                 );
                 const archivePath = path.join(
                   uploadDir,

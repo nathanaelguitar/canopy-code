@@ -8,7 +8,7 @@ import {
   fetchGitDiff,
   type GitDiffResult,
   type PerFileStats,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   CommandKind,
   type CommandContext,

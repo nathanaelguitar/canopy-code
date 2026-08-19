@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -74,7 +74,7 @@ describe('isShellCommandReadOnlyAST', () => {
   describe('repository-local Git config (#8575)', () => {
     const tempDirs: string[] = [];
     const createRepo = (): string => {
-      const dir = mkdtempSync(path.join(tmpdir(), 'qwen-git-config-'));
+      const dir = mkdtempSync(path.join(tmpdir(), 'canopy-git-config-'));
       tempDirs.push(dir);
       execFileSync('git', ['init', '-q'], { cwd: dir });
       return dir;
@@ -1123,7 +1123,7 @@ describe('isShellCommandReadOnlyAST fallback to regex-based checker', () => {
   });
 
   it('keeps the Git config gate when the parser is unavailable', async () => {
-    const cwd = mkdtempSync(path.join(tmpdir(), 'qwen-git-fallback-'));
+    const cwd = mkdtempSync(path.join(tmpdir(), 'canopy-git-fallback-'));
     try {
       execFileSync('git', ['init', '-q'], { cwd });
       execFileSync('git', ['config', 'core.fsmonitor', 'example-fsmonitor'], {

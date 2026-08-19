@@ -15,7 +15,7 @@ import type { Stats } from 'node:fs';
 import type { Response as UndiciResponse } from 'undici';
 import * as tar from 'tar';
 import type { ReadEntry } from 'tar';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { loadUndici } from './load-undici.js';
 import { verifySignature } from './standalone-update-verify.js';
 import { updateEventEmitter } from './updateEventEmitter.js';
@@ -25,7 +25,7 @@ const debugLogger = createDebugLogger('STANDALONE_UPDATE');
 
 const OSS_BASE =
   'https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/releases/qwen-code';
-const GITHUB_BASE = 'https://github.com/QwenLM/qwen-code/releases/download';
+const GITHUB_BASE = 'https://github.com/QwenLM/canopy-code/releases/download';
 const FETCH_TIMEOUT_MS = 30_000;
 const ARCHIVE_TIMEOUT_MS = 300_000; // 5 min — archives are 50–150 MB
 
@@ -56,7 +56,7 @@ function validateTarget(target: string): void {
 
 function archiveFilename(target: string): string {
   const ext = target.startsWith('win') ? 'zip' : 'tar.gz';
-  return `qwen-code-${target}.${ext}`;
+  return `canopy-code-${target}.${ext}`;
 }
 
 function escapePS(s: string): string {
@@ -115,9 +115,9 @@ async function verifyChecksum(
 
   // Ed25519 signature verification of SHA256SUMS.
   // NOTE: Currently uses a test key. Once release CI signs with the production
-  // key and publishes SHA256SUMS.sig, set QWEN_REQUIRE_SIGNATURE=1 to enforce.
+  // key and publishes SHA256SUMS.sig, set CANOPY_REQUIRE_SIGNATURE=1 to enforce.
   // Until then, verification is best-effort (passes when .sig exists, warns when not).
-  const requireSig = process.env['QWEN_REQUIRE_SIGNATURE'] === '1';
+  const requireSig = process.env['CANOPY_REQUIRE_SIGNATURE'] === '1';
   let sigResponse: UndiciResponse | undefined;
   try {
     sigResponse = await downloadWithFallback(versionPath, 'SHA256SUMS.sig');
@@ -130,12 +130,12 @@ async function verifyChecksum(
     debugLogger.info('SHA256SUMS signature verified.');
   } else if (requireSig) {
     throw new Error(
-      'SHA256SUMS.sig not found and QWEN_REQUIRE_SIGNATURE=1 is set',
+      'SHA256SUMS.sig not found and CANOPY_REQUIRE_SIGNATURE=1 is set',
     );
   } else {
     debugLogger.warn(
       'SHA256SUMS.sig not available — update integrity relies on SHA256 checksum only. ' +
-        'Set QWEN_REQUIRE_SIGNATURE=1 to enforce signature verification.',
+        'Set CANOPY_REQUIRE_SIGNATURE=1 to enforce signature verification.',
     );
   }
 
@@ -487,7 +487,7 @@ function checkDeferredSwap(standaloneDir: string): void {
   if (fs.existsSync(`${standaloneDir}.new`)) {
     throw new Error(
       `A previous update left a pending swap at ${standaloneDir}.new. ` +
-        'If no qwen-update.bat process is running, remove the pending swap and .qwen-update.lock, then try again.',
+        'If no canopy-update.bat process is running, remove the pending swap and .canopy-update.lock, then try again.',
     );
   }
 }
@@ -633,14 +633,14 @@ function atomicReplace(
 
     const lockFile = lockPath;
     const deferredMarker = `${standaloneDir}.deferred`;
-    const logFile = path.join(path.dirname(standaloneDir), 'qwen-update.log');
+    const logFile = path.join(path.dirname(standaloneDir), 'canopy-update.log');
     // Bat script runs detached after Node exits. It must:
     // 1. Wait for the CLI and its launcher to release file locks (<= 30s).
     // 2. Run both moves with errorlevel checks; if move #2 fails, roll back
     //    move #1 so the user is never left without a working install.
-    // 3. Log success/failure to qwen-update.log for post-mortem (the bat
+    // 3. Log success/failure to canopy-update.log for post-mortem (the bat
     //    runs with stdio:ignore — the log is the only diagnostic surface).
-    // 4. Delete the .deferred marker so future `qwen update` calls know the
+    // 4. Delete the .deferred marker so future `canopy update` calls know the
     //    swap is complete (the lock file alone is insufficient because
     //    acquireLock falls through when the Node PID is dead).
     const script = [
@@ -650,13 +650,13 @@ function atomicReplace(
       'set /a TRIES+=1',
       'if %TRIES% GTR 30 goto proceed',
       `tasklist /FI "PID eq ${process.pid}" 2>nul | find "${process.pid}" >nul && (timeout /t 1 >nul & goto wait)`,
-      ...(process.env['QWEN_CODE_LAUNCHER_PID']?.match(/^\d+$/)
+      ...(process.env['CANOPY_CODE_LAUNCHER_PID']?.match(/^\d+$/)
         ? [
             'set /a LAUNCHER_TRIES=0',
             ':wait_launcher',
             'set /a LAUNCHER_TRIES+=1',
             'if %LAUNCHER_TRIES% GTR 30 goto proceed',
-            `tasklist /FI "PID eq ${process.env['QWEN_CODE_LAUNCHER_PID']}" 2>nul | find "${process.env['QWEN_CODE_LAUNCHER_PID']}" >nul && (timeout /t 1 >nul & goto wait_launcher)`,
+            `tasklist /FI "PID eq ${process.env['CANOPY_CODE_LAUNCHER_PID']}" 2>nul | find "${process.env['CANOPY_CODE_LAUNCHER_PID']}" >nul && (timeout /t 1 >nul & goto wait_launcher)`,
           ]
         : []),
       ':proceed',
@@ -685,7 +685,7 @@ function atomicReplace(
     ].join('\r\n');
     const scriptPath = path.join(
       path.dirname(standaloneDir),
-      'qwen-update.bat',
+      'canopy-update.bat',
     );
     fs.writeFileSync(scriptPath, script);
     const child = spawn('cmd.exe', ['/c', scriptPath], {
@@ -702,7 +702,7 @@ function atomicReplace(
         'Failed to spawn deferred update script. Update was not applied.',
       );
     }
-    // Write .deferred marker with the bat script PID so future `qwen update`
+    // Write .deferred marker with the bat script PID so future `canopy update`
     // calls can detect the in-flight swap via isProcessAlive(batPid).
     // acquireLock checks this marker before allowing lock theft.
     fs.writeFileSync(deferredMarker, String(child.pid));
@@ -735,7 +735,7 @@ function atomicReplace(
 }
 
 /**
- * Ensures ~/.local/bin/qwen exists and points to the standalone install.
+ * Ensures ~/.local/bin/canopy exists and points to the standalone install.
  * Required for npm→standalone migration so the new binary is on PATH.
  */
 export function ensureBinWrapper(
@@ -753,9 +753,9 @@ export function ensureBinWrapper(
           'standaloneDir contains characters unsafe for cmd.exe wrapper',
         );
       }
-      const wrapperPath = path.join(binDir, 'qwen.cmd');
+      const wrapperPath = path.join(binDir, 'canopy.cmd');
       artifacts.wrapperPath = wrapperPath;
-      const content = `@echo off\r\ncall "${standaloneDir}\\bin\\qwen.cmd" %*\r\n`;
+      const content = `@echo off\r\ncall "${standaloneDir}\\bin\\canopy.cmd" %*\r\n`;
       try {
         fs.writeFileSync(wrapperPath, content, { flag: 'wx' });
         artifacts.wrapperCreated = true;
@@ -770,14 +770,14 @@ export function ensureBinWrapper(
       }
     } else {
       assertSafeForSingleQuotedShellPath(standaloneDir, 'standaloneDir');
-      const wrapperPath = path.join(binDir, 'qwen');
+      const wrapperPath = path.join(binDir, 'canopy');
       artifacts.wrapperPath = wrapperPath;
-      // Match install-qwen-standalone.sh's write_unix_wrapper:
+      // Match install-canopy-standalone.sh's write_unix_wrapper:
       // uses /usr/bin/env sh for portability, and single-quoted paths.
-      const quotedQwenBin = shellQuoteForSh(
-        path.join(standaloneDir, 'bin', 'qwen'),
+      const quotedCanopyBin = shellQuoteForSh(
+        path.join(standaloneDir, 'bin', 'canopy'),
       );
-      const content = `#!/usr/bin/env sh\nexec ${quotedQwenBin} "$@"\n`;
+      const content = `#!/usr/bin/env sh\nexec ${quotedCanopyBin} "$@"\n`;
       try {
         fs.writeFileSync(wrapperPath, content, { mode: 0o755, flag: 'wx' });
         artifacts.wrapperCreated = true;
@@ -812,7 +812,7 @@ function existingWrapperMatches(
 
 /**
  * Appends binDir to the user's shell rc file if not already present.
- * Mirrors the logic in install-qwen-standalone.sh maybe_update_shell_path.
+ * Mirrors the logic in install-canopy-standalone.sh maybe_update_shell_path.
  */
 export function ensurePathInShellRc(binDir: string): ShellPathUpdate {
   assertSafeForSingleQuotedShellPath(binDir, 'binDir');
@@ -826,7 +826,7 @@ export function ensurePathInShellRc(binDir: string): ShellPathUpdate {
   } else if (shell.endsWith('/bash')) {
     const bashrc = path.join(home, '.bashrc');
     const profile = path.join(home, '.bash_profile');
-    // Match install-qwen-standalone.sh's maybe_update_shell_path logic:
+    // Match install-canopy-standalone.sh's maybe_update_shell_path logic:
     // prefer .bashrc when it exists, otherwise fall back to .bash_profile,
     // and create .bashrc if neither file exists.
     if (fs.existsSync(bashrc)) {
@@ -846,12 +846,12 @@ export function ensurePathInShellRc(binDir: string): ShellPathUpdate {
     const content = fs.existsSync(rcFile)
       ? fs.readFileSync(rcFile, 'utf-8')
       : '';
-    // Use begin/end block markers matching install-qwen-standalone.sh's
+    // Use begin/end block markers matching install-canopy-standalone.sh's
     // maybe_update_shell_path, so the update codepath is idempotent with the
     // install script and does not produce duplicate PATH entries.
-    const beginMarker = '# Qwen Code PATH block begin';
-    const endMarker = '# Qwen Code PATH block end';
-    const legacyMarker = '# Added by Qwen Code standalone installer';
+    const beginMarker = '# Canopy Code PATH block begin';
+    const endMarker = '# Canopy Code PATH block end';
+    const legacyMarker = '# Added by Canopy Code standalone installer';
     if (content.includes(beginMarker) && content.includes(endMarker)) {
       return { rcFile, blockAdded: false };
     }
@@ -899,7 +899,7 @@ function cleanupShellPathBlock(rcFile: string): void {
     if (!fs.existsSync(rcFile)) return;
     const content = fs.readFileSync(rcFile, 'utf-8');
     const blockPattern =
-      /\n?# Qwen Code PATH block begin\n(?:.|\n)*?\n# Qwen Code PATH block end\n?/;
+      /\n?# Canopy Code PATH block begin\n(?:.|\n)*?\n# Canopy Code PATH block end\n?/;
     const nextContent = content.replace(blockPattern, '');
     if (nextContent !== content) {
       fs.writeFileSync(rcFile, nextContent);
@@ -959,10 +959,10 @@ export async function performStandaloneUpdate(
     const manifest = JSON.parse(manifestRaw) as { target?: string };
     target = manifest.target ?? detectTarget();
   } else if (fs.existsSync(standaloneDir)) {
-    // Directory exists but has no manifest — not a managed Qwen install.
+    // Directory exists but has no manifest — not a managed Canopy install.
     // Refuse to overwrite to avoid data loss.
     throw new Error(
-      `${standaloneDir} exists but is not a Qwen Code standalone install. Remove it manually to proceed.`,
+      `${standaloneDir} exists but is not a Canopy Code standalone install. Remove it manually to proceed.`,
     );
   } else {
     // First-time migration from npm — directory will be created after lock
@@ -982,7 +982,7 @@ export async function performStandaloneUpdate(
   // updates. Acquire lock BEFORE creating standaloneDir to prevent a
   // concurrent process from seeing the empty directory and throwing a
   // misleading error.
-  const lockPath = path.join(parentDir, '.qwen-update.lock');
+  const lockPath = path.join(parentDir, '.canopy-update.lock');
   if (!acquireLock(lockPath, standaloneDir)) {
     throw new Error('Another update is already in progress');
   }
@@ -1000,12 +1000,12 @@ export async function performStandaloneUpdate(
   // of standaloneDir to avoid EXDEV (cross-device rename).
   // extractDir uses mkdtempSync (random suffix) to prevent symlink
   // pre-creation attacks on predictable directory names.
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-code-update-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-code-update-'));
   let extractDir: string;
   let updateResult: 'done' | 'deferred' | undefined;
   let migrationArtifacts: BinWrapperArtifacts | undefined;
   try {
-    extractDir = fs.mkdtempSync(path.join(parentDir, '.qwen-code-update-'));
+    extractDir = fs.mkdtempSync(path.join(parentDir, '.canopy-code-update-'));
   } catch (err) {
     fs.rmSync(tempDir, { recursive: true, force: true });
     releaseLock(lockPath);
@@ -1030,10 +1030,10 @@ export async function performStandaloneUpdate(
     debugLogger.info('Extracting archive...');
     await extractArchive(archivePath, extractDir, target);
 
-    const newInstallDir = path.join(extractDir, 'qwen-code');
+    const newInstallDir = path.join(extractDir, 'canopy-code');
     if (!fs.existsSync(path.join(newInstallDir, 'manifest.json'))) {
       throw new Error(
-        'Extracted archive does not contain expected qwen-code directory',
+        'Extracted archive does not contain expected canopy-code directory',
       );
     }
 
@@ -1067,7 +1067,7 @@ export async function performStandaloneUpdate(
             reason: 'auto-update',
           };
           fs.writeFileSync(
-            path.join(oldDir, '.qwen-rollback-info.json'),
+            path.join(oldDir, '.canopy-rollback-info.json'),
             JSON.stringify(rollbackInfo, null, 2),
           );
         } catch {
@@ -1146,7 +1146,10 @@ export type RollbackResult =
 export function rollbackStandaloneUpdate(
   standaloneDir: string,
 ): RollbackResult {
-  const lockPath = path.join(path.dirname(standaloneDir), '.qwen-update.lock');
+  const lockPath = path.join(
+    path.dirname(standaloneDir),
+    '.canopy-update.lock',
+  );
   try {
     const pidStr = fs.readFileSync(lockPath, 'utf-8').trim();
     const pid = parseInt(pidStr, 10);

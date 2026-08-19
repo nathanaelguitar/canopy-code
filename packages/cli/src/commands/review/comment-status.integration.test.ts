@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -72,9 +72,9 @@ describe('fixture git-config isolation', () => {
     // not only on hosts whose real config happens to be hostile.
     writeFileSync(
       join(gitIsolation.home, '.gitconfig'),
-      '[qwen]\n\tisolation = sentinel\n',
+      '[canopy]\n\tisolation = sentinel\n',
     );
-    expect(git('config', '--global', 'qwen.isolation')).toBe('sentinel');
+    expect(git('config', '--global', 'canopy.isolation')).toBe('sentinel');
     expect(process.env['GIT_CONFIG_NOSYSTEM']).toBe('1');
     expect(process.env['GIT_CONFIG_GLOBAL']).toBe(
       join(gitIsolation.home, '.gitconfig'),

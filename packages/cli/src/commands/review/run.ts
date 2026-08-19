@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review run`: execute a full /review non-interactively and report the
+// `canopy review run`: execute a full /review non-interactively and report the
 // verdict in a machine-readable way.
 //
-// The review pipeline already runs headless — `qwen --prompt "/review …"` expands
+// The review pipeline already runs headless — `canopy --prompt "/review …"` expands
 // the bundled skill, launches the dimension agents, and honors the approval mode.
 // What that path does NOT give a caller is a contract: the verdict lives in the
 // model's prose and in files whose names the caller would have to know, the exit
@@ -26,7 +26,7 @@
 // reached a verdict" from "blocking verdict" (opt-in via --fail-on).
 
 import type { CommandModule } from 'yargs';
-import { isUnusableScriptEntry } from '@qwen-code/qwen-code-core';
+import { isUnusableScriptEntry } from '@canopy-code/canopy-code-core';
 import { spawn, execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -75,7 +75,7 @@ export interface RunReviewResult {
   remediation: string[];
   composedPath: string | null;
   /**
-   * The exact `.qwen/tmp` filename this run's target class pins — named in
+   * The exact `.canopy/tmp` filename this run's target class pins — named in
    * the result so a completed-but-uncaptured review (a naming drift between
    * this pin and the skill's template) is diagnosable after Step 9 has
    * swept the directory that would show the near-miss.
@@ -115,7 +115,7 @@ export function classifyRunTarget(target?: string): RunTargetClass {
     // the child's artifact names carry. Trailing separators are stripped
     // first: a tab-completed `src/` classifies as a file target and reviews
     // the directory, and a bare `.pop()` would return `''` — a pin
-    // (`qwen-review--composed.json`) no child artifact can ever carry.
+    // (`canopy-review--composed.json`) no child artifact can ever carry.
     const trimmed = t.path.replace(/[\\/]+$/, '');
     return { kind: 'file', base: trimmed.split(/[\\/]/).pop() || trimmed };
   }
@@ -127,13 +127,13 @@ const escapeRe = (s: string): string =>
 
 /**
  * The one composed-verdict filename this run's target class produces, per
- * the skill's literal `--out .qwen/tmp/qwen-review-{target}-composed.json`
+ * the skill's literal `--out .canopy/tmp/canopy-review-{target}-composed.json`
  * template: `pr-<n>` for a PR, the file's basename for a file review, the
  * fixed token `local` for a bare run. Exact names, not shape heuristics —
  * a name-shape pin (`(?!pr-\d+-)…`) rejected a file run's OWN artifact
  * whenever the reviewed file was named `pr-<digits>-…`, and conversely let
  * a PR pin claim that file run's artifact. Two concurrent `review run`s
- * share `.qwen/tmp`, and the pre-pin newest-composed scan captured the
+ * share `.canopy/tmp`, and the pre-pin newest-composed scan captured the
  * OTHER run's verdict the moment it appeared (measured: two of three
  * parallel PR reviews republished a neighbour's `composedPath`).
  *
@@ -155,12 +155,12 @@ const escapeRe = (s: string): string =>
 export function composedNameFor(cls: RunTargetClass): string {
   switch (cls.kind) {
     case 'pr':
-      return `qwen-review-pr-${cls.number}-composed.json`;
+      return `canopy-review-pr-${cls.number}-composed.json`;
     case 'file':
-      return `qwen-review-${cls.base}-composed.json`;
+      return `canopy-review-${cls.base}-composed.json`;
     case 'local':
     default:
-      return 'qwen-review-local-composed.json';
+      return 'canopy-review-local-composed.json';
   }
 }
 
@@ -169,7 +169,7 @@ export function composedPatternFor(cls: RunTargetClass): RegExp {
 }
 
 /**
- * The saved report under `.qwen/reviews/`, pinned as far as its naming
+ * The saved report under `.canopy/reviews/`, pinned as far as its naming
  * allows. PR reports reliably end `-pr-<n>.md`, and file reports carry the
  * filename in the same slot (`<date>-<time>-<filename>.md`, the `.md` not
  * doubled) — so a file target named `pr-1234.md` claims its OWN report
@@ -219,7 +219,7 @@ export function buildReviewPrompt(args: {
 }): string {
   const parts = ['/review'];
   // Presence, not truthiness: an EMPTY target is a target the caller named
-  // and got wrong — `qwen review run "$TARGET"` with `TARGET` unset — and
+  // and got wrong — `canopy review run "$TARGET"` with `TARGET` unset — and
   // treating it as "no target given" silently launches a full local review
   // on the caller's tree, at the 120-minute default timeout and real model
   // spend, instead of the error its siblings `/`, `//`, `\` now get.
@@ -236,7 +236,7 @@ export function buildReviewPrompt(args: {
       /['"]/.test(args.target) ||
       // A separators-only path (`/`, `//`, `\`) names no file: it survives
       // basename extraction as the empty string, which pins the unmatchable
-      // `qwen-review--composed.json` and burns a whole child review before
+      // `canopy-review--composed.json` and burns a whole child review before
       // reporting "no composed verdict". Refuse it here instead.
       /^[\\/]+$/.test(args.target)
     ) {
@@ -344,13 +344,13 @@ export function killProcessGroup(pid: number, signal: NodeJS.Signals): void {
 }
 
 /**
- * The child review's environment, with one correction: QWEN_CODE_CLI.
+ * The child review's environment, with one correction: CANOPY_CODE_CLI.
  *
  * An UNSET slot is corrected too, and that case is not hypothetical: cli.ts
  * stamps a *derived* `../index.js`, which does not exist beside the bundle, so
  * a `node dist/cli.js review run <pr>` never stamps anything and the child
  * review inherits nothing. Measured on PR #9113: the skill's second subcommand,
- * `"${QWEN_CODE_CLI:-qwen}" review match-remote`, resolved `qwen` off PATH,
+ * `"${CANOPY_CODE_CLI:-canopy}" review match-remote`, resolved `canopy` off PATH,
  * landed in an older global install whose `review` has no `match-remote`, and
  * came back `Unknown arguments: owner, repo, host, match-remote` — the review
  * then spent minutes diagnosing its own harness instead of reading the diff.
@@ -360,12 +360,12 @@ export function killProcessGroup(pid: number, signal: NodeJS.Signals): void {
  *
  * The stamp is only written when a shell could exec it — the same test the
  * consumer applies at spawn time (isUnusableScriptEntry). A stamp that fails
- * that test is worse than none: `${QWEN_CODE_CLI:-qwen}` falls back on empty,
+ * that test is worse than none: `${CANOPY_CODE_CLI:-canopy}` falls back on empty,
  * but a set-and-unusable path dies on exit 126.
  *
- * cli.ts stamps QWEN_CODE_CLI first-writer-wins, so a `review run` launched
- * from INSIDE a parent Qwen session inherits the parent's entry — and the
- * skill's every `"${QWEN_CODE_CLI:-qwen}" review …` subcommand then runs the
+ * cli.ts stamps CANOPY_CODE_CLI first-writer-wins, so a `review run` launched
+ * from INSIDE a parent Canopy session inherits the parent's entry — and the
+ * skill's every `"${CANOPY_CODE_CLI:-canopy}" review …` subcommand then runs the
  * PARENT's build for the entire review. Measured: a working-tree `review run`
  * issued from a 0.21.3 session had its whole prompt roster built by 0.21.3 —
  * the review ran one version of the skill while its subcommands answered to
@@ -379,12 +379,12 @@ export function killProcessGroup(pid: number, signal: NodeJS.Signals): void {
  * root mismatch, an inherited path that does not resolve, or an UNSET slot,
  * stamp this build's own `argv[1]` — the entry this command is about to
  * re-enter — when a shell could exec it; write '' only when that entry fails
- * `isUnusableScriptEntry`, preserving the bare-`qwen` fallback instead of a
+ * `isUnusableScriptEntry`, preserving the bare-`canopy` fallback instead of a
  * stamp that dies on exit 126.
  */
 function childEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  const inherited = env['QWEN_CODE_CLI'];
+  const inherited = env['CANOPY_CODE_CLI'];
   const ownEntry = process.argv[1];
   if (!ownEntry) {
     return env;
@@ -402,7 +402,7 @@ function childEnv(): NodeJS.ProcessEnv {
   }
   // Either nothing was stamped, or what was stamped belongs to another install.
   // Both are answered by this build's own entry — when a shell can exec it.
-  env['QWEN_CODE_CLI'] = isUnusableScriptEntry(resolve(ownEntry))
+  env['CANOPY_CODE_CLI'] = isUnusableScriptEntry(resolve(ownEntry))
     ? ''
     : resolve(ownEntry);
   return env;
@@ -418,8 +418,8 @@ async function runReview(args: RunReviewArgs): Promise<void> {
   // previous review are minutes old, far outside any slack.
   const cutoffMs = startMs - 2_000;
 
-  // Re-enter THIS build's CLI, not whatever `qwen` PATH resolves to — the same
-  // version-skew rule the skill's own subprocesses follow via QWEN_CODE_CLI.
+  // Re-enter THIS build's CLI, not whatever `canopy` PATH resolves to — the same
+  // version-skew rule the skill's own subprocesses follow via CANOPY_CODE_CLI.
   // process.argv[1] is the entry that is already running this command.
   // --expose-gc comes first, exactly as the relaunch wrapper passes it
   // (cli-entry.js): a full review is the longest, most memory-hungry session
@@ -467,7 +467,7 @@ async function runReview(args: RunReviewArgs): Promise<void> {
   }
 
   // The composed verdict is transient: the child's Step 9 `cleanup` sweeps
-  // every `.qwen/tmp/qwen-review-<target>-*` file — including it — before the
+  // every `.canopy/tmp/canopy-review-<target>-*` file — including it — before the
   // child exits. Reading it only AFTER `close` therefore sees nothing and
   // reports a review that completed as one that failed. Snapshot it the moment
   // compose-review writes it, and keep re-reading while the child runs: a
@@ -601,7 +601,7 @@ async function runReview(args: RunReviewArgs): Promise<void> {
     } else {
       // Name the expectation: the pin is an exact-filename contract with the
       // skill's naming template, and by the time anyone investigates, Step 9
-      // has swept `.qwen/tmp` — the near-miss name is gone. A no-verdict
+      // has swept `.canopy/tmp` — the near-miss name is gone. A no-verdict
       // report that does not say which file it was waiting for cannot be
       // diagnosed as a naming drift.
       const detail =

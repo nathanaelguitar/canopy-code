@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ import type { WorkspaceTrustStatus } from '../../config/trustedFolders.js';
 import type {
   PermissionRuleType,
   PermissionSettingsScope,
-  QwenPermissionSettings,
+  CanopyPermissionSettings,
 } from '../../config/permission-settings.js';
 import type {
   SettingScope,
@@ -66,7 +66,7 @@ export type {
  * workspace-scoped routes that have no session context.
  */
 export interface WorkspaceRequestContext {
-  /** Daemon-stamped client identity (from X-Qwen-Client-Id header). */
+  /** Daemon-stamped client identity (from X-Canopy-Client-Id header). */
   originatorClientId?: string;
   /** ACP session id for cross-correlating audit + session events. */
   sessionId?: string;
@@ -158,7 +158,7 @@ export interface DaemonWorkspaceService {
   /** Permission settings for the bound workspace. */
   getWorkspacePermissionsStatus(
     ctx: WorkspaceRequestContext,
-  ): Promise<QwenPermissionSettings>;
+  ): Promise<CanopyPermissionSettings>;
 
   /** Start the ACP child/channel without creating a user-visible session. */
   preheatAcpChild(
@@ -188,7 +188,7 @@ export interface DaemonWorkspaceService {
   setWorkspacePermissionRules(
     ctx: WorkspaceRequestContext,
     request: WorkspacePermissionRulesUpdate,
-  ): Promise<QwenPermissionSettings>;
+  ): Promise<CanopyPermissionSettings>;
 
   /** Persist workspace voice settings. */
   setWorkspaceVoiceSettings(
@@ -230,7 +230,7 @@ export interface DaemonWorkspaceService {
     scope: WorkspaceSkillScope,
   ): Promise<WorkspaceSkillMutationResult>;
 
-  /** Scaffold (init) a QWEN.md file in the workspace. */
+  /** Scaffold (init) a CANOPY.md file in the workspace. */
   initWorkspace(
     ctx: WorkspaceRequestContext,
     opts: { force?: boolean },
@@ -494,7 +494,7 @@ export interface DaemonWorkspaceServiceDeps {
   /** Rejects work after this runtime generation starts draining. */
   assertGenerationOpen?: () => void;
 
-  /** Context filename (e.g. 'QWEN.md') from workspace settings. */
+  /** Context filename (e.g. 'CANOPY.md') from workspace settings. */
   contextFilename: string;
 
   /**

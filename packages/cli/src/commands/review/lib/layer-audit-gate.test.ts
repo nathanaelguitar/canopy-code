@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -210,8 +210,8 @@ describe('the real reader on a resumed run — prior-session auditors count', ()
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
   const ENV = (): NodeJS.ProcessEnv => ({
-    QWEN_CODE_PROJECT_DIR: dir,
-    QWEN_CODE_SESSION_ID: 'S1',
+    CANOPY_CODE_PROJECT_DIR: dir,
+    CANOPY_CODE_SESSION_ID: 'S1',
   });
 
   function ledger(...ids: string[]): void {
@@ -223,7 +223,7 @@ describe('the real reader on a resumed run — prior-session auditors count', ()
     ids.forEach((id, i) =>
       appendRunSession(
         plan,
-        { QWEN_CODE_SESSION_ID: id },
+        { CANOPY_CODE_SESSION_ID: id },
         i === ids.length - 1 ? nowMs + 1500 : nowMs,
       ),
     );

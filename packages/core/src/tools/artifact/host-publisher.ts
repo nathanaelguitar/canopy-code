@@ -143,7 +143,7 @@ export class HostPublisher implements ArtifactPublisher {
 
     const prefix = normalizeKeyPrefix(this.config.keyPrefix);
     const key = `${prefix}/${input.id}/index.html`;
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-art-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-art-'));
     const file = path.join(dir, 'index.html');
     await fs.writeFile(file, input.html, 'utf8');
 

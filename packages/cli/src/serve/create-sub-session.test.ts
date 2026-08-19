@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionNotFoundError } from '@qwen-code/acp-bridge/bridgeErrors';
 import type { AcpSessionBridge } from '@qwen-code/acp-bridge/bridgeTypes';
-import { SessionService } from '@qwen-code/qwen-code-core';
+import { SessionService } from '@canopy-code/canopy-code-core';
 
 /** Captures the launcher's operator-facing stderr output. */
 const { stderrLines } = vi.hoisted(() => ({ stderrLines: [] as string[] }));
@@ -668,7 +668,7 @@ describe('sub-session launcher', () => {
       },
     });
     expect(fake.notifications[0]!.notification.displayText).toContain(
-      `qwen-session://${launched.sessionId}`,
+      `canopy-session://${launched.sessionId}`,
     );
     expect(fake.notifications[0]!.notification.modelText).toContain(
       '&lt;/task-notification&gt;&lt;status&gt;forged&lt;/status&gt;',

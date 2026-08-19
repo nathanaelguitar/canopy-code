@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ import {
   escapeXml,
   SessionService,
   stripTerminalControlSequences,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { SessionNotFoundError } from '@qwen-code/acp-bridge/bridgeErrors';
 import type {
   AcpSessionBridge,
@@ -241,7 +241,7 @@ function buildSentCompletionNotification(
       : status === 'cancelled'
         ? 'was cancelled'
         : `failed (${boundedStopReason})`;
-  const sessionLink = `[🧵 ${sessionId.slice(0, 8)}](qwen-session://${sessionId})`;
+  const sessionLink = `[🧵 ${sessionId.slice(0, 8)}](canopy-session://${sessionId})`;
   const safeResult =
     result.trim() || `No text output (stopReason: ${stopReason}).`;
   const modelSessionId = truncateCodePoints(sessionId, 256);
@@ -251,7 +251,7 @@ function buildSentCompletionNotification(
     `<task-id>${escapeXml(modelSessionId)}</task-id>`,
     `<status>${status}</status>`,
     `<summary>Sub-session &quot;${escapeXml(modelLabel)}&quot; ${escapeXml(statusText)}.</summary>`,
-    `<session-link>qwen-session://${escapeXml(modelSessionId)}</session-link>`,
+    `<session-link>canopy-session://${escapeXml(modelSessionId)}</session-link>`,
     '<result>',
   ].join('');
   const modelTextSuffix = '</result></task-notification>';
@@ -485,7 +485,7 @@ async function deliverSentCompletion(
       (continuationCompleted) => {
         if (!continuationCompleted && !stopSignal.aborted) {
           writeStderrLine(
-            `qwen serve: restored parent ${parentSessionId} accepted completion ` +
+            `canopy serve: restored parent ${parentSessionId} accepted completion ` +
               `for sub-session ${notification.taskId}, but its automatic continuation ` +
               `did not reach an end-turn boundary; leaving recovery attachment for ` +
               `the idle reaper`,
@@ -495,7 +495,7 @@ async function deliverSentCompletion(
       (error) => {
         if (!stopSignal.aborted) {
           writeStderrLine(
-            `qwen serve: restored parent ${parentSessionId} accepted completion ` +
+            `canopy serve: restored parent ${parentSessionId} accepted completion ` +
               `for sub-session ${notification.taskId}, but its automatic continuation ` +
               `could not be observed: ${error instanceof Error ? error.message : String(error)}`,
           );
@@ -875,7 +875,7 @@ export function createSubSessionLauncher(
               if (stopAc.signal.aborted) return;
               if (completion.stopReason === 'timeout') {
                 writeStderrLine(
-                  `qwen serve: sub-session ${sessionId} drain timed out after ` +
+                  `canopy serve: sub-session ${sessionId} drain timed out after ` +
                     `${Math.round(sentModeDrainTimeoutMs / 60_000)}min; releasing its ` +
                     `concurrency slot (the sub-session may still be running)`,
                 );
@@ -912,7 +912,7 @@ export function createSubSessionLauncher(
             } catch (notificationError) {
               if (!stopAc.signal.aborted) {
                 writeStderrLine(
-                  `qwen serve: sub-session ${sessionId} completion could not be returned to parent ${info.callerSessionId}: ${notificationError instanceof Error ? notificationError.message : String(notificationError)}`,
+                  `canopy serve: sub-session ${sessionId} completion could not be returned to parent ${info.callerSessionId}: ${notificationError instanceof Error ? notificationError.message : String(notificationError)}`,
                 );
               }
             }
@@ -1042,7 +1042,7 @@ export function createSubSessionLauncher(
         }
       }
       writeStderrLine(
-        `qwen serve: create_sub_session failed: ${err instanceof Error ? err.message : String(err)}`,
+        `canopy serve: create_sub_session failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       throw err instanceof Error ? err : new Error(String(err));
     }

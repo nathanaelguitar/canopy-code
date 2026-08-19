@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@
  * type declarations, and runtime guards share one source of truth.
  *
  * This module intentionally has NO imports of its own so it can be
- * subpath-imported (`@qwen-code/qwen-code-core/memoryScopes`) without
+ * subpath-imported (`@canopy-code/canopy-code-core/memoryScopes`) without
  * pulling the core barrel — and its 5 MB+ settings/TOML/glob transitive
  * closure — into bundle-critical paths such as the serve pre-listen root.
  */

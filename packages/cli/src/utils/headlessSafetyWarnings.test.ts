@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ApprovalMode } from '@qwen-code/qwen-code-core';
+import { ApprovalMode } from '@canopy-code/canopy-code-core';
 import {
   HEADLESS_YOLO_NO_SANDBOX_WARNING,
   getHeadlessYoloSafetyWarning,
@@ -34,7 +34,7 @@ describe('getHeadlessYoloSafetyWarning', () => {
   it('does not warn when a sandbox is configured', () => {
     const cfg = makeConfig(ApprovalMode.YOLO, {
       command: 'docker',
-      image: 'qwen-code-sandbox',
+      image: 'canopy-code-sandbox',
     });
     expect(getHeadlessYoloSafetyWarning(cfg, {})).toBeNull();
   });
@@ -47,7 +47,7 @@ describe('getHeadlessYoloSafetyWarning', () => {
     ).toBeNull();
     // Docker / Podman container name
     expect(
-      getHeadlessYoloSafetyWarning(cfg, { SANDBOX: 'qwen-code-sandbox' }),
+      getHeadlessYoloSafetyWarning(cfg, { SANDBOX: 'canopy-code-sandbox' }),
     ).toBeNull();
     // Generic truthy values
     expect(getHeadlessYoloSafetyWarning(cfg, { SANDBOX: '1' })).toBeNull();
@@ -68,22 +68,22 @@ describe('getHeadlessYoloSafetyWarning', () => {
     const cfg = makeConfig(ApprovalMode.YOLO, undefined);
     expect(
       getHeadlessYoloSafetyWarning(cfg, {
-        QWEN_CODE_SUPPRESS_YOLO_WARNING: '1',
+        CANOPY_CODE_SUPPRESS_YOLO_WARNING: '1',
       }),
     ).toBeNull();
     expect(
       getHeadlessYoloSafetyWarning(cfg, {
-        QWEN_CODE_SUPPRESS_YOLO_WARNING: 'true',
+        CANOPY_CODE_SUPPRESS_YOLO_WARNING: 'true',
       }),
     ).toBeNull();
   });
 
-  it('does NOT suppress when QWEN_CODE_SUPPRESS_YOLO_WARNING is 0 / false / empty', () => {
+  it('does NOT suppress when CANOPY_CODE_SUPPRESS_YOLO_WARNING is 0 / false / empty', () => {
     const cfg = makeConfig(ApprovalMode.YOLO, undefined);
     for (const val of ['0', 'false', '', 'no']) {
       expect(
         getHeadlessYoloSafetyWarning(cfg, {
-          QWEN_CODE_SUPPRESS_YOLO_WARNING: val,
+          CANOPY_CODE_SUPPRESS_YOLO_WARNING: val,
         }),
       ).toBe(HEADLESS_YOLO_NO_SANDBOX_WARNING);
     }

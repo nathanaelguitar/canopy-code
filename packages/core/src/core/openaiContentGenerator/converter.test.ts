@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -3359,9 +3359,9 @@ describe('OpenAIContentConverter', () => {
 
     describe('assistant message with reasoning-only content (issue #3421)', () => {
       /**
-       * Regression tests for https://github.com/QwenLM/qwen-code/issues/3421
+       * Regression tests for https://github.com/QwenLM/canopy-code/issues/3421
        *
-       * When a model (e.g. Ollama qwen3.5:9b) returns a response that contains
+       * When a model (e.g. Ollama canopy3.5:9b) returns a response that contains
        * reasoning content but an empty text body, the converted assistant message
        * must use content: "" instead of content: null.
        * Some OpenAI-compatible providers reject content: null with HTTP 400 when
@@ -3509,7 +3509,7 @@ describe('OpenAIContentConverter', () => {
 
   describe('MCP multi-part tool results (issue #1520)', () => {
     /**
-     * Regression tests for https://github.com/QwenLM/qwen-code/issues/1520
+     * Regression tests for https://github.com/QwenLM/canopy-code/issues/1520
      *
      * Ensures that when an MCP tool returns multiple content blocks
      * (e.g., text + image, or multiple text sections), all content
@@ -4861,7 +4861,7 @@ describe('OpenAIContentConverter', () => {
     });
 
     it('should preserve legitimate duplicate import-line chunks (regression: silent data loss)', () => {
-      // Regression for https://github.com/QwenLM/qwen-code/pull/3896 review
+      // Regression for https://github.com/QwenLM/canopy-code/pull/3896 review
       // (wenshao, 2026-05-13 CHANGES_REQUESTED, finding #1). Realistic
       // incremental streams emit duplicate import/boilerplate lines and the
       // exact-repeat threshold must be high enough that those legitimate
@@ -4948,7 +4948,7 @@ describe('OpenAIContentConverter', () => {
     });
 
     it('should detect cumulative mode even when the first chunk exceeds the detection window cap', () => {
-      // Regression for https://github.com/QwenLM/qwen-code/pull/3896 review:
+      // Regression for https://github.com/QwenLM/canopy-code/pull/3896 review:
       // Some cumulative providers ship a large initial chunk (>1024 chars)
       // and then accumulate more text on subsequent chunks. The detection
       // window cap must not short-circuit prefix-overlap detection before the
@@ -4989,7 +4989,7 @@ describe('OpenAIContentConverter', () => {
     });
 
     it('should not duplicate emitted bytes when an incremental stream transitions into cumulative mode past the window cap', () => {
-      // Regression for https://github.com/QwenLM/qwen-code/pull/3896 review
+      // Regression for https://github.com/QwenLM/canopy-code/pull/3896 review
       // (wenshao, 2026-05-13 CHANGES_REQUESTED, finding #2). Hybrid scenario:
       // upstream emits 200 distinct incremental chunks of 8 bytes each (1600
       // bytes of user-visible content, well past the 1024-byte detection-
@@ -6488,7 +6488,7 @@ describe('OpenAIContentConverter', () => {
 
 describe('MCP tool result end-to-end through OpenAI converter (issue #1520)', () => {
   /**
-   * End-to-end regression tests for https://github.com/QwenLM/qwen-code/issues/1520
+   * End-to-end regression tests for https://github.com/QwenLM/canopy-code/issues/1520
    *
    * Simulates the full pipeline:
    *   transformMcpContentToParts → convertToFunctionResponse → OpenAI converter

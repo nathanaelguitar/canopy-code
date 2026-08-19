@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -25,7 +25,7 @@ import {
   toolResultBoundaryArtifact,
   ToolNames,
   Kind,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   createTranscriptToolCallResultUpdate,
   createTranscriptToolCallStartUpdate,
@@ -44,7 +44,7 @@ const KIND_MAP: Record<Kind, ToolKind> = {
   [Kind.Fetch]: 'fetch',
   // ACP defines no 'agent' ToolKind (verified through @agentclientprotocol/sdk
   // 0.25.1). The daemon's ClientSideConnection Zod-validates every session/update
-  // and session/request_permission from the `qwen --acp` child before fanning out
+  // and session/request_permission from the `canopy --acp` child before fanning out
   // to SSE clients, so emitting 'agent' is rejected at that hop and the frame is
   // dropped. Map the internal Kind.Agent to 'other' on the wire to stay
   // protocol-valid; dedicated agent UI is delivered out-of-band (via _meta.toolName)
@@ -295,7 +295,7 @@ export class ToolCallEmitter extends BaseEmitter {
    *   - toolName matches `mcp__<server>__<tool>` → `'mcp'` with
    *     `serverId: <server>`. Naming convention from
    *     `packages/core/src/tools/mcp-tool.ts` in the
-   *     `@qwen-code/qwen-code-core` package — mirrors the SDK's same
+   *     `@canopy-code/canopy-code-core` package — mirrors the SDK's same
    *     heuristic fallback so SDK consumers stay consistent with
    *     daemon classification.
    *   - everything else → `'builtin'`

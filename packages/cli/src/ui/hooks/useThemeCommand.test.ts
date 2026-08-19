@@ -12,7 +12,7 @@ import { SettingScope } from '../../config/settings.js';
 import { useThemeCommand } from './useThemeCommand.js';
 import { themeManager } from '../themes/theme-manager.js';
 import { MessageType } from '../types.js';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import process from 'node:process';
 
 describe('useThemeCommand', () => {
@@ -20,7 +20,7 @@ describe('useThemeCommand', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    themeManager.setActiveTheme('Qwen Dark');
+    themeManager.setActiveTheme('Canopy Dark');
     delete process.env['NO_COLOR'];
   });
 
@@ -65,7 +65,7 @@ describe('useThemeCommand', () => {
     const setValue =
       vi.fn<(scope: SettingScope, key: string, value: unknown) => void>();
     const settings = {
-      merged: { ui: { theme: 'Qwen Dark' } },
+      merged: { ui: { theme: 'Canopy Dark' } },
       user: { settings: { ui: {} } },
       workspace: { settings: { ui: {} } },
       setValue,

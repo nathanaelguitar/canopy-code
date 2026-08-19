@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -32,7 +32,7 @@ describe('approxBase64Bytes', () => {
 });
 
 describe('getMaxInlineMediaBytes', () => {
-  const ENV_KEY = 'QWEN_CODE_MAX_INLINE_MEDIA_BYTES';
+  const ENV_KEY = 'CANOPY_CODE_MAX_INLINE_MEDIA_BYTES';
   const original = process.env[ENV_KEY];
 
   afterEach(() => {

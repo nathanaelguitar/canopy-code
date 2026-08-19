@@ -8,7 +8,7 @@ import { sanitizeForOsc } from './osc8.js';
 import { ICON } from '../constants.js';
 import { StreamingState } from '../types.js';
 
-export const DEFAULT_WINDOW_TITLE = 'qwen';
+export const DEFAULT_WINDOW_TITLE = 'canopy';
 
 const MULTIPLEXER_ENV_KEYS = ['TMUX', 'STY', 'ZELLIJ', 'DVTM'] as const;
 
@@ -18,19 +18,20 @@ export function sanitizeWindowTitle(title: string): string {
 }
 
 /**
- * Computes the window title for the Qwen Code application.
+ * Computes the window title for the Canopy Code application.
  *
  * Priority chain:
  *  1. CLI_TITLE environment variable (if set)
  *  2. folderName — typically the basename of the workspace directory
- *  3. DEFAULT_WINDOW_TITLE ('qwen')
+ *  3. DEFAULT_WINDOW_TITLE ('canopy')
  *
  * @param folderName - Optional workspace folder name for project identification.
  * @returns The computed window title.
  */
 export function computeWindowTitle(folderName?: string): string {
   return sanitizeWindowTitle(
-    process.env['CLI_TITLE'] || `Qwen - ${folderName || DEFAULT_WINDOW_TITLE}`,
+    process.env['CLI_TITLE'] ||
+      `Canopy - ${folderName || DEFAULT_WINDOW_TITLE}`,
   );
 }
 

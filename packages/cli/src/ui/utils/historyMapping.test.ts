@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   CompressionStatus,
   SYSTEM_REMINDER_OPEN,
   SYSTEM_REMINDER_CLOSE,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 // ---------------------------------------------------------------------------
 // Helpers

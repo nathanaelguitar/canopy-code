@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,12 +22,12 @@ import type {
   TeammateApprovalRequestEvent,
   ToolConfirmationPayload,
   WorkflowApproval,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   InputFormat,
   ToolConfirmationOutcome,
   ToolNames,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type {
   CLIControlPermissionRequest,
   CLIControlSetPermissionModeRequest,

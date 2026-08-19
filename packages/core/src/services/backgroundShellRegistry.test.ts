@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 function makeOutputFile(content: string): string {
-  const dir = mkdtempSync(join(tmpdir(), 'qwen-shell-notification-'));
+  const dir = mkdtempSync(join(tmpdir(), 'canopy-shell-notification-'));
   tmpDirs.push(dir);
   const file = join(dir, 'shell.output');
   writeFileSync(file, content);
@@ -64,7 +64,7 @@ function makeOutputFile(content: string): string {
 }
 
 function makeTempDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'qwen-shell-notification-'));
+  const dir = mkdtempSync(join(tmpdir(), 'canopy-shell-notification-'));
   tmpDirs.push(dir);
   return dir;
 }
@@ -492,7 +492,7 @@ describe('BackgroundShellRegistry', () => {
       // truncation offset lands on its second byte.
       const reg = new BackgroundShellRegistry();
       const callback = vi.fn();
-      const dir = mkdtempSync(join(tmpdir(), 'qwen-shell-utf8-'));
+      const dir = mkdtempSync(join(tmpdir(), 'canopy-shell-utf8-'));
       tmpDirs.push(dir);
       const file = join(dir, 'shell.output');
       const padding = 'a'.repeat(MAX_NOTIFICATION_OUTPUT_TAIL_BYTES - 1);

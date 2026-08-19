@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { promises as fsp } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { Ignore } from '@qwen-code/qwen-code-core';
+import { Ignore } from '@canopy-code/canopy-code-core';
 import {
   MAX_READ_BYTES,
   MAX_WRITE_BYTES,
@@ -29,7 +29,10 @@ describe('shouldIgnore', () => {
 
   beforeEach(async () => {
     scratch = await fsp.mkdtemp(
-      path.join(os.tmpdir(), `qwen-policy-${randomBytes(4).toString('hex')}-`),
+      path.join(
+        os.tmpdir(),
+        `canopy-policy-${randomBytes(4).toString('hex')}-`,
+      ),
     );
     const wsDir = path.join(scratch, 'ws');
     await fsp.mkdir(wsDir, { recursive: true });
@@ -208,7 +211,10 @@ describe('detectBinary', () => {
 
   beforeEach(async () => {
     scratch = await fsp.mkdtemp(
-      path.join(os.tmpdir(), `qwen-binary-${randomBytes(4).toString('hex')}-`),
+      path.join(
+        os.tmpdir(),
+        `canopy-binary-${randomBytes(4).toString('hex')}-`,
+      ),
     );
     const wsDir = path.join(scratch, 'ws');
     await fsp.mkdir(wsDir, { recursive: true });

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { IncomingMessage } from 'node:http';
 import type { RawData, WebSocket } from 'ws';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import {
   loadDaemonVoiceContext,
   type DaemonVoiceContext,
@@ -17,7 +17,7 @@ import {
   transcribeVoiceAudio,
 } from '../../services/voice-transcriber.js';
 import { openVoiceStream } from '../../ui/voice/voice-stream-session.js';
-import { openQwenAsrRealtimeStream } from '../../ui/voice/qwen-asr-realtime-session.js';
+import { openCanopyAsrRealtimeStream } from '../../ui/voice/canopy-asr-realtime-session.js';
 import { openVoiceStreamWithRetry } from '../../ui/voice/voice-stream-retry.js';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
 import type {
@@ -33,7 +33,7 @@ import {
 
 const debugLogger = createDebugLogger('VOICE_WS');
 
-// Qwen-ASR caps each audio file at 10 MB / ~5 minutes; guard the batch buffer
+// Canopy-ASR caps each audio file at 10 MB / ~5 minutes; guard the batch buffer
 // before WAV-encoding so an overlong stream fails with a clear message.
 const MAX_BATCH_AUDIO_BYTES = 10 * 1024 * 1024;
 const MAX_QUEUED_AUDIO_BYTES = MAX_BATCH_AUDIO_BYTES * 2;
@@ -101,7 +101,7 @@ async function defaultOpenStream(
     return await openVoiceStreamWithRetry(
       () =>
         cfg.transport === 'qwen-asr-realtime'
-          ? openQwenAsrRealtimeStream(cfg, callbacks, { abortSignal })
+          ? openCanopyAsrRealtimeStream(cfg, callbacks, { abortSignal })
           : openVoiceStream(cfg, callbacks, { abortSignal }),
       { abortSignal },
     );
@@ -241,7 +241,7 @@ export function createVoiceWsConnectionHandler(
   return (ws: WebSocket) => {
     const admission = (deps.acquireVoiceLease ?? acquireLocalLease)();
     if (admission.kind === 'rejected') {
-      writeStderrLine('qwen serve: voice websocket rejected');
+      writeStderrLine('canopy serve: voice websocket rejected');
       try {
         if (admission.reason === 'draining') {
           ws.close(1012, 'Workspace removed');
@@ -260,13 +260,13 @@ export function createVoiceWsConnectionHandler(
       return;
     }
     const lease = admission.lease;
-    writeStderrLine('qwen serve: voice websocket accepted');
+    writeStderrLine('canopy serve: voice websocket accepted');
     let released = false;
     const releaseSlot = () => {
       if (!released) {
         released = true;
         lease.release();
-        writeStderrLine('qwen serve: voice websocket slot released');
+        writeStderrLine('canopy serve: voice websocket slot released');
       }
     };
 
@@ -343,7 +343,7 @@ export function createVoiceWsConnectionHandler(
 
     function fail(message: string): void {
       if (state === 'closed') return;
-      writeStderrLine(`qwen serve: voice websocket failed: ${message}`);
+      writeStderrLine(`canopy serve: voice websocket failed: ${message}`);
       sendJson({ type: 'error', message });
       cleanup();
       releaseSlotWhenIdle();
@@ -421,7 +421,7 @@ export function createVoiceWsConnectionHandler(
         );
       }
       sendJson({ type: 'final', text: transcript });
-      writeStderrLine('qwen serve: voice websocket finalized successfully');
+      writeStderrLine('canopy serve: voice websocket finalized successfully');
       cleanup();
       releaseSlotWhenIdle();
       try {
@@ -457,11 +457,11 @@ export function createVoiceWsConnectionHandler(
       if (!control) return;
       switch (control.type) {
         case 'start':
-          writeStderrLine('qwen serve: voice websocket start received');
+          writeStderrLine('canopy serve: voice websocket start received');
           await ensureStarted();
           return;
         case 'stop':
-          writeStderrLine('qwen serve: voice websocket stop received');
+          writeStderrLine('canopy serve: voice websocket stop received');
           await finalize();
           return;
         default:
@@ -474,7 +474,7 @@ export function createVoiceWsConnectionHandler(
       if (!isBinary) {
         const control = parseControl(buf.toString('utf8'));
         if (control?.type === 'abort') {
-          writeStderrLine('qwen serve: voice websocket abort received');
+          writeStderrLine('canopy serve: voice websocket abort received');
           cleanup();
           try {
             ws.close(1000, 'aborted');

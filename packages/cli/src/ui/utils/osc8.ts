@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@
  *
  * The shared primitives — `sanitizeForOsc`, `osc8Hyperlink`,
  * `supportsHyperlinks`, `wrapForMultiplexer`, `HYPERLINK_ENV_KEYS` — now live
- * in `@qwen-code/qwen-code-core` so core-side emitters (e.g. the Qwen OAuth
+ * in `@canopy-code/canopy-code-core` so core-side emitters (e.g. the Canopy OAuth
  * device-flow fallback message) can wrap a URL in a single clickable link.
  * They are re-exported here so existing CLI imports of this module keep
  * resolving unchanged. The markdown-link and label-deception helpers below are
@@ -28,7 +28,7 @@ import {
   supportsHyperlinks,
   wrapForMultiplexer,
   HYPERLINK_ENV_KEYS,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 export {
   osc8Hyperlink,

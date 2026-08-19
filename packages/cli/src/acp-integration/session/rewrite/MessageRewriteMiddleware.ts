@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import type { SessionUpdate } from '@agentclientprotocol/sdk';
-import type { Config } from '@qwen-code/qwen-code-core';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { MessageRewriteConfig } from './types.js';
 import { TurnBuffer } from './TurnBuffer.js';
 import { LlmRewriter } from './LlmRewriter.js';
@@ -29,8 +29,8 @@ const debugLogger = createDebugLogger('MESSAGE_REWRITE');
  */
 const DEFAULT_REWRITE_TIMEOUT_MS = 30_000;
 // Intentionally empty: earlier revisions stripped backgroundTask/source/
-// qwenDiscreteMessage from rewritten messages, but those keys are required
-// downstream for discrete-message routing (see qwenSessionUpdateHandler).
+// canopyDiscreteMessage from rewritten messages, but those keys are required
+// downstream for discrete-message routing (see canopySessionUpdateHandler).
 // Kept as an explicit extension point — add a key here to drop it from a
 // rewritten message's _meta.
 const REWRITE_META_EXCLUDED_KEYS = new Set<string>([]);

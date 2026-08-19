@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,7 +20,7 @@ import {
 
 /**
  * Build a Config whose `.storage` points at `projectDir`, and point the
- * user scope (`~/.qwen`) at `userHome` via the QWEN_HOME env override so
+ * user scope (`~/.canopy`) at `userHome` via the QWEN_HOME env override so
  * tests never touch the real home directory.
  */
 function fakeConfig(projectDir: string): Config {
@@ -39,20 +39,20 @@ async function writeWorkflow(
 describe('workflow-saved', () => {
   let projectDir: string;
   let userHome: string;
-  let prevQwenHome: string | undefined;
+  let prevCanopyHome: string | undefined;
 
   beforeEach(async () => {
     projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wf-proj-'));
     userHome = await fs.mkdtemp(path.join(os.tmpdir(), 'wf-user-'));
-    prevQwenHome = process.env['QWEN_HOME'];
-    // Storage.getGlobalQwenDir() reads QWEN_HOME, else ~/.qwen. Point it at
-    // `<userHome>/.qwen` so the user scope is sandboxed.
-    process.env['QWEN_HOME'] = path.join(userHome, '.qwen');
+    prevCanopyHome = process.env['QWEN_HOME'];
+    // Storage.getGlobalCanopyDir() reads QWEN_HOME, else ~/.canopy. Point it at
+    // `<userHome>/.canopy` so the user scope is sandboxed.
+    process.env['QWEN_HOME'] = path.join(userHome, '.canopy');
   });
 
   afterEach(async () => {
-    if (prevQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = prevQwenHome;
+    if (prevCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = prevCanopyHome;
     await fs.rm(projectDir, { recursive: true, force: true });
     await fs.rm(userHome, { recursive: true, force: true });
   });
@@ -272,7 +272,7 @@ describe('workflow-saved', () => {
       });
       expect(result.status).toBe('saved');
       if (result.status !== 'saved') throw new Error('expected saved');
-      expect(result.path).toContain(path.join(userHome, '.qwen'));
+      expect(result.path).toContain(path.join(userHome, '.canopy'));
       expect(result.scope).toBe('user');
     });
 
@@ -353,7 +353,7 @@ describe('workflow-saved', () => {
         `return 'EXFILTRATED';`,
         'utf8',
       );
-      // Make `<projectDir>/.qwen/workflows` a symlink to that external dir.
+      // Make `<projectDir>/.canopy/workflows` a symlink to that external dir.
       projectWorkflowsDir = new Storage(projectDir).getProjectWorkflowsDir();
       await fs.mkdir(path.dirname(projectWorkflowsDir), { recursive: true });
       await fs.symlink(external, projectWorkflowsDir, 'dir');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -163,7 +163,7 @@ describe('must-translate locale coverage', () => {
         'Save a durable memory to the memory system.',
       );
       expect(statuslineCommand.description).not.toBe(
-        "Set up Qwen Code's status line UI",
+        "Set up Canopy Code's status line UI",
       );
     },
     SLOW_LOCALE_TEST_TIMEOUT_MS,

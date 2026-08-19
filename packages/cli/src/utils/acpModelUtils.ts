@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,10 +9,10 @@ import {
   AuthType,
   type AvailableModel,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { z } from 'zod';
 
-export const ACP_ROUTE_ID_PREFIX = 'qwen-route:v1:';
+export const ACP_ROUTE_ID_PREFIX = 'canopy-route:v1:';
 
 function getRouteEndpointIdentity(baseUrl: string | undefined): string | null {
   if (!baseUrl) return null;
@@ -34,7 +34,7 @@ function getRouteEndpointIdentity(baseUrl: string | undefined): string | null {
  *
  * NOTE: The VSCode webview side mirrors this encoding contract in
  * `packages/vscode-ide-companion/src/webview/utils/discontinuedModel.ts` to
- * detect discontinued Qwen OAuth registry models without changing the wire
+ * detect discontinued Canopy OAuth registry models without changing the wire
  * format. If the encoding here evolves (new authTypes, runtime prefix changes,
  * etc.), update that file too.
  */

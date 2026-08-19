@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
   captureDaemonTelemetryContext,
   emitDaemonLog,
   runWithDaemonTelemetryContext,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { mapDomainErrorToErrorKind } from '@qwen-code/acp-bridge';
 import type { Application } from 'express';
 import { writeStderrLine } from '../../utils/stdioHelpers.js';
@@ -43,7 +43,7 @@ import {
 
 let activeSseCount = 0;
 
-const SSE_STREAM_ID_HEADER = 'X-Qwen-SSE-Stream-Id';
+const SSE_STREAM_ID_HEADER = 'X-Canopy-SSE-Stream-Id';
 // Keep in sync with the REST transport's response-header validator.
 const SSE_STREAM_ID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -172,7 +172,7 @@ export function registerSseEventsRoutes(
     const sessionId = req.params['id'];
     const diagnosticSessionId = boundedDiagnosticString(sessionId);
     const streamId = randomUUID();
-    const clientId = parseSseClientId(req.headers['x-qwen-client-id']);
+    const clientId = parseSseClientId(req.headers['x-canopy-client-id']);
     const connectReason = parseSseConnectReason(req.query['connectReason']);
     const previousStreamId = parsePreviousSseStreamId(
       req.query['previousStreamId'],
@@ -180,12 +180,12 @@ export function registerSseEventsRoutes(
     const telemetryContext = captureDaemonTelemetryContext();
     const telemetryBaseAttributes: Record<string, string | number | boolean> = {
       'session.id': sessionId,
-      'qwen-code.daemon.sse.stream_id': streamId,
-      'qwen-code.daemon.sse.client_reported_connect_reason': connectReason,
-      ...(clientId ? { 'qwen-code.client_id': clientId } : {}),
+      'canopy-code.daemon.sse.stream_id': streamId,
+      'canopy-code.daemon.sse.client_reported_connect_reason': connectReason,
+      ...(clientId ? { 'canopy-code.client_id': clientId } : {}),
       ...(previousStreamId
         ? {
-            'qwen-code.daemon.sse.client_reported_previous_stream_id':
+            'canopy-code.daemon.sse.client_reported_previous_stream_id':
               previousStreamId,
           }
         : {}),
@@ -220,12 +220,12 @@ export function registerSseEventsRoutes(
         triggerEventBytes: diagnostic.data.triggerEventBytes,
       };
       const telemetryCommon = {
-        'qwen-code.daemon.sse.queue_size': common.queueSize,
-        'qwen-code.daemon.sse.max_queued': common.maxQueued,
-        'qwen-code.daemon.sse.queued_bytes': common.queuedBytes,
-        'qwen-code.daemon.sse.max_queued_bytes': common.maxQueuedBytes,
-        'qwen-code.daemon.sse.trigger_event_type': common.triggerEventType,
-        'qwen-code.daemon.sse.trigger_event_bytes': common.triggerEventBytes,
+        'canopy-code.daemon.sse.queue_size': common.queueSize,
+        'canopy-code.daemon.sse.max_queued': common.maxQueued,
+        'canopy-code.daemon.sse.queued_bytes': common.queuedBytes,
+        'canopy-code.daemon.sse.max_queued_bytes': common.maxQueuedBytes,
+        'canopy-code.daemon.sse.trigger_event_type': common.triggerEventType,
+        'canopy-code.daemon.sse.trigger_event_bytes': common.triggerEventBytes,
       };
       let handled = false;
       if (diagnostic.type === 'slow_client_warning') {
@@ -245,7 +245,7 @@ export function registerSseEventsRoutes(
             daemonLog.warn('SSE slow client warning', context);
           } else {
             writeStderrLine(
-              `qwen serve: SSE slow client warning ${JSON.stringify(context)}`,
+              `canopy serve: SSE slow client warning ${JSON.stringify(context)}`,
             );
           }
           handled = true;
@@ -253,12 +253,12 @@ export function registerSseEventsRoutes(
           handled = false;
         }
         emitLifecycleLog(
-          'qwen-code.daemon.sse.slow_client_warning',
+          'canopy-code.daemon.sse.slow_client_warning',
           'Daemon SSE slow client warning.',
           {
             ...telemetryCommon,
-            'qwen-code.daemon.sse.threshold': diagnostic.data.threshold,
-            'qwen-code.daemon.sse.last_event_id': diagnostic.data.lastEventId,
+            'canopy-code.daemon.sse.threshold': diagnostic.data.threshold,
+            'canopy-code.daemon.sse.last_event_id': diagnostic.data.lastEventId,
           },
         );
       } else {
@@ -288,7 +288,7 @@ export function registerSseEventsRoutes(
             daemonLog.warn('SSE client evicted', context);
           } else {
             writeStderrLine(
-              `qwen serve: SSE client evicted ${JSON.stringify(context)}`,
+              `canopy serve: SSE client evicted ${JSON.stringify(context)}`,
             );
           }
           handled = true;
@@ -296,18 +296,18 @@ export function registerSseEventsRoutes(
           handled = false;
         }
         emitLifecycleLog(
-          'qwen-code.daemon.sse.client_evicted',
+          'canopy-code.daemon.sse.client_evicted',
           'Daemon SSE client evicted.',
           {
             ...telemetryCommon,
-            'qwen-code.daemon.sse.threshold': threshold,
-            'qwen-code.daemon.sse.event_bus_eviction_reason':
+            'canopy-code.daemon.sse.threshold': threshold,
+            'canopy-code.daemon.sse.event_bus_eviction_reason':
               eventBusEvictionReason,
-            'qwen-code.daemon.sse.dropped_after_event_id':
+            'canopy-code.daemon.sse.dropped_after_event_id':
               diagnostic.data.droppedAfter,
             ...(diagnostic.data.eventBytes !== undefined
               ? {
-                  'qwen-code.daemon.sse.rejected_event_bytes':
+                  'canopy-code.daemon.sse.rejected_event_bytes':
                     diagnostic.data.eventBytes,
                 }
               : {}),
@@ -320,7 +320,9 @@ export function registerSseEventsRoutes(
     // Epoch token accompanying the resume cursor (DAEMON-001). Invalid
     // values degrade to "not provided" so the bus falls back to the
     // numeric stale-cursor heuristic.
-    const eventEpoch = parseEventEpochHeader(req.headers['x-qwen-event-epoch']);
+    const eventEpoch = parseEventEpochHeader(
+      req.headers['x-canopy-event-epoch'],
+    );
     const maxQueued = parseMaxQueuedQuery(req.query['maxQueued'], res);
     // `parseMaxQueuedQuery` sends its own 400 + JSON body on rejection
     // (returns `null`) so the SSE handshake doesn't get half-written.
@@ -401,7 +403,7 @@ export function registerSseEventsRoutes(
       // a raw-fetch client gets the same structured error.
       if (err instanceof SubscriberLimitExceededError) {
         writeStderrLine(
-          `qwen serve: subscriber limit reached for session ${diagnosticSessionId} (limit=${err.limit}); rejecting new SSE client with 429`,
+          `canopy serve: subscriber limit reached for session ${diagnosticSessionId} (limit=${err.limit}); rejecting new SSE client with 429`,
         );
         res.setHeader('Retry-After', '5');
         res.status(429).json({
@@ -444,29 +446,30 @@ export function registerSseEventsRoutes(
       const resolvedCloseReason =
         closeReason ?? terminalCandidate ?? 'client_disconnect';
       const closeAttributes: Record<string, string | number | boolean> = {
-        'qwen-code.daemon.sse.duration_ms': durationMs,
-        'qwen-code.daemon.sse.event_frames_write_settled':
+        'canopy-code.daemon.sse.duration_ms': durationMs,
+        'canopy-code.daemon.sse.event_frames_write_settled':
           eventFramesWriteSettled,
-        'qwen-code.daemon.sse.backpressure_count': backpressureCount,
-        'qwen-code.daemon.sse.max_drain_wait_ms': maxDrainWaitMs,
-        'qwen-code.daemon.sse.max_live_publish_to_write_settled_ms':
+        'canopy-code.daemon.sse.backpressure_count': backpressureCount,
+        'canopy-code.daemon.sse.max_drain_wait_ms': maxDrainWaitMs,
+        'canopy-code.daemon.sse.max_live_publish_to_write_settled_ms':
           maxLivePublishToWriteSettledMs,
-        'qwen-code.daemon.sse.slow_warning_count': slowWarningCount,
-        'qwen-code.daemon.sse.close_reason': resolvedCloseReason,
+        'canopy-code.daemon.sse.slow_warning_count': slowWarningCount,
+        'canopy-code.daemon.sse.close_reason': resolvedCloseReason,
         ...(lastEventIdWritten !== undefined
           ? {
-              'qwen-code.daemon.sse.last_event_id_written': lastEventIdWritten,
+              'canopy-code.daemon.sse.last_event_id_written':
+                lastEventIdWritten,
             }
           : {}),
         ...(eventBusEvictionReason
           ? {
-              'qwen-code.daemon.sse.event_bus_eviction_reason':
+              'canopy-code.daemon.sse.event_bus_eviction_reason':
                 eventBusEvictionReason,
             }
           : {}),
         ...(terminalEventType
           ? {
-              'qwen-code.daemon.sse.terminal_event_type': terminalEventType,
+              'canopy-code.daemon.sse.terminal_event_type': terminalEventType,
             }
           : {}),
       };
@@ -477,7 +480,7 @@ export function registerSseEventsRoutes(
         emitDaemonLog(
           'Daemon SSE stream closed.',
           { ...telemetryBaseAttributes, ...closeAttributes },
-          { eventName: 'qwen-code.daemon.sse.closed' },
+          { eventName: 'canopy-code.daemon.sse.closed' },
         );
       }).catch(() => {});
       try {
@@ -518,7 +521,7 @@ export function registerSseEventsRoutes(
     // cursor-less one) so clients can pair it with their resume cursor and
     // detect a daemon restart on reconnect (DAEMON-001).
     if (busEpoch !== undefined) {
-      res.setHeader('X-Qwen-Event-Epoch', busEpoch);
+      res.setHeader('X-Canopy-Event-Epoch', busEpoch);
     }
     res.setHeader(SSE_STREAM_ID_HEADER, streamId);
     res.prependOnceListener('finish', finalize);
@@ -541,11 +544,11 @@ export function registerSseEventsRoutes(
       // Diagnostics must not interfere with the stream handshake.
     }
     emitLifecycleLog(
-      'qwen-code.daemon.sse.opened',
+      'canopy-code.daemon.sse.opened',
       'Daemon SSE stream opened.',
       {
         ...(lastEventId !== undefined
-          ? { 'qwen-code.daemon.sse.resume_from_event_id': lastEventId }
+          ? { 'canopy-code.daemon.sse.resume_from_event_id': lastEventId }
           : {}),
       },
     );
@@ -787,7 +790,7 @@ export function registerSseEventsRoutes(
             daemonLog.warn('SSE writer idle timeout', idleContext);
           } else {
             writeStderrLine(
-              `qwen serve: evicting SSE client (session ${diagnosticSessionId}) — ` +
+              `canopy serve: evicting SSE client (session ${diagnosticSessionId}) — ` +
                 `writer idle for ${idleForMs}ms > ${writerIdleTimeoutMsValue}ms timeout ` +
                 `(streamId=${streamId}${clientId ? `, clientId=${clientId}` : ''})`,
             );
@@ -796,13 +799,13 @@ export function registerSseEventsRoutes(
           /* stderr pipe closed; eviction is still happening. */
         }
         emitLifecycleLog(
-          'qwen-code.daemon.sse.client_evicted',
+          'canopy-code.daemon.sse.client_evicted',
           'Daemon SSE client evicted by writer idle timeout.',
           {
-            'qwen-code.daemon.sse.writer_idle_for_ms': idleForMs,
-            'qwen-code.daemon.sse.writer_idle_timeout_ms':
+            'canopy-code.daemon.sse.writer_idle_for_ms': idleForMs,
+            'canopy-code.daemon.sse.writer_idle_timeout_ms':
               writerIdleTimeoutMsValue,
-            'qwen-code.daemon.sse.eviction_reason': 'writer_idle_timeout',
+            'canopy-code.daemon.sse.eviction_reason': 'writer_idle_timeout',
           },
         );
         cleanup();
@@ -839,7 +842,7 @@ export function registerSseEventsRoutes(
           });
         } else {
           writeStderrLine(
-            `qwen serve: SSE socket error (session ${diagnosticSessionId}): ${err.message} ` +
+            `canopy serve: SSE socket error (session ${diagnosticSessionId}): ${err.message} ` +
               `(streamId=${streamId}${clientId ? `, clientId=${clientId}` : ''})`,
           );
         }
@@ -916,7 +919,7 @@ export function registerSseEventsRoutes(
                 );
               } else {
                 writeStderrLine(
-                  `qwen serve: SSE ring eviction detected (session ${diagnosticSessionId}): ` +
+                  `canopy serve: SSE ring eviction detected (session ${diagnosticSessionId}): ` +
                     `lastEventId=${data.lastDeliveredId ?? '?'}, ` +
                     `earliestInRing=${data.earliestAvailableId ?? '?'}, ` +
                     `gap=${gap ?? '?'} events, ` +
@@ -931,27 +934,27 @@ export function registerSseEventsRoutes(
               // The recovery frame must still reach the client.
             }
             emitLifecycleLog(
-              'qwen-code.daemon.sse.state_resync_required',
+              'canopy-code.daemon.sse.state_resync_required',
               'Daemon SSE state resync required.',
               {
-                'qwen-code.daemon.sse.resync_reason': reason,
+                'canopy-code.daemon.sse.resync_reason': reason,
                 ...(detail
-                  ? { 'qwen-code.daemon.sse.resync_detail': detail }
+                  ? { 'canopy-code.daemon.sse.resync_detail': detail }
                   : {}),
                 ...(typeof data.lastDeliveredId === 'number'
                   ? {
-                      'qwen-code.daemon.sse.resync_last_delivered_id':
+                      'canopy-code.daemon.sse.resync_last_delivered_id':
                         data.lastDeliveredId,
                     }
                   : {}),
                 ...(typeof data.earliestAvailableId === 'number'
                   ? {
-                      'qwen-code.daemon.sse.resync_earliest_available_id':
+                      'canopy-code.daemon.sse.resync_earliest_available_id':
                         data.earliestAvailableId,
                     }
                   : {}),
                 ...(gap !== undefined
-                  ? { 'qwen-code.daemon.sse.resync_gap_events': gap }
+                  ? { 'canopy-code.daemon.sse.resync_gap_events': gap }
                   : {}),
               },
             );
@@ -1002,7 +1005,7 @@ export function registerSseEventsRoutes(
           // Log bridge iterator errors to daemon stderr for
           // operator observability.
           writeStderrLine(
-            `qwen serve: bridge iterator error (session ${diagnosticSessionId}): ` +
+            `canopy serve: bridge iterator error (session ${diagnosticSessionId}): ` +
               `${errorMessage(err)}` +
               (errorKind ? ` [${errorKind}]` : ''),
           );

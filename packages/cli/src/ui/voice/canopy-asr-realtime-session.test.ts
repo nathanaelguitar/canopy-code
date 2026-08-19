@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  deriveQwenRealtimeUrl,
-  openQwenAsrRealtimeStream,
-} from './qwen-asr-realtime-session.js';
+  deriveCanopyRealtimeUrl,
+  openCanopyAsrRealtimeStream,
+} from './canopy-asr-realtime-session.js';
 
 class FakeSocket {
   readonly OPEN = 1;
@@ -45,14 +45,14 @@ function parseSent(socket: FakeSocket, index: number): Record<string, unknown> {
   return JSON.parse(String(socket.sent[index]));
 }
 
-describe('qwen-asr-realtime-session', () => {
+describe('canopy-asr-realtime-session', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('derives the Qwen realtime endpoint from the provider host', () => {
+  it('derives the Canopy realtime endpoint from the provider host', () => {
     expect(
-      deriveQwenRealtimeUrl(
+      deriveCanopyRealtimeUrl(
         'https://dashscope.aliyuncs.com/compatible-mode/v1',
         'qwen3-asr-flash-realtime',
       ),
@@ -60,7 +60,7 @@ describe('qwen-asr-realtime-session', () => {
       'wss://dashscope.aliyuncs.com/api-ws/v1/realtime?model=qwen3-asr-flash-realtime',
     );
     expect(
-      deriveQwenRealtimeUrl(
+      deriveCanopyRealtimeUrl(
         'http://localhost:8080/dashscope/v1',
         'qwen3-asr-flash-realtime',
       ),
@@ -72,7 +72,7 @@ describe('qwen-asr-realtime-session', () => {
   it('aborts an upstream connection while it is opening', async () => {
     const socket = new FakeSocket();
     const controller = new AbortController();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -95,7 +95,7 @@ describe('qwen-asr-realtime-session', () => {
   it('aborts an established upstream connection', async () => {
     const socket = new FakeSocket();
     const controller = new AbortController();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -130,7 +130,7 @@ describe('qwen-asr-realtime-session', () => {
       'removeEventListener',
     );
     const interim = vi.fn();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         apiKey: 'sk-test',
@@ -220,7 +220,7 @@ describe('qwen-asr-realtime-session', () => {
 
   it('drops realtime audio chunks when the socket buffer is backed up', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -243,7 +243,7 @@ describe('qwen-asr-realtime-session', () => {
 
   it('resumes sending after realtime socket backpressure clears', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -272,7 +272,7 @@ describe('qwen-asr-realtime-session', () => {
 
   it('rejects when the server finishes before the session is ready', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -288,7 +288,7 @@ describe('qwen-asr-realtime-session', () => {
     );
 
     await expect(sessionPromise).rejects.toThrow(
-      'Qwen ASR realtime session finished before it was ready.',
+      'Canopy ASR realtime session finished before it was ready.',
     );
     expect(socket.readyState).toBe(3);
   });
@@ -296,7 +296,7 @@ describe('qwen-asr-realtime-session', () => {
   it('rejects finish when the server never sends session.finished', async () => {
     vi.useFakeTimers();
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -316,14 +316,14 @@ describe('qwen-asr-realtime-session', () => {
     await vi.advanceTimersByTimeAsync(60_000);
 
     await expect(transcriptPromise).rejects.toThrow(
-      'Qwen ASR realtime finish timed out.',
+      'Canopy ASR realtime finish timed out.',
     );
     expect(socket.readyState).toBe(3);
   });
 
   it('resolves finish when the server already finished the session', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -357,7 +357,7 @@ describe('qwen-asr-realtime-session', () => {
 
   it('preserves transcription failures that arrive before finish', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -387,7 +387,7 @@ describe('qwen-asr-realtime-session', () => {
   it('notifies transcription failures that arrive while recording', async () => {
     const socket = new FakeSocket();
     const onError = vi.fn();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -423,7 +423,7 @@ describe('qwen-asr-realtime-session', () => {
   it('notifies and rejects finish when the realtime socket closed before finish', async () => {
     const socket = new FakeSocket();
     const onError = vi.fn();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -442,17 +442,17 @@ describe('qwen-asr-realtime-session', () => {
 
     expect(onError).toHaveBeenCalledWith(
       new Error(
-        'Qwen ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
+        'Canopy ASR realtime connection closed unexpectedly. Transcript may be incomplete.',
       ),
     );
     await expect(session.finish()).rejects.toThrow(
-      'Qwen ASR realtime connection closed unexpectedly.',
+      'Canopy ASR realtime connection closed unexpectedly.',
     );
   });
 
   it('rejects committed transcript when the socket closes before session.finished', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',
@@ -480,13 +480,13 @@ describe('qwen-asr-realtime-session', () => {
     socket.emit('close');
 
     await expect(transcriptPromise).rejects.toThrow(
-      'Qwen ASR realtime connection closed unexpectedly.',
+      'Canopy ASR realtime connection closed unexpectedly.',
     );
   });
 
   it('sanitizes and caps realtime server error messages', async () => {
     const socket = new FakeSocket();
-    const sessionPromise = openQwenAsrRealtimeStream(
+    const sessionPromise = openCanopyAsrRealtimeStream(
       {
         baseUrl: 'https://dashscope.example/v1',
         model: 'qwen3-asr-flash-realtime',

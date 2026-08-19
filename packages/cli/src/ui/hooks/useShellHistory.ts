@@ -11,7 +11,7 @@ import {
   createDebugLogger,
   isNodeError,
   Storage,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 const MAX_HISTORY_LENGTH = 100;
 const debugLogger = createDebugLogger('SHELL_HISTORY');

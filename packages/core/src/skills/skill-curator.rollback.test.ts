@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@ describe('auto-skill curator rollback', () => {
 
   beforeEach(async () => {
     projectRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-skill-curator-rollback-'),
+      path.join(os.tmpdir(), 'canopy-skill-curator-rollback-'),
     );
   });
 
@@ -47,7 +47,12 @@ describe('auto-skill curator rollback', () => {
     directoryName: string,
     modifiedAt: Date,
   ): Promise<string> {
-    const directory = path.join(projectRoot, '.qwen', 'skills', directoryName);
+    const directory = path.join(
+      projectRoot,
+      '.canopy',
+      'skills',
+      directoryName,
+    );
     const manifest = path.join(directory, 'SKILL.md');
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(
@@ -79,14 +84,14 @@ describe('auto-skill curator rollback', () => {
 
     const liveManifest = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'skills',
       'auto-skill-old',
       'SKILL.md',
     );
     const archivedManifest = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old',
       'SKILL.md',
@@ -138,14 +143,14 @@ describe('auto-skill curator rollback', () => {
     for (const directoryName of directoryNames) {
       const liveManifest = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'skills',
         directoryName,
         'SKILL.md',
       );
       const archivedManifest = path.join(
         projectRoot,
-        '.qwen',
+        '.canopy',
         'archived-skills',
         directoryName,
         'SKILL.md',
@@ -171,14 +176,14 @@ describe('auto-skill curator rollback', () => {
 
     const liveManifest = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'skills',
       'auto-skill-old',
       'SKILL.md',
     );
     const archivedManifest = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old',
       'SKILL.md',
@@ -221,13 +226,13 @@ describe('auto-skill curator rollback', () => {
     const blockedLiveDirectory = path.dirname(blockedManifest);
     const restoredArchivedDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old-one',
     );
     const blockedArchivedDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old-two',
     );
@@ -272,7 +277,7 @@ describe('auto-skill curator rollback', () => {
     const liveDirectory = path.dirname(manifest);
     const archivedDirectory = path.join(
       projectRoot,
-      '.qwen',
+      '.canopy',
       'archived-skills',
       'auto-skill-old',
     );

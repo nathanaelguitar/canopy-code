@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -558,7 +558,7 @@ function runNpmToolchain(args: ToolchainRunArgs): BuildTestReport {
   // for the full run, or the merge-base probe measures a different tree than
   // the run it is the baseline for ("same set, same commands, same verdict").
   // The root goes FIRST: on a name collision a member must win (this repo's
-  // root and packages/cli share the name `@qwen-code/qwen-code`).
+  // root and packages/cli share the name `@canopy-code/canopy-code`).
   const scopeGraph = !singleRoot && rootPkg ? [rootPkg, ...packages] : packages;
 
   // With no affected workspace there is nothing to run at all. Three diffs land

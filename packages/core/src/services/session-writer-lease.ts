@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -80,7 +80,7 @@ export class SessionWriterConflictError extends SessionWriterError {
   readonly httpStatus = 409;
 
   constructor() {
-    super('This session is already open in another Qwen process.');
+    super('This session is already open in another Canopy process.');
   }
 }
 
@@ -146,7 +146,7 @@ interface SessionWriterOwnerRecord {
   hostname: string;
   process_kind: SessionWriterProcessKind;
   acquired_at: string;
-  qwen_version: string | null;
+  canopy_version: string | null;
 }
 
 interface LegacySessionWriterLockRecord extends SessionWriterOwnerRecord {
@@ -186,7 +186,7 @@ export interface AcquireSessionWriterLeaseOptions {
   sessionId: string;
   transcriptPath: string;
   processKind?: SessionWriterProcessKind;
-  qwenVersion?: string | null;
+  canopyVersion?: string | null;
   reclaimPolicy?: 'local' | 'never';
   takeoverPolicy?: 'never' | 'certified';
   onOwnershipAcquired?: (lease: SessionWriterLease) => void;
@@ -331,8 +331,8 @@ function hasValidOwnerFields(
     ['interactive', 'acp', 'daemon', 'unknown'].includes(processKind) &&
     typeof record['acquired_at'] === 'string' &&
     Number.isFinite(Date.parse(record['acquired_at'])) &&
-    (record['qwen_version'] === null ||
-      typeof record['qwen_version'] === 'string')
+    (record['canopy_version'] === null ||
+      typeof record['canopy_version'] === 'string')
   );
 }
 
@@ -1576,7 +1576,7 @@ export class SessionWriterLease {
       hostname: os.hostname(),
       process_kind: normalizedOptions.processKind ?? 'unknown',
       acquired_at: new Date().toISOString(),
-      qwen_version: normalizedOptions.qwenVersion ?? null,
+      canopy_version: normalizedOptions.canopyVersion ?? null,
     };
     const claimPath = `${lockPath}.claim`;
 

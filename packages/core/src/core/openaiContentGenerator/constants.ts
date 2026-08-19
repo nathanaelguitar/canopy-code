@@ -4,7 +4,7 @@ export const DEFAULT_TIMEOUT = 120000;
  *
  * The OpenAI and Anthropic SDKs treat `timeout: 0` as an immediate abort rather
  * than "no timeout", so a configured `0` (disable — matching the
- * `QWEN_STREAM_IDLE_TIMEOUT_MS=0` convention) is mapped to the maximum JS timer
+ * `CANOPY_STREAM_IDLE_TIMEOUT_MS=0` convention) is mapped to the maximum JS timer
  * delay (2^31 − 1 ms ≈ 24.8 days). `setTimeout` silently compresses larger
  * delays to 1ms, so this is the effective ceiling.
  */
@@ -32,10 +32,11 @@ export function resolveRequestTimeout(
 // LoggingContentGenerator's stream-span idle timer, so this watchdog fires first.
 export const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 240000;
 // Env override (deployment knob) for the streaming inactivity timeout, so a
-// daemon deployment can tune it without code — the same way the QWEN_SERVE_*
+// daemon deployment can tune it without code — the same way the CANOPY_SERVE_*
 // params are set. An explicit ContentGeneratorConfig.streamIdleTimeoutMs still
 // takes precedence; a malformed value is ignored (falls back to the default).
-export const QWEN_STREAM_IDLE_TIMEOUT_MS_ENV = 'QWEN_STREAM_IDLE_TIMEOUT_MS';
+export const CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV =
+  'CANOPY_STREAM_IDLE_TIMEOUT_MS';
 // Maximum JS timer delay (~24.8 days). setTimeout silently compresses larger
 // delays to 1ms, which would make a watchdog fire almost immediately, so a
 // stream-guard timeout above this is treated as invalid.
@@ -59,10 +60,11 @@ export const MAX_STREAM_GUARD_TIMEOUT_MS = 2_147_483_647;
 // value alone.
 export const DEFAULT_STREAM_MAX_LIFETIME_MS = 900000;
 // Env override (deployment knob) for the stream lifetime cap — same
-// conventions as QWEN_STREAM_IDLE_TIMEOUT_MS: an explicit
+// conventions as CANOPY_STREAM_IDLE_TIMEOUT_MS: an explicit
 // ContentGeneratorConfig.streamMaxLifetimeMs wins, `0` disables, a malformed
 // value falls back to the default with a warning.
-export const QWEN_STREAM_MAX_LIFETIME_MS_ENV = 'QWEN_STREAM_MAX_LIFETIME_MS';
+export const CANOPY_STREAM_MAX_LIFETIME_MS_ENV =
+  'CANOPY_STREAM_MAX_LIFETIME_MS';
 export const DEFAULT_MAX_RETRIES = 3;
 
 export const DEFAULT_OPENAI_BASE_URL = 'https://api.openai.com/v1';

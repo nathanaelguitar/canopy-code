@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { TextBuffer } from '../components/shared/text-buffer.js';
 import { Command, keyMatchers } from '../keyMatchers.js';
 import type { HistoryItemWithoutId } from '../types.js';

@@ -16,7 +16,7 @@ import {
   AUTO_MEMORY_INDEX_FILENAME,
   clearAutoMemoryRootCache,
   getAutoMemoryRoot,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { MemoryDialog } from './MemoryDialog.js';
 import { useConfig } from '../contexts/ConfigContext.js';
 import { useSettings } from '../contexts/SettingsContext.js';
@@ -114,12 +114,12 @@ describe('MemoryDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(os, 'homedir').mockReturnValue(path.resolve('/home/qwen'));
+    vi.spyOn(os, 'homedir').mockReturnValue(path.resolve('/home/canopy'));
     vi.stubEnv('DISPLAY', ':99');
-    vi.stubEnv('QWEN_HOME', path.join(os.homedir(), '.qwen'));
+    vi.stubEnv('QWEN_HOME', path.join(os.homedir(), '.canopy'));
     vi.stubEnv(
-      'QWEN_CODE_MEMORY_BASE_DIR',
-      path.join(os.homedir(), '.qwen-memory-test'),
+      'CANOPY_CODE_MEMORY_BASE_DIR',
+      path.join(os.homedir(), '.canopy-memory-test'),
     );
     clearAutoMemoryRootCache();
 
@@ -159,14 +159,14 @@ describe('MemoryDialog', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders managed memory folders without advertising QWEN.md', () => {
+  it('renders managed memory folders without advertising CANOPY.md', () => {
     const { lastFrame } = render(<MemoryDialog onClose={vi.fn()} />);
 
     expect(lastFrame()).toContain('› 1. User memory');
     expect(lastFrame()).toContain('2. Project memory');
     expect(lastFrame()).toContain(`${path.sep}memories`);
     expect(lastFrame()).toContain(`${path.sep}memory`);
-    expect(lastFrame()).not.toContain('QWEN.md');
+    expect(lastFrame()).not.toContain('CANOPY.md');
     expect(lastFrame()).not.toContain('Open auto-memory folder');
   });
 
@@ -186,11 +186,11 @@ describe('MemoryDialog', () => {
 
     expect(mockedSpawn).toHaveBeenCalledWith(
       expectedFolderOpenCommand(),
-      [path.join(os.homedir(), '.qwen-memory-test', 'memories')],
+      [path.join(os.homedir(), '.canopy-memory-test', 'memories')],
       expect.objectContaining({ detached: true, stdio: 'ignore' }),
     );
     expect(mockedFs.mkdir).toHaveBeenCalledWith(
-      path.join(os.homedir(), '.qwen-memory-test', 'memories'),
+      path.join(os.homedir(), '.canopy-memory-test', 'memories'),
       { recursive: true },
     );
     expect(
@@ -222,7 +222,7 @@ describe('MemoryDialog', () => {
 
       expect(mockedSpawn).toHaveBeenCalledWith(
         expectedFolderOpenCommand(platform),
-        [path.join(os.homedir(), '.qwen-memory-test', 'memories')],
+        [path.join(os.homedir(), '.canopy-memory-test', 'memories')],
         expect.objectContaining({ detached: true, stdio: 'ignore' }),
       );
       expect(launchEditor).not.toHaveBeenCalled();
@@ -300,7 +300,7 @@ describe('MemoryDialog', () => {
     expect(mockedFs.access).toHaveBeenCalledWith(
       path.join(
         os.homedir(),
-        '.qwen-memory-test',
+        '.canopy-memory-test',
         'memories',
         AUTO_MEMORY_INDEX_FILENAME,
       ),
@@ -308,7 +308,7 @@ describe('MemoryDialog', () => {
     expect(launchEditor).toHaveBeenCalledWith(
       path.join(
         os.homedir(),
-        '.qwen-memory-test',
+        '.canopy-memory-test',
         'memories',
         AUTO_MEMORY_INDEX_FILENAME,
       ),
@@ -520,7 +520,7 @@ describe('MemoryDialog', () => {
     expect(lastFrame()).toContain('› Confirm auto-skills before saving: off');
   });
 
-  it('keeps QWEN.md editor entries when managed memory is unavailable', async () => {
+  it('keeps CANOPY.md editor entries when managed memory is unavailable', async () => {
     const launchEditor = vi.fn();
     mockedUseLaunchEditor.mockReturnValue(launchEditor);
     mockedUseConfig.mockReturnValue({
@@ -538,10 +538,10 @@ describe('MemoryDialog', () => {
 
     expect(lastFrame()).toContain('› 1. User memory');
     expect(lastFrame()).toContain(
-      `Saved in ~${path.sep}.qwen${path.sep}QWEN.md`,
+      `Saved in ~${path.sep}.canopy${path.sep}CANOPY.md`,
     );
     expect(lastFrame()).toContain('2. Project memory');
-    expect(lastFrame()).toContain('Saved in QWEN.md');
+    expect(lastFrame()).toContain('Saved in CANOPY.md');
 
     const keypressHandler = mockedUseKeypress.mock.calls[0][0];
     await act(async () => {
@@ -551,12 +551,12 @@ describe('MemoryDialog', () => {
     });
 
     expect(launchEditor).toHaveBeenCalledWith(
-      expect.stringMatching(/[/\\]\.qwen[/\\]QWEN\.md$/),
+      expect.stringMatching(/[/\\]\.canopy[/\\]CANOPY\.md$/),
     );
     expect(mockedSpawn).not.toHaveBeenCalled();
   });
 
-  it('opens the project QWEN.md editor entry when managed memory is unavailable', async () => {
+  it('opens the project CANOPY.md editor entry when managed memory is unavailable', async () => {
     const launchEditor = vi.fn();
     mockedUseLaunchEditor.mockReturnValue(launchEditor);
     mockedUseConfig.mockReturnValue({
@@ -580,7 +580,7 @@ describe('MemoryDialog', () => {
     });
 
     expect(launchEditor).toHaveBeenCalledWith(
-      path.join('/tmp/project', 'QWEN.md'),
+      path.join('/tmp/project', 'CANOPY.md'),
     );
     expect(mockedSpawn).not.toHaveBeenCalled();
   });

@@ -1,26 +1,26 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  *
  * Pins the session-registry wiring in startInteractiveUI: registration
  * arguments, cleanup armed only on success, and failures swallowed.
  * Deleting the import or the registration block keeps every other test
  * green — without this file, interactive sessions could silently stop
- * appearing in `qwen sessions ps` (or never disappear from it).
+ * appearing in `canopy sessions ps` (or never disappear from it).
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import type { InitializationResult } from '../core/initializer.js';
 
 const registerSession = vi.hoisted(() => vi.fn());
 const registerCleanup = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     registerSession: (...args: unknown[]) => registerSession(...args),
@@ -106,7 +106,7 @@ describe('startInteractiveUI session registration', () => {
     expect(registerSession).toHaveBeenCalledWith({
       sessionId: 'session-123',
       cwd: '/work/app',
-      qwenVersion: '9.9.9',
+      canopyVersion: '9.9.9',
     });
     expect(config.trackSessionRegistration).toHaveBeenCalledTimes(1);
     await expect(

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'ink-testing-library';
-import { HooksConfigSource, HookType } from '@qwen-code/qwen-code-core';
+import { HooksConfigSource, HookType } from '@canopy-code/canopy-code-core';
 import { HandlerListBody } from './HandlerListBody.js';
 import type { HookConfigDisplayInfo } from './types.js';
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import type { Request } from 'express';
 /**
  * Which listener a request arrived on.
  *
- * `primary` is the listener `qwen serve` binds at startup — loopback by
+ * `primary` is the listener `canopy serve` binds at startup — loopback by
  * default, or whatever `--hostname` names. `local-control` is the LAN
  * listener attached at runtime by {@link LocalControlService}.
  *
@@ -47,7 +47,7 @@ export interface ListenerIdentity {
  * identity fails to resolve is treated as `primary`, which would let a pairing
  * token be presented to the operator listener if the lookup ever missed.
  */
-const LISTENER_TAG = Symbol.for('qwen.serve.listenerIdentity');
+const LISTENER_TAG = Symbol.for('canopy.serve.listenerIdentity');
 
 type Tagged = { [LISTENER_TAG]?: ListenerIdentity };
 

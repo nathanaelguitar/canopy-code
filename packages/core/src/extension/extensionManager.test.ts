@@ -13,7 +13,7 @@ import {
   EXTENSIONS_CONFIG_FILENAME,
 } from './variables.js';
 import { ExtensionStorage } from './storage.js';
-import { QWEN_DIR } from '../config/storage.js';
+import { CANOPY_DIR } from '../config/storage.js';
 import {
   ExtensionManager,
   ExtensionUpdateState,
@@ -108,7 +108,7 @@ vi.mock('../index.js', async (importOriginal) => {
   };
 });
 
-const EXTENSIONS_DIRECTORY_NAME = path.join(QWEN_DIR, 'extensions');
+const EXTENSIONS_DIRECTORY_NAME = path.join(CANOPY_DIR, 'extensions');
 
 function createExtension({
   extensionsDir = 'extensions-dir',
@@ -127,7 +127,7 @@ function createExtension({
   );
 
   if (addContextFile) {
-    fs.writeFileSync(path.join(extDir, 'QWEN.md'), 'context');
+    fs.writeFileSync(path.join(extDir, 'CANOPY.md'), 'context');
   }
 
   if (contextFileName) {
@@ -194,16 +194,16 @@ describe('extension tests', () => {
   let tempHomeDir: string;
   let tempWorkspaceDir: string;
   let userExtensionsDir: string;
-  let savedQwenHome: string | undefined;
+  let savedCanopyHome: string | undefined;
 
   beforeEach(() => {
-    savedQwenHome = process.env['QWEN_HOME'];
+    savedCanopyHome = process.env['QWEN_HOME'];
     delete process.env['QWEN_HOME'];
     tempHomeDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'qwen-code-test-home-'),
+      path.join(os.tmpdir(), 'canopy-code-test-home-'),
     );
     tempWorkspaceDir = fs.mkdtempSync(
-      path.join(tempHomeDir, 'qwen-code-test-workspace-'),
+      path.join(tempHomeDir, 'canopy-code-test-workspace-'),
     );
     userExtensionsDir = path.join(tempHomeDir, EXTENSIONS_DIRECTORY_NAME);
     fs.mkdirSync(userExtensionsDir, { recursive: true });
@@ -219,10 +219,10 @@ describe('extension tests', () => {
 
   afterEach(() => {
     fs.rmSync(tempHomeDir, { recursive: true, force: true });
-    if (savedQwenHome === undefined) {
+    if (savedCanopyHome === undefined) {
       delete process.env['QWEN_HOME'];
     } else {
-      process.env['QWEN_HOME'] = savedQwenHome;
+      process.env['QWEN_HOME'] = savedCanopyHome;
     }
     vi.restoreAllMocks();
   });
@@ -270,7 +270,7 @@ describe('extension tests', () => {
         fs.mkdirSync(path.join(sourcePath, component));
         fs.writeFileSync(path.join(sourcePath, component, 'ignored.md'), 'no');
       }
-      fs.writeFileSync(path.join(sourcePath, 'QWEN.md'), 'ignored context');
+      fs.writeFileSync(path.join(sourcePath, 'CANOPY.md'), 'ignored context');
       const sourceContents = new Map(
         [
           'plugin.json',
@@ -493,7 +493,7 @@ describe('extension tests', () => {
       expect(installed.name).toBe('archived-plugin');
       expect(installed.installMetadata?.originSource).toBe('AgentPlugins');
       expect(
-        fs.existsSync(path.join(installed.path, 'qwen-extension.json')),
+        fs.existsSync(path.join(installed.path, 'canopy-extension.json')),
       ).toBe(false);
     });
 
@@ -526,7 +526,7 @@ describe('extension tests', () => {
         gitCommit: 'sample-commit',
       });
       expect(
-        fs.existsSync(path.join(installed.path, 'qwen-extension.json')),
+        fs.existsSync(path.join(installed.path, 'canopy-extension.json')),
       ).toBe(false);
     });
 
@@ -1304,7 +1304,7 @@ describe('extension tests', () => {
       );
 
       expect(extension.name).toBe('sample-plugin');
-      expect(extension.format).toBe('qwen');
+      expect(extension.format).toBe('canopy');
       expect(extension.installMetadata?.originSource).toBe('Claude');
       expect(extension.installMetadata?.gitCommit).toBe('sample-commit');
       expect(extension.installMetadata?.externalContent).toBe(false);
@@ -1788,7 +1788,7 @@ describe('extension tests', () => {
       await extensionStore.ensureInitialized([identity]);
       const destination = path.join(userExtensionsDir, identity.name);
       fs.mkdirSync(destination, { recursive: true });
-      fs.writeFileSync(path.join(destination, 'qwen-extension.json'), '{');
+      fs.writeFileSync(path.join(destination, 'canopy-extension.json'), '{');
       const manager = createExtensionManager({ extensionStore });
 
       const snapshot = await manager.uninstallExtensionById(identity.id, true);
@@ -1818,7 +1818,7 @@ describe('extension tests', () => {
   describe('refreshCacheIfSourcesChanged', () => {
     // Extension sources have no watcher, so read-only consumers rely on this to
     // stay eventually consistent with mutations made outside the process
-    // (`qwen extensions install` in a terminal) without scanning on every read.
+    // (`canopy extensions install` in a terminal) without scanning on every read.
     // See docs/design/workspace-skills-read-model.md.
     it('does not refresh while the sources are unchanged', async () => {
       createExtension({ extensionsDir: userExtensionsDir, name: 'ext-a' });
@@ -2013,7 +2013,7 @@ describe('extension tests', () => {
       expect(extensions[0].config.name).toBe('test-extension');
     });
 
-    it('should load context file path when QWEN.md is present', async () => {
+    it('should load context file path when CANOPY.md is present', async () => {
       createExtension({
         extensionsDir: userExtensionsDir,
         name: 'ext1',
@@ -2034,7 +2034,7 @@ describe('extension tests', () => {
       const ext1 = extensions.find((e) => e.config.name === 'ext1');
       const ext2 = extensions.find((e) => e.config.name === 'ext2');
       expect(ext1?.contextFiles).toEqual([
-        path.join(userExtensionsDir, 'ext1', 'QWEN.md'),
+        path.join(userExtensionsDir, 'ext1', 'CANOPY.md'),
       ]);
       expect(ext2?.contextFiles).toEqual([]);
     });
@@ -2059,7 +2059,7 @@ describe('extension tests', () => {
       ]);
     });
 
-    it('should use default QWEN.md when contextFileName is empty array', async () => {
+    it('should use default CANOPY.md when contextFileName is empty array', async () => {
       const extDir = path.join(userExtensionsDir, 'ext-empty-context');
       fs.mkdirSync(extDir, { recursive: true });
       fs.writeFileSync(
@@ -2070,7 +2070,7 @@ describe('extension tests', () => {
           contextFileName: [],
         }),
       );
-      fs.writeFileSync(path.join(extDir, 'QWEN.md'), 'context content');
+      fs.writeFileSync(path.join(extDir, 'CANOPY.md'), 'context content');
 
       const manager = createExtensionManager();
       await manager.refreshCache();
@@ -2079,7 +2079,7 @@ describe('extension tests', () => {
       expect(extensions).toHaveLength(1);
       const ext = extensions.find((e) => e.config.name === 'ext-empty-context');
       expect(ext?.contextFiles).toEqual([
-        path.join(userExtensionsDir, 'ext-empty-context', 'QWEN.md'),
+        path.join(userExtensionsDir, 'ext-empty-context', 'CANOPY.md'),
       ]);
     });
 
@@ -3748,11 +3748,11 @@ describe('extension tests', () => {
   });
 
   describe('hooks loading and processing', () => {
-    it('should load hooks from qwen-extension.json', async () => {
+    it('should load hooks from canopy-extension.json', async () => {
       const extensionDir = path.join(userExtensionsDir, 'hooks-extension');
       fs.mkdirSync(extensionDir, { recursive: true });
 
-      // Create qwen-extension.json with hooks
+      // Create canopy-extension.json with hooks
       const configWithHooks = {
         name: 'hooks-extension',
         version: '1.0.0',
@@ -3799,7 +3799,7 @@ describe('extension tests', () => {
       );
       fs.mkdirSync(extensionDir, { recursive: true });
 
-      // Create qwen-extension.json without hooks
+      // Create canopy-extension.json without hooks
       const configWithoutHooks = {
         name: 'hooks-from-file-extension',
         version: '1.0.0',
@@ -3853,7 +3853,7 @@ describe('extension tests', () => {
       const extensionDir = path.join(userExtensionsDir, 'hooks-var-extension');
       fs.mkdirSync(extensionDir, { recursive: true });
 
-      // Create qwen-extension.json with hooks using ${CLAUDE_PLUGIN_ROOT}
+      // Create canopy-extension.json with hooks using ${CLAUDE_PLUGIN_ROOT}
       const configWithHooks = {
         name: 'hooks-var-extension',
         version: '1.0.0',
@@ -3923,7 +3923,7 @@ describe('extension tests', () => {
         JSON.stringify(hooksJson),
       );
 
-      // Create qwen-extension.json with hooks as string path
+      // Create canopy-extension.json with hooks as string path
       const configWithHooksPath = {
         name: 'hooks-from-config-path',
         version: '1.0.0',
@@ -3988,7 +3988,7 @@ describe('extension tests', () => {
         }),
       );
 
-      // Create qwen-extension.json with hooks as string path
+      // Create canopy-extension.json with hooks as string path
       fs.writeFileSync(
         path.join(extensionDir, EXTENSIONS_CONFIG_FILENAME),
         JSON.stringify({

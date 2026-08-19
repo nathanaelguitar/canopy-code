@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -160,7 +160,7 @@ describe('DefaultAppLayout', () => {
           latest: '0.20.0',
           current: '0.19.12',
           type: 'latest',
-          name: '@qwen-code/qwen-code',
+          name: '@canopy-code/canopy-code',
         },
       },
     });
@@ -304,7 +304,7 @@ describe('DefaultAppLayout', () => {
           latest: '0.20.0',
           current: '0.19.12',
           type: 'latest',
-          name: '@qwen-code/qwen-code',
+          name: '@canopy-code/canopy-code',
         },
       },
     });

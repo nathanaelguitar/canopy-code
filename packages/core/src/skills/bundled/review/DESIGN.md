@@ -15,7 +15,7 @@
 
 **Decision:** 14 agents. The marginal cost (14x vs 1x) is acceptable because:
 
-1. All 14 agents are submitted in one response and run concurrently up to the runtime's tool-call cap (default 10, `QWEN_CODE_MAX_TOOL_CONCURRENCY`) — wall time is bounded by roughly two waves at worst, still far below fourteen sequential agents
+1. All 14 agents are submitted in one response and run concurrently up to the runtime's tool-call cap (default 10, `CANOPY_CODE_MAX_TOOL_CONCURRENCY`) — wall time is bounded by roughly two waves at worst, still far below fourteen sequential agents
 2. Dimensional focus produces higher recall (fewer missed issues)
 3. Three undirected personas (attacker / 3am-oncall / maintainer) catch cross-dimensional issues that a single undirected agent's prompt-induced bias would miss
 4. Issue Fidelity prevents a common false approval mode: a PR can be internally well-tested while solving only the author's mistaken diagnosis, not the linked issue's original failure
@@ -31,7 +31,7 @@ Test gaps are a systematic blind spot. Review agents focused on bugs in the new 
 
 ### Why a dedicated Issue Fidelity agent
 
-Bugfix PRs often carry their own diagnosis in the PR body, but that diagnosis can be wrong. The linked issue's original reproduction, observed payload, expected behavior, and maintainer comments must be checked before judging whether the implementation is a real fix. The implementation deliberately keeps issue discovery out of `pr-context`: the Issue Fidelity agent fetches the evidence with the `qwen review issue-context` subcommand (welded into its generated prompt), which resolves GitHub's closing-issue metadata and fetches each issue's title, **body**, and full comment thread from the issue's own repository. The division of labor: discovery, fetch, and rendering live in the tested subcommand (this used to be prose `gh` commands in the brief — the prose-carried bug class); relevance judgment — which references are targets versus motivating incidents — stays in the agent, never in TypeScript. The agent runs only for PR targets — a local-diff or file-path review has no PR or linked issue, so it is skipped there (13 agents instead of 14).
+Bugfix PRs often carry their own diagnosis in the PR body, but that diagnosis can be wrong. The linked issue's original reproduction, observed payload, expected behavior, and maintainer comments must be checked before judging whether the implementation is a real fix. The implementation deliberately keeps issue discovery out of `pr-context`: the Issue Fidelity agent fetches the evidence with the `canopy review issue-context` subcommand (welded into its generated prompt), which resolves GitHub's closing-issue metadata and fetches each issue's title, **body**, and full comment thread from the issue's own repository. The division of labor: discovery, fetch, and rendering live in the tested subcommand (this used to be prose `gh` commands in the brief — the prose-carried bug class); relevance judgment — which references are targets versus motivating incidents — stays in the agent, never in TypeScript. The agent runs only for PR targets — a local-diff or file-path review has no PR or linked issue, so it is skipped there (13 agents instead of 14).
 
 The agent also enforces the root-cause ownership gate: a client-side parser/sanitizer workaround for malformed upstream output is not acceptable as a root-cause fix unless a maintainer explicitly asked for that defensive mitigation.
 
@@ -113,7 +113,7 @@ Three is the one tier that is _lower_ than the topology below it, and read as a 
 
 It is not a statement about auditing. It is a statement about a wall: a reverse-audit round on a 4,000-line PR is ~90 minutes, five of them are 450, and a six-hour CI ceiling does not hold that plus the fan-out and the tail. What the survey measured is not slow reviews but absent ones — 26 timed-out review jobs in one window, ~122 hours of compute, **zero posted** (DESIGN.md — The six-hour timeouts). Three rounds reported beat five rounds lost.
 
-That argument is sound exactly where the wall is, and nowhere else. A local run exports no `QWEN_REVIEW_DEADLINE_EPOCH`, nothing kills it at six hours, and the reduction there trades recall away to fit a ceiling that does not exist — on the tier where recall matters most. So the reduction is now conditional on the run having a deadline at all: with a clock, 3; without one, a huge diff is a large 3B diff and gets 5.
+That argument is sound exactly where the wall is, and nowhere else. A local run exports no `CANOPY_REVIEW_DEADLINE_EPOCH`, nothing kills it at six hours, and the reduction there trades recall away to fit a ceiling that does not exist — on the tier where recall matters most. So the reduction is now conditional on the run having a deadline at all: with a clock, 3; without one, a huge diff is a large 3B diff and gets 5.
 
 Two things this does not pretend to fix, both worth naming rather than discovering:
 
@@ -152,7 +152,7 @@ Chunking itself is unchanged: the plan still tiles every line, tests and generat
 
 Step 3B's chunk agents are defined as "one per entry in `chunks[]`", and only `fetch-pr` produced a chunk plan. A local-diff review, or a cross-repo review in lightweight mode, therefore routed into a topology it had no chunk list for: no receipts, no tiling guarantee, and the orchestrator left to improvise line ranges. Two of the four review paths were promised a mechanism the skill could not deliver.
 
-`qwen review plan-diff <diff-file>` reads a captured diff and emits the same `chunks[]`, `files[]` and topology counts. Redirecting `git diff` or `gh pr diff` to a file bypasses Shell model-output truncation, so all four paths now share one code path. It cannot decide `heavy` — that needs a tree to read the post-change file from — so a bare diff gets chunk agents but no invariant agents.
+`canopy review plan-diff <diff-file>` reads a captured diff and emits the same `chunks[]`, `files[]` and topology counts. Redirecting `git diff` or `gh pr diff` to a file bypasses Shell model-output truncation, so all four paths now share one code path. It cannot decide `heavy` — that needs a tree to read the post-change file from — so a bare diff gets chunk agents but no invariant agents.
 
 ### Why the topology gate ignores prose
 
@@ -232,19 +232,19 @@ Applied throughout:
 - Uncertain issues → rejected, not reported
 - Pattern aggregation → same issue across N files reported once
 
-## Why classify existing Qwen Code comments instead of always prompting
+## Why classify existing Canopy Code comments instead of always prompting
 
-**Original behavior:** any existing Qwen Code review comment on the PR → inform the user and require confirmation before posting new comments.
+**Original behavior:** any existing Canopy Code review comment on the PR → inform the user and require confirmation before posting new comments.
 
-**Problem:** in real /review usage, most existing Qwen Code comments fall into one of three "no-real-conflict" cases:
+**Problem:** in real /review usage, most existing Canopy Code comments fall into one of three "no-real-conflict" cases:
 
 1. **Stale by commit**: the comment was posted against an older PR HEAD; the underlying code has changed.
 2. **Resolved by reply**: someone has replied in the thread (the original author "fixed in abc123" or a reviewer "ok, approved"). The conversation is closed.
 3. **No anchor overlap**: the old comment is on a different `(path, line)` from any new finding. They simply coexist.
 
-Forcing the user to confirm-or-decline every time the PR has any Qwen Code history creates prompt fatigue without protecting against the real risk — which is **commenting twice on the same line**, producing visual duplicates that look like a bug to PR readers.
+Forcing the user to confirm-or-decline every time the PR has any Canopy Code history creates prompt fatigue without protecting against the real risk — which is **commenting twice on the same line**, producing visual duplicates that look like a bug to PR readers.
 
-**New behavior:** classify each existing Qwen Code comment by checking in priority order — **Stale by commit** > **Resolved by reply** > **Overlap** (same `path + line` as a new finding) > **No conflict**. The first match wins. Only the Overlap class blocks; the other three log to the terminal and continue.
+**New behavior:** classify each existing Canopy Code comment by checking in priority order — **Stale by commit** > **Resolved by reply** > **Overlap** (same `path + line` as a new finding) > **No conflict**. The first match wins. Only the Overlap class blocks; the other three log to the terminal and continue.
 
 **Priority matters because** a stale or resolved comment that happens to share a `(path, line)` with a new finding is not a real conflict — the underlying code may have changed in the stale case, and the conversation is already closed in the resolved case. Without priority, the line-based check would fire false-positive prompts on those.
 
@@ -288,7 +288,7 @@ PR #6486: the one job that would have exercised the new `Ctrl+F` hotkey — `Int
 - ❌ Adds two extra API calls (`check-runs` + `statuses`) per APPROVE-bound submit; only relevant for the `APPROVE` path so the cost is negligible.
 - ❌ A genuinely flaky CI failure can downgrade what should have been an Approve. Mitigation: the body text directs the user to verify; they can always submit `APPROVE` manually after triaging.
 
-## Why presubmit and cleanup live as `qwen review` subcommands
+## Why presubmit and cleanup live as `canopy review` subcommands
 
 **Original behavior:** Step 7's three pre-submission checks (self-PR detection, CI status, existing-comment classification) and Step 9's cleanup were inlined in SKILL.md as `gh api` / `git` shell commands. The LLM ran each command itself, parsed the output, and applied the classification logic.
 
@@ -296,20 +296,20 @@ PR #6486: the one job that would have exercised the new `Ctrl+F` hotkey — `Int
 
 1. **Token cost**: each command, jq filter, classification rule, and output schema is part of the prompt — every `/review` invocation pays this cost.
 2. **Drift risk**: the classification logic exists twice (in the prompt's English description, and in whatever the LLM internally synthesizes). When rules change (new check_run conclusion type, new comment bucket), both have to update or they drift.
-3. **Cross-platform fragility**: `/tmp/qwen-review-*` worked on macOS shell but Node's `os.tmpdir()` returned `/var/folders/...`. The mismatch only surfaced when the cleanup logic was tested.
+3. **Cross-platform fragility**: `/tmp/canopy-review-*` worked on macOS shell but Node's `os.tmpdir()` returned `/var/folders/...`. The mismatch only surfaced when the cleanup logic was tested.
 4. **Testability**: prompt text isn't unit-testable. Logic that classifies CI states or comment buckets is the kind of thing that benefits from real assertions.
 
-**Current behavior:** the deterministic logic lives in `packages/cli/src/commands/review/` as TypeScript subcommands of the `qwen` CLI:
+**Current behavior:** the deterministic logic lives in `packages/cli/src/commands/review/` as TypeScript subcommands of the `canopy` CLI:
 
-- `qwen review presubmit <pr> <sha> <owner/repo> <out>` — emits a single JSON report with `isSelfPr`, `ciStatus`, `existingComments` (5 buckets), `downgradeApprove`, `downgradeRequestChanges`, `downgradeReasons`, `blockOnExistingComments`. SKILL.md only describes the schema and how to apply the report.
-- `qwen review cleanup <target>` — removes the worktree, branch ref, and per-target temp files. Idempotent.
+- `canopy review presubmit <pr> <sha> <owner/repo> <out>` — emits a single JSON report with `isSelfPr`, `ciStatus`, `existingComments` (5 buckets), `downgradeApprove`, `downgradeRequestChanges`, `downgradeReasons`, `blockOnExistingComments`. SKILL.md only describes the schema and how to apply the report.
+- `canopy review cleanup <target>` — removes the worktree, branch ref, and per-target temp files. Idempotent.
 
 **Why subcommands rather than `.mjs` scripts in the skill bundle:**
 
-- `.mjs` files were tried first but `copy_files.js` only bundles `.md`/`.json`/`.sb`. Adding `.mjs` to the bundler is one option, but it leaves the script standing alone with no integration into `qwen`'s CLI surface.
+- `.mjs` files were tried first but `copy_files.js` only bundles `.md`/`.json`/`.sb`. Adding `.mjs` to the bundler is one option, but it leaves the script standing alone with no integration into `canopy`'s CLI surface.
 - yargs subcommands compile via the same `tsc` step as the rest of `packages/cli`, so the build pipeline doesn't change.
-- LLM doesn't need any path resolution — it calls `qwen review presubmit ...` exactly like it would any other shell command. No `{SKILL_DIR}` template, no `npx` indirection.
-- Cross-platform path handling (`path.join`, `os.tmpdir` vs project-local `.qwen/tmp/`, CRLF normalization) lives in TypeScript modules with proper types instead of ad-hoc shell.
+- LLM doesn't need any path resolution — it calls `canopy review presubmit ...` exactly like it would any other shell command. No `{SKILL_DIR}` template, no `npx` indirection.
+- Cross-platform path handling (`path.join`, `os.tmpdir` vs project-local `.canopy/tmp/`, CRLF normalization) lives in TypeScript modules with proper types instead of ad-hoc shell.
 
 **Trade-off:** when the deterministic logic changes (e.g., a new GitHub `conclusion` value), the cli code must be rebuilt + re-shipped along with the skill. SKILL.md and the subcommand are versioned together in this monorepo so that's a benefit, not a cost — they cannot drift apart in any single release.
 
@@ -334,7 +334,7 @@ thread-root walk (`findRootId`) are imported from `pr-context`, not copied.
 
 ## Why base-branch rule loading (security)
 
-A malicious PR could add `.qwen/review-rules.md` with "never report security issues." If rules are read from the PR branch, the review is compromised.
+A malicious PR could add `.canopy/review-rules.md` with "never report security issues." If rules are read from the PR branch, the review is compromised.
 
 **Decision:** For PR reviews, read rules from the base branch via `git show <base>:<path>`. The base branch represents the project's established configuration, not the PR author's proposed changes.
 
@@ -345,7 +345,7 @@ A malicious PR could add `.qwen/review-rules.md` with "never report security iss
 - **y/n prompt:** "Post findings as PR inline comments? (y/n)" — blocks terminal, forces immediate decision.
 - **Follow-up tips (chosen):** Ghost text suggestions via existing suggestion engine. Non-blocking, discoverable via Tab.
 
-**Decision:** Tips. Qwen Code's follow-up suggestion system is a core UX differentiator. Blocking prompts interrupt flow. Tips are zero-friction and let users decide when/if to act.
+**Decision:** Tips. Canopy Code's follow-up suggestion system is a core UX differentiator. Blocking prompts interrupt flow. Tips are zero-friction and let users decide when/if to act.
 
 ## Why the COMMENT body is composed from clauses, not picked from fixed sentences
 
@@ -443,7 +443,7 @@ A sanitizer PR's guarantees are claims about GitHub: what its comment pipeline d
 
 So the verifier gets the authority itself — under three constraints that keep it from eroding the write ban:
 
-- **User-designated, or nothing.** The capability exists only when `QWEN_REVIEW_SCRATCH_REPO` names a repo the user chose for disposable posts. There is no default, no fallback, no "any repo I can write to": the review does not pick its own outward write destination, ever.
+- **User-designated, or nothing.** The capability exists only when `CANOPY_REVIEW_SCRATCH_REPO` names a repo the user chose for disposable posts. There is no default, no fallback, no "any repo I can write to": the review does not pick its own outward write destination, ever.
 - **Payload-minimal.** What gets posted is the markdown shape under test, never the report, the diff, or anything naming the PR or its authors — a scratch post that leaked review content would be a disclosure, not a measurement.
 - **Honest without it.** Absent the setting, a rendering claim caps at low confidence / `cannot tell`. The alternative — "confirmed" off a local approximation — is precisely the false assurance the live case measured.
 
@@ -554,7 +554,7 @@ The gating mistake worth recording, because it inverted the feature while every 
 
 The verify brief accumulated three execution capabilities — the probe, the A/B, extract-step — and every one of them was **optional**, spent at the verifier's discretion. Mining the maintainer's dogfood corpus (356 review sessions and 182 real-environment verification sessions, 2026-06 through 2026-08) measured what discretion produces: in the review rounds that held up, evidence-gathering was ~80% of all tool calls and **every posted hard finding quoted executed output** — a probe's two sides, a repo-wide count, a failing test's text. The counterexample is the rule's origin: the one round-1 claim written from a reading alone was retracted publicly in round 2 when its first measurement returned zero (see the measured entry). The witness rule inverts the default for the findings that post at the highest severity: the executed evidence **is** the confirmation; a reading is a reason to go get one, or to say in one line why none can run.
 
-The enforcement shape is borrowed from the `— [unverified]` tag rather than from the brief, and the borrowing includes the tag's machine half: "no witness and no reason ⇒ low confidence" is first a sort the orchestrator performs on observable state, and then a demotion `qwen review findings` applies in code at canonicalization — a high-confidence `[review]`-source Critical with no `witness` field is filed at low confidence, each named on stderr. The rule shipped without the code half first, and the PR's own dogfood review caught it: the precedent being cited (compose-review machine-reads the surviving tags) HAS code, `validateFindings` defaults an omitted confidence to `high` — the fail-open direction — and the same command already demotes Criticals mechanically for test-delta, so the pattern was local. Deterministic sources are exempt: a `[build]`/`[test]`/`[probe]` finding is itself a run's output, and demanding a second witness of it would demote findings the pipeline treats as pre-confirmed. A verifier that traced a genuinely unrunnable claim still posts it — the one-line reason is cheap, and writing it is exactly the moment the verifier notices when the claim was runnable after all. The field rides the findings artifact (`witness`, optional) for the same reason `failureScenario` does: the report and the comment bodies quote one recorded string instead of transcribing the evidence twice more, and transcription is this skill's best-documented failure mode.
+The enforcement shape is borrowed from the `— [unverified]` tag rather than from the brief, and the borrowing includes the tag's machine half: "no witness and no reason ⇒ low confidence" is first a sort the orchestrator performs on observable state, and then a demotion `canopy review findings` applies in code at canonicalization — a high-confidence `[review]`-source Critical with no `witness` field is filed at low confidence, each named on stderr. The rule shipped without the code half first, and the PR's own dogfood review caught it: the precedent being cited (compose-review machine-reads the surviving tags) HAS code, `validateFindings` defaults an omitted confidence to `high` — the fail-open direction — and the same command already demotes Criticals mechanically for test-delta, so the pattern was local. Deterministic sources are exempt: a `[build]`/`[test]`/`[probe]` finding is itself a run's output, and demanding a second witness of it would demote findings the pipeline treats as pre-confirmed. A verifier that traced a genuinely unrunnable claim still posts it — the one-line reason is cheap, and writing it is exactly the moment the verifier notices when the claim was runnable after all. The field rides the findings artifact (`witness`, optional) for the same reason `failureScenario` does: the report and the comment bodies quote one recorded string instead of transcribing the evidence twice more, and transcription is this skill's best-documented failure mode.
 
 The impact sweep earned its place as a named witness form because it does two jobs no single-instance confirmation can: it converts severity from adjective to measurement ("195 of 434 real step bodies"), and it retracts as mechanically as it confirms — a sweep that returns zero is a false Critical caught before posting instead of after. Its external-authority guard exists because both of its measured failures were the same failure: an oracle that reimplemented the logic under test inherited its blind spots and manufactured findings out of its own bugs.
 
@@ -653,7 +653,7 @@ Agents used to be handed `git diff main...HEAD` and told to run it. At the time 
 
 On PR #6457's 211 000-character diff that yields a 6 000-char head (`QQChannel.ts` lines 41-250) and a 24 000-char tail (`stream.test.ts` and `types.ts`, which sort last by path and together changed 9 lines). 85.8% of the diff — including 19 of the 20 Criticals eventually reported on that PR — was replaced by a `[CONTENT TRUNCATED]` marker. Every agent saw the same window, so the ten-way dimension fan-out multiplied redundancy rather than coverage, and each round of `/review` sampled a different subset of the bugs depending on which files an agent happened to `read_file` on its own initiative.
 
-`fetch-pr` now writes the diff to `.qwen/tmp/qwen-review-pr-<n>-diff.txt` and emits a chunk plan. `read_file` overrides `maxOutputChars` to `Infinity`, so it escapes the scheduler's head/tail mangling — but `processSingleFileContent` still caps one read at `truncateToolOutputThreshold` (25 000 chars), sets `isTruncated`, and expects the caller to page. Writing the diff to a file is therefore necessary but **not sufficient**: a single `read_file` over PR #6457's diff returns lines 1-611 and stops.
+`fetch-pr` now writes the diff to `.canopy/tmp/canopy-review-pr-<n>-diff.txt` and emits a chunk plan. `read_file` overrides `maxOutputChars` to `Infinity`, so it escapes the scheduler's head/tail mangling — but `processSingleFileContent` still caps one read at `truncateToolOutputThreshold` (25 000 chars), sets `isTruncated`, and expects the caller to page. Writing the diff to a file is therefore necessary but **not sufficient**: a single `read_file` over PR #6457's diff returns lines 1-611 and stops.
 
 The chunk plan is what closes the gap. Chunks are bounded by **both** a line budget (attention) and a character budget (`MAX_CHUNK_CHARS`, 20 000 — under the 25 000 read cap, so a chunk never comes back short), and they tile the diff exactly (`chunksCoverDiff` asserts no gap, no overlap). Exact tiling is what makes the Step 3B coverage receipts checkable: a chunk with no receipt is a territory nobody reviewed.
 
@@ -679,7 +679,7 @@ Key implementation detail: Step 7 must use the owner/repo extracted from the URL
 
 **Considered:**
 
-- **`.qwen/review-tools.md`**: Let projects define custom build/test commands. Precise, but requires users to learn a new config format and maintain it.
+- **`.canopy/review-tools.md`**: Let projects define custom build/test commands. Precise, but requires users to learn a new config format and maintain it.
 - **Auto-discovery from CI config (chosen)**: Read `.github/workflows/*.yml`, `Makefile`, etc. to find what commands the project already runs in CI. Zero user effort.
 
 **Decision:** Auto-discovery. Every project already defines its tool chain in CI config. Reading those files leverages existing knowledge without asking users to duplicate it. The LLM is capable of parsing YAML workflow files and extracting the relevant commands. Falls back gracefully: if no CI config exists, the build/test discovery is simply skipped and LLM agents still review the diff.
@@ -697,14 +697,14 @@ Key implementation detail: Step 7 must use the owner/repo extracted from the URL
 1. **A summary comment can never collapse.** GitHub marks an inline review thread **Outdated** and folds it away as soon as the author edits the line it is anchored to. So an addressed inline finding removes itself from the page. An issue comment has no such lifecycle — it sits in the PR conversation permanently, one extra comment whether or not its rows still apply. PATCHing it to "all suggestions addressed" replaces the content but not the comment. The very mechanism intended to prevent clutter _was_ the clutter.
 2. **A Markdown table cannot carry a one-click fix.** GitHub renders a ` ```suggestion ` fence as an applicable change only inside a review comment on a diff line; in an issue comment it degrades to a plain code block. Suggestion-level findings — mechanical, localized cleanups — are precisely the class that benefits most from one-click apply, so the split withheld the feature from the findings that most needed it. The table's cramped "Suggested fix" column also degraded badly as the suggestion count grew.
 
-The convergence concern that motivated the summary is real but narrower than it looked: GitHub's Outdated-collapse handles every suggestion the author actually acts on, which is the common case. What remains is a suggestion the author declines and leaves untouched — its line does not change, so the thread stays open and a later run can post a near-duplicate. That residue is bounded by the presubmit Overlap check (`blockOnExistingComments`), which blocks submission when a new finding lands on the same `(path, line)` as a live Qwen comment on the same commit — with one deliberate exception (#9208): a carried-forward ledger finding that re-posts its own original thread carries the original's ledger id and is bucketed `repost` (exempted) instead of blocked; otherwise the carried re-post of a declined suggestion would itself be dropped as a location overlap and the finding would never reach the page.
+The convergence concern that motivated the summary is real but narrower than it looked: GitHub's Outdated-collapse handles every suggestion the author actually acts on, which is the common case. What remains is a suggestion the author declines and leaves untouched — its line does not change, so the thread stays open and a later run can post a near-duplicate. That residue is bounded by the presubmit Overlap check (`blockOnExistingComments`), which blocks submission when a new finding lands on the same `(path, line)` as a live Canopy comment on the same commit — with one deliberate exception (#9208): a carried-forward ledger finding that re-posts its own original thread carries the original's ledger id and is bucketed `repost` (exempted) instead of blocked; otherwise the carried re-post of a declined suggestion would itself be dropped as a location overlap and the finding would never reach the page.
 
 **Trade-off:**
 
 - ✅ Suggestion findings regain one-click ` ```suggestion ` apply and sit next to the code in "Files changed."
 - ✅ Addressed findings self-collapse via GitHub's Outdated mechanism; no permanent extra comment on the PR page.
 - ✅ One posting path for both severities — the `comments` array — instead of a review submission plus a second issue-comment API call.
-- ❌ Suggestions now share the atomic `POST /pulls/{n}/reviews` call with Criticals. That call is all-or-nothing: one entry anchored to a line outside the diff 422s the whole review, so a mis-anchored Suggestion can suppress a Critical blocker. Previously Suggestions travelled on a separate, line-agnostic issue-comment call where a bad anchor was impossible. Step 7 mitigates with a 422 fallback rather than pre-validating every anchor up front: GitHub's 422 does not identify the offending entry, so the fallback has the model recheck each anchor against the diff, relocate failing Criticals into `body` (failing Suggestions are discarded — Suggestion text must stay off the `body` channel, which `qwen-autofix.yml` does not filter), and resubmit — degrading to an all-prose review of the blockers rather than posting nothing.
+- ❌ Suggestions now share the atomic `POST /pulls/{n}/reviews` call with Criticals. That call is all-or-nothing: one entry anchored to a line outside the diff 422s the whole review, so a mis-anchored Suggestion can suppress a Critical blocker. Previously Suggestions travelled on a separate, line-agnostic issue-comment call where a bad anchor was impossible. Step 7 mitigates with a 422 fallback rather than pre-validating every anchor up front: GitHub's 422 does not identify the offending entry, so the fallback has the model recheck each anchor against the diff, relocate failing Criticals into `body` (failing Suggestions are discarded — Suggestion text must stay off the `body` channel, which `canopy-autofix.yml` does not filter), and resubmit — degrading to an all-prose review of the blockers rather than posting nothing.
 - ❌ A declined suggestion on an unchanged line can be re-posted by a later run on a new commit: the presubmit Overlap check only compares against comments whose `commit_id` matches the commit under review, so prior comments are bucketed `stale` after any push. Closing this fully needs a resolve/minimize step (GraphQL `resolveReviewThread` / `minimizeComment`) that folds our own superseded threads before submitting a new review.
 - ❌ Pattern-aggregated Suggestion findings (the multi-occurrence `Pattern:` form) must pick a representative line to anchor to; the full structured aggregation remains visible in the terminal output.
 
@@ -712,7 +712,7 @@ The convergence concern that motivated the summary is real but narrower than it 
 
 | Idea                                                         | Why rejected                                                                                                         |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `.qwen/review-tools.md` for custom tool config               | Requires users to learn a new format. Auto-discovery from CI config achieves the same result with zero user effort.  |
+| `.canopy/review-tools.md` for custom tool config             | Requires users to learn a new format. Auto-discovery from CI config achieves the same result with zero user effort.  |
 | Use fast model for verification/reverse audit                | User requirement: quality first. Fast models may miss subtle issues.                                                 |
 | Reduce to 2 agents (like Gemini)                             | Loses dimensional focus. We retain build/test (Agent 7) and want higher LLM coverage.                                |
 | `mktemp` for temp files                                      | Over-engineering for a prompt. `{target}` suffix is sufficient for CLI concurrent sessions.                          |
@@ -740,7 +740,7 @@ For a PR with 15 findings:
 
 ## Future optimization: Fork Subagent
 
-> Dependency: [Fork Subagent proposal](https://github.com/wenshao/codeagents/blob/main/docs/comparison/qwen-code-improvement-report-p0-p1-core.md#2-fork-subagentp0)
+> Dependency: [Fork Subagent proposal](https://github.com/wenshao/codeagents/blob/main/docs/comparison/canopy-code-improvement-report-p0-p1-core.md#2-fork-subagentp0)
 
 **Current problem:** Each of the ~17-28 LLM calls (14-16 review + sharded verify + 2-10 reverse audit rounds) creates a new subagent from scratch. At ~52K per agent (50K system + 2K task), that is ~880K-1.5M input tokens with massive redundancy. The cost grew along with the agent count — Fork Subagent matters even more under the current 14-agent design than under the original 5-agent design. (Effort levels bound the cost from the other side: low runs spawn no subagents at all, and medium spawns the reduced fan-out.)
 
@@ -768,7 +768,7 @@ With Fork + prompt cache sharing:
 
 **Estimated savings:** ~90-93% token reduction (~880K-1.5M → ~84-106K) with zero quality impact. The savings ratio is now even more compelling than under the 5-agent design.
 
-**Why not implemented now:** Fork Subagent requires changes to the Qwen Code core (`AgentTool`, `forkSubagent.ts`, `CacheSafeParams`). This is a platform-level feature (~400 lines, ~5 days), not a /review-specific change. When available, /review should be updated to use fork instead of independent subagents.
+**Why not implemented now:** Fork Subagent requires changes to the Canopy Code core (`AgentTool`, `forkSubagent.ts`, `CacheSafeParams`). This is a platform-level feature (~400 lines, ~5 days), not a /review-specific change. When available, /review should be updated to use fork instead of independent subagents.
 
 ## Measured incidents behind the SKILL.md rules
 
@@ -782,9 +782,9 @@ Measured on real small-PR runs from the harness's own records, the todo calls in
 
 Dogfooding `/review 6771`, a run wrote `--effort high` into the argument file — not the user's argument, but an **example** lifted out of the SKILL.md paragraph that introduces the argument file. The parser then did its job perfectly on the wrong input: it resolved a _local_ review, found the working tree clean, and reported "no changes to review". A request to review a pull request became a no-op, and nothing raised an error.
 
-### The stale PATH qwen
+### The stale PATH canopy
 
-Measured: a `npm run dev:daemon` session issued `qwen review agent-prompt --role 0`, `PATH` found a v0.19.10 whose `agent-prompt` predates `--role` entirely, and the review died on `Missing required argument: chunk` — the skill and the CLI it was talking to were different versions.
+Measured: a `npm run dev:daemon` session issued `canopy review agent-prompt --role 0`, `PATH` found a v0.19.10 whose `agent-prompt` predates `--role` entirely, and the review died on `Missing required argument: chunk` — the skill and the CLI it was talking to were different versions.
 
 ### The unseen untracked file
 
@@ -976,13 +976,13 @@ Two v0.21.9 CI reviews of large chunked PRs spent 77–80% of their wall clock i
 
 The 15th review round of #8353 (its audit rounds numbered 1–5 within that run; `R15-1` is the incremental-review ledger's naming, not an audit round): audit round 2 dry; round 3's sole finding rejected by its verifier with direct counter-evidence — the claimed compound behavior lived entirely in unchanged code. The rejection removed the entry from the cumulative list, but not the reset it had already applied to the dry counter. Under the forward pairing the rule licenses, round 4's dry return completed the two-dry evidence the moment it landed — the retired round 3 plus dry round 4 — and round 5 (~15–20 minutes) was the waste: it audited nothing the loop had not already answered.
 
-### The artifact root that pointed at qwen-home
+### The artifact root that pointed at canopy-home
 
-Every one of six measured CI reviews (2026-08-05/06) spent 1.5–3 minutes at Step 8 rediscovering the same fact: `save-artifact` resolved its containment root from `QWEN_CODE_PROJECT_DIR`, and that variable does not name the main checkout in any environment — the harness exports it as `Storage.getProjectDir()`, the session-storage directory under the runtime base where the harness's own transcripts live. The helper refused its own inputs ("must be inside the workspace"), and each orchestrator improvised a different workaround: one overrode the env var to the repo, one copied the inputs into the qwen-home mirror and copied the artifact back, others retried path shapes until one landed. The env preference was wrong 100% of the time it was consulted; the command's cwd — the main checkout, where the skill runs every subcommand — was right in every measured run.
+Every one of six measured CI reviews (2026-08-05/06) spent 1.5–3 minutes at Step 8 rediscovering the same fact: `save-artifact` resolved its containment root from `CANOPY_CODE_PROJECT_DIR`, and that variable does not name the main checkout in any environment — the harness exports it as `Storage.getProjectDir()`, the session-storage directory under the runtime base where the harness's own transcripts live. The helper refused its own inputs ("must be inside the workspace"), and each orchestrator improvised a different workaround: one overrode the env var to the repo, one copied the inputs into the canopy-home mirror and copied the artifact back, others retried path shapes until one landed. The env preference was wrong 100% of the time it was consulted; the command's cwd — the main checkout, where the skill runs every subcommand — was right in every measured run.
 
 ### The one-command-per-turn tail
 
-Measured across the same six CI reviews: the post-verdict bookkeeping — Markdown report, cost-ledger, save-artifact, `record_artifact`, the incremental-cache write, cleanup — ran one command per model turn, 4–6 minutes of wall clock after the review's outcome was already decided (and, on posting runs, already on the PR), stretching past 7 minutes when the qwen-home fumbling above joined it. Every command in the tail is cheap; the turns are not — the same arithmetic that batches the Step 1 setup calls, unapplied to the other end of the run.
+Measured across the same six CI reviews: the post-verdict bookkeeping — Markdown report, cost-ledger, save-artifact, `record_artifact`, the incremental-cache write, cleanup — ran one command per model turn, 4–6 minutes of wall clock after the review's outcome was already decided (and, on posting runs, already on the PR), stretching past 7 minutes when the canopy-home fumbling above joined it. Every command in the tail is cheap; the turns are not — the same arithmetic that batches the Step 1 setup calls, unapplied to the other end of the run.
 
 ### The forty-one minute wave
 
@@ -1010,7 +1010,7 @@ The fix is two briefs, not a new agent — the lens goes where an agent already 
 
 The question also needs a stop rule that respects it. The reverse audit converges on "two consecutive dry rounds" — no auditor found a new gap — which is sound evidence about the layer the auditors walked and silent about every layer they did not. On this guard the token layer filled every round while the state layer went unexamined, and a dry round on the token layer said nothing about it, so the loop could converge with a whole class untouched. The auditor brief now asks, for a modeled executable system, that each defect layer be walked and **receipted on its own line** — `Layer walked: <id>` — the `Budget gap:` discipline, a line the tooling reads rather than prose it guesses at. `audit-layers.ts` parses those receipts into per-layer coverage; a run that receipts `lexing` and `expansion` but never `scope-propagation` has named its own blind spot. Empirically the receipt requirement changes the model's behaviour on the target model: on a synthetic evaluator with a planted state-propagation defect, the same qwen3.8-max auditor emitted **zero** layer receipts under the old brief and a full **six** under the new one, walking (and filing findings against) the `resolution-order`, `inheritance`, and `toctou` layers a flat "find gaps" pass left untouched.
 
-Coverage feeds a cap, not the stop rule — deliberately, and this is where the change stops for now. `layerAuditGate` (in `compose-review`, model out of the loop like `scriptLintGate`) reads the reverse-audit returns and emits one `unreviewedDimensions` entry per unwalked layer, which caps a would-be Approve to Comment and discloses the gap. It is **opt-in and inert by default**: it fires only when a `.qwen/review-context.json` matching rule — read from the trusted base branch — sets the `modeled-executable-system` domain on the diff, so no ordinary review is touched, and it rides an existing manifest field rather than the strict context schema. And it moves in one direction only: it can **withhold** an Approve, never end the audit loop early, never block a Request changes, never retire a chunk. Making an unwalked layer actually _extend_ the loop — turning "two dry rounds" into "two dry rounds AND every declared layer walked" — is the larger, riskier half, and it is staged behind an A/B on real modeled-system PRs rather than shipped on this reasoning: a stop rule that never converges is a worse failure than one that stops a layer early, and the measured evidence that discriminates them does not exist yet. The cap is the safe increment that makes the coverage visible and consequential while that evidence is gathered.
+Coverage feeds a cap, not the stop rule — deliberately, and this is where the change stops for now. `layerAuditGate` (in `compose-review`, model out of the loop like `scriptLintGate`) reads the reverse-audit returns and emits one `unreviewedDimensions` entry per unwalked layer, which caps a would-be Approve to Comment and discloses the gap. It is **opt-in and inert by default**: it fires only when a `.canopy/review-context.json` matching rule — read from the trusted base branch — sets the `modeled-executable-system` domain on the diff, so no ordinary review is touched, and it rides an existing manifest field rather than the strict context schema. And it moves in one direction only: it can **withhold** an Approve, never end the audit loop early, never block a Request changes, never retire a chunk. Making an unwalked layer actually _extend_ the loop — turning "two dry rounds" into "two dry rounds AND every declared layer walked" — is the larger, riskier half, and it is staged behind an A/B on real modeled-system PRs rather than shipped on this reasoning: a stop rule that never converges is a worse failure than one that stops a layer early, and the measured evidence that discriminates them does not exist yet. The cap is the safe increment that makes the coverage visible and consequential while that evidence is gathered.
 
 ### The read-only claim retracted in round 2 (PR #8225)
 

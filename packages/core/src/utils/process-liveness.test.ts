@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen
+ * Copyright 2026 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -131,7 +131,7 @@ describe('isPidAlive', () => {
     // state, so a cross-user zombie reaches the EPERM catch; without the
     // zombie check there it stays listed until its parent reaps it.
     const { mod } = await withFakeProc({
-      '/proc/4242/stat': statLine('qwen', '987654', 'Z'),
+      '/proc/4242/stat': statLine('canopy', '987654', 'Z'),
     });
     vi.spyOn(process, 'kill').mockImplementation(() => {
       throw Object.assign(new Error('operation not permitted'), {
@@ -219,7 +219,7 @@ describe('readProcStartToken', () => {
     const { mod } = await withFakeProc({
       [BOOT_ID_PATH]: `${FAKE_BOOT_ID}\n`,
       '/proc/4242/stat':
-        '4242 qwen S 1 2 3 4 -1 4194304 100 0 200 0 10 20 30 40 20 0 1 0 987654 1000\n',
+        '4242 canopy S 1 2 3 4 -1 4194304 100 0 200 0 10 20 30 40 20 0 1 0 987654 1000\n',
     });
     // Without the `commEnd === -1` bail this counts from the start of the
     // line and confidently returns field 20 as if it were starttime.
@@ -229,7 +229,7 @@ describe('readProcStartToken', () => {
   it('returns null when field 22 is not a number', async () => {
     const { mod } = await withFakeProc({
       [BOOT_ID_PATH]: `${FAKE_BOOT_ID}\n`,
-      '/proc/4242/stat': statLine('qwen', 'not-a-number'),
+      '/proc/4242/stat': statLine('canopy', 'not-a-number'),
     });
     expect(mod.readProcStartToken(4242)).toBeNull();
   });
@@ -238,7 +238,7 @@ describe('readProcStartToken', () => {
     // Two token shapes on one machine would let a reader that has the boot
     // id "mismatch" a live session recorded without it and sweep it.
     const { mod } = await withFakeProc({
-      '/proc/4242/stat': statLine('qwen', '987654'),
+      '/proc/4242/stat': statLine('canopy', '987654'),
     });
     expect(mod.readProcStartToken(4242)).toBeNull();
   });
@@ -246,7 +246,7 @@ describe('readProcStartToken', () => {
   it('rejects a boot id that is not a hex-and-dash uuid', async () => {
     const { mod } = await withFakeProc({
       [BOOT_ID_PATH]: 'not a uuid\n',
-      '/proc/4242/stat': statLine('qwen', '987654'),
+      '/proc/4242/stat': statLine('canopy', '987654'),
     });
     expect(mod.readProcStartToken(4242)).toBeNull();
   });
@@ -254,8 +254,8 @@ describe('readProcStartToken', () => {
   it('reads the boot id once however many records are checked', async () => {
     const { mod, reads } = await withFakeProc({
       [BOOT_ID_PATH]: `${FAKE_BOOT_ID}\n`,
-      '/proc/4242/stat': statLine('qwen', '987654'),
-      '/proc/4243/stat': statLine('qwen', '987655'),
+      '/proc/4242/stat': statLine('canopy', '987654'),
+      '/proc/4243/stat': statLine('canopy', '987655'),
     });
     mod.readProcStartToken(4242);
     mod.readProcStartToken(4243);
@@ -269,7 +269,7 @@ describe('readProcStartToken', () => {
     // EMFILE as a permanent null would silently disable PID-reuse
     // protection for the whole process lifetime.
     const files: Record<string, string> = {
-      '/proc/4242/stat': statLine('qwen', '987654'),
+      '/proc/4242/stat': statLine('canopy', '987654'),
     };
     const { mod, reads } = await withFakeProc(files);
 
@@ -283,8 +283,8 @@ describe('readProcStartToken', () => {
     const { mod, reads } = await withFakeProc({
       [BOOT_ID_PATH]: `${FAKE_BOOT_ID}\n`,
       // Planted so a missing pid guard would find something to return.
-      '/proc/0/stat': statLine('qwen', '111'),
-      '/proc/1.5/stat': statLine('qwen', '222'),
+      '/proc/0/stat': statLine('canopy', '111'),
+      '/proc/1.5/stat': statLine('canopy', '222'),
     });
     expect(mod.readProcStartToken(0)).toBeNull();
     expect(mod.readProcStartToken(-1)).toBeNull();
@@ -356,7 +356,7 @@ describe('isSameProcess', () => {
     // drops the Z exclusion) keeps the zombie listed.
     const { mod } = await withFakeProc({
       [BOOT_ID_PATH]: `${FAKE_BOOT_ID}\n`,
-      '/proc/4242/stat': statLine('qwen', '987654', 'Z'),
+      '/proc/4242/stat': statLine('canopy', '987654', 'Z'),
     });
     vi.spyOn(process, 'kill').mockImplementation(() => true);
     expect(mod.isSameProcess(4242, `${FAKE_BOOT_ID}:987654`)).toBe(false);

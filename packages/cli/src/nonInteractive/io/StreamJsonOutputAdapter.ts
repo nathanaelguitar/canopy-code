@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,8 +11,8 @@ import type {
   ToolCallRequestInfo,
   McpToolProgressData,
   ShellProgressData,
-} from '@qwen-code/qwen-code-core';
-import { GeminiEventType } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import { GeminiEventType } from '@canopy-code/canopy-code-core';
 import type {
   CLIAssistantMessage,
   CLIMessage,

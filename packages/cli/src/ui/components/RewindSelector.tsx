@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,7 +14,10 @@ import { keyMatchers, Command } from '../keyMatchers.js';
 import { truncateText } from '../utils/sessionPickerUtils.js';
 import { isRealUserTurn } from '../utils/historyMapping.js';
 import { t } from '../../i18n/index.js';
-import type { FileHistoryService, DiffStats } from '@qwen-code/qwen-code-core';
+import type {
+  FileHistoryService,
+  DiffStats,
+} from '@canopy-code/canopy-code-core';
 
 export type RestoreOption = 'both' | 'conversation' | 'code' | 'cancel';
 

@@ -1,14 +1,14 @@
 # Starter Extension Example
 
-A complete, end-to-end Qwen Code extension that demonstrates **every** building
+A complete, end-to-end Canopy Code extension that demonstrates **every** building
 block in a single package, themed around a small "writing companion". Use it as
 a starting point when you want a relatively complete scaffold instead of an
 empty extension.
 
 ```
 starter/
-├── qwen-extension.json        # Manifest: name, version, context file, MCP servers
-├── QWEN.md                    # Context: persistent instructions for the model
+├── canopy-extension.json        # Manifest: name, version, context file, MCP servers
+├── CANOPY.md                    # Context: persistent instructions for the model
 ├── agents/
 │   └── diary.md               # Subagent: a focused diary-writing assistant
 ├── commands/
@@ -26,7 +26,7 @@ starter/
 
 | Capability | Where               | How it shows up                                          |
 | ---------- | ------------------- | -------------------------------------------------------- |
-| Context    | `QWEN.md`           | Persistent instructions injected into every session.     |
+| Context    | `CANOPY.md`         | Persistent instructions injected into every session.     |
 | Subagent   | `agents/diary.md`   | Available via `/agents manage`.                          |
 | Command    | `commands/writing/` | Invoked as `/writing:polish <text>`.                     |
 | Skill      | `skills/synonyms/`  | Auto-activated via `/skills` when relevant.              |
@@ -39,7 +39,7 @@ From the extension directory:
 
 ```bash
 npm install
-npm run build   # emits dist/example.js, which qwen-extension.json points at
+npm run build   # emits dist/example.js, which canopy-extension.json points at
 ```
 
 The other capabilities (context, agents, commands, skills) work without any
@@ -48,12 +48,12 @@ build step.
 ## Trying it out
 
 ```bash
-qwen extensions link /path/to/starter   # link this directory for local testing
+canopy extensions link /path/to/starter   # link this directory for local testing
 ```
 
-Then restart Qwen Code. The context loads automatically, `/writing:polish` and
+Then restart Canopy Code. The context loads automatically, `/writing:polish` and
 `/skills` become available, the `diary-writer` subagent appears under
 `/agents manage`, and (once built) the MCP `count_words` tool is callable.
 
-See the [Getting Started with Extensions](https://github.com/QwenLM/qwen-code/blob/main/docs/users/extension/getting-started-extensions.md)
+See the [Getting Started with Extensions](https://github.com/QwenLM/canopy-code/blob/main/docs/users/extension/getting-started-extensions.md)
 guide for a deeper walkthrough.

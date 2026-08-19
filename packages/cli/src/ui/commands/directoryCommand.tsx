@@ -16,7 +16,7 @@ import {
   loadServerHierarchicalMemory,
   ConditionalRulesRegistry,
   expandHomeDir,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 import { SettingScope } from '../../config/settings.js';
 
@@ -264,7 +264,7 @@ export const directoryCommand: SlashCommand = {
                 context.ui.setGeminiMdFileCount(fileCount);
                 messages.push(
                   t(
-                    'Successfully added QWEN.md files from the following directories if there are:\n- {{directories}}',
+                    'Successfully added CANOPY.md files from the following directories if there are:\n- {{directories}}',
                     { directories: added.join('\n- ') },
                   ),
                 );

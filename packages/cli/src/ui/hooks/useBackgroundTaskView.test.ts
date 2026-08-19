@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { Config, WorkflowTask } from '@qwen-code/qwen-code-core';
+import type { Config, WorkflowTask } from '@canopy-code/canopy-code-core';
 import { useBackgroundTaskView, entryId } from './useBackgroundTaskView.js';
 
 interface FakeRegistry {

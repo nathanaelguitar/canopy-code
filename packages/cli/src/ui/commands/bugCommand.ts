@@ -9,7 +9,7 @@ import {
   type SlashCommand,
   CommandKind,
 } from './types.js';
-import { openBrowserSecurely } from '@qwen-code/qwen-code-core';
+import { openBrowserSecurely } from '@canopy-code/canopy-code-core';
 import { MessageType, type HistoryItem } from '../types.js';
 import { getExtendedSystemInfo } from '../../utils/systemInfo.js';
 import { getSystemInfoFields } from '../../utils/systemInfoFields.js';
@@ -34,7 +34,7 @@ export const bugCommand: SlashCommand = {
       .join('\n');
 
     let bugReportUrl =
-      'https://github.com/QwenLM/qwen-code/issues/new?template=bug_report.yml&title={title}&info={info}';
+      'https://github.com/QwenLM/canopy-code/issues/new?template=bug_report.yml&title={title}&info={info}';
 
     const bugCommandSettings = context.services.config?.getBugCommand();
     if (bugCommandSettings?.urlTemplate) {

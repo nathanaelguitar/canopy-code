@@ -12,7 +12,7 @@ import type {
   Part,
 } from '@google/genai';
 import type { Config } from '../config/config.js';
-import { DEFAULT_QWEN_MODEL } from '../config/models.js';
+import { DEFAULT_CANOPY_MODEL } from '../config/models.js';
 import { SchemaValidator } from './schemaValidator.js';
 
 export interface SideQueryJsonOptions<TResponse> {
@@ -21,7 +21,7 @@ export interface SideQueryJsonOptions<TResponse> {
   abortSignal: AbortSignal;
   /**
    * Override the model used for this query. Defaults to
-   * `config.getFastModel?.() ?? config.getModel() ?? DEFAULT_QWEN_MODEL`
+   * `config.getFastModel?.() ?? config.getModel() ?? DEFAULT_CANOPY_MODEL`
    * — side queries run on the fast model when one is configured, including
    * fast models registered under a different authType than the main session.
    * Pass an explicit value to pin a specific model.
@@ -68,7 +68,7 @@ export interface SideQueryTextOptions {
   abortSignal: AbortSignal;
   /**
    * Override the model used for this query. Defaults to
-   * `config.getFastModel?.() ?? config.getModel() ?? DEFAULT_QWEN_MODEL`
+   * `config.getFastModel?.() ?? config.getModel() ?? DEFAULT_CANOPY_MODEL`
    * — side queries run on the fast model when one is configured, including
    * fast models registered under a different authType than the main session.
    * Pass an explicit value to pin a specific model.
@@ -131,7 +131,7 @@ function resolveDefaultModel(config: Config, override?: string): string {
     override ??
     config.getFastModel?.() ??
     config.getModel() ??
-    DEFAULT_QWEN_MODEL
+    DEFAULT_CANOPY_MODEL
   );
 }
 

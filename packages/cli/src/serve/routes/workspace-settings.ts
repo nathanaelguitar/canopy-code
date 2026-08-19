@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -64,7 +64,7 @@ const LIVE_WEB_SHELL_SETTINGS = [
 const LIVE_MANAGED_SETTINGS = new Set<string>(LIVE_WEB_SHELL_SETTINGS);
 
 // The primary /workspace/settings route may write the global user scope
-// (~/.qwen/settings.json). The trust-gated workspace-qualified route stays
+// (~/.canopy/settings.json). The trust-gated workspace-qualified route stays
 // workspace-only by design.
 const VALID_WRITE_SCOPES = new Set(['workspace', 'user']);
 const QUALIFIED_WRITE_SCOPES = new Set(['workspace']);
@@ -322,7 +322,7 @@ export function registerWorkspaceSettingsRoutes(
     } catch (err) {
       if (sendGenerationClosedError(res, err)) return;
       writeStderrLine(
-        `qwen serve: GET /workspace/settings error: ${
+        `canopy serve: GET /workspace/settings error: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -475,7 +475,7 @@ export function registerWorkspaceSettingsRoutes(
       } catch (err) {
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: POST /workspace/settings persist error (key=${key}, scope=${scope}, workspace=${boundWorkspace}): ${
+          `canopy serve: POST /workspace/settings persist error (key=${key}, scope=${scope}, workspace=${boundWorkspace}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -496,7 +496,7 @@ export function registerWorkspaceSettingsRoutes(
         broadcastSettingsChanged(key, publicValue, scope, clientId);
       } catch (err) {
         writeStderrLine(
-          `qwen serve: POST /workspace/settings broadcast error (key=${key}, scope=${scope}): ${
+          `canopy serve: POST /workspace/settings broadcast error (key=${key}, scope=${scope}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );
@@ -539,7 +539,7 @@ export function registerWorkspaceQualifiedSettingsRoutes(
       res.status(200).json(response);
     } catch (err) {
       writeStderrLine(
-        `qwen serve: GET /workspaces/:workspace/settings error: ${
+        `canopy serve: GET /workspaces/:workspace/settings error: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
@@ -678,7 +678,7 @@ export function registerWorkspaceQualifiedSettingsRoutes(
       } catch (err) {
         if (sendGenerationClosedError(res, err)) return;
         writeStderrLine(
-          `qwen serve: POST /workspaces/:workspace/settings persist error (key=${key}, scope=${scope}, workspace=${runtime.workspaceCwd}): ${
+          `canopy serve: POST /workspaces/:workspace/settings persist error (key=${key}, scope=${scope}, workspace=${runtime.workspaceCwd}): ${
             err instanceof Error ? err.message : String(err)
           }`,
         );

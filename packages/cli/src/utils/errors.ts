@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   OutputFormat,
   JsonFormatter,
@@ -14,7 +14,7 @@ import {
   FatalBudgetExceededError,
   ToolErrorType,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { BudgetExceeded } from './runBudget.js';
 import { runExitCleanup } from './cleanup.js';
 import { writeStderrLine } from './stdioHelpers.js';
@@ -217,7 +217,7 @@ export function handleToolError(
     const warningMessage =
       `Warning: Tool "${toolName}" requires user approval but cannot execute in non-interactive mode.\n` +
       `To enable automatic tool execution, use the -y flag (YOLO mode):\n` +
-      `Example: qwen -p 'your prompt' -y\n\n`;
+      `Example: canopy -p 'your prompt' -y\n\n`;
     process.stderr.write(warningMessage);
   }
 

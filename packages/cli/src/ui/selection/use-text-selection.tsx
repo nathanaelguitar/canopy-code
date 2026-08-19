@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { useCallback, useEffect, useRef } from 'react';
 import { useStdout, type ReadonlyFrame } from 'ink';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import { useMouseEvents } from '../hooks/useMouseEvents.js';
 import type { MouseEvent } from '../utils/mouse.js';
 import { copyToClipboard } from '../utils/commandUtils.js';

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -67,7 +67,7 @@ describe('toolCallIdUtils', () => {
     expect(normalized).toEqual([
       {
         functionCall: {
-          id: 'dup_id_0001__qwen_dup_2',
+          id: 'dup_id_0001__canopy_dup_2',
           name: 'read_file',
           args: { file_path: 'b.ts' },
         },
@@ -77,11 +77,11 @@ describe('toolCallIdUtils', () => {
     expect(getProviderToolCallId(normalized[0]!.functionCall!)).toBe(
       'dup_id_0001',
     );
-    expect(seenIds.has('dup_id_0001__qwen_dup_2')).toBe(true);
+    expect(seenIds.has('dup_id_0001__canopy_dup_2')).toBe(true);
   });
 
   it('generates stable non-empty ids for missing functionCall ids', () => {
-    const seenIds = new Set<string>(['call_qwen_1']);
+    const seenIds = new Set<string>(['call_canopy_1']);
 
     const normalized = normalizeModelToolCallIds(
       [
@@ -93,8 +93,8 @@ describe('toolCallIdUtils', () => {
     );
 
     expect(normalized.map((part) => part.functionCall?.id)).toEqual([
-      'call_qwen_2',
-      'call_qwen_3',
+      'call_canopy_2',
+      'call_canopy_3',
     ]);
     expect(
       normalized.map((part) => getProviderToolCallId(part.functionCall!)),
@@ -119,9 +119,9 @@ describe('toolCallIdUtils', () => {
     const first = reserveModelToolCallId('call-1', usedIds, reservedIds);
     const second = reserveModelToolCallId('call-1', usedIds, reservedIds);
 
-    expect(first).toBe('call-1__qwen_dup_2');
+    expect(first).toBe('call-1__canopy_dup_2');
     expect(second).toBe(first);
-    expect([...usedIds]).toEqual(['call-1', 'call-1__qwen_dup_2']);
+    expect([...usedIds]).toEqual(['call-1', 'call-1__canopy_dup_2']);
   });
 
   it('normalizes a colliding raw id to its reserved suffixed id', () => {
@@ -140,7 +140,7 @@ describe('toolCallIdUtils', () => {
       reservedIds,
     );
 
-    expect(reservedId).toBe('call-1__qwen_dup_2');
+    expect(reservedId).toBe('call-1__canopy_dup_2');
     expect(normalized[0]?.functionCall?.id).toBe(reservedId);
     expect(getProviderToolCallId(normalized[0]!.functionCall!)).toBe('call-1');
   });

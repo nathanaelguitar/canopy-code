@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,7 +17,7 @@ import {
   type GoalRecord,
   type GoalSnapshotV2,
   type GoalStateCause,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { BaseEmitter } from './base-emitter.js';
 import type { SessionUpdate } from '@agentclientprotocol/sdk';
 import type { HistoryItemGoalStatus } from '../../../ui/types.js';
@@ -289,7 +289,7 @@ export class MessageEmitter extends BaseEmitter {
     );
 
     // ACP clients such as JetBrains render context occupancy from the
-    // standard usage_update frame rather than Qwen's private `_meta.usage`.
+    // standard usage_update frame rather than Canopy's private `_meta.usage`.
     // Emit it only for a live main-session model round: replay frames do not
     // have a duration, and subagent usage describes a separate context window
     // that must not replace the parent session's indicator.

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 export const DEFAULT_STOP_HOOK_BLOCK_CAP = 8;
 export const MAX_STOP_HOOK_BLOCK_CAP = 100;
-export const STOP_HOOK_BLOCK_CAP_ENV = 'QWEN_CODE_STOP_HOOK_BLOCK_CAP';
+export const STOP_HOOK_BLOCK_CAP_ENV = 'CANOPY_CODE_STOP_HOOK_BLOCK_CAP';
 
 export function normalizeStopHookBlockingCap(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

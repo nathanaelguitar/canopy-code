@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,9 +46,9 @@ const baseOpts: ServeOptions = {
 };
 const hostHeader = `127.0.0.1:${baseOpts.port}`;
 
-const originalQwenHome = process.env['QWEN_HOME'];
+const originalCanopyHome = process.env['QWEN_HOME'];
 const originalTrustedFoldersPath =
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
 interface Harness {
   scratch: string;
@@ -70,7 +70,7 @@ async function makeHarness(
   const scratch = await fsp.mkdtemp(
     path.join(
       os.tmpdir(),
-      `qwen-workspace-voice-${randomBytes(4).toString('hex')}-`,
+      `canopy-workspace-voice-${randomBytes(4).toString('hex')}-`,
     ),
   );
   const home = path.join(scratch, 'home');
@@ -78,7 +78,7 @@ async function makeHarness(
   await fsp.mkdir(home, { recursive: true });
   await fsp.mkdir(workspace, { recursive: true });
   process.env['QWEN_HOME'] = home;
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
     home,
     TRUSTED_FOLDERS_FILENAME,
   );
@@ -121,15 +121,16 @@ async function makeHarness(
 
 async function teardown(h: Harness): Promise<void> {
   await fsp.rm(h.scratch, { recursive: true, force: true });
-  if (originalQwenHome === undefined) {
+  if (originalCanopyHome === undefined) {
     delete process.env['QWEN_HOME'];
   } else {
-    process.env['QWEN_HOME'] = originalQwenHome;
+    process.env['QWEN_HOME'] = originalCanopyHome;
   }
   if (originalTrustedFoldersPath === undefined) {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   } else {
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
+      originalTrustedFoldersPath;
   }
   resetHomeEnvBootstrapForTesting();
   resetTrustedFoldersForTesting();
@@ -141,7 +142,7 @@ async function writeVoiceModelSettings(h: Harness): Promise<void> {
       openai: [
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           baseUrl: 'https://dashscope.example/compatible-mode/v1',
           envKey: 'DASHSCOPE_API_KEY',
         },
@@ -168,7 +169,7 @@ async function writeVoiceProviderSettings(
       openai: [
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           baseUrl: 'https://dashscope.example/compatible-mode/v1',
           envKey: 'DASHSCOPE_API_KEY',
         },
@@ -186,7 +187,7 @@ async function writeWorkspaceVoiceEnabled(
   h: Harness,
   enabled: boolean,
 ): Promise<void> {
-  await writeJson(path.join(h.workspace, '.qwen', 'settings.json'), {
+  await writeJson(path.join(h.workspace, '.canopy', 'settings.json'), {
     general: { voice: { enabled } },
   });
 }
@@ -712,9 +713,9 @@ describe('workspace voice routes', () => {
         openai: [
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             baseUrl: 'https://dashscope.example/compatible-mode/v1',
-            envKey: 'QWEN_VOICE_TEST_MISSING_KEY',
+            envKey: 'CANOPY_VOICE_TEST_MISSING_KEY',
           },
         ],
       },
@@ -730,7 +731,7 @@ describe('workspace voice routes', () => {
     expect(missingKey.status).toBe(400);
     expect(missingKey.body.code).toBe('invalid_voice_model');
     expect(missingKey.body.error).toContain(
-      'requires QWEN_VOICE_TEST_MISSING_KEY',
+      'requires CANOPY_VOICE_TEST_MISSING_KEY',
     );
 
     await writeJson(path.join(h.home, 'settings.json'), {
@@ -738,7 +739,7 @@ describe('workspace voice routes', () => {
         openai: [
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             baseUrl: 'http://dashscope.example/compatible-mode/v1',
           },
         ],
@@ -765,7 +766,7 @@ describe('workspace voice routes', () => {
         openai: [
           {
             id: 'qwen3-asr-flash',
-            label: 'Private Qwen ASR',
+            label: 'Private Canopy ASR',
             baseUrl,
             envKey: 'PRIVATE_ASR_KEY',
           },
@@ -799,12 +800,12 @@ describe('workspace voice routes', () => {
     // A cloned repo must not be able to self-grant HTTP/private-network voice
     // egress: security.allowedInsecureVoiceBaseUrls is stripped from workspace
     // scope, so the resolver still rejects the cleartext endpoint.
-    await writeJson(path.join(h.workspace, '.qwen', 'settings.json'), {
+    await writeJson(path.join(h.workspace, '.canopy', 'settings.json'), {
       modelProviders: {
         openai: [
           {
             id: 'qwen3-asr-flash',
-            label: 'Private Qwen ASR',
+            label: 'Private Canopy ASR',
             baseUrl,
             envKey: 'PRIVATE_ASR_KEY',
           },
@@ -898,7 +899,7 @@ describe('workspace voice routes', () => {
         openai: [
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             baseUrl: 'https://dashscope.example/compatible-mode/v1',
             envKey: 'DASHSCOPE_API_KEY',
           },
@@ -1015,7 +1016,7 @@ describe('workspace voice routes', () => {
       .post('/workspace/voice/transcribe')
       .set('Host', hostHeader)
       .set('Authorization', 'Bearer secret')
-      .set('X-Qwen-Client-Id', 'detached-client')
+      .set('X-Canopy-Client-Id', 'detached-client')
       .set('Content-Type', 'application/octet-stream')
       .send(Buffer.from([9]));
 

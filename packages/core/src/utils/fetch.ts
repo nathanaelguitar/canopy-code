@@ -530,11 +530,11 @@ export function formatFetchErrorForUser(
     ...(shouldShowTlsHint
       ? isTlsVerificationDisabled()
         ? [
-            '- TLS verification is already disabled (`--insecure` / `QWEN_TLS_INSECURE`), so this is likely a network or protocol issue rather than a certificate trust problem.',
+            '- TLS verification is already disabled (`--insecure` / `CANOPY_TLS_INSECURE`), so this is likely a network or protocol issue rather than a certificate trust problem.',
           ]
         : [
             '- If your network uses a corporate TLS inspection CA, set `NODE_EXTRA_CA_CERTS` to your CA bundle.',
-            '- For a trusted self-signed endpoint, pass `--insecure` (or set `QWEN_TLS_INSECURE=1`) to skip certificate verification.',
+            '- For a trusted self-signed endpoint, pass `--insecure` (or set `CANOPY_TLS_INSECURE=1`) to skip certificate verification.',
           ]
       : []),
   ];

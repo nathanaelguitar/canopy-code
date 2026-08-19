@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect } from 'vitest';
-import { ToolDisplayNames, ToolNames } from '@qwen-code/qwen-code-core';
+import { ToolDisplayNames, ToolNames } from '@canopy-code/canopy-code-core';
 import { TOOL_DISPLAY_BY_NAME } from './tool-display-map.js';
 
 describe('TOOL_DISPLAY_BY_NAME', () => {

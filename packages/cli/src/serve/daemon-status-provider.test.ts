@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -49,7 +49,7 @@ function makeWorkspaceServiceWithProvider(
   return createDaemonWorkspaceService({
     boundWorkspace: WS_A,
     isWorkspaceTrusted: () => true,
-    contextFilename: 'QWEN.md',
+    contextFilename: 'CANOPY.md',
     statusProvider,
     isChannelLive: opts.isChannelLive ?? (() => false),
     persistDisabledTools: async () => {},

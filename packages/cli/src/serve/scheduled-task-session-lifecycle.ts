@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@
 import {
   updateCronTasks,
   type DurableCronTask,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 /** A task is session-bound when it carries a non-empty `sessionId`. Mirrors the
  * strict check the other scheduled-task modules use (`scheduled-tasks.ts`,

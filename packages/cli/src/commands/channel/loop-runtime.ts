@@ -1,4 +1,4 @@
-import { nextFireTime, parseCron } from '@qwen-code/qwen-code-core';
+import { nextFireTime, parseCron } from '@canopy-code/canopy-code-core';
 import type {
   ChannelLoopController,
   ChannelLoopStore,
@@ -26,6 +26,6 @@ export function createChannelLoopController(
 export function isChannelCronEnabled(settings: {
   merged: { experimental?: { cron?: boolean } };
 }): boolean {
-  if (process.env['QWEN_CODE_DISABLE_CRON'] === '1') return false;
+  if (process.env['CANOPY_CODE_DISABLE_CRON'] === '1') return false;
   return settings.merged.experimental?.cron !== false;
 }

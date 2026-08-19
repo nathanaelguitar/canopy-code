@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
-import type { Config } from '@qwen-code/qwen-code-core';
+import type { Config } from '@canopy-code/canopy-code-core';
 import {
   HEADLESS_TOOL_RESULT_TEXT_JSON_BYTE_BUDGET,
   HEADLESS_TOOL_RESULT_TEXT_TRUNCATION_MARKER,
@@ -43,7 +43,7 @@ describe('DualOutputBridge', () => {
   let bridge: DualOutputBridge | null = null;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-dual-output-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-dual-output-'));
     target = path.join(tmpDir, 'events.jsonl');
     fs.writeFileSync(target, '');
     config = createMockConfig();

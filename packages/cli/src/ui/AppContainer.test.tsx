@@ -71,7 +71,7 @@ import {
   type GeminiClient,
   type GoalTurnHost,
   type SubagentManager,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 import type { InitializationResult } from '../core/initializer.js';
 import { UIStateContext, type UIState } from './contexts/UIStateContext.js';
@@ -208,7 +208,7 @@ import { useLogger } from './hooks/useLogger.js';
 import { useLoadingIndicator } from './hooks/useLoadingIndicator.js';
 import { useTerminalSize } from './hooks/useTerminalSize.js';
 import { useKeypress, type Key } from './hooks/useKeypress.js';
-import { ShellExecutionService } from '@qwen-code/qwen-code-core';
+import { ShellExecutionService } from '@canopy-code/canopy-code-core';
 import { clearCiEnv } from '../test-utils/ci-env.js';
 import { restorePromptStash } from '../services/prompt-stash.js';
 
@@ -304,7 +304,7 @@ describe('AppContainer State Management', () => {
       isAuthenticating: false,
       pendingAuthType: undefined,
       externalAuthState: null,
-      qwenAuthState: {
+      canopyAuthState: {
         deviceAuth: null,
         authStatus: 'idle',
         authMessage: null,
@@ -315,7 +315,7 @@ describe('AppContainer State Management', () => {
         isAuthenticating: false,
         pendingAuthType: undefined,
         externalAuthState: null,
-        qwenAuthState: {
+        canopyAuthState: {
           deviceAuth: null,
           authStatus: 'idle',
           authMessage: null,
@@ -661,7 +661,7 @@ describe('AppContainer State Management', () => {
     it('queries the branch from the worktree path during a worktree session', () => {
       mockedUseWorktreeSession.mockReturnValue({
         slug: 'feature',
-        worktreePath: '/repo/.qwen/worktrees/feature',
+        worktreePath: '/repo/.canopy/worktrees/feature',
         worktreeBranch: 'worktree-feature',
         originalCwd: '/repo',
         originalBranch: 'main',
@@ -678,7 +678,7 @@ describe('AppContainer State Management', () => {
       );
 
       expect(mockedUseGitBranchName).toHaveBeenCalledWith(
-        '/repo/.qwen/worktrees/feature',
+        '/repo/.canopy/worktrees/feature',
       );
     });
 
@@ -2446,12 +2446,12 @@ describe('AppContainer State Management', () => {
       );
 
       capturedUIActions.handleFinalSubmit(
-        '@.qwen/tmp/clipboard.png\n\ndescribe this image',
+        '@.canopy/tmp/clipboard.png\n\ndescribe this image',
         { submittedPrompt: 'describe this image' },
       );
 
       expect(mockQueueMessage).toHaveBeenCalledWith(
-        '@.qwen/tmp/clipboard.png\n\ndescribe this image',
+        '@.canopy/tmp/clipboard.png\n\ndescribe this image',
         false,
         'describe this image',
       );
@@ -3054,7 +3054,7 @@ describe('AppContainer State Management', () => {
       // claude-code parity: ESC immediately after submit (model produced
       // nothing) rewinds the user item + trailing INFO and pulls the prompt
       // text back into the input box. Up-arrow history is implicitly cleaned
-      // because qwen-code's userMessages list is derived from the same
+      // because canopy-code's userMessages list is derived from the same
       // historyManager.history.
       const mockSetText = vi.fn();
       const mockTruncateToItem = vi.fn();
@@ -4448,7 +4448,7 @@ describe('AppContainer State Management', () => {
       ).mock.calls.filter((call: string[]) => call[0].includes('\x1b]2;'));
       expect(titleWrites).toHaveLength(1);
       expect(titleWrites[0][0]).toBe(
-        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Qwen - workspace`),
+        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Canopy - workspace`),
       );
       unmount();
     });
@@ -4495,7 +4495,7 @@ describe('AppContainer State Management', () => {
         process.stdout.write as ReturnType<typeof vi.fn>
       ).mock.calls.filter((call: string[]) => call[0].includes('\x1b]2;'));
       expect(titleWrites).toHaveLength(1);
-      expect(titleWrites[0][0]).toBe(titleEscape('Qwen - workspace'));
+      expect(titleWrites[0][0]).toBe(titleEscape('Canopy - workspace'));
       unmount();
     });
 
@@ -4543,7 +4543,7 @@ describe('AppContainer State Management', () => {
       ).mock.calls.filter((call: string[]) => call[0].includes('\x1b]2;'));
       expect(titleWrites).toHaveLength(1);
       expect(titleWrites[0][0]).toBe(
-        titleEscape(`${ICON.SPARKLE} Qwen - workspace`),
+        titleEscape(`${ICON.SPARKLE} Canopy - workspace`),
       );
       unmount();
     });
@@ -4592,12 +4592,12 @@ describe('AppContainer State Management', () => {
       ).mock.calls.filter((call: string[]) => call[0].includes('\x1b]2;'));
       expect(titleWrites).toHaveLength(1);
       const calledWith = titleWrites[0][0];
-      expect(calledWith).toContain('Qwen - workspace');
+      expect(calledWith).toContain('Canopy - workspace');
       expect(calledWith).toContain('\x1b]0;');
       expect(calledWith).toContain('\x1b]2;');
       expect(calledWith).toContain('\x07');
       expect(calledWith).toBe(
-        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Qwen - workspace`),
+        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Canopy - workspace`),
       );
       unmount();
     });
@@ -4646,7 +4646,7 @@ describe('AppContainer State Management', () => {
       ).mock.calls.filter((call: string[]) => call[0].includes('\x1b]2;'));
       expect(titleWrites).toHaveLength(1);
       expect(titleWrites[0][0]).toBe(
-        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Qwen - workspace`),
+        titleEscape(`${ICON.CIRCLE_LEFT_HALF} Canopy - workspace`),
       );
       unmount();
     });
@@ -4791,11 +4791,11 @@ describe('AppContainer State Management', () => {
         'Fix terminal title',
       );
       // When null, falls back to computeWindowTitle() which returns
-      // 'Qwen - qwen' when CLI_TITLE is not set.
-      expect(formatSessionWindowTitle(null)).toBe('Qwen - qwen');
-      // When null with a folder name, adds the Qwen prefix.
+      // 'Canopy - canopy' when CLI_TITLE is not set.
+      expect(formatSessionWindowTitle(null)).toBe('Canopy - canopy');
+      // When null with a folder name, adds the Canopy prefix.
       expect(formatSessionWindowTitle(null, 'my-project')).toBe(
-        'Qwen - my-project',
+        'Canopy - my-project',
       );
       // Session names with control characters are sanitized at entry point.
       expect(formatSessionWindowTitle('Bad\x07Title')).toBe('BadTitle');
@@ -4900,7 +4900,7 @@ describe('AppContainer State Management', () => {
 
       // When sessionName is null (revert case), should use computeWindowTitle fallback
       const staticTitle = formatSessionWindowTitle(null, folderName);
-      expect(staticTitle).toBe('Qwen - my-project');
+      expect(staticTitle).toBe('Canopy - my-project');
 
       // When CLI_TITLE is set, it should use that instead
       vi.stubEnv('CLI_TITLE', 'Custom Title');
@@ -5177,7 +5177,7 @@ describe('AppContainer State Management', () => {
         isAuthenticating: true,
         pendingAuthType: undefined,
         externalAuthState: null,
-        qwenAuthState: {
+        canopyAuthState: {
           deviceAuth: null,
           authStatus: 'idle',
           authMessage: null,
@@ -5188,7 +5188,7 @@ describe('AppContainer State Management', () => {
           isAuthenticating: true,
           pendingAuthType: undefined,
           externalAuthState: null,
-          qwenAuthState: {
+          canopyAuthState: {
             deviceAuth: null,
             authStatus: 'idle',
             authMessage: null,

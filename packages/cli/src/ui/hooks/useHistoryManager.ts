@@ -5,7 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 import type { HistoryItem, HistoryItemWithoutId } from '../types.js';
 import process from 'node:process';
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -296,9 +296,9 @@ describe('POST /session/:id/a2ui-action', () => {
 
   it('falls back to workspace settings when daemon status is unavailable', async () => {
     const ws = await fsp.mkdtemp(path.join(os.tmpdir(), 'a2ui-action-test-'));
-    await fsp.mkdir(path.join(ws, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(ws, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(ws, '.qwen', 'settings.json'),
+      path.join(ws, '.canopy', 'settings.json'),
       JSON.stringify({
         mcpServers: { 'my-a2ui': { command: 'node', args: ['x.mjs'] } },
       }),
@@ -317,9 +317,9 @@ describe('POST /session/:id/a2ui-action', () => {
 
   it('skips unusable workspace settings configs during fallback', async () => {
     const ws = await fsp.mkdtemp(path.join(os.tmpdir(), 'a2ui-action-test-'));
-    await fsp.mkdir(path.join(ws, '.qwen'), { recursive: true });
+    await fsp.mkdir(path.join(ws, '.canopy'), { recursive: true });
     await fsp.writeFile(
-      path.join(ws, '.qwen', 'settings.json'),
+      path.join(ws, '.canopy', 'settings.json'),
       JSON.stringify({
         mcpServers: {
           'bad-a2ui': { command: '' },
@@ -582,8 +582,8 @@ describe('helpers', () => {
   it('findFromSettingsFile returns null for a missing or unparseable file', async () => {
     expect(await findFromSettingsFile('/definitely-missing-dir')).toBeNull();
     const ws = await fsp.mkdtemp(path.join(os.tmpdir(), 'a2ui-action-test-'));
-    await fsp.mkdir(path.join(ws, '.qwen'), { recursive: true });
-    await fsp.writeFile(path.join(ws, '.qwen', 'settings.json'), '{not json');
+    await fsp.mkdir(path.join(ws, '.canopy'), { recursive: true });
+    await fsp.writeFile(path.join(ws, '.canopy', 'settings.json'), '{not json');
     try {
       expect(await findFromSettingsFile(ws)).toBeNull();
     } finally {

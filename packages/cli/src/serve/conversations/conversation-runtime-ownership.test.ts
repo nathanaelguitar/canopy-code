@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -68,10 +68,10 @@ const currentNonce = 'conversation_owner_nonce_current_01';
 
 async function temporaryStableBase(): Promise<string> {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), 'qwen-conversation-owner-'),
+    path.join(os.tmpdir(), 'canopy-conversation-owner-'),
   );
   temporaryDirectories.push(root);
-  return path.join(root, '.qwen');
+  return path.join(root, '.canopy');
 }
 
 async function readRecord(stableBaseDir: string) {

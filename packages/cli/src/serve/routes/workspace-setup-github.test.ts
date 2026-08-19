@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -73,9 +73,9 @@ const baseOpts: ServeOptions = {
   mode: 'http-bridge',
 };
 
-const originalQwenHome = process.env['QWEN_HOME'];
+const originalCanopyHome = process.env['QWEN_HOME'];
 const originalTrustedFoldersPath =
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
 
 interface Harness {
   workspace: string;
@@ -100,7 +100,7 @@ async function makeHarness(
   const scratch = await fsp.mkdtemp(
     path.join(
       os.tmpdir(),
-      `qwen-setup-github-route-${randomBytes(4).toString('hex')}-`,
+      `canopy-setup-github-route-${randomBytes(4).toString('hex')}-`,
     ),
   );
   const wsDir = path.join(scratch, 'ws');
@@ -108,7 +108,7 @@ async function makeHarness(
   await fsp.mkdir(home, { recursive: true });
   await fsp.mkdir(wsDir);
   process.env['QWEN_HOME'] = home;
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
     home,
     TRUSTED_FOLDERS_FILENAME,
   );
@@ -158,15 +158,16 @@ async function makeHarness(
 
 async function teardown(h: Harness): Promise<void> {
   await fsp.rm(h.scratch, { recursive: true, force: true });
-  if (originalQwenHome === undefined) {
+  if (originalCanopyHome === undefined) {
     delete process.env['QWEN_HOME'];
   } else {
-    process.env['QWEN_HOME'] = originalQwenHome;
+    process.env['QWEN_HOME'] = originalCanopyHome;
   }
   if (originalTrustedFoldersPath === undefined) {
-    delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   } else {
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = originalTrustedFoldersPath;
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
+      originalTrustedFoldersPath;
   }
   resetHomeEnvBootstrapForTesting();
   resetTrustedFoldersForTesting();
@@ -184,12 +185,12 @@ function setupResult() {
     gitRepoRoot: '/work',
     releaseTag: 'v1.2.3',
     readmeUrl:
-      'https://github.com/QwenLM/qwen-code-action/blob/v1.2.3/README.md#quick-start',
+      'https://github.com/QwenLM/canopy-code-action/blob/v1.2.3/README.md#quick-start',
     secretsUrl: 'https://github.com/owner/repo/settings/secrets/actions',
     workflows: [
       {
-        sourcePath: 'qwen-dispatch/qwen-dispatch.yml',
-        path: '.github/workflows/qwen-dispatch.yml',
+        sourcePath: 'canopy-dispatch/canopy-dispatch.yml',
+        path: '.github/workflows/canopy-dispatch.yml',
         status: 'written',
         sizeBytes: 12,
       },
@@ -244,7 +245,7 @@ describe('POST /workspace/setup-github', () => {
       .post('/workspace/setup-github')
       .set('Host', loopbackHost())
       .set('Authorization', 'Bearer secret')
-      .set('X-Qwen-Client-Id', 'client-1')
+      .set('X-Canopy-Client-Id', 'client-1')
       .send({ consent: true });
 
     expect(res.status).toBe(200);
@@ -597,16 +598,16 @@ describe('POST /workspace/setup-github', () => {
       partial: true,
       workflows: [
         {
-          sourcePath: 'qwen-dispatch/qwen-dispatch.yml',
-          path: '.github/workflows/qwen-dispatch.yml',
+          sourcePath: 'canopy-dispatch/canopy-dispatch.yml',
+          path: '.github/workflows/canopy-dispatch.yml',
           status: 'written',
           sizeBytes: 12,
         },
         {
-          sourcePath: 'qwen-assistant/qwen-invoke.yml',
-          path: '.github/workflows/qwen-invoke.yml',
+          sourcePath: 'canopy-assistant/canopy-invoke.yml',
+          path: '.github/workflows/canopy-invoke.yml',
           status: 'failed',
-          error: `ENOSPC: open ${h.workspace}/.github/workflows/qwen-invoke.yml`,
+          error: `ENOSPC: open ${h.workspace}/.github/workflows/canopy-invoke.yml`,
         },
       ],
     };
@@ -629,9 +630,9 @@ describe('POST /workspace/setup-github', () => {
     expect(res.body.code).toBe('github_workflow_write_failed');
     expect(res.body.partial).toBe(true);
     expect(res.body.result.workflows[1]).toMatchObject({
-      path: '.github/workflows/qwen-invoke.yml',
+      path: '.github/workflows/canopy-invoke.yml',
       status: 'failed',
-      error: 'ENOSPC: open <workspace>/.github/workflows/qwen-invoke.yml',
+      error: 'ENOSPC: open <workspace>/.github/workflows/canopy-invoke.yml',
     });
     expect(res.body.result.workflows[1].error).not.toContain(h.workspace);
   });

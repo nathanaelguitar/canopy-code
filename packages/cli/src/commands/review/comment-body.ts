@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// `qwen review comment-body`: fetch one comment's body. The pr-context file
+// `canopy review comment-body`: fetch one comment's body. The pr-context file
 // caps long bodies and names this command in its truncation note — the model
 // used to be handed a raw `gh api repos/…` route, which coupled the skill
 // prose to GitHub's URL scheme and dropped the Enterprise host on the floor

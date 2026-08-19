@@ -8,7 +8,7 @@ import {
   flatMapTextParts,
   readPathFromWorkspace,
   createDebugLogger,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { CommandContext } from '../../ui/commands/types.js';
 import { MessageType } from '../../ui/types.js';
 import {
@@ -59,7 +59,7 @@ export class AtFileProcessor implements IPromptProcessor {
         try {
           const fileContentParts = await readPathFromWorkspace(pathStr, config);
           if (fileContentParts.length === 0) {
-            const uiMessage = `File '@{${pathStr}}' was ignored by .gitignore or configured Qwen ignore files and was not included in the prompt.`;
+            const uiMessage = `File '@{${pathStr}}' was ignored by .gitignore or configured Canopy ignore files and was not included in the prompt.`;
             context.ui.addItem(
               { type: MessageType.INFO, text: uiMessage },
               Date.now(),

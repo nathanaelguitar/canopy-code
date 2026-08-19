@@ -45,7 +45,7 @@ import { BudgetExhaustedError } from './mcp-client-manager.js';
 const debugLogger = createDebugLogger('McpPool');
 
 /**
- * Pool-wide configuration. Caller (typically `QwenAgent` in daemon
+ * Pool-wide configuration. Caller (typically `CanopyAgent` in daemon
  * mode) supplies these from CLI flags + env vars.
  *
  * Per-entry tuning (drain, max idle, reconnect strategy) is resolved
@@ -700,7 +700,7 @@ export class McpTransportPool {
   }
 
   /**
-   * Graceful (or force) shutdown of all entries. Used by `QwenAgent.close`.
+   * Graceful (or force) shutdown of all entries. Used by `CanopyAgent.close`.
    *
    * Returns `DrainResult` with counts for shutdown logging. Wall-clock
    * bounded by `timeoutMs` (default 10s); entries that fail to close

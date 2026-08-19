@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -393,7 +393,7 @@ describe('rateLimit', () => {
         get: vi
           .fn()
           .mockImplementation((h: string) =>
-            h === 'x-qwen-client-id' ? 'my-client' : undefined,
+            h === 'x-canopy-client-id' ? 'my-client' : undefined,
           ),
       });
       expect(extractor(req)).toBe('cid:my-client');
@@ -429,7 +429,7 @@ describe('rateLimit', () => {
         get: vi
           .fn()
           .mockImplementation((h: string) =>
-            h === 'x-qwen-client-id' ? 'web-1' : undefined,
+            h === 'x-canopy-client-id' ? 'web-1' : undefined,
           ),
         socket: { remoteAddress: '10.0.0.5' },
       });
@@ -442,7 +442,7 @@ describe('rateLimit', () => {
         get: vi
           .fn()
           .mockImplementation((h: string) =>
-            h === 'x-qwen-client-id' ? 'bad id with spaces' : undefined,
+            h === 'x-canopy-client-id' ? 'bad id with spaces' : undefined,
           ),
       });
       expect(extractor(req)).toBe('anonymous');

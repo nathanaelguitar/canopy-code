@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,12 +14,12 @@ import { theme } from '../semantic-colors.js';
 import { ICON } from '../constants.js';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { t } from '../../i18n/index.js';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import type {
   ProviderConfig,
   BaseUrlOption,
   ModelSpec,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { ProviderSetupFlow } from './useProviderSetupFlow.js';
 import { normalizeModelIds } from './useAuth.js';
 

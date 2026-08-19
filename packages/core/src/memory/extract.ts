@@ -110,7 +110,7 @@ export async function runAutoMemoryExtract(params: {
   const now = params.now ?? new Date();
   // Per-project scaffold is required (extraction cursor + metadata live
   // there). User-level scaffold is optional — a brand-new user without
-  // write access to `~/.qwen/memories/` should still be able to use
+  // write access to `~/.canopy/memories/` should still be able to use
   // project-level memory, so swallow the failure and continue.
   await ensureAutoMemoryScaffold(params.projectRoot, now);
   try {
@@ -178,7 +178,7 @@ export async function runAutoMemoryExtract(params: {
     //     until some later session happens to trigger another rebuild. The
     //     pre-existing `Promise.all` contract (throw → cursor stays → retry
     //     on next session) is the durability guarantee we must preserve.
-    //   * user-level rebuild is best-effort. A read-only `~/.qwen/memories/`
+    //   * user-level rebuild is best-effort. A read-only `~/.canopy/memories/`
     //     (EACCES) must not poison the project-level rebuild or block the
     //     cursor. Catch + warn, same shape as the user-level scaffold above.
     const projectRebuild =

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -236,7 +236,7 @@ export class ExtensionStore {
       options.extensionsDir ?? Storage.getUserExtensionsDir();
     this.storeDir =
       options.storeDir ??
-      path.join(Storage.getGlobalQwenDir(), 'extension-store');
+      path.join(Storage.getGlobalCanopyDir(), 'extension-store');
     this.enablementPath =
       options.enablementPath ??
       path.join(this.extensionsDir, 'extension-enablement.json');

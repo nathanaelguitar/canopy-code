@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * Configuration for ACP message rewriting.
- * Loaded from .qwen/settings.json under "messageRewrite" key.
+ * Loaded from .canopy/settings.json under "messageRewrite" key.
  */
 export interface MessageRewriteConfig {
   /** Whether message rewriting is enabled */

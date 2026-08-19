@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,7 +37,7 @@ vi.mock('./lib/git.js', () => ({
 }));
 
 vi.mock('./lib/paths.js', () => ({
-  worktreePath: (n: string | number) => `/repo/.qwen/tmp/review-pr-${n}`,
+  worktreePath: (n: string | number) => `/repo/.canopy/tmp/review-pr-${n}`,
 }));
 
 vi.mock('node:fs', async (importOriginal) => {
@@ -65,10 +65,10 @@ async function run(ownerRepo = 'o/r') {
   if (!handler) throw new Error('handler missing');
   await handler({
     _: [],
-    $0: 'qwen',
+    $0: 'canopy',
     pr_number: '7632',
     owner_repo: ownerRepo,
-    out: '/repo/.qwen/tmp/qwen-review-pr-7632-comment-status.json',
+    out: '/repo/.canopy/tmp/canopy-review-pr-7632-comment-status.json',
   } as unknown as Parameters<typeof handler>[0]);
 }
 
@@ -146,10 +146,10 @@ describe('comment-status handler', () => {
     if (!handler) throw new Error('handler missing');
     await handler({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr_number: '7632',
       owner_repo: 'o/r',
-      out: '/repo/.qwen/tmp/qwen-review-pr-7632-comment-status.json',
+      out: '/repo/.canopy/tmp/canopy-review-pr-7632-comment-status.json',
       host: 'github.example.com',
     } as unknown as Parameters<typeof handler>[0]);
     expect(mocks.setGhHost).toHaveBeenCalledWith('github.example.com');

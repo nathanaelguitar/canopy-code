@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Code
+ * Copyright 2026 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Storage, createDebugLogger } from '@qwen-code/qwen-code-core';
+import { Storage, createDebugLogger } from '@canopy-code/canopy-code-core';
 import { execFile, execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
@@ -15,7 +15,7 @@ import lockfile from 'proper-lockfile';
 import semver from 'semver';
 import { getNpmCliPath } from './installationInfo.js';
 
-const PACKAGE_NAME = '@qwen-code/qwen-code';
+const PACKAGE_NAME = '@canopy-code/canopy-code';
 const debugLogger = createDebugLogger('MANAGED_NPM_UPDATE');
 const execFileAsync = promisify(execFile);
 
@@ -35,12 +35,12 @@ function assertVersion(version: string): void {
 }
 
 function packageDir(prefix: string): string {
-  return path.join(prefix, 'node_modules', '@qwen-code', 'qwen-code');
+  return path.join(prefix, 'node_modules', '@canopy-code', 'canopy-code');
 }
 
 function resolveBootstrapPath(bootstrapPath?: string): string {
   if (!bootstrapPath) {
-    throw new Error('Unable to identify the Qwen Code npm launcher');
+    throw new Error('Unable to identify the Canopy Code npm launcher');
   }
   return fs.realpathSync(bootstrapPath);
 }
@@ -142,7 +142,7 @@ function readBaseInstallation(bootstrapPath: string): {
     ),
   ) as { name?: unknown; version?: unknown };
   if (manifest.name !== PACKAGE_NAME || typeof manifest.version !== 'string') {
-    throw new Error('Unable to identify the base Qwen Code npm installation');
+    throw new Error('Unable to identify the base Canopy Code npm installation');
   }
   return {
     version: manifest.version,
@@ -169,7 +169,7 @@ async function validateInstallation(
 async function smokeTest(prefix: string): Promise<void> {
   const env = { ...process.env };
   delete env['CLI_VERSION'];
-  delete env['QWEN_CODE_RELAUNCH_ARGS'];
+  delete env['CANOPY_CODE_RELAUNCH_ARGS'];
   await execFileAsync(
     process.execPath,
     [path.join(packageDir(prefix), 'cli-entry.js'), '--help'],
@@ -208,9 +208,9 @@ async function readActiveVersion(
 
 export function prepareManagedNpmUpdate(
   version: string,
-  bootstrapPath = process.env['QWEN_CODE_CLI'],
-  updateRoot = process.env['QWEN_CODE_MANAGED_NPM_ROOT'] ??
-    path.join(Storage.getGlobalQwenDir(), 'updates', 'npm'),
+  bootstrapPath = process.env['CANOPY_CODE_CLI'],
+  updateRoot = process.env['CANOPY_CODE_MANAGED_NPM_ROOT'] ??
+    path.join(Storage.getGlobalCanopyDir(), 'updates', 'npm'),
 ): ManagedNpmUpdate {
   assertVersion(version);
   const resolvedBootstrapPath = resolveBootstrapPath(bootstrapPath);
@@ -247,9 +247,9 @@ export function prepareManagedNpmUpdate(
 
 export async function installManagedNpmUpdate(
   version: string,
-  bootstrapPath = process.env['QWEN_CODE_CLI'],
-  updateRoot = process.env['QWEN_CODE_MANAGED_NPM_ROOT'] ??
-    path.join(Storage.getGlobalQwenDir(), 'updates', 'npm'),
+  bootstrapPath = process.env['CANOPY_CODE_CLI'],
+  updateRoot = process.env['CANOPY_CODE_MANAGED_NPM_ROOT'] ??
+    path.join(Storage.getGlobalCanopyDir(), 'updates', 'npm'),
   spawnFn: typeof spawn = spawn,
 ): Promise<void> {
   const update = prepareManagedNpmUpdate(version, bootstrapPath, updateRoot);
@@ -290,7 +290,7 @@ export async function installManagedNpmUpdate(
 export async function activateManagedNpmUpdate(
   update: ManagedNpmUpdate,
   version: string,
-  bootstrapPath = process.env['QWEN_CODE_CLI'],
+  bootstrapPath = process.env['CANOPY_CODE_CLI'],
 ): Promise<void> {
   assertVersion(version);
   const resolvedBootstrapPath = resolveBootstrapPath(bootstrapPath);
@@ -322,7 +322,7 @@ export async function activateManagedNpmUpdate(
       base.ctimeMs !== update.bootstrapCtimeMs
     ) {
       throw new Error(
-        'The base Qwen Code npm installation changed during update',
+        'The base Canopy Code npm installation changed during update',
       );
     }
 

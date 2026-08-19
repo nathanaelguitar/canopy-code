@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ import {
   type ToolCallConfirmationDetails,
   type WorkflowApproval,
   type WorkflowTask,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { ToolConfirmationMessage } from '../messages/ToolConfirmationMessage.js';
 import { WorkflowSaveOverlay } from './workflow-save-overlay.js';
 import { formatDuration, formatTokenCount } from '../../utils/formatters.js';
@@ -999,7 +999,7 @@ const AgentDetailBody: React.FC<{
 };
 
 const ShellDetailBody: React.FC<{
-  entry: import('@qwen-code/qwen-code-core').ShellTask;
+  entry: import('@canopy-code/canopy-code-core').ShellTask;
   maxHeight: number;
   maxWidth: number;
 }> = ({ entry, maxHeight, maxWidth }) => {
@@ -1844,7 +1844,7 @@ export const BackgroundTasksDialog: React.FC<BackgroundTasksDialogProps> = ({
     !selectedEntry.resumeBlockedReason;
 
   // P7b-A3: a completed workflow run that still carries its script source can
-  // be saved to `.qwen/workflows/<name>.js` from the detail view.
+  // be saved to `.canopy/workflows/<name>.js` from the detail view.
   const workflowSaveTarget =
     config &&
     selectedEntry?.kind === 'workflow' &&

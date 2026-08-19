@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import {
 } from './sanitize-child-env.js';
 
 describe('sanitizeChildEnv', () => {
-  it('removes Qwen-internal secrets', () => {
+  it('removes Canopy-internal secrets', () => {
     const result = sanitizeChildEnv({
       QWEN_SERVER_TOKEN: 'super-secret',
       QWEN_DAEMON_TOKEN: 'also-secret',

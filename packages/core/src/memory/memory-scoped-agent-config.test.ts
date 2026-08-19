@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,7 +23,7 @@ import {
 } from './paths.js';
 
 describe('createMemoryScopedAgentConfig', () => {
-  const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+  const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
   let tempDir: string;
   let projectRoot: string;
 
@@ -31,7 +31,7 @@ describe('createMemoryScopedAgentConfig', () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'memory-scoped-'));
     projectRoot = path.join(tempDir, 'project');
     await fs.mkdir(projectRoot, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
     clearAutoMemoryRootCache();
     await fs.mkdir(path.join(getAutoMemoryRoot(projectRoot), 'project'), {
       recursive: true,
@@ -43,9 +43,9 @@ describe('createMemoryScopedAgentConfig', () => {
 
   afterEach(async () => {
     if (originalMemoryBase === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
     }
     clearAutoMemoryRootCache();
     await fs.rm(tempDir, { recursive: true, force: true });
@@ -583,19 +583,19 @@ describe('createMemoryScopedAgentConfig', () => {
 });
 
 describe('isAllowedMemoryPath with a symlinked project root', () => {
-  const originalMemoryLocal = process.env['QWEN_CODE_MEMORY_LOCAL'];
+  const originalMemoryLocal = process.env['CANOPY_CODE_MEMORY_LOCAL'];
   let baseDir: string;
   let projectRoot: string;
 
   beforeEach(async () => {
     // Local-memory mode anchors the managed-memory root at
-    // `<projectRoot>/.qwen/memory`, so routing the project root through an
+    // `<projectRoot>/.canopy/memory`, so routing the project root through an
     // explicit symlink puts a symlink component in the memory-root path on
     // every platform — not only where os.tmpdir() happens to be a symlink
     // (e.g. macOS `/var` -> `/private/var`). The memory root is deliberately
     // NOT created, so the allow-check must resolve the nearest existing
     // ancestor (the symlink) rather than assume the root already exists.
-    process.env['QWEN_CODE_MEMORY_LOCAL'] = '1';
+    process.env['CANOPY_CODE_MEMORY_LOCAL'] = '1';
     baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'memory-symlink-'));
     const realProject = path.join(baseDir, 'realproj');
     projectRoot = path.join(baseDir, 'linkproj');
@@ -606,9 +606,9 @@ describe('isAllowedMemoryPath with a symlinked project root', () => {
 
   afterEach(async () => {
     if (originalMemoryLocal === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     } else {
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
     }
     clearAutoMemoryRootCache();
     await fs.rm(baseDir, { recursive: true, force: true });
@@ -626,7 +626,7 @@ describe('isAllowedMemoryPath with a symlinked project root', () => {
 
   it('still denies a path outside the symlinked managed-memory root', () => {
     // The symmetric resolution must not become overly permissive: a normal
-    // project file that is not under `<projectRoot>/.qwen/memory` — reached
+    // project file that is not under `<projectRoot>/.canopy/memory` — reached
     // through the same symlinked root — is still rejected.
     const outsideFile = path.join(projectRoot, 'notes.md');
     expect(isAllowedMemoryPath(outsideFile, projectRoot)).toBe(false);
@@ -636,48 +636,48 @@ describe('isAllowedMemoryPath with a symlinked project root', () => {
 describe('isAllowedMemoryPath with a symlinked managed-memory suffix', () => {
   // Unlike the block above (where the symlink sits ABOVE the trusted anchor —
   // the project root itself is a symlink, like macOS `/var`), here the symlink
-  // is a repo-tracked `.qwen` INSIDE the managed suffix pointing outside the
+  // is a repo-tracked `.canopy` INSIDE the managed suffix pointing outside the
   // project. Canonicalizing such a symlink would relocate the "allowed" root
-  // out of the project, so the anchor is canonicalized but the `.qwen/memory`
+  // out of the project, so the anchor is canonicalized but the `.canopy/memory`
   // suffix is appended literally and the write is denied.
-  const originalMemoryLocal = process.env['QWEN_CODE_MEMORY_LOCAL'];
+  const originalMemoryLocal = process.env['CANOPY_CODE_MEMORY_LOCAL'];
   let baseDir: string;
   let projectRoot: string;
   let outsideDir: string;
 
   beforeEach(async () => {
-    process.env['QWEN_CODE_MEMORY_LOCAL'] = '1';
-    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'memory-qwenlink-'));
+    process.env['CANOPY_CODE_MEMORY_LOCAL'] = '1';
+    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'memory-canopylink-'));
     projectRoot = path.join(baseDir, 'repo');
     outsideDir = path.join(baseDir, 'outside');
     await fs.mkdir(projectRoot, { recursive: true });
     await fs.mkdir(outsideDir, { recursive: true });
-    // The whole `.qwen` dir is a symlink escaping the project — a malicious
+    // The whole `.canopy` dir is a symlink escaping the project — a malicious
     // repo can ship this as a git-tracked symlink.
-    await fs.symlink(outsideDir, path.join(projectRoot, '.qwen'));
+    await fs.symlink(outsideDir, path.join(projectRoot, '.canopy'));
     clearAutoMemoryRootCache();
   });
 
   afterEach(async () => {
     if (originalMemoryLocal === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     } else {
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
     }
     clearAutoMemoryRootCache();
     await fs.rm(baseDir, { recursive: true, force: true });
   });
 
-  it('denies a write via a `.qwen` symlink escaping the project when the target is absent', () => {
-    // `.qwen -> /outside` with `/outside/memory` not yet created: the candidate
+  it('denies a write via a `.canopy` symlink escaping the project when the target is absent', () => {
+    // `.canopy -> /outside` with `/outside/memory` not yet created: the candidate
     // resolves to `/outside/memory/project.md`, but the allowed root keeps the
-    // literal `.qwen/memory` suffix, so the escape is rejected before it can
+    // literal `.canopy/memory` suffix, so the escape is rejected before it can
     // create `/outside/memory/project.md`.
     const memoryFile = path.join(getAutoMemoryRoot(projectRoot), 'project.md');
     expect(isAllowedMemoryPath(memoryFile, projectRoot)).toBe(false);
   });
 
-  it('denies a write via a `.qwen` symlink escaping the project when the target already exists', async () => {
+  it('denies a write via a `.canopy` symlink escaping the project when the target already exists', async () => {
     // The same escape must stay denied even once `/outside/memory` exists —
     // otherwise realpath'ing the whole root would resolve the symlink on both
     // sides and let the write through.
@@ -688,20 +688,20 @@ describe('isAllowedMemoryPath with a symlinked managed-memory suffix', () => {
 });
 
 describe('isAllowedMemoryPath in default (shared) memory mode', () => {
-  // The two symlink blocks above both force QWEN_CODE_MEMORY_LOCAL=1, so they
+  // The two symlink blocks above both force CANOPY_CODE_MEMORY_LOCAL=1, so they
   // only exercise the local-mode anchor (the project root). In the default
   // (shared) mode the managed root lives under getMemoryBaseDir() and THAT is
   // the trusted anchor — a distinct branch of getAutoMemoryTrustedAnchor /
   // resolveTrustedMemoryRoot. Pin both sides of its trust boundary too, so a
   // regression in the shared-base-dir path can't stay green behind the local
   // tests.
-  const originalMemoryLocal = process.env['QWEN_CODE_MEMORY_LOCAL'];
-  const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+  const originalMemoryLocal = process.env['CANOPY_CODE_MEMORY_LOCAL'];
+  const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
   let tempDir: string;
   let projectRoot: string;
 
   beforeEach(async () => {
-    delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+    delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'memory-shared-'));
     projectRoot = path.join(tempDir, 'project');
     await fs.mkdir(projectRoot, { recursive: true });
@@ -710,14 +710,14 @@ describe('isAllowedMemoryPath in default (shared) memory mode', () => {
 
   afterEach(async () => {
     if (originalMemoryLocal === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_LOCAL'];
+      delete process.env['CANOPY_CODE_MEMORY_LOCAL'];
     } else {
-      process.env['QWEN_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
+      process.env['CANOPY_CODE_MEMORY_LOCAL'] = originalMemoryLocal;
     }
     if (originalMemoryBase === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
     }
     clearAutoMemoryRootCache();
     await fs.rm(tempDir, { recursive: true, force: true });
@@ -732,11 +732,11 @@ describe('isAllowedMemoryPath in default (shared) memory mode', () => {
     const linkBase = path.join(tempDir, 'link-base');
     await fs.mkdir(realBase, { recursive: true });
     await fs.symlink(realBase, linkBase);
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = linkBase;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = linkBase;
     clearAutoMemoryRootCache();
 
     // Sanity: this is the default (shared) mode — the root lives under the
-    // (symlinked) base dir, not under `<projectRoot>/.qwen`. Guards the test
+    // (symlinked) base dir, not under `<projectRoot>/.canopy`. Guards the test
     // against silently falling back into local mode.
     const root = getAutoMemoryRoot(projectRoot);
     expect(root.startsWith(linkBase + path.sep)).toBe(true);
@@ -754,7 +754,7 @@ describe('isAllowedMemoryPath in default (shared) memory mode', () => {
     const outside = path.join(tempDir, 'outside');
     await fs.mkdir(realBase, { recursive: true });
     await fs.mkdir(outside, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = realBase;
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = realBase;
     clearAutoMemoryRootCache();
 
     const managedRoot = getAutoMemoryRoot(projectRoot);

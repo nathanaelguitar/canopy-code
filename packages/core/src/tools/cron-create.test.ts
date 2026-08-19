@@ -107,7 +107,7 @@ describe('CronCreateTool', () => {
     const result = await invocation.execute(new AbortController().signal);
     expect(result.error).toBeUndefined();
     expect(result.llmContent).toContain(
-      'Persisted to ~/.qwen/tmp/<project-hash>/scheduled_tasks.json',
+      'Persisted to ~/.canopy/tmp/<project-hash>/scheduled_tasks.json',
     );
     expect(result.returnDisplay).toContain('[durable]');
 

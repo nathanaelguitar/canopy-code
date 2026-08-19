@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Prompt Suggestion Hook for CLI
@@ -14,11 +14,11 @@ import {
   createFollowupController,
   logPromptSuggestion,
   PromptSuggestionEvent,
-} from '@qwen-code/qwen-code-core';
-import type { FollowupState, Config } from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
+import type { FollowupState, Config } from '@canopy-code/canopy-code-core';
 
 // Re-export for consumers that import from here
-export type { FollowupState } from '@qwen-code/qwen-code-core';
+export type { FollowupState } from '@canopy-code/canopy-code-core';
 
 /**
  * Options for the hook

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { AuthType, type Config } from '@qwen-code/qwen-code-core';
+import { AuthType, type Config } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../../config/settings.js';
 import {
   assertVoiceBaseUrlNetworkAllowed,
@@ -64,7 +64,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Qwen ASR',
+        label: 'Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl: 'https://dashscope.example/v1',
         envKey: 'DASHSCOPE_API_KEY',
@@ -89,7 +89,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Qwen ASR',
+        label: 'Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl: 'https://dashscope.example/v1',
         envKey: 'DASHSCOPE_API_KEY',
@@ -117,7 +117,7 @@ describe('voice-transcriber', () => {
       const config = createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://dashscope.example/v1',
           envKey,
@@ -166,7 +166,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl: 'https://dashscope.example/v1',
             envKey: 'DASHSCOPE_API_KEY',
@@ -179,11 +179,11 @@ describe('voice-transcriber', () => {
   });
 
   it('keeps realtime model ids on their matching streaming transport', () => {
-    const qwenStreamConfig = resolveVoiceStreamConfig({
+    const canopyStreamConfig = resolveVoiceStreamConfig({
       config: createConfig([
         {
           id: 'qwen3-asr-flash-realtime',
-          label: 'Qwen ASR Realtime',
+          label: 'Canopy ASR Realtime',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://dashscope.example/v1',
           envKey: 'DASHSCOPE_API_KEY',
@@ -193,12 +193,12 @@ describe('voice-transcriber', () => {
       voiceModel: 'qwen3-asr-flash-realtime',
     });
 
-    expect(qwenStreamConfig).toEqual({
+    expect(canopyStreamConfig).toEqual({
       transport: 'qwen-asr-realtime',
       model: 'qwen3-asr-flash-realtime',
       baseUrl: 'https://dashscope.example/v1',
       apiKey: 'sk-test',
-      keytermsContext: expect.stringContaining('Qwen'),
+      keytermsContext: expect.stringContaining('Canopy'),
     });
 
     const funStreamConfig = resolveVoiceStreamConfig({
@@ -225,7 +225,7 @@ describe('voice-transcriber', () => {
       config: createConfig([
         {
           id: 'qwen3-asr-flash-realtime',
-          label: 'Private Qwen ASR Realtime',
+          label: 'Private Canopy ASR Realtime',
           authType: AuthType.USE_OPENAI,
           baseUrl,
           envKey: 'DASHSCOPE_API_KEY',
@@ -244,13 +244,16 @@ describe('voice-transcriber', () => {
     const workspaceDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'voice-transcriber-keyterms-'),
     );
-    const qwenDir = path.join(workspaceDir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
-    fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), 'Paraformer\n');
+    const canopyDir = path.join(workspaceDir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(canopyDir, 'voice-keyterms.txt'),
+      'Paraformer\n',
+    );
     try {
       const settings = {
         isTrusted: true,
-        workspace: { path: path.join(qwenDir, 'settings.json') },
+        workspace: { path: path.join(canopyDir, 'settings.json') },
         merged: {
           env: { DASHSCOPE_API_KEY: 'sk-test' },
           security: { auth: {} },
@@ -261,7 +264,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash-realtime',
-            label: 'Qwen ASR Realtime',
+            label: 'Canopy ASR Realtime',
             authType: AuthType.USE_OPENAI,
             baseUrl: 'https://dashscope.example/v1',
             envKey: 'DASHSCOPE_API_KEY',
@@ -272,7 +275,7 @@ describe('voice-transcriber', () => {
       });
 
       expect(streamConfig.keytermsContext).toContain('Paraformer');
-      expect(streamConfig.keytermsContext).toContain('Qwen'); // globals too
+      expect(streamConfig.keytermsContext).toContain('Canopy'); // globals too
     } finally {
       fs.rmSync(workspaceDir, { recursive: true, force: true });
     }
@@ -282,9 +285,12 @@ describe('voice-transcriber', () => {
     const workspaceDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'voice-transcriber-keyterms-'),
     );
-    const qwenDir = path.join(workspaceDir, '.qwen');
-    fs.mkdirSync(qwenDir, { recursive: true });
-    fs.writeFileSync(path.join(qwenDir, 'voice-keyterms.txt'), 'Paraformer\n');
+    const canopyDir = path.join(workspaceDir, '.canopy');
+    fs.mkdirSync(canopyDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(canopyDir, 'voice-keyterms.txt'),
+      'Paraformer\n',
+    );
     try {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: true,
@@ -294,7 +300,7 @@ describe('voice-transcriber', () => {
       });
       const settings = {
         isTrusted: true,
-        workspace: { path: path.join(qwenDir, 'settings.json') },
+        workspace: { path: path.join(canopyDir, 'settings.json') },
         merged: {
           env: { DASHSCOPE_API_KEY: 'sk-test' },
           security: { auth: {} },
@@ -307,7 +313,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -325,7 +331,7 @@ describe('voice-transcriber', () => {
         (m: { role: string }) => m.role === 'system',
       );
       expect(sys.content[0].text).toContain('Paraformer');
-      expect(sys.content[0].text).toContain('Qwen'); // globals too
+      expect(sys.content[0].text).toContain('Canopy'); // globals too
     } finally {
       fs.rmSync(workspaceDir, { recursive: true, force: true });
     }
@@ -336,7 +342,7 @@ describe('voice-transcriber', () => {
       ...createConfig([
         {
           id: 'qwen3-asr-flash-realtime',
-          label: 'Qwen ASR Realtime',
+          label: 'Canopy ASR Realtime',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://dashscope.example/v1',
           envKey: 'DASHSCOPE_API_KEY',
@@ -351,7 +357,7 @@ describe('voice-transcriber', () => {
       voiceModel: 'qwen3-asr-flash-realtime',
     });
 
-    expect(streamConfig.keytermsContext).toContain('Qwen');
+    expect(streamConfig.keytermsContext).toContain('Canopy');
     expect(streamConfig.keytermsContext).not.toContain('secret');
     expect(streamConfig.keytermsContext).not.toContain('codename');
   });
@@ -423,7 +429,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Qwen ASR',
+        label: 'Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
       },
@@ -450,7 +456,7 @@ describe('voice-transcriber', () => {
       const config = createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl,
         },
@@ -515,7 +521,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Qwen ASR',
+        label: 'Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl: 'dashscope.example/v1',
       },
@@ -534,7 +540,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Qwen ASR',
+        label: 'Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl: 'http://dashscope.aliyuncs.com/compatible-mode/v1',
       },
@@ -554,7 +560,7 @@ describe('voice-transcriber', () => {
     const config = createConfig([
       {
         id: 'qwen3-asr-flash',
-        label: 'Private Qwen ASR',
+        label: 'Private Canopy ASR',
         authType: AuthType.USE_OPENAI,
         baseUrl,
       },
@@ -575,7 +581,7 @@ describe('voice-transcriber', () => {
       config: createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Private Qwen ASR',
+          label: 'Private Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl: `${baseUrl}/`,
           envKey: 'DASHSCOPE_API_KEY',
@@ -617,7 +623,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Private Qwen ASR',
+              label: 'Private Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl,
             },
@@ -635,7 +641,7 @@ describe('voice-transcriber', () => {
       config: createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Private Qwen ASR',
+          label: 'Private Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl,
         },
@@ -754,7 +760,7 @@ describe('voice-transcriber', () => {
       const config = createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Private Qwen ASR',
+          label: 'Private Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl,
         },
@@ -778,7 +784,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Private Qwen ASR',
+            label: 'Private Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl: 'http://voice.region-a.internal.example/v1',
           },
@@ -796,7 +802,7 @@ describe('voice-transcriber', () => {
       config: createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Private Qwen ASR',
+          label: 'Private Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://voice.region-a.internal.example/v1',
         },
@@ -1070,7 +1076,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Private Qwen ASR',
+            label: 'Private Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl,
           },
@@ -1101,7 +1107,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Private Qwen ASR',
+            label: 'Private Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl,
           },
@@ -1126,7 +1132,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://asr.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1208,7 +1214,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://asr.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1280,7 +1286,7 @@ describe('voice-transcriber', () => {
       const config = createConfig([
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl,
         },
@@ -1337,7 +1343,7 @@ describe('voice-transcriber', () => {
           'codebase',
           'dotfiles',
           'webhook',
-          'qwen',
+          'canopy',
           'mcp',
         ].join(' '),
       ),
@@ -1382,7 +1388,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl: 'https://dashscope.example/v1/',
             envKey: 'DASHSCOPE_API_KEY',
@@ -1432,7 +1438,7 @@ describe('voice-transcriber', () => {
         config: createConfig([
           {
             id: 'qwen3-asr-flash',
-            label: 'Qwen ASR',
+            label: 'Canopy ASR',
             authType: AuthType.USE_OPENAI,
             baseUrl: 'https://dashscope.example/v1/',
             envKey: 'DASHSCOPE_API_KEY',
@@ -1540,7 +1546,7 @@ describe('voice-transcriber', () => {
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://dashscope.example/v1',
           envKey: 'DASHSCOPE_API_KEY',
@@ -1590,7 +1596,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1626,7 +1632,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1669,7 +1675,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1711,7 +1717,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1743,7 +1749,7 @@ describe('voice-transcriber', () => {
           config: createConfig([
             {
               id: 'qwen3-asr-flash',
-              label: 'Qwen ASR',
+              label: 'Canopy ASR',
               authType: AuthType.USE_OPENAI,
               baseUrl: 'https://dashscope.example/v1',
               envKey: 'DASHSCOPE_API_KEY',
@@ -1776,7 +1782,7 @@ describe('voice-transcriber', () => {
       getAllConfiguredModels: vi.fn().mockReturnValue([
         {
           id: 'qwen3-asr-flash',
-          label: 'Qwen ASR',
+          label: 'Canopy ASR',
           authType: AuthType.USE_OPENAI,
           baseUrl: 'https://dashscope.example/v1',
           envKey: 'DASHSCOPE_API_KEY',

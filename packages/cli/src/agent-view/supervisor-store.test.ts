@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,7 +41,7 @@ describe('agent view supervisor store', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-agent-view-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-agent-view-'));
   });
 
   afterEach(() => {
@@ -78,7 +78,7 @@ describe('agent view supervisor store', () => {
     );
   });
 
-  it('uses daemon and jobs directories under the global qwen dir', () => {
+  it('uses daemon and jobs directories under the global canopy dir', () => {
     expect(getAgentViewStorePaths({ globalDir: tempDir })).toEqual({
       globalDir: tempDir,
       daemonDir: path.join(tempDir, 'daemon'),
@@ -328,8 +328,8 @@ describe('agent view supervisor store', () => {
       schemaVersion: 1,
       sessionId: 'session-1',
       argv: ['--resume', 'session-1'],
-      env: { QWEN_AGENT_VIEW_WORKER: '1' },
-      entrypoint: '/tmp/qwen',
+      env: { CANOPY_AGENT_VIEW_WORKER: '1' },
+      entrypoint: '/tmp/canopy',
       projectCwd: tempDir,
       activeCwd: tempDir,
       includeDirectories: [],
@@ -440,7 +440,7 @@ describe('agent view supervisor store', () => {
         sessionId: 'MySession',
         argv: [],
         env: {},
-        entrypoint: '/tmp/qwen',
+        entrypoint: '/tmp/canopy',
         projectCwd: tempDir,
         activeCwd: tempDir,
         includeDirectories: [],

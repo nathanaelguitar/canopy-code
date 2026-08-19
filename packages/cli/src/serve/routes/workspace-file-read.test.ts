@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ import {
   buildWorkspaceArtifactMetadata,
   Ignore,
   type Config,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { createServeApp } from '../server.js';
 import { workspaceRelative } from './workspace-file-read.js';
 import {
@@ -44,7 +44,7 @@ async function makeHarness(opts?: {
   ignore?: Ignore;
 }): Promise<Harness> {
   const scratch = await fsp.mkdtemp(
-    path.join(os.tmpdir(), `qwen-routes-${randomBytes(4).toString('hex')}-`),
+    path.join(os.tmpdir(), `canopy-routes-${randomBytes(4).toString('hex')}-`),
   );
   const wsDir = path.join(scratch, 'ws');
   await fsp.mkdir(wsDir);
@@ -81,7 +81,7 @@ describe('workspaceRelative', () => {
     scratch = await fsp.mkdtemp(
       path.join(
         os.tmpdir(),
-        `qwen-route-rel-${randomBytes(4).toString('hex')}-`,
+        `canopy-route-rel-${randomBytes(4).toString('hex')}-`,
       ),
     );
   });
@@ -726,13 +726,13 @@ describe('artifact workspacePath contract (write_file ⇄ GET /file)', () => {
   it('round-trips an artifact written inside a worktree session', async () => {
     const h = await makeHarness();
     try {
-      // A worktree session's cwd is <workspace>/.qwen/worktrees/<slug>, but the
+      // A worktree session's cwd is <workspace>/.canopy/worktrees/<slug>, but the
       // route only ever resolves against <workspace>. A path relative to the
       // session cwd ("report.html") would resolve to <workspace>/report.html —
       // a different file, or none at all.
       const sessionCwd = path.join(
         h.workspace,
-        '.qwen',
+        '.canopy',
         'worktrees',
         'my-feature',
       );
@@ -741,7 +741,7 @@ describe('artifact workspacePath contract (write_file ⇄ GET /file)', () => {
       await fsp.writeFile(filePath, ARTIFACT);
 
       const workspacePath = emittedWorkspacePath(sessionCwd, filePath);
-      expect(workspacePath).toBe('.qwen/worktrees/my-feature/report.html');
+      expect(workspacePath).toBe('.canopy/worktrees/my-feature/report.html');
 
       const res = await request(h.app)
         .get('/file')
@@ -766,7 +766,7 @@ describe('artifact workspacePath contract (write_file ⇄ GET /file)', () => {
       );
       const sessionCwd = path.join(
         h.workspace,
-        '.qwen',
+        '.canopy',
         'worktrees',
         'my-feature',
       );

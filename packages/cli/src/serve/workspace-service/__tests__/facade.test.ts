@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,10 +9,10 @@ import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
-// Mock @qwen-code/qwen-code-core to avoid the undici dependency chain.
+// Mock @canopy-code/canopy-code-core to avoid the undici dependency chain.
 // This is required so @qwen-code/acp-bridge/status can load (it imports
 // SkillError from core).
-vi.mock('@qwen-code/qwen-code-core', () => {
+vi.mock('@canopy-code/canopy-code-core', () => {
   class SkillError extends Error {
     code: string;
     constructor(message: string, code: string) {
@@ -31,16 +31,16 @@ vi.mock('@qwen-code/qwen-code-core', () => {
   class Storage {
     constructor(private readonly workspace: string) {}
 
-    static getGlobalQwenDir() {
-      return process.env['QWEN_HOME'] ?? '/tmp/.qwen';
+    static getGlobalCanopyDir() {
+      return process.env['QWEN_HOME'] ?? '/tmp/.canopy';
     }
 
     static getGlobalSettingsPath() {
-      return `${Storage.getGlobalQwenDir()}/settings.json`;
+      return `${Storage.getGlobalCanopyDir()}/settings.json`;
     }
 
     getWorkspaceSettingsPath() {
-      return `${this.workspace}/.qwen/settings.json`;
+      return `${this.workspace}/.canopy/settings.json`;
     }
   }
 
@@ -67,8 +67,8 @@ vi.mock('@qwen-code/qwen-code-core', () => {
     DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD: 100_000,
     DEFAULT_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH: 1024 * 1024,
     SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT: 100 * 1024 * 1024,
-    DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES: ['.agentignore', '.aiignore'],
-    QWEN_DIR: '.qwen',
+    DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES: ['.agentignore', '.aiignore'],
+    CANOPY_DIR: '.canopy',
     Storage,
     ModelsConfig,
     atomicWriteFileSync: vi.fn(),
@@ -132,7 +132,7 @@ function makeDeps(
   return {
     boundWorkspace: '/workspace',
     isWorkspaceTrusted: () => true,
-    contextFilename: 'QWEN.md',
+    contextFilename: 'CANOPY.md',
     persistDisabledTools: vi.fn().mockResolvedValue(undefined),
     persistDisabledSkills: vi.fn().mockResolvedValue({
       changed: true,
@@ -196,7 +196,7 @@ function skillToggleSettingsChanged(args: {
   };
 }
 
-async function withIsolatedQwenHome<T>(fn: () => Promise<T>): Promise<T> {
+async function withIsolatedCanopyHome<T>(fn: () => Promise<T>): Promise<T> {
   return withIsolatedWorkspace(() => fn());
 }
 
@@ -211,13 +211,13 @@ async function withIsolatedWorkspace<T>(
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'facade-ws-'));
   const home = path.join(scratch, 'home');
   const workspace = path.join(scratch, 'workspace');
-  const originalQwenHome = process.env['QWEN_HOME'];
+  const originalCanopyHome = process.env['QWEN_HOME'];
   const originalTrustedFoldersPath =
-    process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+    process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
   await fs.mkdir(home, { recursive: true });
   await fs.mkdir(workspace, { recursive: true });
   process.env['QWEN_HOME'] = home;
-  process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
+  process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] = path.join(
     home,
     TRUSTED_FOLDERS_FILENAME,
   );
@@ -227,15 +227,15 @@ async function withIsolatedWorkspace<T>(
     return await fn({ home, workspace });
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
-    if (originalQwenHome === undefined) {
+    if (originalCanopyHome === undefined) {
       delete process.env['QWEN_HOME'];
     } else {
-      process.env['QWEN_HOME'] = originalQwenHome;
+      process.env['QWEN_HOME'] = originalCanopyHome;
     }
     if (originalTrustedFoldersPath === undefined) {
-      delete process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
+      delete process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'];
     } else {
-      process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'] =
+      process.env['CANOPY_CODE_TRUSTED_FOLDERS_PATH'] =
         originalTrustedFoldersPath;
     }
     resetHomeEnvBootstrapForTesting();
@@ -283,7 +283,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('persists voice settings through batch persistence and publishes events', async () => {
-      await withIsolatedQwenHome(async () => {
+      await withIsolatedCanopyHome(async () => {
         const persistSettings = vi.fn(async () => {});
         const publishWorkspaceEvent = vi.fn();
         const svc = createDaemonWorkspaceService(
@@ -331,7 +331,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('forces qualified ACP Voice writes into the workspace scope', async () => {
-      await withIsolatedQwenHome(async () => {
+      await withIsolatedCanopyHome(async () => {
         const persistSettings = vi.fn(async () => {});
         const svc = createDaemonWorkspaceService(
           makeDeps({
@@ -372,7 +372,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('rejects invalid voice settings before persisting', async () => {
-      await withIsolatedQwenHome(async () => {
+      await withIsolatedCanopyHome(async () => {
         const persistSettings = vi.fn(async () => {});
         const publishWorkspaceEvent = vi.fn();
         const svc = createDaemonWorkspaceService(
@@ -394,7 +394,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('publishes committed fallback voice writes when a later write fails', async () => {
-      await withIsolatedQwenHome(async () => {
+      await withIsolatedCanopyHome(async () => {
         const persistSetting = vi.fn(
           async (
             _workspace: string,
@@ -487,7 +487,7 @@ describe('createDaemonWorkspaceService', () => {
           rules: { allow: [], ask: [], deny: [] },
         },
         workspace: {
-          path: '/workspace/.qwen/settings.json',
+          path: '/workspace/.canopy/settings.json',
           rules: { allow: ['Shell(*)'], ask: [], deny: [] },
         },
         merged: { allow: ['Shell(*)'], ask: [], deny: [] },
@@ -526,7 +526,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('rejects permission updates when ACP has no live session', async () => {
-      await withIsolatedQwenHome(async () => {
+      await withIsolatedCanopyHome(async () => {
         const invokeWorkspaceCommand = vi
           .fn()
           .mockRejectedValue(new SessionNotFoundError('session-1'));
@@ -3120,7 +3120,7 @@ describe('createDaemonWorkspaceService', () => {
       });
       expect(preheatAcpChild).toHaveBeenCalledOnce();
       expect(mockWriteStderrLine).toHaveBeenCalledWith(
-        'qwen serve: ACP preheat timed out after 1ms',
+        'canopy serve: ACP preheat timed out after 1ms',
       );
     });
 
@@ -3203,7 +3203,7 @@ describe('createDaemonWorkspaceService', () => {
         error: 'ACP preheat did not produce a live channel',
       });
       expect(mockWriteStderrLine).toHaveBeenCalledWith(
-        'qwen serve: ACP preheat resolved without a live channel',
+        'canopy serve: ACP preheat resolved without a live channel',
       );
     });
 
@@ -3226,7 +3226,7 @@ describe('createDaemonWorkspaceService', () => {
       expect(Number.isInteger(result.durationMs)).toBe(true);
       expect(result.durationMs).toBeGreaterThanOrEqual(0);
       expect(mockWriteStderrLine).toHaveBeenCalledWith(
-        'qwen serve: ACP preheat failed: preheat failed',
+        'canopy serve: ACP preheat failed: preheat failed',
       );
     });
 
@@ -3247,7 +3247,7 @@ describe('createDaemonWorkspaceService', () => {
         error: 'ACP preheat failed',
       });
       expect(mockWriteStderrLine).toHaveBeenCalledWith(
-        'qwen serve: ACP preheat failed: child command contained a secret',
+        'canopy serve: ACP preheat failed: child command contained a secret',
       );
     });
   });
@@ -3522,7 +3522,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
           publishWorkspaceEvent,
         }),
       );
@@ -3533,7 +3533,7 @@ describe('createDaemonWorkspaceService', () => {
       );
 
       expect(result.action).toBe('created');
-      expect(result.path).toBe(path.join(tmpDir, 'QWEN.md'));
+      expect(result.path).toBe(path.join(tmpDir, 'CANOPY.md'));
       const stat = await fs.stat(result.path);
       expect(stat.isFile()).toBe(true);
     });
@@ -3543,7 +3543,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
           assertGenerationOpen: () => {
             checks += 1;
             if (checks === 2) throw new Error('generation closed');
@@ -3555,11 +3555,11 @@ describe('createDaemonWorkspaceService', () => {
         svc.initWorkspace(makeCtx({ workspaceCwd: tmpDir }), {}),
       ).rejects.toThrow('generation closed');
       expect(checks).toBe(2);
-      await expect(fs.stat(path.join(tmpDir, 'QWEN.md'))).rejects.toMatchObject(
-        {
-          code: 'ENOENT',
-        },
-      );
+      await expect(
+        fs.stat(path.join(tmpDir, 'CANOPY.md')),
+      ).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
     });
 
     it('publishes workspace_initialized event on create', async () => {
@@ -3567,7 +3567,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
           publishWorkspaceEvent,
         }),
       );
@@ -3576,19 +3576,19 @@ describe('createDaemonWorkspaceService', () => {
 
       expect(publishWorkspaceEvent).toHaveBeenCalledWith({
         type: 'workspace_initialized',
-        data: { path: path.join(tmpDir, 'QWEN.md'), action: 'created' },
+        data: { path: path.join(tmpDir, 'CANOPY.md'), action: 'created' },
         originatorClientId: 'c-9',
       });
     });
 
     it('returns noop when file exists but is whitespace-only', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '   \n  ', 'utf8');
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3598,13 +3598,13 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('throws when file has content and force is not set', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '# Hello', 'utf8');
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3614,13 +3614,13 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('overwrites existing file when force=true', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '# Existing content', 'utf8');
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3646,14 +3646,14 @@ describe('createDaemonWorkspaceService', () => {
 
     it('throws when target is a symlink', async () => {
       const realFile = path.join(tmpDir, 'real.md');
-      const linkFile = path.join(tmpDir, 'QWEN.md');
+      const linkFile = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(realFile, '', 'utf8');
       await fs.symlink(realFile, linkFile);
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3661,7 +3661,7 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('throws when target is a non-regular file', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '', 'utf8');
 
       const origLstat = fs.lstat;
@@ -3680,7 +3680,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3697,13 +3697,13 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
       // Create the file between the readFile ENOENT and the open('wx')
       // by pre-creating it — the 'wx' flag throws EEXIST atomically.
-      await fs.writeFile(path.join(tmpDir, 'QWEN.md'), '# content', 'utf8');
+      await fs.writeFile(path.join(tmpDir, 'CANOPY.md'), '# content', 'utf8');
 
       // Since the file has content and force is not set, it throws
       // WorkspaceInitConflictError (not the race). To test the EEXIST
@@ -3718,7 +3718,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3728,7 +3728,10 @@ describe('createDaemonWorkspaceService', () => {
           filePath: Parameters<typeof origOpen>[0],
           flags?: Parameters<typeof origOpen>[1],
         ) => {
-          if (String(flags) === 'wx' && String(filePath).endsWith('QWEN.md')) {
+          if (
+            String(flags) === 'wx' &&
+            String(filePath).endsWith('CANOPY.md')
+          ) {
             const err = new Error('EEXIST') as NodeJS.ErrnoException;
             err.code = 'EEXIST';
             throw err;
@@ -3747,13 +3750,13 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('throws WorkspaceInitSymlinkError when overwrite open hits ELOOP', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '# existing content', 'utf8');
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3765,7 +3768,7 @@ describe('createDaemonWorkspaceService', () => {
         ) => {
           if (
             typeof flags === 'number' &&
-            String(filePath).endsWith('QWEN.md')
+            String(filePath).endsWith('CANOPY.md')
           ) {
             const err = new Error('ELOOP') as NodeJS.ErrnoException;
             err.code = 'ELOOP';
@@ -3785,13 +3788,13 @@ describe('createDaemonWorkspaceService', () => {
     });
 
     it('throws WorkspaceInitRaceError when overwrite open hits ENOENT', async () => {
-      const target = path.join(tmpDir, 'QWEN.md');
+      const target = path.join(tmpDir, 'CANOPY.md');
       await fs.writeFile(target, '# existing content', 'utf8');
 
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'QWEN.md',
+          contextFilename: 'CANOPY.md',
         }),
       );
 
@@ -3803,7 +3806,7 @@ describe('createDaemonWorkspaceService', () => {
         ) => {
           if (
             typeof flags === 'number' &&
-            String(filePath).endsWith('QWEN.md')
+            String(filePath).endsWith('CANOPY.md')
           ) {
             const err = new Error('ENOENT') as NodeJS.ErrnoException;
             err.code = 'ENOENT';
@@ -3830,7 +3833,7 @@ describe('createDaemonWorkspaceService', () => {
       const svc = createDaemonWorkspaceService(
         makeDeps({
           boundWorkspace: tmpDir,
-          contextFilename: 'docs/QWEN.md',
+          contextFilename: 'docs/CANOPY.md',
         }),
       );
 

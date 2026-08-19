@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -103,13 +103,13 @@ describe('publish-assets', () => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-'));
     argsFile = join(dir, 'args.txt');
     writeFileSync(argsFile, '8346 --comment\n');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
     // The skillArgs test seam is honoured only when no session id is present;
-    // running this suite from inside an active Qwen Code session would
+    // running this suite from inside an active Canopy Code session would
     // otherwise route the gate at the real session-scoped path and fail eight
     // of these tests for reasons that have nothing to do with the code.
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     // GH_HOST is an input to this command (effectiveHost); a developer's or
     // dogfooding session's exported value must not leak into URL assertions.
     savedGhHostMain = process.env['GH_HOST'];
@@ -127,9 +127,9 @@ describe('publish-assets', () => {
 
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHostMain !== undefined) {
       process.env['GH_HOST'] = savedGhHostMain;
@@ -175,7 +175,7 @@ describe('publish-assets', () => {
   ): Promise<void> {
     await publishAssetsCommand.handler?.({
       _: [],
-      $0: 'qwen',
+      $0: 'canopy',
       pr: 8346,
       files: [pngFile('a.png')],
       out: join(dir, 'manifest.json'),
@@ -186,7 +186,7 @@ describe('publish-assets', () => {
   }
 
   it('refuses without a designated repo — exit 3, nothing written', () => {
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     run({ files: [pngFile('a.png')] });
     expect(process.exitCode).toBe(3);
     expect(ghWithInputMock).not.toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('publish-assets', () => {
     // call drops `skipWorkspaceSettings`, the workspace-polluted mock view
     // answers comment:true and this refusal becomes a publish — the exact
     // regression review-settings.ts documents (a repository-controlled
-    // .qwen/settings.json deciding to publish for every reviewer).
+    // .canopy/settings.json deciding to publish for every reviewer).
     writeFileSync(argsFile, '8346\n'); // no --comment
     reviewSettingsMock.mockReturnValue({}); // setting off
     happyGh();
@@ -574,9 +574,9 @@ describe('publish-assets — round-2 review pins', () => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-r2-'));
     argsFile = join(dir, 'args.txt');
     writeFileSync(argsFile, '8346 --comment\n');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     savedGhHost = process.env['GH_HOST'];
     delete process.env['GH_HOST'];
     reviewSettingsMock.mockReturnValue({});
@@ -589,9 +589,9 @@ describe('publish-assets — round-2 review pins', () => {
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHost !== undefined) process.env['GH_HOST'] = savedGhHost;
     else delete process.env['GH_HOST'];
@@ -708,9 +708,9 @@ describe('publish-assets — round-3 self-review pins', () => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-r3-'));
     argsFile = join(dir, 'args.txt');
     writeFileSync(argsFile, '8346 --comment\n');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     savedGhHost = process.env['GH_HOST'];
     delete process.env['GH_HOST'];
     reviewSettingsMock.mockReturnValue({});
@@ -723,9 +723,9 @@ describe('publish-assets — round-3 self-review pins', () => {
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHost !== undefined) process.env['GH_HOST'] = savedGhHost;
     else delete process.env['GH_HOST'];
@@ -827,9 +827,9 @@ describe('publish-assets — round-4 pins', () => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-r4-'));
     argsFile = join(dir, 'args.txt');
     writeFileSync(argsFile, '8346 --comment\n');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     savedGhHost = process.env['GH_HOST'];
     delete process.env['GH_HOST'];
     reviewSettingsMock.mockReturnValue({});
@@ -842,9 +842,9 @@ describe('publish-assets — round-4 pins', () => {
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHost !== undefined) process.env['GH_HOST'] = savedGhHost;
     else delete process.env['GH_HOST'];
@@ -973,12 +973,12 @@ describe('publish-assets — empty is two different things', () => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-empty-'));
     argsFile = join(dir, 'args.txt');
     writeFileSync(argsFile, '8346 --comment\n');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
     // Same guards as the sibling blocks: the skillArgs seam is honoured only
     // with no session id; GH_HOST feeds effectiveHost; and mockReset (never
     // mockClear) removes a sibling's persistent throwing implementation.
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     savedGhHost = process.env['GH_HOST'];
     delete process.env['GH_HOST'];
     reviewSettingsMock.mockReturnValue({});
@@ -991,9 +991,9 @@ describe('publish-assets — empty is two different things', () => {
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHost !== undefined) process.env['GH_HOST'] = savedGhHost;
     else delete process.env['GH_HOST'];
@@ -1043,9 +1043,9 @@ describe('publish-assets — host binds even without --reviewed-repo', () => {
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'publish-assets-host-'));
     argsFile = join(dir, 'args.txt');
-    process.env['QWEN_REVIEW_ASSETS_REPO'] = 'owner/assets';
-    savedSessionId = process.env['QWEN_CODE_SESSION_ID'];
-    delete process.env['QWEN_CODE_SESSION_ID'];
+    process.env['CANOPY_REVIEW_ASSETS_REPO'] = 'owner/assets';
+    savedSessionId = process.env['CANOPY_CODE_SESSION_ID'];
+    delete process.env['CANOPY_CODE_SESSION_ID'];
     savedGhHost = process.env['GH_HOST'];
     delete process.env['GH_HOST'];
     reviewSettingsMock.mockReturnValue({});
@@ -1057,9 +1057,9 @@ describe('publish-assets — host binds even without --reviewed-repo', () => {
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-    delete process.env['QWEN_REVIEW_ASSETS_REPO'];
+    delete process.env['CANOPY_REVIEW_ASSETS_REPO'];
     if (savedSessionId !== undefined) {
-      process.env['QWEN_CODE_SESSION_ID'] = savedSessionId;
+      process.env['CANOPY_CODE_SESSION_ID'] = savedSessionId;
     }
     if (savedGhHost !== undefined) process.env['GH_HOST'] = savedGhHost;
     else delete process.env['GH_HOST'];

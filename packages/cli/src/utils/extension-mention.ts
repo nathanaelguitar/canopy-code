@@ -1,16 +1,16 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as fs from 'node:fs/promises';
-import type { Extension } from '@qwen-code/qwen-code-core';
+import type { Extension } from '@canopy-code/canopy-code-core';
 import {
   getErrorMessage,
   isSubpath,
   stripTerminalControlSequences,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 
 export const EXTENSION_REF_PREFIX = 'ext:';
 export const EXTENSION_CONTEXT_BUDGET = 200_000;

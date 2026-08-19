@@ -848,7 +848,7 @@ function findAttributableCommitSegment(
       // some whitespace, so the trimmed segment text may not appear
       // verbatim in the original command. Log so a multi-line
       // command silently dropping its trailer is at least visible
-      // when QWEN_DEBUG_LOG_FILE is set.
+      // when CANOPY_DEBUG_LOG_FILE is set.
       debugLogger.warn(
         `findAttributableCommitSegment: cannot map segment "${sub.slice(0, 60)}" ` +
           `back to the original command (likely line-continuation / whitespace mismatch).`,
@@ -2287,7 +2287,7 @@ export class ShellToolInvocation extends BaseToolInvocation<
       );
     }
 
-    // Add co-author to git commit commands and Qwen Code attribution to
+    // Add co-author to git commit commands and Canopy Code attribution to
     // `gh pr create` bodies. Both wrappers are no-ops on commands they
     // don't recognise. Apply to the *trimmed original* (not strippedCommand)
     // so leading env assignments and shell wrappers (`FOO=bar bash -c '...'`)
@@ -2978,7 +2978,7 @@ export class ShellToolInvocation extends BaseToolInvocation<
     // large, diff-analysis exception, shallow clone, etc.) on the tool
     // result so the user knows their commit succeeded but the per-file
     // git note didn't land. Without this, the only signal is a
-    // QWEN_DEBUG_LOG_FILE entry the user has likely never set up.
+    // CANOPY_DEBUG_LOG_FILE entry the user has likely never set up.
     // Appended to BOTH llmContent (so the agent can react / report) and
     // returnDisplayMessage (so the human sees it in the TUI). Skipped
     // when null (intentional skips like a bare `git commit` with no
@@ -4708,9 +4708,9 @@ export class ShellToolInvocation extends BaseToolInvocation<
 
   /**
    * Detect `gh pr create` commands and append AI attribution text to the
-   * PR body. Format: "Generated with Qwen Code (N-shotted by Qwen-Coder)"
+   * PR body. Format: "Generated with Canopy Code (N-shotted by Canopy-Coder)"
    * when at least one user prompt has been recorded since the last commit;
-   * otherwise just "Generated with Qwen Code".
+   * otherwise just "Generated with Canopy Code".
    *
    * Skipped on Windows: the appended text relies on bash quote-escape
    * conventions (`\$`, `'\''`) that cmd.exe and PowerShell don't honor,
@@ -4741,12 +4741,12 @@ export class ShellToolInvocation extends BaseToolInvocation<
 
     const attributionService = CommitAttributionService.getInstance();
     const shots = attributionService.getPromptsSinceLastCommit();
-    const generator = gitCoAuthorSettings.name ?? 'Qwen-Coder';
+    const generator = gitCoAuthorSettings.name ?? 'Canopy-Coder';
 
     const attribution =
       shots > 0
-        ? `\n\nGenerated with Qwen Code (${shots}-shotted by ${generator})`
-        : `\n\nGenerated with Qwen Code`;
+        ? `\n\nGenerated with Canopy Code (${shots}-shotted by ${generator})`
+        : `\n\nGenerated with Canopy Code`;
 
     // Match both the long form `--body` and the short alias `-b`
     // (documented in `gh pr create --help`), with either space or
@@ -4840,7 +4840,7 @@ export class ShellToolInvocation extends BaseToolInvocation<
     // command runs as the user typed it; we just don't add the
     // attribution line. Surface this as a debug warning so a user
     // wondering "why isn't my PR getting the trailer?" can see the
-    // skip in `QWEN_DEBUG_LOG_FILE`. Inline-body rewriting is the
+    // skip in `CANOPY_DEBUG_LOG_FILE`. Inline-body rewriting is the
     // only safe automatic path — `--body-file` would require us to
     // mutate the user's file on disk; `--fill` and editor flows
     // have no body in argv at all.

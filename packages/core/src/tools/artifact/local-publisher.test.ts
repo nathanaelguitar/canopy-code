@@ -15,7 +15,7 @@ describe('LocalPublisher', () => {
   let baseDir: string;
 
   beforeEach(async () => {
-    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qwen-artifact-'));
+    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'canopy-artifact-'));
   });
 
   afterEach(async () => {

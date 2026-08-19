@@ -9,7 +9,7 @@ import {
   Storage,
   isDebugLogFileEnabled,
   isDebugLoggingDegraded,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { useConfig } from '../contexts/ConfigContext.js';
 import { theme } from '../semantic-colors.js';
 
@@ -34,7 +34,7 @@ export const DebugModeNotification = () => {
           Logging to: {Storage.getDebugLogPath(config.getSessionId())}
         </Text>
       ) : (
-        <Text dimColor>Debug log file disabled by QWEN_DEBUG_LOG_FILE</Text>
+        <Text dimColor>Debug log file disabled by CANOPY_DEBUG_LOG_FILE</Text>
       )}
       {isDegraded && (
         <Text dimColor>

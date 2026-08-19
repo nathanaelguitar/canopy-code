@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -43,7 +43,7 @@ export function HookEventHandlerListStep({
           </Box>
           <Box marginTop={1}>
             <Text color={theme.text.secondary}>
-              {t('To add hooks, edit settings.json directly or ask Qwen.')}
+              {t('To add hooks, edit settings.json directly or ask Canopy.')}
             </Text>
           </Box>
           <Box marginTop={1}>

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect } from 'vitest';
-import { AuthType, type Config } from '@qwen-code/qwen-code-core';
+import { AuthType, type Config } from '@canopy-code/canopy-code-core';
 import {
   buildAcpModelOptions,
   getCurrentAcpModelId,
@@ -45,8 +45,8 @@ describe('acpModelUtils', () => {
     const options = buildAcpModelOptions(models);
     const [first, second, unique] = options;
 
-    expect(first?.modelId).toMatch(/^qwen-route:v1:/);
-    expect(second?.modelId).toMatch(/^qwen-route:v1:/);
+    expect(first?.modelId).toMatch(/^canopy-route:v1:/);
+    expect(second?.modelId).toMatch(/^canopy-route:v1:/);
     expect(first?.modelId).not.toBe(second?.modelId);
     expect(unique?.modelId).toBe(`unique-model(${AuthType.USE_OPENAI})`);
     expect(options.map((option) => option.modelId).join(' ')).not.toContain(
@@ -210,23 +210,25 @@ describe('acpModelUtils', () => {
   });
 
   it('extracts base model id when string ends with parentheses', () => {
-    expect(parseAcpBaseModelId(`qwen3(${AuthType.USE_OPENAI})`)).toBe('qwen3');
+    expect(parseAcpBaseModelId(`canopy3(${AuthType.USE_OPENAI})`)).toBe(
+      'canopy3',
+    );
   });
 
   it('does not strip when parentheses are not a trailing suffix', () => {
-    expect(parseAcpBaseModelId('qwen3(x) y')).toBe('qwen3(x) y');
+    expect(parseAcpBaseModelId('canopy3(x) y')).toBe('canopy3(x) y');
   });
 
   it('parses modelId and validates authType', () => {
-    expect(parseAcpModelOption(` qwen3(${AuthType.USE_OPENAI}) `)).toEqual({
-      modelId: 'qwen3',
+    expect(parseAcpModelOption(` canopy3(${AuthType.USE_OPENAI}) `)).toEqual({
+      modelId: 'canopy3',
       authType: AuthType.USE_OPENAI,
     });
   });
 
   it('returns trimmed input as modelId when authType is invalid', () => {
-    expect(parseAcpModelOption('qwen3(not-a-real-auth)')).toEqual({
-      modelId: 'qwen3(not-a-real-auth)',
+    expect(parseAcpModelOption('canopy3(not-a-real-auth)')).toEqual({
+      modelId: 'canopy3(not-a-real-auth)',
     });
   });
 
@@ -282,9 +284,9 @@ describe('acpModelUtils', () => {
       expect(isInlineModelOverrideAllowed(config, 'shared-id')).toBe(true);
     });
 
-    it('allows a model when both sides have no baseUrl/envKey (e.g. qwen-oauth)', () => {
-      const config = makeConfig({ authType: AuthType.QWEN_OAUTH }, [
-        { id: 'qwen-max', authType: AuthType.QWEN_OAUTH },
+    it('allows a model when both sides have no baseUrl/envKey (e.g. canopy-oauth)', () => {
+      const config = makeConfig({ authType: AuthType.CANOPY_OAUTH }, [
+        { id: 'qwen-max', authType: AuthType.CANOPY_OAUTH },
       ]);
       expect(isInlineModelOverrideAllowed(config, 'qwen-max')).toBe(true);
     });
@@ -328,20 +330,24 @@ describe('acpModelUtils', () => {
     });
 
     it('rejects an unknown model id', () => {
-      const config = makeConfig({ authType: AuthType.QWEN_OAUTH }, [
-        { id: 'qwen-max', authType: AuthType.QWEN_OAUTH },
+      const config = makeConfig({ authType: AuthType.CANOPY_OAUTH }, [
+        { id: 'qwen-max', authType: AuthType.CANOPY_OAUTH },
       ]);
       expect(isInlineModelOverrideAllowed(config, 'missing')).toBe(false);
     });
 
     it('does not match selector-only models', () => {
-      const config = makeConfig({ authType: AuthType.QWEN_OAUTH }, [
-        { id: 'qwen-fast', authType: AuthType.QWEN_OAUTH, fastOnly: true },
-        { id: 'qwen-voice', authType: AuthType.QWEN_OAUTH, voiceOnly: true },
-        { id: 'qwen-image', authType: AuthType.QWEN_OAUTH, imageOnly: true },
+      const config = makeConfig({ authType: AuthType.CANOPY_OAUTH }, [
+        { id: 'canopy-fast', authType: AuthType.CANOPY_OAUTH, fastOnly: true },
+        {
+          id: 'canopy-voice',
+          authType: AuthType.CANOPY_OAUTH,
+          voiceOnly: true,
+        },
+        { id: 'qwen-image', authType: AuthType.CANOPY_OAUTH, imageOnly: true },
       ]);
-      expect(isInlineModelOverrideAllowed(config, 'qwen-fast')).toBe(false);
-      expect(isInlineModelOverrideAllowed(config, 'qwen-voice')).toBe(false);
+      expect(isInlineModelOverrideAllowed(config, 'canopy-fast')).toBe(false);
+      expect(isInlineModelOverrideAllowed(config, 'canopy-voice')).toBe(false);
       expect(isInlineModelOverrideAllowed(config, 'qwen-image')).toBe(false);
     });
 

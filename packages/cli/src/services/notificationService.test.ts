@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -120,7 +120,7 @@ describe('sendNotification', () => {
     sendNotification({ message: 'test' }, terminal, true);
     expect(terminal.notifyITerm2).toHaveBeenCalledWith({
       message: 'test',
-      title: 'Qwen Code',
+      title: 'Canopy Code',
     });
   });
 

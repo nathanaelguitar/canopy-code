@@ -70,7 +70,7 @@ export const configureWeixinCommand: CommandModule<
         writeStdoutLine(
           'Credentials saved. You can now start a weixin channel with:',
         );
-        writeStdoutLine('  qwen channel start <name>');
+        writeStdoutLine('  canopy channel start <name>');
       } else {
         writeStderrLine('\n' + result.message);
         process.exit(1);

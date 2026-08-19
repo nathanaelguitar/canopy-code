@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { OpenAIContentGenerator } from '../core/openaiContentGenerator/index.js';
 import { DashScopeOpenAICompatibleProvider } from '../core/openaiContentGenerator/provider/dashscope.js';
-import type { IQwenOAuth2Client } from './qwenOAuth2.js';
+import type { ICanopyOAuth2Client } from './canopyOAuth2.js';
 import { SharedTokenManager } from './sharedTokenManager.js';
 import { type Config } from '../config/config.js';
 import type {
@@ -22,20 +22,20 @@ import { DEFAULT_DASHSCOPE_BASE_URL } from '../core/openaiContentGenerator/const
 import { createDebugLogger } from '../utils/debugLogger.js';
 
 /**
- * Qwen Content Generator that uses Qwen OAuth tokens with automatic refresh
+ * Canopy Content Generator that uses Canopy OAuth tokens with automatic refresh
  */
-export class QwenContentGenerator extends OpenAIContentGenerator {
-  private readonly debugLogger = createDebugLogger('QWEN');
-  private qwenClient: IQwenOAuth2Client;
+export class CanopyContentGenerator extends OpenAIContentGenerator {
+  private readonly debugLogger = createDebugLogger('CANOPY');
+  private canopyClient: ICanopyOAuth2Client;
   private sharedManager: SharedTokenManager;
   private currentToken?: string;
 
   constructor(
-    qwenClient: IQwenOAuth2Client,
+    canopyClient: ICanopyOAuth2Client,
     contentGeneratorConfig: ContentGeneratorConfig,
     cliConfig: Config,
   ) {
-    // Create DashScope provider for Qwen
+    // Create DashScope provider for Canopy
     const dashscopeProvider = new DashScopeOpenAICompatibleProvider(
       contentGeneratorConfig,
       cliConfig,
@@ -43,7 +43,7 @@ export class QwenContentGenerator extends OpenAIContentGenerator {
 
     // Initialize with DashScope provider
     super(contentGeneratorConfig, cliConfig, dashscopeProvider);
-    this.qwenClient = qwenClient;
+    this.canopyClient = canopyClient;
     this.sharedManager = SharedTokenManager.getInstance();
 
     // Set default base URL, will be updated dynamically
@@ -88,7 +88,7 @@ export class QwenContentGenerator extends OpenAIContentGenerator {
     try {
       // Use SharedTokenManager for consistent token/endpoint pairing and automatic refresh
       const credentials = await this.sharedManager.getValidCredentials(
-        this.qwenClient,
+        this.canopyClient,
       );
 
       if (!credentials.access_token) {
@@ -106,7 +106,7 @@ export class QwenContentGenerator extends OpenAIContentGenerator {
       }
       this.debugLogger.warn('Failed to get token from shared manager:', error);
       throw new Error(
-        'Failed to obtain valid Qwen access token. Please re-authenticate.',
+        'Failed to obtain valid Canopy access token. Please re-authenticate.',
       );
     }
   }
@@ -142,7 +142,7 @@ export class QwenContentGenerator extends OpenAIContentGenerator {
       if (this.isAuthError(error)) {
         // Use SharedTokenManager to properly refresh and persist the token
         // This ensures the refreshed token is saved to oauth_creds.json
-        await this.sharedManager.getValidCredentials(this.qwenClient, true);
+        await this.sharedManager.getValidCredentials(this.canopyClient, true);
         return await attemptOperation();
       }
       throw error;

@@ -1,20 +1,23 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Config, PromptSuggestionEvent } from '@qwen-code/qwen-code-core';
+import type {
+  Config,
+  PromptSuggestionEvent,
+} from '@canopy-code/canopy-code-core';
 
 const { mockLogPromptSuggestion } = vi.hoisted(() => ({
   mockLogPromptSuggestion: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     logPromptSuggestion: mockLogPromptSuggestion,

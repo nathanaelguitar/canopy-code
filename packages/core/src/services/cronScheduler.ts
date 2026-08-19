@@ -1,7 +1,7 @@
 /**
  * Cron scheduler with optional durable (file-backed) task support.
  * In-memory jobs live and die with the process. Durable jobs persist
- * under the user runtime dir (~/.qwen/tmp/<project-hash>/) and survive
+ * under the user runtime dir (~/.canopy/tmp/<project-hash>/) and survive
  * restarts.
  */
 
@@ -80,7 +80,7 @@ export interface CronJob {
   fireAtMs?: number;
   lastFiredAt?: number;
   jitterMs: number;
-  /** Persisted under ~/.qwen (per-project) — survives restarts. */
+  /** Persisted under ~/.canopy (per-project) — survives restarts. */
   durable?: boolean;
   /**
    * Id of the session this durable task is bound to. When set, the task fires
@@ -248,7 +248,7 @@ export class CronScheduler {
   private timer: ReturnType<typeof setInterval> | null = null;
   private onFire: ((job: CronJob) => void) | null = null;
   // Guard a consumer installs when it cannot execute certain durable jobs. A
-  // headless run can't expand a `.qwen/loop.md` sentinel, so it marks such
+  // headless run can't expand a `.canopy/loop.md` sentinel, so it marks such
   // durable jobs skippable here: they are then neither fired NOR have their
   // persisted fired-state advanced (lastFiredAt stamp / one-shot removal),
   // leaving the tick for the owning interactive session instead of silently
@@ -332,7 +332,7 @@ export class CronScheduler {
   private fileWatcher: fsSync.FSWatcher | null = null;
   private lockProbeTimer: ReturnType<typeof setInterval> | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  // Test-only auto-fire timers (QWEN_CODE_TEST_CRON_FAST). Each timer
+  // Test-only auto-fire timers (CANOPY_CODE_TEST_CRON_FAST). Each timer
   // fires its job via forceFireJob after a short delay so integration
   // tests don't wait for the wall-clock minute boundary. Cleared on
   // stop()/destroy() so a session teardown never leaks a pending fire.
@@ -396,15 +396,15 @@ export class CronScheduler {
 
     this.jobs.set(id, job);
 
-    // Test seam: when QWEN_CODE_TEST_CRON_FAST is set, schedule an
+    // Test seam: when CANOPY_CODE_TEST_CRON_FAST is set, schedule an
     // auto-fire for newly created session-only jobs so integration tests
     // don't wait up to 60s for the wall-clock minute boundary. The timer
     // fires once after the configured delay (default 5s), then the normal
     // tick takes over for subsequent fires of recurring jobs. Timers are
     // tracked in testFireTimers and cleared on stop()/destroy().
-    if (process.env['QWEN_CODE_TEST_CRON_FAST'] === '1' && !job.durable) {
+    if (process.env['CANOPY_CODE_TEST_CRON_FAST'] === '1' && !job.durable) {
       const delayMs =
-        Number(process.env['QWEN_CODE_TEST_CRON_DELAY_MS']) || 5000;
+        Number(process.env['CANOPY_CODE_TEST_CRON_DELAY_MS']) || 5000;
       const timer = setTimeout(() => {
         this.testFireTimers.delete(id);
         this.forceFireJob(id);
@@ -518,7 +518,7 @@ export class CronScheduler {
 
   /**
    * Creates a durable cron job: registered like any other job, and
-   * persisted under ~/.qwen (per-project) so it survives restarts.
+   * persisted under ~/.canopy (per-project) so it survives restarts.
    * Throws if the job can't be persisted.
    */
   async createDurable(
@@ -1236,7 +1236,7 @@ export class CronScheduler {
    * Immediately fires a job by ID, bypassing the cron schedule check.
    * Sets lastFiredAt to prevent the normal tick from re-firing the same
    * minute slot. Returns true if the job existed and was fired, false
-   * otherwise. Primarily a test seam (see QWEN_CODE_TEST_CRON_FAST in
+   * otherwise. Primarily a test seam (see CANOPY_CODE_TEST_CRON_FAST in
    * create()); also useful for manual debug triggers.
    */
   forceFireJob(id: string): boolean {
@@ -1605,7 +1605,7 @@ export class CronScheduler {
 export function buildMissedCronNotification(missed: DurableCronTask[]): string {
   const plural = missed.length > 1;
   const header =
-    `The following one-shot scheduled task${plural ? 's were' : ' was'} missed while Qwen Code was not running. ` +
+    `The following one-shot scheduled task${plural ? 's were' : ' was'} missed while Canopy Code was not running. ` +
     `${plural ? 'They have' : 'It has'} been removed from ${CRON_TASKS_DISPLAY_PATH} and will not fire again.\n\n` +
     `Do NOT execute ${plural ? 'these prompts' : 'this prompt'} yet. ` +
     `First ask the user whether to run ${plural ? 'each one' : 'it'} now ` +

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -35,10 +35,10 @@ describe('tokenUsageService', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-25T10:00:00.000Z'));
-    originalRuntimeDir = process.env['QWEN_RUNTIME_DIR'];
-    originalDebugLogFileEnv = process.env['QWEN_DEBUG_LOG_FILE'];
-    tempDir = await mkdtemp(path.join(tmpdir(), 'qwen-token-usage-'));
-    process.env['QWEN_RUNTIME_DIR'] = tempDir;
+    originalRuntimeDir = process.env['CANOPY_RUNTIME_DIR'];
+    originalDebugLogFileEnv = process.env['CANOPY_DEBUG_LOG_FILE'];
+    tempDir = await mkdtemp(path.join(tmpdir(), 'canopy-token-usage-'));
+    process.env['CANOPY_RUNTIME_DIR'] = tempDir;
   });
 
   afterEach(async () => {
@@ -46,14 +46,14 @@ describe('tokenUsageService', () => {
     setDebugLogSession(null);
     resetTokenUsageFailureLogging();
     if (originalRuntimeDir === undefined) {
-      delete process.env['QWEN_RUNTIME_DIR'];
+      delete process.env['CANOPY_RUNTIME_DIR'];
     } else {
-      process.env['QWEN_RUNTIME_DIR'] = originalRuntimeDir;
+      process.env['CANOPY_RUNTIME_DIR'] = originalRuntimeDir;
     }
     if (originalDebugLogFileEnv === undefined) {
-      delete process.env['QWEN_DEBUG_LOG_FILE'];
+      delete process.env['CANOPY_DEBUG_LOG_FILE'];
     } else {
-      process.env['QWEN_DEBUG_LOG_FILE'] = originalDebugLogFileEnv;
+      process.env['CANOPY_DEBUG_LOG_FILE'] = originalDebugLogFileEnv;
     }
     Storage.setRuntimeBaseDir(null);
     await rm(tempDir, { recursive: true, force: true });
@@ -91,7 +91,7 @@ describe('tokenUsageService', () => {
       targetDir: path.join(tempDir, 'project'),
     });
     const event = createEvent(
-      'qwen-model',
+      'canopy-model',
       'prompt-1',
       {
         promptTokenCount: 10,
@@ -101,7 +101,7 @@ describe('tokenUsageService', () => {
         totalTokenCount: 35,
       },
       {
-        authType: AuthType.QWEN_OAUTH,
+        authType: AuthType.CANOPY_OAUTH,
         subagentName: 'agent-a',
       },
     );
@@ -114,8 +114,8 @@ describe('tokenUsageService', () => {
       localDate: '2026-05-25',
       localMonth: '2026-05',
       sessionId: 'session-1',
-      model: 'qwen-model',
-      authType: AuthType.QWEN_OAUTH,
+      model: 'canopy-model',
+      authType: AuthType.CANOPY_OAUTH,
       source: 'agent-a',
       inputTokens: 10,
       outputTokens: 20,
@@ -604,7 +604,7 @@ describe('tokenUsageService', () => {
 
   it('tolerates malformed JSONL lines while querying', async () => {
     vi.useRealTimers();
-    process.env['QWEN_DEBUG_LOG_FILE'] = '1';
+    process.env['CANOPY_DEBUG_LOG_FILE'] = '1';
     const filePath = getTokenUsageFilePath('2026-05');
     const sessionId = 'token-usage-read-test';
     setDebugLogSession({ getSessionId: () => sessionId });

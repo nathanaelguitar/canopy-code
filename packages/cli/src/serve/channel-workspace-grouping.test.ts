@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -87,7 +87,7 @@ describe('resolveChannelWorkspaceGroups', () => {
   });
 
   it('assigns a home-relative channel to its registered workspace', () => {
-    const homeWorkspace = path.join(os.homedir(), 'qwen-channel-workspace');
+    const homeWorkspace = path.join(os.homedir(), 'canopy-channel-workspace');
     const result = resolveChannelWorkspaceGroups({
       workspaces: [
         { workspaceCwd: PRIMARY, primary: true, trusted: true },
@@ -96,10 +96,10 @@ describe('resolveChannelWorkspaceGroups', () => {
       selection: { mode: 'names', names: ['telegram'] },
       loadChannelsConfig: loader({
         [PRIMARY]: {
-          telegram: { type: 'telegram', cwd: '~/qwen-channel-workspace' },
+          telegram: { type: 'telegram', cwd: '~/canopy-channel-workspace' },
         },
         [homeWorkspace]: {
-          telegram: { type: 'telegram', cwd: '~/qwen-channel-workspace' },
+          telegram: { type: 'telegram', cwd: '~/canopy-channel-workspace' },
         },
       }),
     });

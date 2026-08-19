@@ -442,7 +442,7 @@ describe('checkCommandPermissions', () => {
 
 describe('getCommandRoot — parameter expansion in command position', () => {
   // The bundled /review skill invokes every command as
-  // `"${QWEN_CODE_CLI:-qwen}" review …`. Before this resolver, such a command
+  // `"${CANOPY_CODE_CLI:-canopy}" review …`. Before this resolver, such a command
   // had NO identifiable root — the shell tool hard-refused it ("Could not
   // identify command root to obtain permission from user") before any approval
   // mode was consulted, YOLO included. Dogfooded live on every /review run.
@@ -453,26 +453,26 @@ describe('getCommandRoot — parameter expansion in command position', () => {
 
   it('resolves ${VAR:-default} to the variable when set and non-empty', () => {
     process.env[NAME] = '/repo/scripts/dev.js';
-    expect(getCommandRoot(`"\${${NAME}:-qwen}" review foo`)).toBe('dev.js');
-    expect(getCommandRoot(`\${${NAME}:-qwen} review foo`)).toBe('dev.js');
+    expect(getCommandRoot(`"\${${NAME}:-canopy}" review foo`)).toBe('dev.js');
+    expect(getCommandRoot(`\${${NAME}:-canopy} review foo`)).toBe('dev.js');
   });
 
   it('resolves ${VAR:-default} to the default when unset OR empty — POSIX :-', () => {
-    expect(getCommandRoot(`"\${${NAME}:-qwen}" review foo`)).toBe('qwen');
+    expect(getCommandRoot(`"\${${NAME}:-canopy}" review foo`)).toBe('canopy');
     process.env[NAME] = '';
-    expect(getCommandRoot(`"\${${NAME}:-qwen}" review foo`)).toBe('qwen');
+    expect(getCommandRoot(`"\${${NAME}:-canopy}" review foo`)).toBe('canopy');
   });
 
   it('resolves ${VAR-default} to the default only when unset — POSIX -', () => {
-    expect(getCommandRoot(`"\${${NAME}-qwen}" review foo`)).toBe('qwen');
+    expect(getCommandRoot(`"\${${NAME}-canopy}" review foo`)).toBe('canopy');
     process.env[NAME] = '';
     // Empty-but-set: `-` keeps the empty value; nothing to name, no root.
-    expect(getCommandRoot(`"\${${NAME}-qwen}" review foo`)).toBeUndefined();
+    expect(getCommandRoot(`"\${${NAME}-canopy}" review foo`)).toBeUndefined();
   });
 
   it('resolves a bare "$VAR" head, and yields no root when it is unset', () => {
-    process.env[NAME] = '/usr/local/bin/qwen';
-    expect(getCommandRoot(`"$${NAME}" review foo`)).toBe('qwen');
+    process.env[NAME] = '/usr/local/bin/canopy';
+    expect(getCommandRoot(`"$${NAME}" review foo`)).toBe('canopy');
     delete process.env[NAME];
     // Unset with no default resolves to nothing: the command stays refusable,
     // exactly as an empty command would be — there is nothing to name.
@@ -500,7 +500,7 @@ describe('getCommandRoot — parameter expansion in command position', () => {
 
   it('skips leading env assignments before the expansion, like the plain path', () => {
     process.env[NAME] = '/repo/scripts/dev.js';
-    expect(getCommandRoot(`FOO=1 "\${${NAME}:-qwen}" review foo`)).toBe(
+    expect(getCommandRoot(`FOO=1 "\${${NAME}:-canopy}" review foo`)).toBe(
       'dev.js',
     );
   });
@@ -508,9 +508,9 @@ describe('getCommandRoot — parameter expansion in command position', () => {
   it('feeds getCommandRoots, so the shell tool no longer hard-refuses the skill form', () => {
     expect(
       getCommandRoots(
-        `"\${${NAME}:-qwen}" review fetch-pr 7 --out x.json && echo done`,
+        `"\${${NAME}:-canopy}" review fetch-pr 7 --out x.json && echo done`,
       ),
-    ).toEqual(['qwen', 'echo']);
+    ).toEqual(['canopy', 'echo']);
   });
 });
 
@@ -592,7 +592,7 @@ describe('getCommandRoots', () => {
   it('should skip leading env var assignments', async () => {
     expect(
       getCommandRoots(
-        'PYTHONPATH=/Users/jinjing/.qwen/skills/scripts python3 -c "print(1)"',
+        'PYTHONPATH=/Users/jinjing/.canopy/skills/scripts python3 -c "print(1)"',
       ),
     ).toEqual(['python3']);
   });
@@ -713,20 +713,20 @@ describe('stripTrailingBackgroundAmp', () => {
 });
 
 describe('detectSelfKillCommand', () => {
-  it('detects broad Windows taskkill patterns that target qwen-code hosts', () => {
+  it('detects broad Windows taskkill patterns that target canopy-code hosts', () => {
     expect(detectSelfKillCommand('taskkill /F /IM node.exe 2>nul')).toBe(true);
     expect(
-      detectSelfKillCommand('taskkill /FI "IMAGENAME eq qwen-code.exe" /F'),
+      detectSelfKillCommand('taskkill /FI "IMAGENAME eq canopy-code.exe" /F'),
     ).toBe(true);
   });
 
   it('detects broad Unix killall and pkill patterns', () => {
     expect(detectSelfKillCommand('killall -9 node')).toBe(true);
     expect(detectSelfKillCommand('pkill node')).toBe(true);
-    expect(detectSelfKillCommand('pkill -f qwen-code')).toBe(true);
+    expect(detectSelfKillCommand('pkill -f canopy-code')).toBe(true);
     expect(detectSelfKillCommand('pkill -f /usr/bin/node')).toBe(true);
     expect(detectSelfKillCommand('pkill -9f node')).toBe(true);
-    expect(detectSelfKillCommand("bash -lc 'pkill -f qwen'")).toBe(true);
+    expect(detectSelfKillCommand("bash -lc 'pkill -f canopy'")).toBe(true);
   });
 
   it('detects self-kill commands in chains and execution prefixes', () => {
@@ -735,11 +735,13 @@ describe('detectSelfKillCommand', () => {
       true,
     );
     expect(detectSelfKillCommand('sudo killall node')).toBe(true);
-    expect(detectSelfKillCommand('env FOO=bar pkill -f qwen-code')).toBe(true);
+    expect(detectSelfKillCommand('env FOO=bar pkill -f canopy-code')).toBe(
+      true,
+    );
     expect(detectSelfKillCommand('command -p killall node')).toBe(true);
   });
 
-  it('detects kill commands using pgrep selectors for qwen-code hosts', () => {
+  it('detects kill commands using pgrep selectors for canopy-code hosts', () => {
     expect(detectSelfKillCommand('kill -9 $(pgrep node)')).toBe(true);
     expect(detectSelfKillCommand('kill $(pgrep -f node)')).toBe(true);
     expect(detectSelfKillCommand('kill -9 $(pgrep node | head -1)')).toBe(true);
@@ -754,7 +756,7 @@ describe('detectSelfKillCommand', () => {
   it('detects taskkill inline and dash-prefixed image options', () => {
     expect(detectSelfKillCommand('taskkill /IM:node.exe /F')).toBe(true);
     expect(
-      detectSelfKillCommand('taskkill /FI:"IMAGENAME eq qwen-code.exe" /F'),
+      detectSelfKillCommand('taskkill /FI:"IMAGENAME eq canopy-code.exe" /F'),
     ).toBe(true);
     expect(detectSelfKillCommand('taskkill -IM node.exe -F')).toBe(true);
   });
@@ -797,7 +799,7 @@ describe('detectSelfKillCommand', () => {
     expect(detectSelfKillCommand('kill -9 $(pgrep -f "node server.js")')).toBe(
       false,
     );
-    expect(detectSelfKillCommand('pkill -F qwen-code.pid vite')).toBe(false);
+    expect(detectSelfKillCommand('pkill -F canopy-code.pid vite')).toBe(false);
     expect(detectSelfKillCommand('taskkill /IM notepad.exe')).toBe(false);
   });
 });

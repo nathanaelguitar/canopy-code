@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ import {
   SessionWriterConflictError,
   SessionWriterLostError,
   SessionWriterUnavailableError,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { sendBridgeError } from './error-response.js';
 import { DaemonDrainingError } from './session-archive.js';
 
@@ -69,7 +69,7 @@ describe('sendBridgeError session writer errors', () => {
       error: new SessionWriterConflictError(),
       status: 409,
       kind: 'session_writer_conflict',
-      message: 'This session is already open in another Qwen process.',
+      message: 'This session is already open in another Canopy process.',
     },
     {
       error: new SessionWriterLostError(),

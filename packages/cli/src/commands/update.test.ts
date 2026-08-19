@@ -32,7 +32,7 @@ const formatUpdateInstructions = vi.fn(
         `  ${resolveUpdateCommand(installationInfo.updateCommand, latestVersion)}`,
       ];
     }
-    return ['Manual update required. Please reinstall Qwen Code.'];
+    return ['Manual update required. Please reinstall Canopy Code.'];
   },
 );
 const performStandaloneUpdate = vi.fn();
@@ -72,7 +72,7 @@ const { updateCommand } = await import('./update.js');
 
 const updateArgs: ArgumentsCamelCase<object> = {
   _: [],
-  $0: 'qwen',
+  $0: 'canopy',
 };
 
 function settings(enableAutoUpdate?: boolean) {
@@ -97,7 +97,7 @@ describe('update command', () => {
     });
     getInstallationInfo.mockReturnValue({
       isStandalone: false,
-      updateCommand: 'npm install -g @qwen-code/qwen-code@latest',
+      updateCommand: 'npm install -g @canopy-code/canopy-code@latest',
     });
   });
 
@@ -114,21 +114,21 @@ describe('update command', () => {
       'Run the following to update:',
     );
     expect(writeStdoutLine).toHaveBeenCalledWith(
-      '  npm install -g @qwen-code/qwen-code@1.2.3',
+      '  npm install -g @canopy-code/canopy-code@1.2.3',
     );
   });
 
   it('sets a non-zero exit code when a standalone update fails', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockRejectedValue(new Error('boom'));
 
     await updateCommand.handler(updateArgs);
 
     expect(performStandaloneUpdate).toHaveBeenCalledWith(
-      '/tmp/qwen-code',
+      '/tmp/canopy-code',
       '1.2.3',
     );
     expect(writeStdoutLine).toHaveBeenCalledWith('Downloading update...');
@@ -140,7 +140,7 @@ describe('update command', () => {
     loadSettings.mockReturnValue(settings(false));
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockResolvedValue('done');
 
@@ -148,7 +148,7 @@ describe('update command', () => {
 
     expect(getInstallationInfo).toHaveBeenCalledWith(expect.any(String), true);
     expect(performStandaloneUpdate).toHaveBeenCalledWith(
-      '/tmp/qwen-code',
+      '/tmp/canopy-code',
       '1.2.3',
     );
     expect(writeStdoutLine).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('update command', () => {
       'Running via npx, update not applicable.',
     );
     expect(writeStdoutLine).not.toHaveBeenCalledWith(
-      'Manual update required. Please reinstall Qwen Code.',
+      'Manual update required. Please reinstall Canopy Code.',
     );
   });
 
@@ -188,7 +188,7 @@ describe('update command', () => {
   it('prints success message on standalone update', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockResolvedValue('done');
 
@@ -203,7 +203,7 @@ describe('update command', () => {
   it('prints deferred message on standalone update', async () => {
     getInstallationInfo.mockReturnValue({
       isStandalone: true,
-      standaloneDir: '/tmp/qwen-code',
+      standaloneDir: '/tmp/canopy-code',
     });
     performStandaloneUpdate.mockResolvedValue('deferred');
 
@@ -224,7 +224,7 @@ describe('update command', () => {
     await updateCommand.handler(updateArgs);
 
     expect(writeStdoutLine).toHaveBeenCalledWith(
-      'Qwen Code 1.0.0 is up to date!',
+      'Canopy Code 1.0.0 is up to date!',
     );
     expect(getInstallationInfo).not.toHaveBeenCalled();
   });

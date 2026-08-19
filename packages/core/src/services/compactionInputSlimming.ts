@@ -69,7 +69,7 @@ export function resolveSlimmingConfig(
 ): ResolvedSlimmingConfig {
   return {
     imageTokenEstimate: resolveNumber(
-      process.env['QWEN_IMAGE_TOKEN_ESTIMATE'],
+      process.env['CANOPY_IMAGE_TOKEN_ESTIMATE'],
       settings?.imageTokenEstimate,
       DEFAULT_IMAGE_TOKEN_ESTIMATE,
       { minInclusive: 1 },
@@ -150,30 +150,30 @@ export function resolveCompactionTuning(
 ): ResolvedCompactionTuning {
   return {
     maxRecentFiles: resolveNumber(
-      process.env['QWEN_COMPACT_MAX_RECENT_FILES'],
+      process.env['CANOPY_COMPACT_MAX_RECENT_FILES'],
       settings?.maxRecentFilesToRetain,
       DEFAULT_MAX_RECENT_FILES,
       { integer: true, minInclusive: 0 },
     ),
     maxRecentImages: resolveNumber(
-      process.env['QWEN_COMPACT_MAX_RECENT_IMAGES'],
+      process.env['CANOPY_COMPACT_MAX_RECENT_IMAGES'],
       settings?.maxRecentImagesToRetain,
       DEFAULT_MAX_RECENT_IMAGES,
       { integer: true, minInclusive: 0 },
     ),
     enableScreenshotTrigger: resolveBoolean(
-      process.env['QWEN_COMPACT_SCREENSHOT_TRIGGER'],
+      process.env['CANOPY_COMPACT_SCREENSHOT_TRIGGER'],
       settings?.enableScreenshotTrigger,
       DEFAULT_SCREENSHOT_TRIGGER_ENABLED,
     ),
     screenshotTriggerThreshold: resolveNumber(
-      process.env['QWEN_COMPACT_SCREENSHOT_THRESHOLD'],
+      process.env['CANOPY_COMPACT_SCREENSHOT_THRESHOLD'],
       settings?.screenshotTriggerThreshold,
       DEFAULT_SCREENSHOT_TRIGGER_THRESHOLD,
       { integer: true, minInclusive: 1 },
     ),
     imagePayloadThreshold: resolveNumber(
-      process.env['QWEN_IMAGE_PAYLOAD_THRESHOLD'],
+      process.env['CANOPY_IMAGE_PAYLOAD_THRESHOLD'],
       settings?.imagePayloadThreshold,
       DEFAULT_IMAGE_PAYLOAD_THRESHOLD,
       { integer: true, minInclusive: 1 },
@@ -216,7 +216,7 @@ export function estimatePartChars(
   if (typeof part.text === 'string') {
     return part.text.length;
   }
-  // Tool results in qwen-code carry media on `functionResponse.parts`
+  // Tool results in canopy-code carry media on `functionResponse.parts`
   // (an extension to the @google/genai schema; see
   // `coreToolScheduler.createFunctionResponsePart`). Walk into those
   // nested parts so a base64 image attached to a `read_file` result
@@ -245,7 +245,7 @@ export function estimatePartChars(
 
 /**
  * Returns the nested-parts array from a `functionResponse`, if present.
- * qwen-code attaches media here (see
+ * canopy-code attaches media here (see
  * `coreToolScheduler.createFunctionResponsePart`); the standard
  * `@google/genai` FunctionResponse type does not declare it.
  *
@@ -340,7 +340,7 @@ function transformPart(
     }
     return mediaPlaceholderPart(part.fileData.mimeType, stats);
   }
-  // Walk into functionResponse.parts (qwen-code's nested-media carrier
+  // Walk into functionResponse.parts (canopy-code's nested-media carrier
   // for tool results — see `coreToolScheduler.createFunctionResponsePart`).
   // Without this, base64 images returned by read_file et al. leak into
   // the side-query payload.
@@ -395,7 +395,7 @@ function mediaPlaceholderPart(
 
 function isNonImageMime(mime: string): boolean {
   // Anything outside image/* is rendered with the `[document: ...]`
-  // placeholder. audio/video are rare on qwen-code's tool surface and
+  // placeholder. audio/video are rare on canopy-code's tool surface and
   // the placeholder is purely informational, so the conservative
   // grouping is acceptable.
   return !mime.startsWith('image/');

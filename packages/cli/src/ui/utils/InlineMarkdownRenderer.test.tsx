@@ -251,14 +251,14 @@ math then literal: $x^2\$$`;
 
     it('stops the bare-URL hyperlink at glued-on full-width CJK punctuation', () => {
       enableHyperlinks();
-      const url = 'https://github.com/QwenLM/qwen-code/pull/8742';
+      const url = 'https://github.com/QwenLM/canopy-code/pull/8742';
       const { lastFrame } = renderWithProviders(
         <RenderInline text={`PR：${url}（2 commits，等 CI）`} />,
       );
 
       const out = lastFrame() ?? '';
       // OSC 8 target is exactly the URL — the （2 run is not swallowed into
-      // the link (https://github.com/QwenLM/qwen-code/issues/8750).
+      // the link (https://github.com/QwenLM/canopy-code/issues/8750).
       expect(out).toContain(`\x1b]8;;${url}\x07`);
       expect(out).not.toContain(`\x1b]8;;${url}（`);
       // The glued-on punctuation renders as plain text after the link.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 /**
  * Per-async-context session ID, mirroring {@link promptIdContext}.
  *
- * `QWEN_CODE_SESSION_ID` historically lived only in `process.env`, which is
+ * `CANOPY_CODE_SESSION_ID` historically lived only in `process.env`, which is
  * a single process-global slot. That is fine for the interactive CLI (one
  * session per process, switched via `Config.startNewSession()`), but breaks
  * in daemon mode where one process hosts many concurrent sessions: only the

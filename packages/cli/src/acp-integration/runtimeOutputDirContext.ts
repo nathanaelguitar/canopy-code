@@ -1,4 +1,4 @@
-import { Storage } from '@qwen-code/qwen-code-core';
+import { Storage } from '@canopy-code/canopy-code-core';
 import type { LoadedSettings } from '../config/settings.js';
 
 export function runWithAcpRuntimeOutputDir<T>(

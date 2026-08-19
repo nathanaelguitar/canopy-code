@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -31,7 +31,7 @@ import {
   type ArenaSessionErrorEvent,
   type ArenaSessionStartEvent,
   type ArenaSessionUpdateEvent,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   MessageType,
   type ArenaAgentCardData,

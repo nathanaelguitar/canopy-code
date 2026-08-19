@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen team
+ * Copyright 2025 Canopy team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,7 +29,7 @@ import {
   resolveOutputLanguageOrPreserveAuto,
   writeOutputLanguageAndRegisterPath,
 } from '../../utils/languageUtils.js';
-import { createDebugLogger } from '@qwen-code/qwen-code-core';
+import { createDebugLogger } from '@canopy-code/canopy-code-core';
 
 const debugLogger = createDebugLogger('LANGUAGE_COMMAND');
 

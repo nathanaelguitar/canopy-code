@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, expect, it } from 'vitest';
-import { AgentStatus } from '@qwen-code/qwen-code-core';
+import { AgentStatus } from '@canopy-code/canopy-code-core';
 import { renderWithProviders } from '../../../test-utils/render.js';
 import { ArenaSessionCard } from './ArenaCards.js';
 import type { ArenaAgentCardData } from '../../types.js';
@@ -112,7 +112,7 @@ describe('ArenaSessionCard', () => {
         approachSummary: 'Created a reader.',
       },
       {
-        label: 'qwen2.5:14b',
+        label: 'canopy2.5:14b',
         status: AgentStatus.IDLE,
         durationMs: 8_000,
         totalTokens: 8_000,
@@ -145,6 +145,6 @@ describe('ArenaSessionCard', () => {
     const output = lastFrame();
     expect(output).toContain('common: reader.py');
     expect(output).not.toContain('only gemma4:31b: none');
-    expect(output).not.toContain('only qwen2.5:14b: none');
+    expect(output).not.toContain('only canopy2.5:14b: none');
   });
 });

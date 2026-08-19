@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -187,7 +187,7 @@ describe('SuggestionsDisplay', () => {
             value: 'doctor',
             argumentHint:
               '[memory|cpu-profile|rollback] [--sample] [--snapshot] [--duration]',
-            description: 'Diagnose Qwen Code environment.',
+            description: 'Diagnose Canopy Code environment.',
           },
         ]}
         activeIndex={0}

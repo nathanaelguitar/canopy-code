@@ -10,7 +10,7 @@ import {
   recordChannelMemoryRecallMetrics,
   removeChannelMemoryEntries,
   updateChannelMemoryEntry,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { loadSettings } from '../../config/settings.js';
 import { scrubAndReportInheritedLoaderEnv } from '../../config/shared-env-keys.js';
 import {
@@ -37,10 +37,10 @@ import { normalizeServeChannelSelection } from '../../serve/channel-selection.js
 import {
   CHANNEL_DAEMON_WORKER_SENTINEL,
   CHANNEL_WORKER_HEARTBEAT_INTERVAL_MS,
-  QWEN_DAEMON_TOKEN_ENV,
-  QWEN_DAEMON_URL_ENV,
-  QWEN_DAEMON_WORKSPACE_ENV,
-  QWEN_SERVER_TOKEN_ENV,
+  CANOPY_DAEMON_TOKEN_ENV,
+  CANOPY_DAEMON_URL_ENV,
+  CANOPY_DAEMON_WORKSPACE_ENV,
+  CANOPY_SERVER_TOKEN_ENV,
 } from '../../serve/channel-worker-env.js';
 import { EXTERNAL_TOOL_GUARD_TOKEN_ENV } from '@qwen-code/acp-bridge/externalToolGuard';
 import {
@@ -322,10 +322,10 @@ function validateDaemonWorkerUrl(daemonUrl: string): void {
   try {
     parsed = new URL(daemonUrl);
   } catch {
-    throw new Error(`${QWEN_DAEMON_URL_ENV} must be a valid URL.`);
+    throw new Error(`${CANOPY_DAEMON_URL_ENV} must be a valid URL.`);
   }
   if (parsed.protocol !== 'http:' || !isLoopbackBind(parsed.hostname)) {
-    throw new Error(`${QWEN_DAEMON_URL_ENV} must use an http loopback URL.`);
+    throw new Error(`${CANOPY_DAEMON_URL_ENV} must use an http loopback URL.`);
   }
 }
 
@@ -487,7 +487,7 @@ export async function runChannelDaemonWorker(
     sessionFactory: createDaemonSessionFactory({
       client,
       DaemonSessionClient: sdk.DaemonSessionClient,
-      clientId: `qwen-channel-worker:${process.pid}`,
+      clientId: `canopy-channel-worker:${process.pid}`,
     }),
     ...(opts.promptAuthorization
       ? { promptAuthorization: opts.promptAuthorization }
@@ -788,10 +788,10 @@ function readRequiredEnv(name: string): string {
 
 function scrubDaemonWorkerEnv(): void {
   delete process.env[CHANNEL_DAEMON_WORKER_SENTINEL];
-  delete process.env[QWEN_DAEMON_TOKEN_ENV];
-  delete process.env[QWEN_DAEMON_URL_ENV];
-  delete process.env[QWEN_DAEMON_WORKSPACE_ENV];
-  delete process.env[QWEN_SERVER_TOKEN_ENV];
+  delete process.env[CANOPY_DAEMON_TOKEN_ENV];
+  delete process.env[CANOPY_DAEMON_URL_ENV];
+  delete process.env[CANOPY_DAEMON_WORKSPACE_ENV];
+  delete process.env[CANOPY_SERVER_TOKEN_ENV];
   delete process.env[EXTERNAL_TOOL_GUARD_TOKEN_ENV];
 }
 
@@ -801,13 +801,13 @@ function readDaemonWorkerEnv(): {
   promptAuthorization: string;
   workspace: string;
 } {
-  const daemonToken = process.env[QWEN_DAEMON_TOKEN_ENV];
+  const daemonToken = process.env[CANOPY_DAEMON_TOKEN_ENV];
   try {
     return {
       daemonToken,
-      daemonUrl: readRequiredEnv(QWEN_DAEMON_URL_ENV),
+      daemonUrl: readRequiredEnv(CANOPY_DAEMON_URL_ENV),
       promptAuthorization: readRequiredEnv(CHANNEL_DAEMON_WORKER_SENTINEL),
-      workspace: readRequiredEnv(QWEN_DAEMON_WORKSPACE_ENV),
+      workspace: readRequiredEnv(CANOPY_DAEMON_WORKSPACE_ENV),
     };
   } finally {
     scrubDaemonWorkerEnv();
@@ -818,7 +818,7 @@ function assertInternalDaemonWorkerInvocation(): void {
   const sentinel = process.env[CHANNEL_DAEMON_WORKER_SENTINEL];
   if (!sentinel || sentinel === '1' || typeof process.send !== 'function') {
     scrubDaemonWorkerEnv();
-    throw new Error('daemon-worker is an internal qwen serve command.');
+    throw new Error('daemon-worker is an internal canopy serve command.');
   }
 }
 
@@ -944,7 +944,7 @@ export const daemonWorkerCommand: CommandModule<unknown, DaemonWorkerArgs> = {
       // scrubbed before the freeze, so this is a no-op there.
       scrubAndReportInheritedLoaderEnv(
         process.env,
-        'qwen channel daemon-worker',
+        'canopy channel daemon-worker',
         'channel daemon worker',
       );
       const send = process.send!;

@@ -58,7 +58,7 @@ Workflow:
 
 To update an artifact, call Artifact again with the SAME file path: it redeploys to the same URL. A different path creates a separate Artifact.
 
-Set artifact.autoOpen=false in settings.json, or QWEN_ARTIFACT_NO_AUTO_OPEN=1, to publish without launching a browser.`;
+Set artifact.autoOpen=false in settings.json, or CANOPY_ARTIFACT_NO_AUTO_OPEN=1, to publish without launching a browser.`;
 
 const debugLogger = createDebugLogger('artifact');
 

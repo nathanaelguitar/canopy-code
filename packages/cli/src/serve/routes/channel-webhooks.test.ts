@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -69,7 +69,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -95,7 +95,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -117,7 +117,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -150,7 +150,7 @@ describe('channel webhook routes', () => {
 
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -171,7 +171,7 @@ describe('channel webhook routes', () => {
       const h = appHarness();
       const res = await request(h.app)
         .post('/channels/dingtalk-main/webhooks/github-ci')
-        .set('x-qwen-webhook-secret', 'secret-value')
+        .set('x-canopy-webhook-secret', 'secret-value')
         .send({
           eventType: 'ci_failed',
           targetRef: 'default',
@@ -195,7 +195,7 @@ describe('channel webhook routes', () => {
 
     const res = await request(h.app)
       .post('/channels/random-channel/webhooks/random-source')
-      .set('x-qwen-webhook-secret', 'wrong')
+      .set('x-canopy-webhook-secret', 'wrong')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -219,7 +219,7 @@ describe('channel webhook routes', () => {
 
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -248,7 +248,7 @@ describe('channel webhook routes', () => {
 
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'wrong')
+      .set('x-canopy-webhook-secret', 'wrong')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -268,7 +268,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'wrong')
+      .set('x-canopy-webhook-secret', 'wrong')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -284,7 +284,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/missing-source')
-      .set('x-qwen-webhook-secret', 'wrong')
+      .set('x-canopy-webhook-secret', 'wrong')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -301,7 +301,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'other',
@@ -317,7 +317,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: '__proto__',
@@ -335,7 +335,7 @@ describe('channel webhook routes', () => {
       const h = appHarness();
       const res = await request(h.app)
         .post('/channels/dingtalk-main/webhooks/github-ci')
-        .set('x-qwen-webhook-secret', 'secret-value')
+        .set('x-canopy-webhook-secret', 'secret-value')
         .send({
           eventType: 'ci_failed',
           targetRef: 'default',
@@ -352,7 +352,7 @@ describe('channel webhook routes', () => {
     const h = appHarness();
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({});
 
     expect(res.status).toBe(400);
@@ -371,7 +371,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -396,7 +396,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -421,7 +421,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -446,7 +446,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -471,7 +471,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',
@@ -496,7 +496,7 @@ describe('channel webhook routes', () => {
     });
     const res = await request(h.app)
       .post('/channels/dingtalk-main/webhooks/github-ci')
-      .set('x-qwen-webhook-secret', 'secret-value')
+      .set('x-canopy-webhook-secret', 'secret-value')
       .send({
         eventType: 'ci_failed',
         targetRef: 'default',

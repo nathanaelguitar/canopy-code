@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ChatRecord } from '@qwen-code/qwen-code-core';
+import type { ChatRecord } from '@canopy-code/canopy-code-core';
 
 export function getToolResultCallId(record: ChatRecord): string {
   return getExplicitToolResultCallId(record) ?? record.uuid;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,7 +21,7 @@ import {
   isImageCapable,
   parseVisionModelSetting,
   resolveModelId,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { SettingScope, type LoadedSettings } from '../../config/settings.js';
 import {
   isInlineModelOverrideAllowed,
@@ -140,7 +140,7 @@ async function switchMainModel(
       parsed.authType,
       parsed.modelId,
       parsed.authType !== currentAuthType &&
-        parsed.authType === AuthType.QWEN_OAUTH
+        parsed.authType === AuthType.CANOPY_OAUTH
         ? { requireCachedCredentials: true }
         : undefined,
     );

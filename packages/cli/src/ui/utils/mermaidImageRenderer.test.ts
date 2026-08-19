@@ -110,7 +110,7 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: process.env['PATH'] ?? '',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -121,7 +121,9 @@ describe('mermaid image renderer', () => {
   });
 
   it('does not auto-discover repo-local renderers from the current working directory', () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-local-mmdc-'));
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'canopy-local-mmdc-'),
+    );
     tempDirs.push(tempDir);
     const binDir = path.join(tempDir, 'node_modules', '.bin');
     fs.mkdirSync(binDir, { recursive: true });
@@ -138,8 +140,8 @@ describe('mermaid image renderer', () => {
         availableTerminalHeight: 20,
         env: {
           PATH: binDir,
-          QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-          QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+          CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+          CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
         },
       });
 
@@ -153,7 +155,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('does not auto-discover node_modules renderers from PATH without opt-in', () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-path-mmdc-'));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-path-mmdc-'));
     tempDirs.push(tempDir);
     const binDir = path.join(
       tempDir,
@@ -171,8 +173,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: binDir,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -185,17 +187,17 @@ describe('mermaid image renderer', () => {
   it('detects forced terminal image protocols', () => {
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       }),
     ).toBe('kitty');
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
       }),
     ).toBe('iterm2');
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       }),
     ).toBeNull();
   });
@@ -203,8 +205,8 @@ describe('mermaid image renderer', () => {
   it('honors the Mermaid image disable flag over forced protocols', () => {
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_DISABLE_MERMAID_IMAGES: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_DISABLE_MERMAID_IMAGES: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       }),
     ).toBeNull();
   });
@@ -214,12 +216,12 @@ describe('mermaid image renderer', () => {
 
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       }),
     ).toBeNull();
     expect(
       detectTerminalImageProtocol({
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
       }),
     ).toBeNull();
   });
@@ -255,7 +257,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('renders Mermaid through mmdc when terminal images are available', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -265,8 +267,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
       },
     });
 
@@ -278,7 +280,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('renders Mermaid through Kitty asynchronously for interactive UI callers', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -288,8 +290,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -298,7 +300,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('does not render iTerm2 images asynchronously because placement is cursor-bound', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -308,8 +310,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
       },
     });
 
@@ -318,7 +320,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('honors the configured terminal cell aspect ratio when fitting images', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -328,9 +330,9 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 60,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
-        QWEN_CODE_MERMAID_CELL_ASPECT_RATIO: '1',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_CELL_ASPECT_RATIO: '1',
       },
     });
 
@@ -338,7 +340,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('falls back to the default render timeout when configured timeout is invalid', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -348,9 +350,9 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
-        QWEN_CODE_MERMAID_RENDER_TIMEOUT_MS: 'not-a-number',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+        CANOPY_CODE_MERMAID_RENDER_TIMEOUT_MS: 'not-a-number',
       },
     });
 
@@ -359,7 +361,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('renders Mermaid through chafa when terminal images are unavailable', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir);
@@ -370,8 +372,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
@@ -383,7 +385,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('honors the Mermaid image disable flag over chafa fallback rendering', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir);
@@ -394,20 +396,20 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_DISABLE_MERMAID_IMAGES: '1',
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_DISABLE_MERMAID_IMAGES: '1',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
     expect(result.kind).toBe('unavailable');
     expect(result.kind === 'unavailable' && result.reason).toContain(
-      'QWEN_CODE_DISABLE_MERMAID_IMAGES',
+      'CANOPY_CODE_DISABLE_MERMAID_IMAGES',
     );
   });
 
   it('honors the Mermaid image disable flag in async rendering', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir);
@@ -418,20 +420,20 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_DISABLE_MERMAID_IMAGES: '1',
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_DISABLE_MERMAID_IMAGES: '1',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
     expect(result.kind).toBe('unavailable');
     expect(result.kind === 'unavailable' && result.reason).toContain(
-      'QWEN_CODE_DISABLE_MERMAID_IMAGES',
+      'CANOPY_CODE_DISABLE_MERMAID_IMAGES',
     );
   });
 
   it('does not forward API credentials to external renderers', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-env-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-env-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir, [
       'const fs = require("node:fs");',
@@ -453,8 +455,8 @@ describe('mermaid image renderer', () => {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
         OPENAI_API_KEY: 'should-not-leak',
         GEMINI_API_KEY: 'should-not-leak',
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -462,7 +464,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('renders Mermaid through chafa asynchronously for interactive UI callers', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir);
@@ -473,8 +475,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
@@ -486,7 +488,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('bounds retained renderer output from async command failures', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir, [
@@ -499,8 +501,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
@@ -514,7 +516,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('bounds retained renderer output across many async stderr chunks', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-chafa-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-chafa-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
     createFakeChafa(binDir, [
@@ -535,8 +537,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'off',
       },
     });
 
@@ -550,7 +552,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('cancels async Mermaid CLI rendering when the caller aborts', async () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir, ['setTimeout(() => {}, 60_000);']);
 
@@ -562,8 +564,8 @@ describe('mermaid image renderer', () => {
       signal: abortController.signal,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -582,8 +584,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -591,7 +593,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('renders Kitty terminal images as virtual placements', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir);
 
@@ -601,8 +603,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -618,7 +620,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('rejects oversized Mermaid PNG output before reading it', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     createFakeMmdc(binDir, [
       'const fs = require("node:fs");',
@@ -633,8 +635,8 @@ describe('mermaid image renderer', () => {
       availableTerminalHeight: 20,
       env: {
         PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-        QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-        QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
+        CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+        CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'kitty',
       },
     });
 
@@ -645,7 +647,7 @@ describe('mermaid image renderer', () => {
   });
 
   it('evicts Mermaid image caches by retained byte size', () => {
-    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-mmdc-'));
+    const binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-mmdc-'));
     tempDirs.push(binDir);
     const countPath = path.join(binDir, 'count.txt');
     createFakeMmdc(binDir, [
@@ -662,8 +664,8 @@ describe('mermaid image renderer', () => {
 
     const env = {
       PATH: `${binDir}${path.delimiter}${process.env['PATH'] ?? ''}`,
-      QWEN_CODE_MERMAID_IMAGE_RENDERING: '1',
-      QWEN_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
+      CANOPY_CODE_MERMAID_IMAGE_RENDERING: '1',
+      CANOPY_CODE_MERMAID_IMAGE_PROTOCOL: 'iterm2',
     };
 
     for (let index = 0; index < 5; index++) {

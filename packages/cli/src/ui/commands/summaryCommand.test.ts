@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,11 +11,11 @@ import path from 'node:path';
 import { summaryCommand } from './summaryCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import type { CommandContext } from './types.js';
-import { runSideQuery } from '@qwen-code/qwen-code-core';
+import { runSideQuery } from '@canopy-code/canopy-code-core';
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     getProjectSummaryPrompt: () => 'summary prompt',
@@ -86,15 +86,15 @@ describe('summaryCommand custom export path', () => {
     }
   };
 
-  it('defaults to .qwen/PROJECT_SUMMARY.md with no argument', async () => {
+  it('defaults to .canopy/PROJECT_SUMMARY.md with no argument', async () => {
     const result = await run('');
-    const fullPath = path.join(projectRoot, '.qwen', 'PROJECT_SUMMARY.md');
+    const fullPath = path.join(projectRoot, '.canopy', 'PROJECT_SUMMARY.md');
     expect(await fileExists(fullPath)).toBe(true);
     const written = await fs.readFile(fullPath, 'utf8');
     expect(written).toContain('SUMMARY BODY');
     expect(written).toContain('## Summary Metadata');
     expect(result).toMatchObject({ type: 'message', messageType: 'info' });
-    expect(result.content).toContain('.qwen/PROJECT_SUMMARY.md');
+    expect(result.content).toContain('.canopy/PROJECT_SUMMARY.md');
     if (process.platform !== 'win32') {
       const stat = await fs.stat(path.dirname(fullPath));
       expect(stat.mode & 0o777).toBe(0o700);
@@ -102,17 +102,17 @@ describe('summaryCommand custom export path', () => {
   });
 
   it('overwrites a hand-written file at the default path', async () => {
-    const qwenDir = path.join(projectRoot, '.qwen');
-    await fs.mkdir(qwenDir, { recursive: true });
+    const canopyDir = path.join(projectRoot, '.canopy');
+    await fs.mkdir(canopyDir, { recursive: true });
     await fs.writeFile(
-      path.join(qwenDir, 'PROJECT_SUMMARY.md'),
+      path.join(canopyDir, 'PROJECT_SUMMARY.md'),
       'hand-written notes',
       'utf8',
     );
     const result = await run('');
     expect(result).toMatchObject({ type: 'message', messageType: 'info' });
     const written = await fs.readFile(
-      path.join(qwenDir, 'PROJECT_SUMMARY.md'),
+      path.join(canopyDir, 'PROJECT_SUMMARY.md'),
       'utf8',
     );
     expect(written).toContain('SUMMARY BODY');
@@ -424,13 +424,13 @@ describe('summaryCommand custom export path', () => {
   });
 
   it.skipIf(process.platform === 'win32')(
-    'allows the default target when .qwen is a symlink',
+    'allows the default target when .canopy is a symlink',
     async () => {
       const outside = await fs.mkdtemp(
         path.join(os.tmpdir(), 'summary-shared-'),
       );
       try {
-        await fs.symlink(outside, path.join(projectRoot, '.qwen'));
+        await fs.symlink(outside, path.join(projectRoot, '.canopy'));
         const result = await run('');
         expect(result).toMatchObject({
           type: 'message',
@@ -486,11 +486,11 @@ describe('summaryCommand custom export path', () => {
   );
 
   it.skipIf(process.platform === 'win32')(
-    'applies 0o700 to .qwen/ when spelled explicitly',
+    'applies 0o700 to .canopy/ when spelled explicitly',
     async () => {
-      const result = await run('.qwen/');
+      const result = await run('.canopy/');
       expect(result).toMatchObject({ type: 'message', messageType: 'info' });
-      const stat = await fs.stat(path.join(projectRoot, '.qwen'));
+      const stat = await fs.stat(path.join(projectRoot, '.canopy'));
       expect(stat.mode & 0o777).toBe(0o700);
     },
   );
@@ -512,17 +512,17 @@ describe('summaryCommand custom export path', () => {
   );
 
   it('overwrites a hand-written file when the default path is spelled explicitly', async () => {
-    const qwenDir = path.join(projectRoot, '.qwen');
-    await fs.mkdir(qwenDir, { recursive: true });
+    const canopyDir = path.join(projectRoot, '.canopy');
+    await fs.mkdir(canopyDir, { recursive: true });
     await fs.writeFile(
-      path.join(qwenDir, 'PROJECT_SUMMARY.md'),
+      path.join(canopyDir, 'PROJECT_SUMMARY.md'),
       'hand-written notes',
       'utf8',
     );
-    const result = await run('.qwen/PROJECT_SUMMARY.md');
+    const result = await run('.canopy/PROJECT_SUMMARY.md');
     expect(result).toMatchObject({ type: 'message', messageType: 'info' });
     const written = await fs.readFile(
-      path.join(qwenDir, 'PROJECT_SUMMARY.md'),
+      path.join(canopyDir, 'PROJECT_SUMMARY.md'),
       'utf8',
     );
     expect(written).toContain('SUMMARY BODY');

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,7 +9,7 @@ import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import type { WizardStepProps, WizardAction } from '../types.js';
 import { sanitizeInput } from '../utils.js';
-import { type Config, subagentGenerator } from '@qwen-code/qwen-code-core';
+import { type Config, subagentGenerator } from '@canopy-code/canopy-code-core';
 import { useKeypress, type Key } from '../../../hooks/useKeypress.js';
 import { keyMatchers, Command } from '../../../keyMatchers.js';
 import { theme } from '../../../semantic-colors.js';

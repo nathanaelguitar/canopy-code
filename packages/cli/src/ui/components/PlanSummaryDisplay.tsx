@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import type React from 'react';
 import { Box, Text } from 'ink';
 import { MarkdownDisplay } from '../utils/MarkdownDisplay.js';
 import { Colors } from '../colors.js';
-import type { PlanResultDisplay } from '@qwen-code/qwen-code-core';
+import type { PlanResultDisplay } from '@canopy-code/canopy-code-core';
 
 interface PlanSummaryDisplayProps {
   data: PlanResultDisplay;

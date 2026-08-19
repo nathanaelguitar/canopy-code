@@ -13,20 +13,20 @@ import type {
   ChatCompressionSettings,
   ModelProvidersConfig,
   ProviderProtocolConfig,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   ApprovalMode,
   DEFAULT_MAX_SUBAGENT_DEPTH,
   DEFAULT_MAX_TOOL_CALLS_PER_TURN,
   DEFAULT_SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH,
-  DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES,
+  DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES,
   DEFAULT_STOP_HOOK_BLOCK_CAP,
   DEFAULT_TOOL_OUTPUT_BATCH_BUDGET,
   DEFAULT_TOOL_RESULTS_TOTAL_CHARS_THRESHOLD,
   DEFAULT_TRUNCATE_TOOL_OUTPUT_LINES,
   DEFAULT_TRUNCATE_TOOL_OUTPUT_THRESHOLD,
   SENSITIVE_SPAN_ATTRIBUTE_MAX_LENGTH_LIMIT,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { CustomTheme } from '../ui/themes/theme.js';
 import { getLanguageSettingsOptions } from '../i18n/languages.js';
 
@@ -313,7 +313,7 @@ const SETTINGS_SCHEMA = {
     category: 'Advanced',
     requiresRestart: true,
     default: {},
-    description: 'Persistent qwen serve settings.',
+    description: 'Persistent canopy serve settings.',
     showInDialog: false,
     mergeStrategy: MergeStrategy.SHALLOW_MERGE,
     properties: {
@@ -375,7 +375,7 @@ const SETTINGS_SCHEMA = {
     requiresRestart: true,
     default: {} as ProviderProtocolConfig,
     description:
-      'Maps a custom modelProviders provider id to the SDK protocol that routes its requests (e.g. {"idealab": "openai"}). Lets a custom provider id reuse a built-in protocol. Built-in provider ids (openai, gemini, anthropic, vertex-ai, qwen-oauth) are routed automatically and need no entry.',
+      'Maps a custom modelProviders provider id to the SDK protocol that routes its requests (e.g. {"idealab": "openai"}). Lets a custom provider id reuse a built-in protocol. Built-in provider ids (openai, gemini, anthropic, vertex-ai, canopy-oauth) are routed automatically and need no entry.',
     showInDialog: false,
     mergeStrategy: MergeStrategy.REPLACE,
   },
@@ -387,7 +387,7 @@ const SETTINGS_SCHEMA = {
     requiresRestart: true,
     default: undefined as string | undefined,
     description:
-      'Custom directory for approved Plan Mode files. Relative paths are resolved from the project root, and the resolved path must stay within the project root. Defaults to ~/.qwen/plans.',
+      'Custom directory for approved Plan Mode files. Relative paths are resolved from the project root, and the resolved path must stay within the project root. Defaults to ~/.canopy/plans.',
     showInDialog: false,
   },
 
@@ -491,7 +491,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: false,
             default: '',
             description:
-              'Path to a custom keyterms file (one term per line, "#" for comments) that biases voice transcription toward domain-specific terms. Relative paths resolve from the workspace root; defaults to ".qwen/voice-keyterms.txt" when present. The file contents are sent to the ASR provider and it is read only in trusted workspaces. Only applies to Qwen ASR models (qwen3-asr-*).',
+              'Path to a custom keyterms file (one term per line, "#" for comments) that biases voice transcription toward domain-specific terms. Relative paths resolve from the workspace root; defaults to ".canopy/voice-keyterms.txt" when present. The file contents are sent to the ASR provider and it is read only in trusted workspaces. Only applies to Canopy ASR models (qwen3-asr-*).',
             showInDialog: false,
           },
           refineTranscript: {
@@ -552,7 +552,7 @@ const SETTINGS_SCHEMA = {
         default: 30,
         minimum: 0,
         description:
-          'Number of days to retain ~/.qwen/file-history/ session backups used by /rewind and background subagent transcripts under <projectDir>/subagents/. Data older than this is removed by a background housekeeping pass that runs at most once per day. Set to 0 for minimum retention (~1 hour) — protects sessions touched in the last hour, plus the currently active session.',
+          'Number of days to retain ~/.canopy/file-history/ session backups used by /rewind and background subagent transcripts under <projectDir>/subagents/. Data older than this is removed by a background housekeeping pass that runs at most once per day. Set to 0 for minimum retention (~1 hour) — protects sessions touched in the last hour, plus the currently active session.',
         showInDialog: true,
       },
       gitCoAuthor: {
@@ -566,13 +566,13 @@ const SETTINGS_SCHEMA = {
         // editor-surfaced defaults.
         default: { commit: true, pr: true },
         description:
-          'Attribution added to git commits and pull requests created through Qwen Code.',
+          'Attribution added to git commits and pull requests created through Canopy Code.',
         showInDialog: false,
         // Pre-V4 settings stored this as a single boolean. The V3→V4
         // migration rewrites those on first launch, but the IDE schema
         // validator runs before that — accept the boolean shape so users
         // editing settings.json in VS Code don't see a spurious warning
-        // until they run qwen once. Config.normalizeGitCoAuthor handles
+        // until they run canopy once. Config.normalizeGitCoAuthor handles
         // the boolean at runtime.
         legacyTypes: ['boolean'],
         properties: {
@@ -583,7 +583,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: false,
             default: true,
             description:
-              'Add a Co-authored-by trailer to git commit messages AND attach a per-file AI-attribution git note (`refs/notes/ai-attribution`) for commits made through Qwen Code. Disabling skips both.',
+              'Add a Co-authored-by trailer to git commit messages AND attach a per-file AI-attribution git note (`refs/notes/ai-attribution`) for commits made through Canopy Code. Disabling skips both.',
             showInDialog: true,
           },
           pr: {
@@ -593,7 +593,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: false,
             default: true,
             description:
-              'Append a Qwen Code attribution line to PR descriptions when running `gh pr create`.',
+              'Append a Canopy Code attribution line to PR descriptions when running `gh pr create`.',
             showInDialog: true,
           },
         },
@@ -616,7 +616,7 @@ const SETTINGS_SCHEMA = {
         description:
           'The language for the user interface. Use "auto" to detect from system settings. ' +
           'You can also use custom language codes (e.g., "es", "fr") by placing JS language files ' +
-          'in ~/.qwen/locales/ (e.g., ~/.qwen/locales/es.js).',
+          'in ~/.canopy/locales/ (e.g., ~/.canopy/locales/es.js).',
         showInDialog: true,
         options: [] as readonly SettingEnumOption[],
       },
@@ -679,7 +679,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: true,
         description:
-          'Prevent the system from sleeping while Qwen Code is streaming a model response or executing tools. Idle prompt time and permission prompts do not inhibit sleep.',
+          'Prevent the system from sleeping while Canopy Code is streaming a model response or executing tools. Idle prompt time and permission prompts do not inhibit sleep.',
         showInDialog: true,
       },
       chatRecording: {
@@ -724,7 +724,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: true,
         description:
-          'Append the attribution footer naming the model and CLI version (e.g. "_— qwen3-coder via Qwen Code /review (v0.21.2)_") to review bodies and inline comments posted to GitHub. Disable to post reviews without AI attribution. Note: with the footer off, presubmit duplicate detection still recognizes earlier posts by the same GitHub account, but footer-less posts from other accounts escape it. Only honored from User, System, and SystemDefaults settings scopes; values set in Workspace settings are ignored, so a repository cannot set review policy for its reviewers.',
+          'Append the attribution footer naming the model and CLI version (e.g. "_— qwen3-coder via Canopy Code /review (v0.21.2)_") to review bodies and inline comments posted to GitHub. Disable to post reviews without AI attribution. Note: with the footer off, presubmit duplicate detection still recognizes earlier posts by the same GitHub account, but footer-less posts from other accounts escape it. Only honored from User, System, and SystemDefaults settings scopes; values set in Workspace settings are ignored, so a repository cannot set review policy for its reviewers.',
         showInDialog: true,
       },
       effort: {
@@ -867,7 +867,7 @@ const SETTINGS_SCHEMA = {
         label: 'Theme',
         category: 'UI',
         requiresRestart: false,
-        default: 'Qwen Dark' as string,
+        default: 'Canopy Dark' as string,
         description: 'The color theme for the UI.',
         showInDialog: true,
       },
@@ -952,7 +952,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: true,
         description:
-          'Show Qwen Code session name and status in the terminal window title',
+          'Show Canopy Code session name and status in the terminal window title',
         showInDialog: true,
       },
       hideTips: {
@@ -1063,7 +1063,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: true,
         description:
-          'Show optional feedback dialog after conversations to help improve Qwen performance.',
+          'Show optional feedback dialog after conversations to help improve Canopy performance.',
         showInDialog: true,
       },
       enableFollowupSuggestions: {
@@ -1176,7 +1176,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: true,
         description:
-          'Enable in-app SGR mouse tracking. While enabled, Qwen Code captures mouse events for text selection, click-to-position in text inputs, row hover, history-item toggling, and viewport scrolling. Because the terminal forwards all mouse events to the app, it cannot show native right-click context menus or open OSC 8 hyperlink clicks. Disable to restore native right-click and clickable URL links; this turns off all in-app mouse interaction, and in Virtualized History the wheel no longer scrolls the transcript — use Shift+↑/↓, PgUp/PgDn, or Ctrl+Home/End instead (pair with ui.useTerminalBuffer: false to restore native terminal scrollback).',
+          'Enable in-app SGR mouse tracking. While enabled, Canopy Code captures mouse events for text selection, click-to-position in text inputs, row hover, history-item toggling, and viewport scrolling. Because the terminal forwards all mouse events to the app, it cannot show native right-click context menus or open OSC 8 hyperlink clicks. Disable to restore native right-click and clickable URL links; this turns off all in-app mouse interaction, and in Virtualized History the wheel no longer scrolls the transcript — use Shift+↑/↓, PgUp/PgDn, or Ctrl+Home/End instead (pair with ui.useTerminalBuffer: false to restore native terminal scrollback).',
         showInDialog: true,
       },
       shellOutputMaxLines: {
@@ -1205,7 +1205,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: '' as string,
         description:
-          'Replace the default ">_ Qwen Code" title shown in the banner info panel. The version suffix is always appended.',
+          'Replace the default ">_ Canopy Code" title shown in the banner info panel. The version suffix is always appended.',
         showInDialog: false,
       },
       customBannerSubtitle: {
@@ -1225,7 +1225,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: undefined as CustomAsciiArtSetting | undefined,
         description:
-          'Replace the default QWEN ASCII art. Accepts an inline string, {"path": "..."}, or {"small": ..., "large": ...} for width-aware selection.',
+          'Replace the default CANOPY ASCII art. Accepts an inline string, {"path": "..."}, or {"small": ..., "large": ...} for width-aware selection.',
         showInDialog: false,
         // The runtime accepts three shapes (inline string, {path}, or
         // {small,large} where each tier is itself string-or-{path}). The
@@ -1396,14 +1396,14 @@ const SETTINGS_SCHEMA = {
     requiresRestart: true,
     default: undefined as OutboundCorrelationSettings | undefined,
     description:
-      "SECURITY-RELEVANT. Controls what client-side correlation data qwen-code writes into outbound LLM API requests (DashScope, OpenAI, Anthropic, etc.) — separate from `telemetry.*` which governs data flow into the operator's OWN OTLP collector. All values default to off. Opt in only when the LLM provider also reports into your OTel collector for cross-process trace stitching (e.g. ARMS Tracing + DashScope).",
+      "SECURITY-RELEVANT. Controls what client-side correlation data canopy-code writes into outbound LLM API requests (DashScope, OpenAI, Anthropic, etc.) — separate from `telemetry.*` which governs data flow into the operator's OWN OTLP collector. All values default to off. Opt in only when the LLM provider also reports into your OTel collector for cross-process trace stitching (e.g. ARMS Tracing + DashScope).",
     showInDialog: false,
     jsonSchemaOverride: {
       type: 'object',
       properties: {
         propagateTraceContext: {
           description:
-            "Requires `telemetry.enabled: true`. Inject W3C `traceparent` on outbound `fetch` requests (LLM SDK calls, MCP StreamableHTTP, WebFetch, ...) AND as a `TRACEPARENT` environment variable in shell child processes (Bash tool, hooks, monitor). When enabled, any existing `TRACEPARENT` in the parent environment is overwritten with qwen-code's own trace context. Default: false — trace context stays internal to the operator's OTLP collector. Set true when you want cross-process trace stitching with an OTel-aware LLM provider (e.g. ARMS+DashScope) or need shell scripts / CLI tools to participate in distributed tracing.",
+            "Requires `telemetry.enabled: true`. Inject W3C `traceparent` on outbound `fetch` requests (LLM SDK calls, MCP StreamableHTTP, WebFetch, ...) AND as a `TRACEPARENT` environment variable in shell child processes (Bash tool, hooks, monitor). When enabled, any existing `TRACEPARENT` in the parent environment is overwritten with canopy-code's own trace context. Default: false — trace context stays internal to the operator's OTLP collector. Set true when you want cross-process trace stitching with an OTel-aware LLM provider (e.g. ARMS+DashScope) or need shell scripts / CLI tools to participate in distributed tracing.",
           type: 'boolean',
           default: false,
         },
@@ -1623,7 +1623,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: false,
         description:
-          'Suppress the one-time Workflow tool usage banner that describes the QWEN_CODE_MAX_TOKENS_PER_WORKFLOW env knob. The banner fires at most once per session regardless of this setting.',
+          'Suppress the one-time Workflow tool usage banner that describes the CANOPY_CODE_MAX_TOKENS_PER_WORKFLOW env knob. The banner fires at most once per session regardless of this setting.',
         showInDialog: false,
       },
       skipLoopDetection: {
@@ -1849,7 +1849,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: false,
             default: undefined,
             description:
-              "Overrides the default context window size for the selected model. Use this setting when a provider's effective context limit differs from Qwen Code's default. This value defines the model's assumed maximum context capacity, not a per-request token limit.",
+              "Overrides the default context window size for the selected model. Use this setting when a provider's effective context limit differs from Canopy Code's default. This value defines the model's assumed maximum context capacity, not a per-request token limit.",
             parentKey: 'generationConfig',
             showInDialog: false,
           },
@@ -2000,14 +2000,14 @@ const SETTINGS_SCHEMA = {
             description: 'Respect .gitignore files when searching',
             showInDialog: true,
           },
-          respectQwenIgnore: {
+          respectCanopyIgnore: {
             type: 'boolean',
-            label: 'Respect .qwenignore',
+            label: 'Respect .canopyignore',
             category: 'Context',
             requiresRestart: true,
             default: true,
             description:
-              'Respect .qwenignore and configured custom ignore files when searching',
+              'Respect .canopyignore and configured custom ignore files when searching',
             showInDialog: true,
           },
           customIgnoreFiles: {
@@ -2015,9 +2015,9 @@ const SETTINGS_SCHEMA = {
             label: 'Custom Ignore Files',
             category: 'Context',
             requiresRestart: true,
-            default: [...DEFAULT_QWEN_CUSTOM_IGNORE_FILE_NAMES] as string[],
+            default: [...DEFAULT_CANOPY_CUSTOM_IGNORE_FILE_NAMES] as string[],
             description:
-              'Project-root-relative ignore files to use instead of the defaults (`.agentignore`, `.aiignore`) when respectQwenIgnore is enabled. .qwenignore is always included when respectQwenIgnore is enabled.',
+              'Project-root-relative ignore files to use instead of the defaults (`.agentignore`, `.aiignore`) when respectCanopyIgnore is enabled. .canopyignore is always included when respectCanopyIgnore is enabled.',
             showInDialog: false,
             items: { type: 'string' },
           },
@@ -2137,7 +2137,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: false,
         description:
-          'Enable a project memory tier shared with collaborators via the git-tracked `.qwen/team-memory/` directory. Off by default; writes to it are secret-scanned and reviewable in the git diff.',
+          'Enable a project memory tier shared with collaborators via the git-tracked `.canopy/team-memory/` directory. Off by default; writes to it are secret-scanned and reviewable in the git diff.',
         showInDialog: false,
       },
       enableTeamMemorySync: {
@@ -2147,7 +2147,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: false,
         description:
-          'When team memory is enabled, automatically commit, fast-forward-pull, and push the `.qwen/team-memory/` directory at session start so collaborators stay in sync. Off by default; requires a configured git upstream.',
+          'When team memory is enabled, automatically commit, fast-forward-pull, and push the `.canopy/team-memory/` directory at session start so collaborators stay in sync. Off by default; requires a configured git upstream.',
         showInDialog: false,
       },
     },
@@ -2518,7 +2518,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: undefined as string | undefined,
         description:
-          'Sandbox image URI used by Docker/Podman when --sandbox-image and QWEN_SANDBOX_IMAGE are not set.',
+          'Sandbox image URI used by Docker/Podman when --sandbox-image and CANOPY_SANDBOX_IMAGE are not set.',
         showInDialog: false,
       },
       webSearch: {
@@ -2821,7 +2821,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: {},
         description:
-          "Cross-platform desktop automation via the cua-driver native driver (trycua/cua). On first invocation a pinned, signed + notarized binary (~20MB) is downloaded into ~/.qwen/computer-use/ and the user is walked through macOS Accessibility / Screen Recording permissions if needed. Exposes cua-driver's full tool surface (click, type_text, scroll, drag, press_key, get_window_state, page, launch_app, and more).",
+          "Cross-platform desktop automation via the cua-driver native driver (trycua/cua). On first invocation a pinned, signed + notarized binary (~20MB) is downloaded into ~/.canopy/computer-use/ and the user is walked through macOS Accessibility / Screen Recording permissions if needed. Exposes cua-driver's full tool surface (click, type_text, scroll, drag, press_key, get_window_state, page, launch_app, and more).",
         showInDialog: false,
         properties: {
           enabled: {
@@ -2843,7 +2843,7 @@ const SETTINGS_SCHEMA = {
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Milliseconds to keep the cua-driver process alive after the last computer_use__* call. The default is 300000 (5 minutes). Set to 0 to keep it running until qwen-code exits.',
+              'Milliseconds to keep the cua-driver process alive after the last computer_use__* call. The default is 300000 (5 minutes). Set to 0 to keep it running until canopy-code exits.',
             showInDialog: false,
           },
           maxImageDimension: {
@@ -2853,7 +2853,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: true,
             default: -1,
             description:
-              "Longest-edge pixel cap applied to cua-driver screenshots (via set_config's max_image_dimension). -1 (default) keeps cua-driver's built-in default (1568); 0 disables resizing (full resolution); a positive value caps the longest edge. Lower caps cut vision-token cost at the expense of fine detail. Overridable via the QWEN_COMPUTER_USE_MAX_IMAGE_DIMENSION env var.",
+              "Longest-edge pixel cap applied to cua-driver screenshots (via set_config's max_image_dimension). -1 (default) keeps cua-driver's built-in default (1568); 0 disables resizing (full resolution); a positive value caps the longest edge. Lower caps cut vision-token cost at the expense of fine detail. Overridable via the CANOPY_COMPUTER_USE_MAX_IMAGE_DIMENSION env var.",
             showInDialog: false,
           },
         },
@@ -2870,7 +2870,7 @@ const SETTINGS_SCHEMA = {
     description:
       'Daemon multi-client coordination policies. Tool-level allow/deny rules ' +
       'live under `permissions`; this section is for runtime mediation behavior ' +
-      'between concurrent HTTP clients sharing one `qwen serve` daemon.',
+      'between concurrent HTTP clients sharing one `canopy serve` daemon.',
     showInDialog: false,
     properties: {
       permissionStrategy: {
@@ -2884,7 +2884,7 @@ const SETTINGS_SCHEMA = {
           '`first-responder` (default) = any client decides, first wins. ' +
           '`designated` = only the prompt originator decides; falls back to ' +
           'first-responder if originator is anonymous. ' +
-          'NOTE: client identity comes from self-declared X-Qwen-Client-Id ' +
+          'NOTE: client identity comes from self-declared X-Canopy-Client-Id ' +
           'with no proof-of-possession (pair-token identity is not implemented yet), ' +
           'so any client observing originatorClientId on SSE frames can ' +
           'register with the same id and impersonate the originator. ' +
@@ -2918,7 +2918,7 @@ const SETTINGS_SCHEMA = {
           'unreachable quorum. Unset = floor(M/2)+1. ' +
           'Requires daemon restart — read once at boot.',
         showInDialog: false,
-        // run-qwen-serve.ts validates `Number.isInteger(n) && n >= 1` and
+        // run-canopy-serve.ts validates `Number.isInteger(n) && n >= 1` and
         // refuses to boot otherwise. Override the generated schema so IDE
         // (VSCode, JetBrains via JSON Schema) flags `0`, `-1`, `1.5`
         // BEFORE the user restarts the daemon. The bare `type:'number'`
@@ -2991,7 +2991,7 @@ const SETTINGS_SCHEMA = {
         minimum: 10000,
         maximum: 3600000,
         description:
-          'Idle timeout in milliseconds for MCP tool calls. If the MCP server does not produce any response or progress update within this time, the call is aborted. Default: 300000 (5 minutes). Can be overridden via QWEN_CODE_MCP_TOOL_IDLE_TIMEOUT_MS environment variable.',
+          'Idle timeout in milliseconds for MCP tool calls. If the MCP server does not produce any response or progress update within this time, the call is aborted. Default: 300000 (5 minutes). Can be overridden via CANOPY_CODE_MCP_TOOL_IDLE_TIMEOUT_MS environment variable.',
         showInDialog: false,
       },
     },
@@ -3182,7 +3182,7 @@ const SETTINGS_SCHEMA = {
         default: undefined as string | undefined,
         description:
           'Custom directory for runtime output (temp files, debug logs, session data, todos, etc.). ' +
-          'Config files remain at ~/.qwen (or QWEN_HOME if set). Env var QWEN_RUNTIME_DIR takes priority.',
+          'Config files remain at ~/.canopy (or QWEN_HOME if set). Env var CANOPY_RUNTIME_DIR takes priority.',
         showInDialog: false,
       },
     },
@@ -3309,7 +3309,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: true,
             default: undefined as string | undefined,
             description:
-              'Custom base directory for Arena worktrees. Defaults to ~/.qwen/arena.',
+              'Custom base directory for Arena worktrees. Defaults to ~/.canopy/arena.',
             showInDialog: false,
           },
           preserveArtifacts: {
@@ -3385,7 +3385,7 @@ const SETTINGS_SCHEMA = {
     requiresRestart: true,
     default: DEFAULT_STOP_HOOK_BLOCK_CAP,
     description:
-      'Maximum consecutive blocking Stop/SubagentStop hook decisions before Qwen Code overrides the hook loop and ends the turn. Can be overridden by QWEN_CODE_STOP_HOOK_BLOCK_CAP.',
+      'Maximum consecutive blocking Stop/SubagentStop hook decisions before Canopy Code overrides the hook loop and ends the turn. Can be overridden by CANOPY_CODE_STOP_HOOK_BLOCK_CAP.',
     // This is an advanced safety valve for runaway hook loops, not a common
     // interactive preference.
     showInDialog: false,
@@ -3622,7 +3622,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: {},
         description:
-          'Experimental realtime voice conversations through Qwen Live Host on macOS WebShell.',
+          'Experimental realtime voice conversations through Canopy Live Host on macOS WebShell.',
         showInDialog: false,
         properties: {
           enabled: {
@@ -3681,7 +3681,7 @@ const SETTINGS_SCHEMA = {
             requiresRestart: false,
             default: 'Command+E' as string,
             description:
-              'Electron accelerator registered globally by Qwen Live Host.',
+              'Electron accelerator registered globally by Canopy Live Host.',
             showInDialog: false,
           },
         },
@@ -3703,7 +3703,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: true,
         description:
-          'Enable in-session cron/loop tools. When enabled, the model can create recurring prompts using cron_create, cron_list, and cron_delete tools. Can be disabled via QWEN_CODE_DISABLE_CRON=1 environment variable.',
+          'Enable in-session cron/loop tools. When enabled, the model can create recurring prompts using cron_create, cron_list, and cron_delete tools. Can be disabled via CANOPY_CODE_DISABLE_CRON=1 environment variable.',
         showInDialog: true,
       },
       todoStopGuard: {
@@ -3733,7 +3733,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: 7,
         description:
-          'Days a recurring cron/loop job lives before auto-expiring (it fires one final time, then is deleted). Set to 0 to disable expiry so jobs run until deleted — useful for long-running daemon deployments. Can be overridden via the QWEN_CODE_CRON_MAX_AGE_DAYS environment variable.',
+          'Days a recurring cron/loop job lives before auto-expiring (it fires one final time, then is deleted). Set to 0 to disable expiry so jobs run until deleted — useful for long-running daemon deployments. Can be overridden via the CANOPY_CODE_CRON_MAX_AGE_DAYS environment variable.',
         // A deployment-time knob (cloud daemons, containers), not a common
         // interactive preference.
         showInDialog: false,
@@ -3750,7 +3750,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: false,
         description:
-          'Enable agent team collaboration tools (experimental). When enabled, the model can create agent teams and coordinate work using team_create, team_delete, send_message, task_create, task_update, and task_list tools. Can also be enabled via QWEN_CODE_ENABLE_AGENT_TEAM=1 environment variable.',
+          'Enable agent team collaboration tools (experimental). When enabled, the model can create agent teams and coordinate work using team_create, team_delete, send_message, task_create, task_update, and task_list tools. Can also be enabled via CANOPY_CODE_ENABLE_AGENT_TEAM=1 environment variable.',
         showInDialog: true,
       },
       artifact: {
@@ -3760,7 +3760,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: true,
         description:
-          'Enable artifact tools. Enabled by default. In interactive, non-SDK sessions, the model can publish a self-contained HTML page as an interactive Artifact and open it in the browser. Non-SDK daemon sessions can use the metadata-only record_artifact tool. Set this to false or use QWEN_CODE_DISABLE_ARTIFACT=1 to disable both.',
+          'Enable artifact tools. Enabled by default. In interactive, non-SDK sessions, the model can publish a self-contained HTML page as an interactive Artifact and open it in the browser. Non-SDK daemon sessions can use the metadata-only record_artifact tool. Set this to false or use CANOPY_CODE_DISABLE_ARTIFACT=1 to disable both.',
         showInDialog: true,
       },
       emitToolUseSummaries: {
@@ -3770,7 +3770,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: false,
         default: true,
         description:
-          'Generate a short LLM-based label after each tool batch completes. For a completed tool group the label replaces the generic `Tool × N` header; when the group is force-expanded it appears as a dim `● <label>` line below the tool group. Requires a fast model to be configured; runs in parallel with the next API call so latency is hidden. Currently affects interactive CLI rendering only — SDK / non-interactive emission of the `tool_use_summary` message is not yet wired (the message factory is exported for a follow-up PR). Can be overridden with QWEN_CODE_EMIT_TOOL_USE_SUMMARIES=0 or =1.',
+          'Generate a short LLM-based label after each tool batch completes. For a completed tool group the label replaces the generic `Tool × N` header; when the group is force-expanded it appears as a dim `● <label>` line below the tool group. Requires a fast model to be configured; runs in parallel with the next API call so latency is hidden. Currently affects interactive CLI rendering only — SDK / non-interactive emission of the `tool_use_summary` message is not yet wired (the message factory is exported for a follow-up PR). Can be overridden with CANOPY_CODE_EMIT_TOOL_USE_SUMMARIES=0 or =1.',
         showInDialog: true,
       },
     },
@@ -3793,7 +3793,7 @@ const SETTINGS_SCHEMA = {
         requiresRestart: true,
         default: true,
         description:
-          'Open published artifacts in the browser automatically. Set to false to publish without launching a browser. QWEN_ARTIFACT_NO_AUTO_OPEN=1 overrides this setting.',
+          'Open published artifacts in the browser automatically. Set to false to publish without launching a browser. CANOPY_ARTIFACT_NO_AUTO_OPEN=1 overrides this setting.',
         showInDialog: false,
       },
       publisher: {
@@ -3943,7 +3943,7 @@ const SETTINGS_SCHEMA = {
           'tests / builds inside the worktree without a fresh install. ' +
           'Paths must be relative to the repo root; absolute paths, ' +
           'anything containing `..`, and any path inside `.git` or ' +
-          '`.qwen` (the CLI-managed metadata tree, which contains ' +
+          '`.canopy` (the CLI-managed metadata tree, which contains ' +
           'the worktrees directory itself) are rejected. Missing ' +
           'source dirs and existing destination paths are silently ' +
           'skipped (no overwrite, no failure).',

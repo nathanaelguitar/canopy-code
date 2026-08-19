@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -90,8 +90,8 @@ export const SERVE_CAPABILITY_REGISTRY = {
   workspace_acp_status: { since: 'v1' },
   auth_provider_install: { since: 'v1' },
   // Workspace memory CRUD (`GET/POST /workspace/memory`). Daemon exposes
-  // hierarchical QWEN.md state and accepts append/replace writes scoped
-  // to either the bound workspace or the global ~/.qwen directory.
+  // hierarchical CANOPY.md state and accepts append/replace writes scoped
+  // to either the bound workspace or the global ~/.canopy directory.
   workspace_memory: { since: 'v1' },
   workspace_memory_remember: {
     since: 'v1',
@@ -206,7 +206,7 @@ export const SERVE_CAPABILITY_REGISTRY = {
   // without restarting the daemon. V2 trust status exposes convergence.
   workspace_trust_hot_reload: { since: 'v1' },
   // `POST /workspace/init` scaffolds an empty
-  // `QWEN.md` (or whatever `getCurrentGeminiMdFilename()` returns) at
+  // `CANOPY.md` (or whatever `getCurrentGeminiMdFilename()` returns) at
   // the bound workspace root. Body: `{force?: boolean}`. Default
   // refuses with 409 when the file already exists; `force: true`
   // overwrites. Mechanical only — does NOT call the LLM. To AI-fill
@@ -214,7 +214,7 @@ export const SERVE_CAPABILITY_REGISTRY = {
   // `POST /session/:id/prompt`.
   workspace_init: { since: 'v1' },
   // `POST /workspace/setup-github` installs the fixed
-  // qwen-code-action workflow set into the bound workspace after
+  // canopy-code-action workflow set into the bound workspace after
   // explicit consent. The route reuses the interactive `/setup-github`
   // release lookup, workflow download, and `.gitignore` update logic.
   workspace_github_setup: { since: 'v1' },
@@ -256,13 +256,13 @@ export const SERVE_CAPABILITY_REGISTRY = {
   // Direct daemon-side shell execution for an existing session.
   // Advertised CONDITIONALLY: operators must explicitly enable it and
   // configure bearer auth. Clients must still send a session-bound
-  // X-Qwen-Client-Id when calling the route.
+  // X-Canopy-Client-Id when calling the route.
   session_shell_command: { since: 'v1' },
   // Daemon hosts a workspace-shared MCP transport
-  // pool (`QwenAgent.mcpPool`); `GET /workspace/mcp` reflects pool-level
+  // pool (`CanopyAgent.mcpPool`); `GET /workspace/mcp` reflects pool-level
   // accounting (`entryCount`, `entrySummary` on each per-server cell).
   // Advertised CONDITIONALLY — the kill switch
-  // `QWEN_SERVE_NO_MCP_POOL=1` env var falls back to per-session MCP
+  // `CANOPY_SERVE_NO_MCP_POOL=1` env var falls back to per-session MCP
   // clients and the tag is omitted so SDK consumers
   // pre-flighting on the tag get accurate "pool is on" semantics.
   mcp_workspace_pool: { since: 'v1' },
@@ -413,7 +413,7 @@ export const SERVE_CAPABILITY_REGISTRY = {
   // `mcp_register` { server }, `mcp_message` { id, server, payload }
   // (bidirectional, request/response correlated by `id`), `mcp_unregister`
   // { server }. Advertised CONDITIONALLY so clients pre-flight this tag before
-  // attempting to register a client-hosted server. `runQwenServe` enables it
+  // attempting to register a client-hosted server. `runCanopyServe` enables it
   // only when explicitly requested by option or env.
   client_mcp_over_ws: { since: 'v1' },
   // Plan C "CDP tunnel" (issue #5626): the daemon exposes a `/cdp` WebSocket
@@ -424,7 +424,7 @@ export const SERVE_CAPABILITY_REGISTRY = {
   cdp_tunnel_over_ws: { since: 'v1' },
   // Browser automation MCP tools are available only when the CDP tunnel is on
   // and the operator has configured an external stdio adapter via
-  // QWEN_CDP_MCP_COMMAND. This is separate from `cdp_tunnel_over_ws`: a daemon
+  // CANOPY_CDP_MCP_COMMAND. This is separate from `cdp_tunnel_over_ws`: a daemon
   // may expose the tunnel while intentionally not bundling/registering a
   // chrome-devtools MCP adapter.
   browser_automation_mcp: { since: 'v1' },
@@ -497,7 +497,7 @@ export interface AdvertiseFeatureToggles {
   workspaceRuntimeRemovalAvailable?: boolean;
   /**
    * Whether the HTTP ACP surface is enabled (default on; opts out via
-   * QWEN_SERVE_ACP_HTTP=0). Workspace-qualified ACP is only advertised when on.
+   * CANOPY_SERVE_ACP_HTTP=0). Workspace-qualified ACP is only advertised when on.
    */
   acpHttpEnabled?: boolean;
   realtimeVoiceEnabled?: boolean;

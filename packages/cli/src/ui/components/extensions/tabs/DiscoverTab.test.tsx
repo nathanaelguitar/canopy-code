@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import { act } from 'react';
 import { render } from 'ink-testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waitFor } from '@testing-library/react';
-import type { Config, DiscoveredPlugin } from '@qwen-code/qwen-code-core';
+import type { Config, DiscoveredPlugin } from '@canopy-code/canopy-code-core';
 import type { Key } from '../../../hooks/useKeypress.js';
 import { DiscoverTab } from './DiscoverTab.js';
 
@@ -32,9 +32,9 @@ vi.mock('../../shared/RadioButtonSelect.js', () => ({
   RadioButtonSelect: mockRadioButtonSelect,
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return { ...actual, parseInstallSource: mockParseInstallSource };
 });
 

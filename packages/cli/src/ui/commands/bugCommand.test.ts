@@ -8,15 +8,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { bugCommand } from './bugCommand.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import { GIT_COMMIT_INFO } from '../../generated/git-commit.js';
-import { AuthType } from '@qwen-code/qwen-code-core';
+import { AuthType } from '@canopy-code/canopy-code-core';
 import * as systemInfoUtils from '../../utils/systemInfo.js';
 
 const mockOpenBrowserSecurely = vi.hoisted(() => vi.fn());
 
 // Mock dependencies
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
   return {
     ...actual,
     openBrowserSecurely: mockOpenBrowserSecurely,
@@ -46,7 +46,7 @@ describe('bugCommand', () => {
     });
     mockOpenBrowserSecurely.mockClear();
     mockOpenBrowserSecurely.mockResolvedValue(undefined);
-    vi.stubEnv('SANDBOX', 'qwen-test');
+    vi.stubEnv('SANDBOX', 'canopy-test');
   });
 
   afterEach(() => {
@@ -66,11 +66,11 @@ describe('bugCommand', () => {
     if (!bugCommand.action) throw new Error('Action is not defined');
     await bugCommand.action(mockContext, 'A test bug');
 
-    const qwenCodeLine =
+    const canopyCodeLine =
       GIT_COMMIT_INFO && !['N/A'].includes(GIT_COMMIT_INFO)
-        ? `Qwen Code: 0.1.0 (${GIT_COMMIT_INFO})`
-        : 'Qwen Code: 0.1.0';
-    const expectedInfo = `${qwenCodeLine}
+        ? `Canopy Code: 0.1.0 (${GIT_COMMIT_INFO})`
+        : 'Canopy Code: 0.1.0';
+    const expectedInfo = `${canopyCodeLine}
 Runtime: Node.js v20.0.0 / npm 10.0.0
 IDE Client: VSCode
 OS: test-platform x64 (22.0.0)
@@ -81,7 +81,7 @@ Sandbox: test
 Proxy: no proxy
 Memory Usage: 100 MB`;
     const expectedUrl =
-      'https://github.com/QwenLM/qwen-code/issues/new?template=bug_report.yml&title=A%20test%20bug&info=%0A' +
+      'https://github.com/QwenLM/canopy-code/issues/new?template=bug_report.yml&title=A%20test%20bug&info=%0A' +
       encodeURIComponent(expectedInfo) +
       '%0A';
 
@@ -111,11 +111,11 @@ Memory Usage: 100 MB`;
     if (!bugCommand.action) throw new Error('Action is not defined');
     await bugCommand.action(mockContext, 'A custom bug');
 
-    const qwenCodeLine =
+    const canopyCodeLine =
       GIT_COMMIT_INFO && !['N/A'].includes(GIT_COMMIT_INFO)
-        ? `Qwen Code: 0.1.0 (${GIT_COMMIT_INFO})`
-        : 'Qwen Code: 0.1.0';
-    const expectedInfo = `${qwenCodeLine}
+        ? `Canopy Code: 0.1.0 (${GIT_COMMIT_INFO})`
+        : 'Canopy Code: 0.1.0';
+    const expectedInfo = `${canopyCodeLine}
 Runtime: Node.js v20.0.0 / npm 10.0.0
 IDE Client: VSCode
 OS: test-platform x64 (22.0.0)
@@ -173,11 +173,11 @@ Memory Usage: 100 MB`;
     if (!bugCommand.action) throw new Error('Action is not defined');
     await bugCommand.action(mockContext, 'OpenAI bug');
 
-    const qwenCodeLine =
+    const canopyCodeLine =
       GIT_COMMIT_INFO && !['N/A'].includes(GIT_COMMIT_INFO)
-        ? `Qwen Code: 0.1.0 (${GIT_COMMIT_INFO})`
-        : 'Qwen Code: 0.1.0';
-    const expectedInfo = `${qwenCodeLine}
+        ? `Canopy Code: 0.1.0 (${GIT_COMMIT_INFO})`
+        : 'Canopy Code: 0.1.0';
+    const expectedInfo = `${canopyCodeLine}
 Runtime: Node.js v20.0.0 / npm 10.0.0
 IDE Client: VSCode
 OS: test-platform x64 (22.0.0)
@@ -190,7 +190,7 @@ Sandbox: test
 Proxy: no proxy
 Memory Usage: 100 MB`;
     const expectedUrl =
-      'https://github.com/QwenLM/qwen-code/issues/new?template=bug_report.yml&title=OpenAI%20bug&info=%0A' +
+      'https://github.com/QwenLM/canopy-code/issues/new?template=bug_report.yml&title=OpenAI%20bug&info=%0A' +
       encodeURIComponent(expectedInfo) +
       '%0A';
 

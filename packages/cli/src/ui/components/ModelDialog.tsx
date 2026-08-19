@@ -20,7 +20,7 @@ import {
   type Config,
   type ContentGeneratorConfig,
   type InputModalities,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import { SettingScope } from '../../config/settings.js';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { theme } from '../semantic-colors.js';
@@ -326,8 +326,8 @@ export function ModelDialog({
         : m.imageOnly !== true;
       return (
         !m.isRuntimeModel &&
-        (m.authType !== AuthType.QWEN_OAUTH ||
-          authType === AuthType.QWEN_OAUTH) &&
+        (m.authType !== AuthType.CANOPY_OAUTH ||
+          authType === AuthType.CANOPY_OAUTH) &&
         isSelectableImageModel &&
         (isFastModelMode || !m.fastOnly) &&
         (isVoiceModelMode || !m.voiceOnly) &&
@@ -345,9 +345,9 @@ export function ModelDialog({
       modelsByAuthTypeMap.get(authType)!.push(model);
     }
 
-    // Fixed order: qwen-oauth first, then others in a stable order
+    // Fixed order: canopy-oauth first, then others in a stable order
     const authTypeOrder: AuthType[] = [
-      AuthType.QWEN_OAUTH,
+      AuthType.CANOPY_OAUTH,
       AuthType.USE_OPENAI,
       AuthType.USE_ANTHROPIC,
       AuthType.USE_GEMINI,
@@ -404,14 +404,14 @@ export function ModelDialog({
               ? snapshotId
               : buildModelSelectionKey(t2, model.id, model.baseUrl);
 
-          const isQwenOAuth = t2 === AuthType.QWEN_OAUTH;
+          const isCanopyOAuth = t2 === AuthType.CANOPY_OAUTH;
 
           const title = (
             <Text>
               <Text
                 bold
                 color={
-                  isQwenOAuth
+                  isCanopyOAuth
                     ? theme.status.warning
                     : isRuntime
                       ? theme.status.warning
@@ -430,7 +430,7 @@ export function ModelDialog({
               {isRuntime && (
                 <Text color={theme.status.warning}> (Runtime)</Text>
               )}
-              {isQwenOAuth && !isRuntime && (
+              {isCanopyOAuth && !isRuntime && (
                 <Text color={theme.status.warning}> ({t('Discontinued')})</Text>
               )}
             </Text>
@@ -443,7 +443,7 @@ export function ModelDialog({
               ? `${description} (Runtime)`
               : 'Runtime model';
           }
-          if (isQwenOAuth && !isRuntime) {
+          if (isCanopyOAuth && !isRuntime) {
             description = t('Discontinued — switch to Coding Plan or API Key');
           }
 
@@ -930,20 +930,20 @@ export function ModelDialog({
         return;
       }
 
-      // Block selection of discontinued qwen-oauth models
+      // Block selection of discontinued canopy-oauth models
       // (only block non-runtime OAuth; runtime OAuth models from existing
       //  cached tokens are still allowed to work until the server rejects them)
-      const isQwenOAuthSelection =
-        selected.startsWith(`${AuthType.QWEN_OAUTH}::`) ||
+      const isCanopyOAuthSelection =
+        selected.startsWith(`${AuthType.CANOPY_OAUTH}::`) ||
         (selected.startsWith('$runtime|') &&
-          selected.split('|')[1] === AuthType.QWEN_OAUTH);
+          selected.split('|')[1] === AuthType.CANOPY_OAUTH);
       const isRuntimeOAuthSelection = selected.startsWith(
-        `$runtime|${AuthType.QWEN_OAUTH}|`,
+        `$runtime|${AuthType.CANOPY_OAUTH}|`,
       );
-      if (isQwenOAuthSelection && !isRuntimeOAuthSelection) {
+      if (isCanopyOAuthSelection && !isRuntimeOAuthSelection) {
         setErrorMessage(
           t(
-            'Qwen OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.',
+            'Canopy OAuth free tier was discontinued on 2026-04-15. Please select a model from another provider or run /auth to switch.',
           ),
         );
         return;
@@ -989,7 +989,7 @@ export function ModelDialog({
         try {
           await config.switchModel(selectedAuthType, modelId, {
             ...(selectedAuthType !== authType &&
-            selectedAuthType === AuthType.QWEN_OAUTH
+            selectedAuthType === AuthType.CANOPY_OAUTH
               ? { requireCachedCredentials: true }
               : {}),
             baseUrl: selectedBaseUrl,
@@ -1141,7 +1141,7 @@ export function ModelDialog({
             borderRight={false}
             borderColor={theme.border.default}
           />
-          {highlightedEntry.authType === AuthType.QWEN_OAUTH &&
+          {highlightedEntry.authType === AuthType.CANOPY_OAUTH &&
             !highlightedEntry.isRuntime && (
               <Box marginTop={1}>
                 <Text color={theme.status.warning}>
@@ -1159,7 +1159,7 @@ export function ModelDialog({
               highlightedEntry.model.contextWindowSize,
             )}
           />
-          {highlightedEntry.authType !== AuthType.QWEN_OAUTH && (
+          {highlightedEntry.authType !== AuthType.CANOPY_OAUTH && (
             <>
               <DetailRow
                 label="Base URL"

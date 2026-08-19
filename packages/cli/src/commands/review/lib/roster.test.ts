@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,8 +28,8 @@ import {
 const PR = {
   diffPathAbsolute: '/d.txt',
   prNumber: '6766',
-  ownerRepo: 'QwenLM/qwen-code',
-  worktreePath: '.qwen/tmp/review-pr-6766',
+  ownerRepo: 'CanopyLM/canopy-code',
+  worktreePath: '.canopy/tmp/review-pr-6766',
   files: [{ path: 'a.ts', kind: 'source', removedLines: 0, heavy: false }],
   chunks: [{ id: 1, startLine: 1, endLine: 100 }],
   srcDiffLines: 200,
@@ -279,7 +279,7 @@ describe('requiredAgents — Step 3A', () => {
 });
 
 describe('hasExecutableScript — the script-lint gate predicate', () => {
-  // No longer an agent requirement: the orchestrator runs `qwen review
+  // No longer an agent requirement: the orchestrator runs `canopy review
   // script-lint` and compose-review reads its report. This predicate is what
   // both share to decide whether the lint was OWED — detected by path, the same
   // `pathTool` the command dispatches on, so the two cannot disagree.
@@ -314,7 +314,7 @@ describe('hasExecutableScript — the script-lint gate predicate', () => {
   });
 
   it('trusts fileLines only in pr-worktree — a true deletion is exempt there, but never in local/diff-only', () => {
-    const wt = { worktreePath: '.qwen/tmp/review-pr-1' }; // pr-worktree mode
+    const wt = { worktreePath: '.canopy/tmp/review-pr-1' }; // pr-worktree mode
     // pr-worktree: fileLines is a real post-image count, so 0 is a TRUE deletion
     // (no file to lint) and is exempt...
     expect(

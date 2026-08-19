@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { randomUUID } from 'node:crypto';
-import type { ChatRecord, Config } from '@qwen-code/qwen-code-core';
+import type { ChatRecord, Config } from '@canopy-code/canopy-code-core';
 import type { GenerateContentResponseUsageMetadata } from '@google/genai';
 import type { SessionContext } from '../../../acp-integration/session/types.js';
 import type { SessionUpdate, ToolCall } from '@agentclientprotocol/sdk';

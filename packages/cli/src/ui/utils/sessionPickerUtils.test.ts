@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Qwen Code
+ * Copyright 2025 Canopy Code
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect } from 'vitest';
-import type { SessionListItem } from '@qwen-code/qwen-code-core';
+import type { SessionListItem } from '@canopy-code/canopy-code-core';
 import { filterSessions, truncateText } from './sessionPickerUtils.js';
 import { getCachedStringWidth } from './textUtils.js';
 

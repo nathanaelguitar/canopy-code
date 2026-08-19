@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -86,7 +86,7 @@ describe('resolve-anchors (command boundary)', () => {
   });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-  /** Drive the real yargs handler, as `qwen review resolve-anchors` does. */
+  /** Drive the real yargs handler, as `canopy review resolve-anchors` does. */
   function run(findings: unknown): Record<string, unknown> {
     const diff = join(dir, 'diff.txt');
     const input = join(dir, 'in.json');
@@ -171,7 +171,7 @@ describe('resolve-anchors (command boundary)', () => {
   });
 
   it('creates the output directory the caller chose', () => {
-    // `mkdirSync` created `.qwen/tmp` — our directory — and then wrote to the
+    // `mkdirSync` created `.canopy/tmp` — our directory — and then wrote to the
     // caller's, which may be somewhere else entirely. `--out reports/x.json` is
     // a legal request and it answered with ENOENT. The sibling `compose-review`
     // had it right all along; this one did not copy it.

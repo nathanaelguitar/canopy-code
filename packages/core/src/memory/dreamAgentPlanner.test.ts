@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,7 +33,7 @@ vi.mock('../utils/forkedAgent.js', () => ({
 }));
 
 describe('dreamAgentPlanner', () => {
-  const originalMemoryBase = process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+  const originalMemoryBase = process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
   let tempDir: string;
   let projectRoot: string;
   let config: Config;
@@ -44,12 +44,12 @@ describe('dreamAgentPlanner', () => {
     );
     projectRoot = path.join(tempDir, 'project');
     await fs.mkdir(projectRoot, { recursive: true });
-    process.env['QWEN_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
+    process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = path.join(tempDir, 'memory');
     clearAutoMemoryRootCache();
     await ensureAutoMemoryScaffold(projectRoot);
     config = {
       getSessionId: vi.fn().mockReturnValue('session-1'),
-      getModel: vi.fn().mockReturnValue('qwen-test'),
+      getModel: vi.fn().mockReturnValue('canopy-test'),
       getApprovalMode: vi.fn(),
       getMemoryAgentTimeoutMinutes: vi.fn().mockReturnValue(undefined),
       getMemoryAgentMaxTurns: vi.fn().mockReturnValue(undefined),
@@ -60,9 +60,9 @@ describe('dreamAgentPlanner', () => {
   afterEach(async () => {
     Storage.setRuntimeBaseDir(null);
     if (originalMemoryBase === undefined) {
-      delete process.env['QWEN_CODE_MEMORY_BASE_DIR'];
+      delete process.env['CANOPY_CODE_MEMORY_BASE_DIR'];
     } else {
-      process.env['QWEN_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
+      process.env['CANOPY_CODE_MEMORY_BASE_DIR'] = originalMemoryBase;
     }
     clearAutoMemoryRootCache();
     await fs.rm(tempDir, {
@@ -84,7 +84,7 @@ describe('dreamAgentPlanner', () => {
       path.join(runtimeDir, 'projects'),
     );
     expect(getTranscriptDir(projectRoot)).not.toContain(
-      `${path.sep}.qwen${path.sep}tmp${path.sep}`,
+      `${path.sep}.canopy${path.sep}tmp${path.sep}`,
     );
   });
 
@@ -132,7 +132,7 @@ describe('dreamAgentPlanner', () => {
       status: 'completed',
       finalText: 'Merged 2 duplicate Vim entries into prefers-vim.md.',
       filesTouched: [
-        path.join(projectRoot, '.qwen', 'memory', 'user', 'prefers-vim.md'),
+        path.join(projectRoot, '.canopy', 'memory', 'user', 'prefers-vim.md'),
       ],
     };
 

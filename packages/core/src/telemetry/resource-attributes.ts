@@ -52,7 +52,7 @@ function warn(msg: string, warnings?: ResourceAttributeWarnings): void {
  * Duplicate keys: last-write-wins, matching the OTel SDK reference behavior.
  *
  * Note on warn visibility: `diag.warn` routes to the debug log file
- * (`~/.qwen/log/otel-*.log`), not console — see PR #3986. The SDK emits a
+ * (`~/.canopy/log/otel-*.log`), not console — see PR #3986. The SDK emits a
  * single console summary at startup when this list is non-empty so users
  * notice silent drops without scanning the debug log.
  */

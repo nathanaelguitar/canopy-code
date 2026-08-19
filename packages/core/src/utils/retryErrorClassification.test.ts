@@ -148,7 +148,7 @@ describe('classifyRetryError', () => {
     });
   });
 
-  it('marks Qwen OAuth free-tier quota errors as fail-fast', () => {
+  it('marks Canopy OAuth free-tier quota errors as fail-fast', () => {
     expect(
       classifyRetryError(
         {
@@ -156,14 +156,14 @@ describe('classifyRetryError', () => {
           code: 'insufficient_quota',
           message: 'Free allocated quota exceeded',
         },
-        { authType: AuthType.QWEN_OAUTH },
+        { authType: AuthType.CANOPY_OAUTH },
       ),
     ).toMatchObject({
       kind: 'provider-business',
       diagnosis: 'fail-fast',
       statusCode: 429,
       providerCode: 'insufficient_quota',
-      reason: 'qwen-oauth-free-tier-quota',
+      reason: 'canopy-oauth-free-tier-quota',
     });
   });
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -1620,7 +1620,7 @@ describe('LspServerManager', () => {
       manager as unknown as {
         commandExists(command: string): Promise<boolean>;
       }
-    ).commandExists('__qwen_lsp_missing_command__');
+    ).commandExists('__canopy_lsp_missing_command__');
 
     await expect(commandExists).resolves.toBe(false);
     expect(timer.unref).toHaveBeenCalledOnce();

@@ -1,10 +1,10 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Thin wrapper around the GitHub CLI (`gh`) for the `qwen review`
+// Thin wrapper around the GitHub CLI (`gh`) for the `canopy review`
 // subcommands. All callers go through `execFileSync` (no shell) so quoting
 // and escaping is consistent across macOS, Linux, and Windows.
 

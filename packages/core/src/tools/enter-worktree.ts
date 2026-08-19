@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -26,7 +26,7 @@ export interface EnterWorktreeParams {
   name?: string;
 }
 
-const enterWorktreeDescription = `Creates an isolated git worktree at \`<projectRoot>/.qwen/worktrees/<slug>\` and returns its absolute path so subsequent file edits, shell commands, and other tools can operate inside it.
+const enterWorktreeDescription = `Creates an isolated git worktree at \`<projectRoot>/.canopy/worktrees/<slug>\` and returns its absolute path so subsequent file edits, shell commands, and other tools can operate inside it.
 
 ## When to Use
 
@@ -71,17 +71,17 @@ class EnterWorktreeInvocation extends BaseToolInvocation<
     const cwd = this.config.getTargetDir();
 
     // Refuse nested worktree creation. If the caller's cwd is itself
-    // already inside `.qwen/worktrees/<slug>/`, a fresh worktree would
-    // be provisioned at `<repo>/.qwen/worktrees/<new>/` — but the
+    // already inside `.canopy/worktrees/<slug>/`, a fresh worktree would
+    // be provisioned at `<repo>/.canopy/worktrees/<new>/` — but the
     // model's mental model and inherited file paths would still
     // reference the outer worktree. The resulting handle confusion
     // typically leaves the inner worktree orphaned on exit.
     //
     // The check is conservative: any path component named
-    // `.qwen/worktrees` somewhere in cwd qualifies. We also forbid
+    // `.canopy/worktrees` somewhere in cwd qualifies. We also forbid
     // sentinel "inside a worktree" markers that an `enter_worktree`
     // session leaves behind (writeSessionMarker, below).
-    if (/\.qwen[\\/]worktrees[\\/]/.test(cwd)) {
+    if (/\.canopy[\\/]worktrees[\\/]/.test(cwd)) {
       const reason =
         'Already inside a git worktree. Call exit_worktree first, ' +
         'or return to the main repository checkout before creating a ' +
@@ -92,7 +92,7 @@ class EnterWorktreeInvocation extends BaseToolInvocation<
 
     // First-pass service rooted at cwd, only to find the repo top-level.
     // We can't use cwd as the worktree anchor because launching from a
-    // monorepo subdirectory would scatter `.qwen/worktrees/` under each
+    // monorepo subdirectory would scatter `.canopy/worktrees/` under each
     // package's directory, and the startup sweep at `Config.initialize`
     // would never find them.
     const probe = new GitWorktreeService(cwd);
@@ -112,7 +112,7 @@ class EnterWorktreeInvocation extends BaseToolInvocation<
     }
 
     // Resolve to the repo's top-level so worktrees always live under
-    // `<repoRoot>/.qwen/worktrees/`, regardless of which subdirectory
+    // `<repoRoot>/.canopy/worktrees/`, regardless of which subdirectory
     // the user invoked the tool from.
     const projectRoot = (await probe.getRepoTopLevel()) ?? cwd;
     const service =
@@ -137,7 +137,7 @@ class EnterWorktreeInvocation extends BaseToolInvocation<
     // Without an explicit base, `createUserWorktree` falls back to
     // whichever branch the main working tree has checked out, which is
     // not necessarily where the user is working (e.g. they invoked
-    // qwen from a feature branch but the main working tree still has
+    // canopy from a feature branch but the main working tree still has
     // `main` checked out).
     let baseBranch: string | undefined;
     try {

@@ -19,7 +19,7 @@ import type {
   ToolCall,
   Status as CoreStatus,
   EditorType,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   CoreToolScheduler,
   compactToolResultDisplayForHistory,
@@ -29,7 +29,7 @@ import {
   isAnyAutoMemPath,
   isShellProgressData,
   ToolErrorType,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import * as path from 'node:path';
 import { useCallback, useState, useMemo } from 'react';
 import type {

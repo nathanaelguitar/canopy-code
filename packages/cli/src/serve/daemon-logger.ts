@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -11,7 +11,7 @@ import { performance } from 'node:perf_hooks';
 import { isSpanContextValid, trace, TraceFlags } from '@opentelemetry/api';
 import lockfile from 'proper-lockfile';
 import {
-  getGlobalQwenDirLite,
+  getGlobalCanopyDirLite,
   resolveConfigPathLite,
 } from '../config/storage-paths-lite.js';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
@@ -295,10 +295,10 @@ interface ConcreteLoggerHandle {
 }
 
 function getRuntimeBaseDir(runtimeOutputDir?: string, cwd?: string): string {
-  const envDir = process.env['QWEN_RUNTIME_DIR'];
+  const envDir = process.env['CANOPY_RUNTIME_DIR'];
   if (envDir) return resolveConfigPathLite(envDir);
   if (runtimeOutputDir) return resolveConfigPathLite(runtimeOutputDir, cwd);
-  return getGlobalQwenDirLite();
+  return getGlobalCanopyDirLite();
 }
 
 export function resolveDaemonLogBaseDir(
@@ -309,7 +309,7 @@ export function resolveDaemonLogBaseDir(
 }
 
 function isOptedOut(): boolean {
-  const raw = process.env['QWEN_DAEMON_LOG_FILE'];
+  const raw = process.env['CANOPY_DAEMON_LOG_FILE'];
   if (!raw) return false;
   return ['0', 'false', 'off', 'no'].includes(raw.trim().toLowerCase());
 }
@@ -1050,7 +1050,7 @@ function createConcreteLogger(input: {
       if (!overflowEpisode) {
         overflowEpisode = true;
         input.stderr(
-          'qwen serve: daemon log queue limit reached; dropping file copies until capacity recovers',
+          'canopy serve: daemon log queue limit reached; dropping file copies until capacity recovers',
         );
       }
     }
@@ -1062,7 +1062,7 @@ function createConcreteLogger(input: {
       input.monotonicNow() + input.policy.rotationRetryIntervalMs;
     input.warnOnce(
       `rotation:${message}`,
-      `qwen serve: daemon log rotation failed; ${message}${
+      `canopy serve: daemon log rotation failed; ${message}${
         error
           ? `: ${error instanceof Error ? error.message : String(error)}`
           : ''
@@ -1074,7 +1074,7 @@ function createConcreteLogger(input: {
     input.issues.add('retention_failed');
     input.warnOnce(
       'retention',
-      `qwen serve: daemon log retention cleanup failed: ${
+      `canopy serve: daemon log retention cleanup failed: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -1227,7 +1227,7 @@ function createConcreteLogger(input: {
       input.issues.add('write_failed');
       input.warnOnce(
         'write-failed',
-        `qwen serve: daemon log write failed; file logging disabled for this run: ${
+        `canopy serve: daemon log write failed; file logging disabled for this run: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1276,7 +1276,7 @@ function createConcreteLogger(input: {
           input.issues.add('write_failed');
           input.warnOnce(
             'queue-failed',
-            `qwen serve: daemon log queue failed; file logging disabled for this run: ${
+            `canopy serve: daemon log queue failed; file logging disabled for this run: ${
               error instanceof Error ? error.message : String(error)
             }`,
           );
@@ -1370,7 +1370,7 @@ function createConcreteLogger(input: {
       await input.family.releaseLease().catch((error) => {
         input.warnOnce(
           'release-failed',
-          `qwen serve: daemon log lease release failed: ${
+          `canopy serve: daemon log lease release failed: ${
             error instanceof Error ? error.message : String(error)
           }`,
         );
@@ -1416,7 +1416,7 @@ function createConcreteLogger(input: {
         try {
           input.warnOnce(
             'close-failed',
-            `qwen serve: daemon log close failed: ${
+            `canopy serve: daemon log close failed: ${
               error instanceof Error ? error.message : String(error)
             }`,
           );
@@ -1430,7 +1430,7 @@ function createConcreteLogger(input: {
           try {
             input.warnOnce(
               'close-timeout',
-              `qwen serve: daemon log close drain exceeded ${input.policy.closeDrainBudgetMs}ms; ownership will release after pending I/O settles or process exit`,
+              `canopy serve: daemon log close drain exceeded ${input.policy.closeDrainBudgetMs}ms; ownership will release after pending I/O settles or process exit`,
             );
           } catch {
             // close() is non-rejecting even if stderr itself is unavailable.
@@ -1490,7 +1490,7 @@ export async function initDaemonLogger(
     issues.add('init_failed');
     warnOnce(
       'init',
-      `qwen serve: daemon log disabled — init failed: ${
+      `canopy serve: daemon log disabled — init failed: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
@@ -1509,7 +1509,7 @@ export async function initDaemonLogger(
     if (currentState) currentState.poisoned = true;
     warnOnce(
       'lease-compromised',
-      `qwen serve: daemon log lease compromised; file logging disabled for this run: ${error.message}`,
+      `canopy serve: daemon log lease compromised; file logging disabled for this run: ${error.message}`,
     );
   };
 
@@ -1545,7 +1545,7 @@ export async function initDaemonLogger(
           issues.add('rotation_failed');
           warnOnce(
             `archive-init:${family.mode}`,
-            `qwen serve: daemon log archive unavailable; active file will remain bounded: ${
+            `canopy serve: daemon log archive unavailable; active file will remain bounded: ${
               error instanceof Error ? error.message : String(error)
             }`,
           );
@@ -1650,7 +1650,7 @@ export async function initDaemonLogger(
             monotonicNow() + policy.rotationRetryIntervalMs;
           warnOnce(
             'startup-retention',
-            `qwen serve: daemon log retention cleanup failed: ${
+            `canopy serve: daemon log retention cleanup failed: ${
               error instanceof Error ? error.message : String(error)
             }`,
           );
@@ -1660,7 +1660,7 @@ export async function initDaemonLogger(
     } catch (error) {
       warnOnce(
         `family-init:${family.mode}`,
-        `qwen serve: daemon ${family.mode} log initialization failed: ${
+        `canopy serve: daemon ${family.mode} log initialization failed: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1708,7 +1708,7 @@ export async function initDaemonLogger(
             issues.add('retention_failed');
             warnOnce(
               'fallback-retention',
-              `qwen serve: daemon fallback log cleanup failed: ${
+              `canopy serve: daemon fallback log cleanup failed: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             );
@@ -1723,7 +1723,7 @@ export async function initDaemonLogger(
     } catch (error) {
       warnOnce(
         'stable-release',
-        `qwen serve: daemon stable log lease release failed; trying fallback: ${
+        `canopy serve: daemon stable log lease release failed; trying fallback: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1732,13 +1732,13 @@ export async function initDaemonLogger(
     if (isErrno(error, 'ELOCKED')) {
       warnOnce(
         'stable-contention',
-        `qwen serve: daemon stable log is owned by another daemon instance; using a fallback log for runId=${runId}`,
+        `canopy serve: daemon stable log is owned by another daemon instance; using a fallback log for runId=${runId}`,
       );
     } else {
       issues.add('init_failed');
       warnOnce(
         'stable-lock',
-        `qwen serve: daemon stable log unavailable; trying a fallback: ${
+        `canopy serve: daemon stable log unavailable; trying a fallback: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1801,7 +1801,7 @@ export async function initDaemonLogger(
     } catch (error) {
       warnOnce(
         'fallback-locator',
-        `qwen serve: daemon fallback locator update failed; use ${activeFallbackFamily.activePath}: ${
+        `canopy serve: daemon fallback locator update failed; use ${activeFallbackFamily.activePath}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -1812,7 +1812,7 @@ export async function initDaemonLogger(
     await fallbackFamily?.releaseLease().catch(() => {});
     warnOnce(
       'fallback-init',
-      `qwen serve: daemon log disabled — fallback init failed: ${
+      `canopy serve: daemon log disabled — fallback init failed: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );

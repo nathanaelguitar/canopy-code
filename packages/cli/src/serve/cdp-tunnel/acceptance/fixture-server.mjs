@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,17 +9,17 @@ import http from 'node:http';
 const port = Number(process.env.FIXTURE_PORT || 4180);
 const page = `<!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>Qwen CDP Fixture</title></head>
+  <head><meta charset="utf-8"><title>Canopy CDP Fixture</title></head>
   <body>
-    <h1>Qwen CDP Fixture</h1>
+    <h1>Canopy CDP Fixture</h1>
     <button id="action">Run fixture action</button>
     <a id="target-link" href="/target">Open fixture target</a>
     <p id="status">idle</p>
     <script>
-      console.log('qwen-fixture-ready');
+      console.log('canopy-fixture-ready');
       fetch('/api/ready');
       document.querySelector('#action').addEventListener('click', async () => {
-        console.log('qwen-fixture-clicked');
+        console.log('canopy-fixture-clicked');
         const response = await fetch('/api/click');
         document.querySelector('#status').textContent = await response.text();
       });
@@ -46,7 +46,7 @@ const server = http.createServer((request, response) => {
   if (request.url === '/target') {
     response.writeHead(200, { 'content-type': 'text/html' });
     response.end(
-      '<!doctype html><title>Qwen CDP Target</title><h1>Target reached</h1>',
+      '<!doctype html><title>Canopy CDP Target</title><h1>Target reached</h1>',
     );
     return;
   }

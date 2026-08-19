@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -15,7 +15,7 @@ import {
   getToolInvalidReasons,
 } from './utils.js';
 import type { MCPServerDisplayInfo } from './types.js';
-import { MCPServerStatus } from '@qwen-code/qwen-code-core';
+import { MCPServerStatus } from '@canopy-code/canopy-code-core';
 
 describe('MCP utils', () => {
   describe('groupServersBySource', () => {

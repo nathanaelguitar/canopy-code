@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   ModelRegistry,
-  QWEN_OAUTH_MODELS,
+  CANOPY_OAUTH_MODELS,
   modelRegistryKey,
   resolveProviderProtocol,
 } from './modelRegistry.js';
@@ -37,18 +37,18 @@ beforeEach(() => {
 
 describe('ModelRegistry', () => {
   describe('initialization', () => {
-    it('should always include hard-coded qwen-oauth models', () => {
+    it('should always include hard-coded canopy-oauth models', () => {
       const registry = new ModelRegistry();
 
-      const qwenModels = registry.getModelsForAuthType(AuthType.QWEN_OAUTH);
-      expect(qwenModels.length).toBe(QWEN_OAUTH_MODELS.length);
-      expect(qwenModels[0].id).toBe('coder-model');
+      const canopyModels = registry.getModelsForAuthType(AuthType.CANOPY_OAUTH);
+      expect(canopyModels.length).toBe(CANOPY_OAUTH_MODELS.length);
+      expect(canopyModels[0].id).toBe('coder-model');
     });
 
     it('should initialize with empty config', () => {
       const registry = new ModelRegistry();
-      expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH).length).toBe(
-        QWEN_OAUTH_MODELS.length,
+      expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH).length).toBe(
+        CANOPY_OAUTH_MODELS.length,
       );
       expect(registry.getModelsForAuthType(AuthType.USE_OPENAI).length).toBe(0);
     });
@@ -71,22 +71,24 @@ describe('ModelRegistry', () => {
       expect(openaiModels[0].id).toBe('gpt-4-turbo');
     });
 
-    it('should ignore qwen-oauth models in config (hard-coded)', () => {
+    it('should ignore canopy-oauth models in config (hard-coded)', () => {
       const modelProvidersConfig: ModelProvidersConfig = {
-        'qwen-oauth': [
+        'canopy-oauth': [
           {
-            id: 'custom-qwen',
-            name: 'Custom Qwen',
+            id: 'custom-canopy',
+            name: 'Custom Canopy',
           },
         ],
       };
 
       const registry = new ModelRegistry(modelProvidersConfig);
 
-      // Should still use hard-coded qwen-oauth models
-      const qwenModels = registry.getModelsForAuthType(AuthType.QWEN_OAUTH);
-      expect(qwenModels.length).toBe(QWEN_OAUTH_MODELS.length);
-      expect(qwenModels.find((m) => m.id === 'custom-qwen')).toBeUndefined();
+      // Should still use hard-coded canopy-oauth models
+      const canopyModels = registry.getModelsForAuthType(AuthType.CANOPY_OAUTH);
+      expect(canopyModels.length).toBe(CANOPY_OAUTH_MODELS.length);
+      expect(
+        canopyModels.find((m) => m.id === 'custom-canopy'),
+      ).toBeUndefined();
     });
   });
 
@@ -261,7 +263,7 @@ describe('ModelRegistry', () => {
         openai: [
           {
             id: 'qwen3-coder-plus',
-            name: 'Qwen3 Coder Plus',
+            name: 'Canopy3 Coder Plus',
             baseUrl: 'https://example.invalid',
             generationConfig: {},
           },
@@ -348,10 +350,10 @@ describe('ModelRegistry', () => {
   });
 
   describe('getDefaultModelForAuthType', () => {
-    it('should return coder-model for qwen-oauth', () => {
+    it('should return coder-model for canopy-oauth', () => {
       const registry = new ModelRegistry();
       const defaultModel = registry.getDefaultModelForAuthType(
-        AuthType.QWEN_OAUTH,
+        AuthType.CANOPY_OAUTH,
       );
       expect(defaultModel?.id).toBe('coder-model');
     });
@@ -383,10 +385,10 @@ describe('ModelRegistry', () => {
   });
 
   describe('default base URLs', () => {
-    it('should apply default dashscope URL for qwen-oauth', () => {
+    it('should apply default dashscope URL for canopy-oauth', () => {
       const registry = new ModelRegistry();
-      const model = registry.getModel(AuthType.QWEN_OAUTH, 'coder-model');
-      expect(model?.baseUrl).toBe('DYNAMIC_QWEN_OAUTH_BASE_URL');
+      const model = registry.getModel(AuthType.CANOPY_OAUTH, 'coder-model');
+      expect(model?.baseUrl).toBe('DYNAMIC_CANOPY_OAUTH_BASE_URL');
     });
 
     it('should apply default openai URL when not specified', () => {
@@ -704,25 +706,25 @@ describe('ModelRegistry', () => {
       expect(registry.getModel(AuthType.USE_OPENAI, 'gpt-3.5')).toBeDefined();
     });
 
-    it('should preserve hard-coded qwen-oauth models after reload', () => {
+    it('should preserve hard-coded canopy-oauth models after reload', () => {
       const registry = new ModelRegistry({
         openai: [{ id: 'gpt-4', name: 'GPT-4' }],
       });
 
-      expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH).length).toBe(
-        QWEN_OAUTH_MODELS.length,
+      expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH).length).toBe(
+        CANOPY_OAUTH_MODELS.length,
       );
 
       registry.reloadModels({
         openai: [{ id: 'gpt-3.5', name: 'GPT-3.5' }],
       });
 
-      // qwen-oauth models should still exist
-      expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH).length).toBe(
-        QWEN_OAUTH_MODELS.length,
+      // canopy-oauth models should still exist
+      expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH).length).toBe(
+        CANOPY_OAUTH_MODELS.length,
       );
       expect(
-        registry.getModel(AuthType.QWEN_OAUTH, 'coder-model'),
+        registry.getModel(AuthType.CANOPY_OAUTH, 'coder-model'),
       ).toBeDefined();
     });
 
@@ -741,23 +743,25 @@ describe('ModelRegistry', () => {
       expect(registry.getModelsForAuthType(AuthType.USE_OPENAI).length).toBe(0);
       expect(registry.getModelsForAuthType(AuthType.USE_GEMINI).length).toBe(0);
 
-      // qwen-oauth models should still exist
-      expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH).length).toBe(
-        QWEN_OAUTH_MODELS.length,
+      // canopy-oauth models should still exist
+      expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH).length).toBe(
+        CANOPY_OAUTH_MODELS.length,
       );
     });
 
-    it('should ignore qwen-oauth models in reload config', () => {
+    it('should ignore canopy-oauth models in reload config', () => {
       const registry = new ModelRegistry();
 
       registry.reloadModels({
-        'qwen-oauth': [{ id: 'custom-qwen', name: 'Custom Qwen' }],
+        'canopy-oauth': [{ id: 'custom-canopy', name: 'Custom Canopy' }],
       });
 
-      // qwen-oauth should still use hard-coded models
-      const qwenModels = registry.getModelsForAuthType(AuthType.QWEN_OAUTH);
-      expect(qwenModels.length).toBe(QWEN_OAUTH_MODELS.length);
-      expect(qwenModels.find((m) => m.id === 'custom-qwen')).toBeUndefined();
+      // canopy-oauth should still use hard-coded models
+      const canopyModels = registry.getModelsForAuthType(AuthType.CANOPY_OAUTH);
+      expect(canopyModels.length).toBe(CANOPY_OAUTH_MODELS.length);
+      expect(
+        canopyModels.find((m) => m.id === 'custom-canopy'),
+      ).toBeUndefined();
     });
 
     it('should handle reload with multiple authTypes', () => {
@@ -851,9 +855,9 @@ describe('ModelRegistry', () => {
 
       // All user-configured models should be cleared
       expect(registry.getModelsForAuthType(AuthType.USE_OPENAI).length).toBe(0);
-      // qwen-oauth models should still exist
-      expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH).length).toBe(
-        QWEN_OAUTH_MODELS.length,
+      // canopy-oauth models should still exist
+      expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH).length).toBe(
+        CANOPY_OAUTH_MODELS.length,
       );
     });
 
@@ -1293,20 +1297,20 @@ describe('providerProtocol mapping (custom provider ids)', () => {
     expect(registry.getModelsForAuthType(AuthType.USE_OPENAI)).toEqual([]);
   });
 
-  it('silently ignores a custom provider explicitly mapped to qwen-oauth', () => {
+  it('silently ignores a custom provider explicitly mapped to canopy-oauth', () => {
     const registry = new ModelRegistry(
       {
         'my-alias': [{ id: 'secret-model' }],
       } as unknown as ModelProvidersConfig,
-      { 'my-alias': 'qwen-oauth' },
+      { 'my-alias': 'canopy-oauth' },
     );
 
-    // Hard-coded QWEN_OAUTH bucket untouched; the aliased model is not added.
-    expect(registry.getModelsForAuthType(AuthType.QWEN_OAUTH)).toHaveLength(
-      QWEN_OAUTH_MODELS.length,
+    // Hard-coded CANOPY_OAUTH bucket untouched; the aliased model is not added.
+    expect(registry.getModelsForAuthType(AuthType.CANOPY_OAUTH)).toHaveLength(
+      CANOPY_OAUTH_MODELS.length,
     );
     expect(
-      registry.getModel(AuthType.QWEN_OAUTH, 'secret-model'),
+      registry.getModel(AuthType.CANOPY_OAUTH, 'secret-model'),
     ).toBeUndefined();
   });
 

@@ -47,7 +47,7 @@ const API_ERROR_PREFIX = '[API Error: ';
  *    guidance suffixes.
  * 3) friendly quota-exhaustion messages ("Quota exhausted: ...") built by
  *    formatQuotaExhaustedMessage — these live here rather than in the
- *    Qwen-OAuth prefix list because they also arrive via the plain-string
+ *    Canopy-OAuth prefix list because they also arrive via the plain-string
  *    path (a StreamContentError whose .message is the formatted text).
  *
  * Used as an idempotency guard: when an upstream caller has already passed an
@@ -80,10 +80,10 @@ export function parseAndFormatApiError(
   authType?: AuthType,
 ): string {
   if (isStructuredError(error)) {
-    // Qwen OAuth quota errors have their own user-friendly message; don't wrap them
+    // Canopy OAuth quota errors have their own user-friendly message; don't wrap them
     if (
-      error.message.startsWith('Qwen OAuth quota exceeded:') ||
-      error.message.startsWith('Qwen OAuth free tier has been discontinued')
+      error.message.startsWith('Canopy OAuth quota exceeded:') ||
+      error.message.startsWith('Canopy OAuth free tier has been discontinued')
     ) {
       return error.message;
     }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -496,7 +496,7 @@ describe('resolveTestScope', () => {
 
   it('lets a MEMBER win a name collision with the root', () => {
     // This very repo: the root and packages/cli share the name
-    // `@qwen-code/qwen-code`. Last-write-wins on the name map would resolve a
+    // `@canopy-code/canopy-code`. Last-write-wins on the name map would resolve a
     // dependent of the CLI package to the ROOT, silently dropping the
     // member's own dependents from the closure.
     const root = p('.', '@x/cli', ['@x/core'], ['test']);

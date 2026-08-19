@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  isQwenQuotaExceededError,
+  isCanopyQuotaExceededError,
   isProQuotaExceededError,
   isGenericQuotaExceededError,
   isApiError,
@@ -17,14 +17,14 @@ import {
 } from './quotaErrorDetection.js';
 
 describe('quotaErrorDetection', () => {
-  describe('isQwenQuotaExceededError', () => {
-    it('should detect the Qwen insufficient_quota error', () => {
+  describe('isCanopyQuotaExceededError', () => {
+    it('should detect the Canopy insufficient_quota error', () => {
       const error = {
         status: 429,
         code: 'insufficient_quota',
         message: 'Free allocated quota exceeded.',
       };
-      expect(isQwenQuotaExceededError(error)).toBe(true);
+      expect(isCanopyQuotaExceededError(error)).toBe(true);
     });
 
     it('should not match when status is not 429', () => {
@@ -33,7 +33,7 @@ describe('quotaErrorDetection', () => {
         code: 'insufficient_quota',
         message: 'Free allocated quota exceeded.',
       };
-      expect(isQwenQuotaExceededError(error)).toBe(false);
+      expect(isCanopyQuotaExceededError(error)).toBe(false);
     });
 
     it('should not match temporary throttling (concurrency 429)', () => {
@@ -42,7 +42,7 @@ describe('quotaErrorDetection', () => {
         code: 'rate_limit_exceeded',
         message: 'Rate limit exceeded',
       };
-      expect(isQwenQuotaExceededError(error)).toBe(false);
+      expect(isCanopyQuotaExceededError(error)).toBe(false);
     });
 
     it('should not match paid account quota exceeded', () => {
@@ -51,21 +51,21 @@ describe('quotaErrorDetection', () => {
         code: 'insufficient_quota',
         message: 'You exceeded your current quota.',
       };
-      expect(isQwenQuotaExceededError(error)).toBe(false);
+      expect(isCanopyQuotaExceededError(error)).toBe(false);
     });
 
     it('should not match plain Error objects', () => {
       const error = new Error('insufficient_quota');
-      expect(isQwenQuotaExceededError(error)).toBe(false);
+      expect(isCanopyQuotaExceededError(error)).toBe(false);
     });
 
     it('should not match string errors', () => {
-      expect(isQwenQuotaExceededError('insufficient_quota')).toBe(false);
+      expect(isCanopyQuotaExceededError('insufficient_quota')).toBe(false);
     });
 
     it('should not match null or undefined', () => {
-      expect(isQwenQuotaExceededError(null)).toBe(false);
-      expect(isQwenQuotaExceededError(undefined)).toBe(false);
+      expect(isCanopyQuotaExceededError(null)).toBe(false);
+      expect(isCanopyQuotaExceededError(undefined)).toBe(false);
     });
   });
 

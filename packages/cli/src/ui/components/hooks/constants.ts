@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,7 +8,7 @@ import {
   HooksConfigSource,
   HookEventName,
   hookEventSupportsMatcher,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { HookExitCode, HookEventDisplayInfo } from './types.js';
 import { t } from '../../../i18n/index.js';
 
@@ -67,7 +67,7 @@ export function getHookExitCodes(eventName: string): HookExitCode[] {
       { code: 'Other', description: t('show stderr to user only') },
     ],
     [HookEventName.UserPromptSubmit]: [
-      { code: 0, description: t('stdout shown to Qwen') },
+      { code: 0, description: t('stdout shown to Canopy') },
       {
         code: 2,
         description: t(
@@ -77,7 +77,7 @@ export function getHookExitCodes(eventName: string): HookExitCode[] {
       { code: 'Other', description: t('show stderr to user only') },
     ],
     [HookEventName.UserPromptExpansion]: [
-      { code: 0, description: t('stdout shown to Qwen') },
+      { code: 0, description: t('stdout shown to Canopy') },
       {
         code: 2,
         description: t(
@@ -87,7 +87,7 @@ export function getHookExitCodes(eventName: string): HookExitCode[] {
       { code: 'Other', description: t('show stderr to user only') },
     ],
     [HookEventName.SessionStart]: [
-      { code: 0, description: t('stdout shown to Qwen') },
+      { code: 0, description: t('stdout shown to Canopy') },
       {
         code: 'Other',
         description: t('show stderr to user only (blocking errors ignored)'),
@@ -191,7 +191,7 @@ export function getHookShortDescription(eventName: string): string {
     [HookEventName.MessageDisplay]: t(
       'Repeatedly, as the assistant reply streams',
     ),
-    [HookEventName.Stop]: t('Right before Qwen Code concludes its response'),
+    [HookEventName.Stop]: t('Right before Canopy Code concludes its response'),
     [HookEventName.SubagentStart]: t(
       'When a subagent (Agent tool call) is started',
     ),

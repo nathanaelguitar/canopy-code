@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -74,18 +74,18 @@ function dayKey(ts: number): string {
 
 describe('loadUsageDashboard', () => {
   let tmpHome: string;
-  let originalQwenHome: string | undefined;
+  let originalCanopyHome: string | undefined;
 
   beforeEach(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-usage-dashboard-'));
-    originalQwenHome = process.env['QWEN_HOME'];
-    process.env['QWEN_HOME'] = path.join(tmpHome, '.qwen');
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-usage-dashboard-'));
+    originalCanopyHome = process.env['QWEN_HOME'];
+    process.env['QWEN_HOME'] = path.join(tmpHome, '.canopy');
     fs.mkdirSync(process.env['QWEN_HOME'], { recursive: true });
   });
 
   afterEach(() => {
-    if (originalQwenHome === undefined) delete process.env['QWEN_HOME'];
-    else process.env['QWEN_HOME'] = originalQwenHome;
+    if (originalCanopyHome === undefined) delete process.env['QWEN_HOME'];
+    else process.env['QWEN_HOME'] = originalCanopyHome;
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 
@@ -132,7 +132,7 @@ describe('loadUsageDashboard', () => {
         subtype: 'ui_telemetry',
         systemPayload: {
           uiEvent: {
-            'event.name': 'qwen-code.api_response',
+            'event.name': 'canopy-code.api_response',
             'event.timestamp': ts,
             response_id: 'r1',
             model: 'qwen-max',

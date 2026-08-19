@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -29,15 +29,15 @@ import { runtimeDiagnostics } from '../../utils/runtimeDiagnostics.js';
 import { createChildAbortController } from '../../utils/abortController.js';
 import { reconcileMaxTokens } from '../tokenLimits.js';
 import {
-  isQwenFamilyWireModel,
+  isCanopyFamilyWireModel,
   isTieredEffortWireModel,
 } from '../modalityDefaults.js';
 import {
   DEFAULT_STREAM_IDLE_TIMEOUT_MS,
   DEFAULT_STREAM_MAX_LIFETIME_MS,
   MAX_STREAM_GUARD_TIMEOUT_MS,
-  QWEN_STREAM_IDLE_TIMEOUT_MS_ENV,
-  QWEN_STREAM_MAX_LIFETIME_MS_ENV,
+  CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV,
+  CANOPY_STREAM_MAX_LIFETIME_MS_ENV,
 } from './constants.js';
 import { createDebugLogger } from '../../utils/debugLogger.js';
 import { getToolCallPreparations } from '../tool-call-preparation.js';
@@ -191,7 +191,7 @@ export class StreamInactivityTimeoutError extends Error {
     super(
       `No stream activity for ${idleMs}ms after ${chunksReceived} chunks ` +
         `(stream lifetime: ${streamLifetimeMs}ms). Set ` +
-        `${QWEN_STREAM_IDLE_TIMEOUT_MS_ENV} to increase this window ` +
+        `${CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV} to increase this window ` +
         `(or 0 to disable it).`,
     );
     this.name = 'StreamInactivityTimeoutError';
@@ -222,7 +222,7 @@ export class StreamLifetimeExceededError extends Error {
       `Stream exceeded its ${maxLifetimeMs}ms upstream-wait cap after ` +
         `${chunksReceived} chunks without completing (wall clock: ` +
         `${streamLifetimeMs}ms). Set ` +
-        `${QWEN_STREAM_MAX_LIFETIME_MS_ENV} to increase this cap ` +
+        `${CANOPY_STREAM_MAX_LIFETIME_MS_ENV} to increase this cap ` +
         `(or 0 to disable it).`,
     );
     this.name = 'StreamLifetimeExceededError';
@@ -344,7 +344,7 @@ function resolveStreamGuardMs(
     }
     // eslint-disable-next-line no-console
     console.warn(
-      `[qwen-code] Ignoring out-of-range ${configLabel}=${fromConfig} ` +
+      `[canopy-code] Ignoring out-of-range ${configLabel}=${fromConfig} ` +
         `(expected an integer in (-∞, ${MAX_STREAM_GUARD_TIMEOUT_MS}]); ` +
         `falling back to ${envName}/default.`,
     );
@@ -363,7 +363,7 @@ function resolveStreamGuardMs(
     }
     // eslint-disable-next-line no-console
     console.warn(
-      `[qwen-code] Ignoring invalid ${envName}="${raw}" ` +
+      `[canopy-code] Ignoring invalid ${envName}="${raw}" ` +
         `(expected an integer of milliseconds in [0, ${MAX_STREAM_GUARD_TIMEOUT_MS}]); ` +
         `using default ${defaultMs}ms.`,
     );
@@ -375,7 +375,7 @@ function resolveStreamIdleTimeoutMs(config: ContentGeneratorConfig): number {
   return resolveStreamGuardMs(
     config.streamIdleTimeoutMs,
     'streamIdleTimeoutMs',
-    QWEN_STREAM_IDLE_TIMEOUT_MS_ENV,
+    CANOPY_STREAM_IDLE_TIMEOUT_MS_ENV,
     DEFAULT_STREAM_IDLE_TIMEOUT_MS,
   );
 }
@@ -384,7 +384,7 @@ function resolveStreamMaxLifetimeMs(config: ContentGeneratorConfig): number {
   return resolveStreamGuardMs(
     config.streamMaxLifetimeMs,
     'streamMaxLifetimeMs',
-    QWEN_STREAM_MAX_LIFETIME_MS_ENV,
+    CANOPY_STREAM_MAX_LIFETIME_MS_ENV,
     DEFAULT_STREAM_MAX_LIFETIME_MS,
   );
 }
@@ -1119,7 +1119,7 @@ export class ContentGenerationPipeline {
     //   - the config-level opt-out is set (`reasoning: false`).
     // In both cases we want the wire shape to actually disable thinking,
     // not just remove the effort knob — otherwise providers whose default
-    // is "thinking enabled" (DeepSeek V4+, qwen3) keep paying thinking
+    // is "thinking enabled" (DeepSeek V4+, canopy3) keep paying thinking
     // latency/cost.
     //
     // Exception: `thinkingMandatory` marks models that reject
@@ -1139,9 +1139,9 @@ export class ContentGenerationPipeline {
     if (reasoningDisabled) {
       const typed = providerRequest as unknown as Record<string, unknown>;
       // Provider buildRequest doesn't auto-inject `enable_thinking`, so a
-      // guarded `in typed` check would never fire for default qwen3 configs.
-      // Hostname + model-name gate avoids leaking this qwen-specific field
-      // to non-qwen routings on the same DashScope hostname (GLM uses
+      // guarded `in typed` check would never fire for default canopy3 configs.
+      // Hostname + model-name gate avoids leaking this canopy-specific field
+      // to non-canopy routings on the same DashScope hostname (GLM uses
       // `extra_body.thinking.enabled`, DeepSeek-on-DashScope uses
       // `thinking: { type: 'disabled' }`; sending `enable_thinking` to them
       // is at best a no-op, at worst forwarded upstream and rejected).
@@ -1150,10 +1150,10 @@ export class ContentGenerationPipeline {
       // `request.model || contentGeneratorConfig.model` — the same value
       // baseRequest.model is built from above), not on the config model. A
       // request-level model override would otherwise desync the gate from
-      // what actually ships: a qwen config with a non-qwen request model
-      // would leak the field, and a non-qwen config with a qwen request
+      // what actually ships: a canopy config with a non-canopy request model
+      // would leak the field, and a non-canopy config with a canopy request
       // model would miss the disable signal (the regression).
-      if (!thinkingMandatory && isQwenFamilyWireModel(model)) {
+      if (!thinkingMandatory && isCanopyFamilyWireModel(model)) {
         if (isDashScope) {
           if (isTieredEffortWireModel(model)) {
             // The tier-native family reads reasoning_effort, not the
@@ -1171,7 +1171,7 @@ export class ContentGenerationPipeline {
           // Non-DashScope OpenAI-compatible servers (vLLM, SGLang, ...) render
           // the model's chat template server-side and read the thinking switch
           // from `chat_template_kwargs`, not a top-level `enable_thinking`
-          // (which they silently ignore). Send it there so hybrid qwen models
+          // (which they silently ignore). Send it there so hybrid canopy models
           // actually stop emitting <think> when reasoning is disabled — e.g.
           // the auto-mode permission classifier's short structured-output
           // calls, which otherwise spend their small token budget on thinking
@@ -1182,7 +1182,7 @@ export class ContentGenerationPipeline {
           // extra_body (provider-config.ts emits it for models configured with
           // `enableThinking: true`): leaving it would contradict the
           // `chat_template_kwargs` opt-out on servers that honour both, and
-          // keeps this path from leaking the qwen-specific field top-level.
+          // keeps this path from leaking the canopy-specific field top-level.
           delete typed['enable_thinking'];
           const existing = (typed['chat_template_kwargs'] ?? {}) as Record<
             string,
@@ -1249,7 +1249,7 @@ export class ContentGenerationPipeline {
     // ("The tool_choice parameter does not support being set to required or
     // object in thinking mode"). Both field clauses are family-gated like
     // the disable path above: `enable_thinking` and `reasoning_effort` are
-    // qwen thinking switches, but on non-qwen models sharing the endpoint
+    // canopy thinking switches, but on non-canopy models sharing the endpoint
     // they are opaque parameters that do not put the request in thinking
     // mode (GLM reads `thinking.enabled`, DeepSeek `thinking.type`), and
     // dropping `required` there only degrades their forced-tool side
@@ -1259,7 +1259,7 @@ export class ContentGenerationPipeline {
       isDashScope &&
       typed['tool_choice'] === 'required' &&
       (thinkingMandatory ||
-        (isQwenFamilyWireModel(model) &&
+        (isCanopyFamilyWireModel(model) &&
           (typed['enable_thinking'] === true ||
             (thinkingBudget != null && typed['enable_thinking'] !== false) ||
             (typeof reasoningEffort === 'string' &&
@@ -1422,7 +1422,7 @@ export class ContentGenerationPipeline {
     //   - glm-4.7 — thinking is enabled by default; can be disabled via `extra_body.thinking.enabled`
     //   - kimi-k2-thinking — thinking is enabled by default and cannot be disabled
     //   - gpt-5.x series — thinking is enabled by default; can be disabled via `reasoning.effort`
-    //   - qwen3 series — model-dependent; emitted as `enable_thinking: false`
+    //   - canopy3 series — model-dependent; emitted as `enable_thinking: false`
     //                           on DashScope endpoints when reasoning is disabled
     //
     // Given this inconsistency, we avoid mapping values and only pass through the

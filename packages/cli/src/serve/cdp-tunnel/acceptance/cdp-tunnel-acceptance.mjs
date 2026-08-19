@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  *
  * Plan C "CDP tunnel" end-to-end acceptance (issue #5626).
@@ -293,7 +293,7 @@ function connectMockExtensionOnce() {
           method: 'initialize',
           // Identify as the CDP bridge so the daemon's clientInfo.name gate
           // registers this mock extension (mirrors the real extension).
-          params: { clientInfo: { name: 'qwen-cdp-bridge', version: '1.0.0' } },
+          params: { clientInfo: { name: 'canopy-cdp-bridge', version: '1.0.0' } },
         }),
       );
     });
@@ -416,8 +416,8 @@ async function main() {
       cwd: REPO_ROOT,
       env: {
         ...process.env,
-        QWEN_SERVE_CDP_TUNNEL_OVER_WS: '1',
-        QWEN_SERVE_CLIENT_MCP_OVER_WS: '1',
+        CANOPY_SERVE_CDP_TUNNEL_OVER_WS: '1',
+        CANOPY_SERVE_CLIENT_MCP_OVER_WS: '1',
       },
       stdio: ['ignore', 'inherit', 'inherit'],
     },

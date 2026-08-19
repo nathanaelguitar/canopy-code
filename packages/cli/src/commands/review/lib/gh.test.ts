@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -395,7 +395,7 @@ describe('isOwnerRepo', () => {
     // goes red (real dash-prefixed repos must stay reviewable).
     expect(isOwnerRepo('yezhaodan/-Git')).toBe(true);
     expect(isOwnerRepo('-evil/repo')).toBe(false);
-    expect(isOwnerRepo('QwenLM/qwen-code')).toBe(true);
+    expect(isOwnerRepo('CanopyLM/canopy-code')).toBe(true);
     expect(isOwnerRepo('../escape')).toBe(false);
     expect(isOwnerRepo('owner/..')).toBe(false);
   });

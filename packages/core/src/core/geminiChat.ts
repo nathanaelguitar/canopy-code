@@ -129,7 +129,7 @@ import type { GoalTurnPermit } from '../goals/goal-protocol.js';
 
 export { InvalidStreamError };
 
-const debugLogger = createDebugLogger('QWEN_CODE_CHAT');
+const debugLogger = createDebugLogger('CANOPY_CODE_CHAT');
 // Gemini can emit this filler after tool results; filtering and validation
 // must stay in sync.
 const GEMINI_EMPTY_CONTENT_PLACEHOLDER = '(empty content)';
@@ -1453,7 +1453,7 @@ export const ORPHAN_TOOL_USE_REPAIR_REASON =
  * pairs so the React scheduler's dedup can drop late real results for
  * those ids; hoisted ids are NOT returned (the real fr is still in
  * history, scheduler dedup handles them naturally). See the canonical
- * note above `ORPHAN_TOOL_USE_REPAIR_REASON`. qwen-code analogue of
+ * note above `ORPHAN_TOOL_USE_REPAIR_REASON`. canopy-code analogue of
  * upstream Claude Code's `yieldMissingToolResultBlocks`.
  */
 /** Location of a `functionResponse` part within `history`. */
@@ -1686,8 +1686,8 @@ export function repairOrphanedToolUseTurns(
  * The session maintains all the turns between user and model.
  */
 const SESSION_START_CONTEXT_SENTINEL_START =
-  '<qwen:session-start-context hidden="true">';
-const SESSION_START_CONTEXT_SENTINEL_END = '</qwen:session-start-context>';
+  '<canopy:session-start-context hidden="true">';
+const SESSION_START_CONTEXT_SENTINEL_END = '</canopy:session-start-context>';
 const SESSION_START_CONTEXT_HEADER = 'SessionStart additional context';
 
 function buildSessionStartContextBlock(extraInstruction: string): string {
@@ -2248,14 +2248,14 @@ export class GeminiChat {
     //
     // The ceiling is the explicit user/subagent value when one is set
     // (params.config.maxOutputTokens from subagents, samplingParams.max_tokens
-    // or QWEN_CODE_MAX_OUTPUT_TOKENS from user config), else
+    // or CANOPY_CODE_MAX_OUTPUT_TOKENS from user config), else
     // defaultOutputCeiling(model) (the model's output limit clipped to
     // OUTPUT_TOKEN_CEILING).
     const cgConfigForThresholds =
       exactRoute?.contentGeneratorConfig ??
       this.config.getContentGeneratorConfig();
     const parsedEnvMaxTokensForClamp = parsePositiveIntegerEnvValue(
-      process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'],
+      process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'],
     );
     const explicitOutputCeiling: number | undefined =
       params.config?.maxOutputTokens ??
@@ -2597,7 +2597,7 @@ export class GeminiChat {
     return (async function* () {
       const sleepInhibitorHandle = acquireSleepInhibitor(
         self.config,
-        'Qwen Code is streaming a model response',
+        'Canopy Code is streaming a model response',
       );
       try {
         // Surface a successful auto-compression to the caller as the first
@@ -2670,7 +2670,7 @@ export class GeminiChat {
         // the model hits MAX_TOKENS, retry once with the escalated limit.
         let maxTokensEscalated = false;
         const parsedEnvMaxTokens = parsePositiveIntegerEnvValue(
-          process.env['QWEN_CODE_MAX_OUTPUT_TOKENS'],
+          process.env['CANOPY_CODE_MAX_OUTPUT_TOKENS'],
         );
         const hasUserMaxTokensOverride =
           (cgConfig?.samplingParams?.max_tokens !== undefined &&
@@ -3618,7 +3618,7 @@ export class GeminiChat {
           //
           // Constraints:
           // - Do NOT trigger fallback when persistent mode is active
-          //   (QWEN_CODE_UNATTENDED_RETRY) — persistent mode retries the primary
+          //   (CANOPY_CODE_UNATTENDED_RETRY) — persistent mode retries the primary
           //   model indefinitely by design.
           // - Maximum 3 fallback transitions (capped by config normalization).
           // - Fallback is only for capacity/availability errors (429/503/529),
@@ -3949,7 +3949,7 @@ export class GeminiChat {
         ? {
             heartbeatFn: (info: HeartbeatInfo) => {
               process.stderr.write(
-                `[qwen-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
+                `[canopy-code] Waiting for API capacity... attempt ${info.attempt}, retry in ${Math.ceil(info.remainingMs / 1000)}s\n`,
               );
             },
           }

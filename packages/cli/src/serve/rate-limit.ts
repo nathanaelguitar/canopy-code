@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -111,7 +111,7 @@ function normalizeIp(raw: string): string {
 export function createKeyExtractor(hostname: string): (req: Request) => string {
   const loopback = isLoopbackBind(hostname);
   return (req: Request): string => {
-    const raw = req.get('x-qwen-client-id');
+    const raw = req.get('x-canopy-client-id');
     const clientId =
       raw && raw.length <= MAX_CLIENT_ID_LENGTH && CLIENT_ID_RE.test(raw)
         ? raw

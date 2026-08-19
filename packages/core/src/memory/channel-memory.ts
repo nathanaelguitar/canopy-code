@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Qwen Team
+ * Copyright 2026 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -141,7 +141,7 @@ function hashedThreadPath(target: ChannelMemoryTarget): string {
 
 function getChannelMemoryDirectory(target: ChannelMemoryTarget): string {
   return path.join(
-    Storage.getGlobalQwenDir(),
+    Storage.getGlobalCanopyDir(),
     'channels',
     'memory',
     safeChannelName(target.channelName),

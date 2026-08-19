@@ -631,8 +631,8 @@ export class ReadFileTool extends BaseDeclarativeTool<
     }
 
     const fileService = this.config.getFileService();
-    if (fileService.shouldQwenIgnoreFile(params.file_path)) {
-      return `File path '${filePath}' is ignored by ${fileService.getQwenIgnoreFileDisplayForPath(params.file_path)} pattern(s).`;
+    if (fileService.shouldCanopyIgnoreFile(params.file_path)) {
+      return `File path '${filePath}' is ignored by ${fileService.getCanopyIgnoreFileDisplayForPath(params.file_path)} pattern(s).`;
     }
 
     return null;

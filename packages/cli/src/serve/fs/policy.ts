@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import * as path from 'node:path';
-import type { Ignore } from '@qwen-code/qwen-code-core';
-import { isBinaryFile } from '@qwen-code/qwen-code-core';
+import type { Ignore } from '@canopy-code/canopy-code-core';
+import { isBinaryFile } from '@canopy-code/canopy-code-core';
 import { FsError } from './errors.js';
 import type { Intent, ResolvedPath } from './paths.js';
 
@@ -94,7 +94,7 @@ export interface IgnoreVerdict {
  * Check whether `absolute` is matched by the workspace's ignore
  * rules. The check is computed against the workspace-relative
  * form of the path, matching the convention of `.gitignore` /
- * `.qwenignore` patterns.
+ * `.canopyignore` patterns.
  *
  * Returns `{ ignored: false }` when:
  *   - the path equals `boundWorkspace` (the workspace root itself

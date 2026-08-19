@@ -25,7 +25,7 @@ import type {
   AnyToolInvocation,
   GoalTurnPermit,
   SteerInput,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import {
   ApprovalMode,
   AUTONOMOUS_SENTINEL_DYNAMIC,
@@ -37,7 +37,7 @@ import {
   ToolConfirmationOutcome,
   getRuntimeContentGenerator,
   runWithRuntimeContentGenerator,
-} from '@qwen-code/qwen-code-core';
+} from '@canopy-code/canopy-code-core';
 import type { Part, PartListUnion } from '@google/genai';
 import type { UseHistoryManagerReturn } from './useHistoryManager.js';
 import type { HistoryItem, SlashCommandProcessorResult } from '../types.js';
@@ -129,7 +129,7 @@ vi.mock('../../dualOutput/DualOutputContext.js', () => ({
 }));
 const mockFinalizeToolResponses = vi.hoisted(() => vi.fn());
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
   const actualCoreModule = (await importOriginal()) as any;
   mockFinalizeToolResponses.mockImplementation(
     actualCoreModule.finalizeToolResponses,
@@ -359,7 +359,7 @@ describe('useGeminiStream', () => {
   const mockLoadedSettings: LoadedSettings = {
     merged: { preferredEditor: 'vscode' },
     user: { path: '/user/settings.json', settings: {} },
-    workspace: { path: '/workspace/.qwen/settings.json', settings: {} },
+    workspace: { path: '/workspace/.canopy/settings.json', settings: {} },
     errors: [],
     forScope: vi.fn(),
     setValue: vi.fn(),
@@ -913,7 +913,7 @@ describe('useGeminiStream', () => {
     });
 
     it('clamps oversized agent-capable image routes before applying a full-turn override', async () => {
-      vi.stubEnv('QWEN_CODE_MAX_INLINE_MEDIA_BYTES', '1');
+      vi.stubEnv('CANOPY_CODE_MAX_INLINE_MEDIA_BYTES', '1');
       enableBridge();
       mockConfig.getDefaultVisionBridgeModel = vi.fn(() => ({
         id: 'vision-agent',
@@ -6209,7 +6209,7 @@ describe('useGeminiStream', () => {
       const config = {
         ...mockConfig,
         getEmitToolUseSummaries: vi.fn(() => false),
-        getFastModel: vi.fn(() => 'qwen-fast'),
+        getFastModel: vi.fn(() => 'canopy-fast'),
         getGeminiClient: vi.fn(() => ({
           generateContent: vi.fn(),
         })),
@@ -6253,8 +6253,8 @@ describe('useGeminiStream', () => {
       const config = {
         ...mockConfig,
         getEmitToolUseSummaries: vi.fn(() => true),
-        getFastModel: vi.fn(() => 'qwen-fast'),
-        getModel: vi.fn(() => 'qwen-main'),
+        getFastModel: vi.fn(() => 'canopy-fast'),
+        getModel: vi.fn(() => 'canopy-main'),
         getGeminiClient: vi.fn(() => ({})),
         getBaseLlmClient: vi.fn(() => ({ generateText })),
       } as unknown as Config;
@@ -6280,7 +6280,7 @@ describe('useGeminiStream', () => {
       // Model was called with the fast model and includes tool names in the prompt.
       expect(generateText).toHaveBeenCalledTimes(1);
       const options = generateText.mock.calls[0][0];
-      expect(options.model).toBe('qwen-fast');
+      expect(options.model).toBe('canopy-fast');
       const userText = options.contents[0].parts[0].text as string;
       expect(userText).toContain('Tool: Grep');
       expect(userText).toContain('Tool: Read');
@@ -6302,8 +6302,8 @@ describe('useGeminiStream', () => {
       const config = {
         ...mockConfig,
         getEmitToolUseSummaries: vi.fn(() => true),
-        getFastModel: vi.fn(() => 'qwen-fast'),
-        getModel: vi.fn(() => 'qwen-main'),
+        getFastModel: vi.fn(() => 'canopy-fast'),
+        getModel: vi.fn(() => 'canopy-main'),
         getGeminiClient: vi.fn(() => ({})),
         getBaseLlmClient: vi.fn(() => ({ generateText })),
       } as unknown as Config;
@@ -6406,8 +6406,8 @@ describe('useGeminiStream', () => {
       const config = {
         ...mockConfig,
         getEmitToolUseSummaries: vi.fn(() => true),
-        getFastModel: vi.fn(() => 'qwen-fast'),
-        getModel: vi.fn(() => 'qwen-main'),
+        getFastModel: vi.fn(() => 'canopy-fast'),
+        getModel: vi.fn(() => 'canopy-main'),
         getGeminiClient: vi.fn(() => ({})),
         getBaseLlmClient: vi.fn(() => ({ generateText })),
       } as unknown as Config;
@@ -7721,7 +7721,7 @@ describe('useGeminiStream', () => {
       // instead of leaking code as prose.
       const pendingText = result.current.pendingHistoryItems[0]?.text ?? '';
       expect(pendingText.startsWith('```ts')).toBe(true);
-      expect(pendingText).toContain('qwen-code:start-line=');
+      expect(pendingText).toContain('canopy-code:start-line=');
 
       act(() => {
         result.current.cancelOngoingRequest();
@@ -9199,10 +9199,10 @@ describe('useGeminiStream', () => {
       const allowInlineModel = (modelId = 'inline-model') => {
         mockConfig.getModel = vi.fn(() => 'session-model');
         mockConfig.getContentGeneratorConfig = vi.fn(
-          () => ({ authType: AuthType.QWEN_OAUTH }) as never,
+          () => ({ authType: AuthType.CANOPY_OAUTH }) as never,
         );
         mockConfig.getAvailableModelsForAuthType = vi.fn(
-          () => [{ id: modelId, authType: AuthType.QWEN_OAUTH }] as never,
+          () => [{ id: modelId, authType: AuthType.CANOPY_OAUTH }] as never,
         );
       };
 
@@ -9758,7 +9758,7 @@ describe('useGeminiStream', () => {
         request: {
           callId: 'write-memory-call-1',
           name: 'write_file',
-          args: { file_path: '/workspace/.qwen/memory/project.md' },
+          args: { file_path: '/workspace/.canopy/memory/project.md' },
           isClientInitiated: false,
           prompt_id: 'prompt-id-memory-write',
         },
@@ -9826,7 +9826,7 @@ describe('useGeminiStream', () => {
         [
           {
             toolName: 'write_file',
-            args: { file_path: '/workspace/.qwen/memory/project.md' },
+            args: { file_path: '/workspace/.canopy/memory/project.md' },
             status: 'success',
           },
         ],
@@ -9935,7 +9935,7 @@ describe('useGeminiStream', () => {
         expect(mockSendMessageStream).toHaveBeenCalledTimes(2);
       });
       await completeToolWrite(
-        createCompletedFileWrite({ filePath: '/test/dir/QWEN.md' }),
+        createCompletedFileWrite({ filePath: '/test/dir/CANOPY.md' }),
       );
 
       expect(mockRefreshMemoryInstruction).toHaveBeenCalledWith(mockConfig, {
@@ -9943,9 +9943,9 @@ describe('useGeminiStream', () => {
       });
     }
 
-    it('refreshes context-file instructions after bare remember writes QWEN.md', async () => {
+    it('refreshes context-file instructions after bare remember writes CANOPY.md', async () => {
       await submitSlashCommandAndCompleteTool(
-        createCompletedFileWrite({ filePath: '/test/dir/QWEN.md' }),
+        createCompletedFileWrite({ filePath: '/test/dir/CANOPY.md' }),
         true,
       );
 
@@ -9960,7 +9960,7 @@ describe('useGeminiStream', () => {
       await completeToolWrite(
         createCompletedFileWrite({
           callId: 'write-context-call-1',
-          filePath: '/test/dir/QWEN.md',
+          filePath: '/test/dir/CANOPY.md',
         }),
       );
       await waitFor(() => {
@@ -9969,18 +9969,18 @@ describe('useGeminiStream', () => {
       await completeToolWrite(
         createCompletedFileWrite({
           callId: 'write-context-call-2',
-          filePath: '/test/dir/QWEN.md',
+          filePath: '/test/dir/CANOPY.md',
         }),
       );
 
       expect(mockRefreshMemoryInstruction).toHaveBeenCalledTimes(2);
     });
 
-    it('refreshes context-file instructions after bare remember edits QWEN.md', async () => {
+    it('refreshes context-file instructions after bare remember edits CANOPY.md', async () => {
       await submitSlashCommandAndCompleteTool(
         createCompletedFileWrite({
           toolName: 'edit',
-          filePath: '/test/dir/QWEN.md',
+          filePath: '/test/dir/CANOPY.md',
         }),
         true,
       );
@@ -9990,10 +9990,10 @@ describe('useGeminiStream', () => {
       });
     });
 
-    it('does not refresh context-file instructions for failed QWEN.md writes', async () => {
+    it('does not refresh context-file instructions for failed CANOPY.md writes', async () => {
       await submitSlashCommandAndCompleteTool(
         createCompletedFileWrite({
-          filePath: '/test/dir/QWEN.md',
+          filePath: '/test/dir/CANOPY.md',
           status: 'error',
         }),
         true,
@@ -10011,9 +10011,9 @@ describe('useGeminiStream', () => {
       expect(mockRefreshMemoryInstruction).not.toHaveBeenCalled();
     });
 
-    it('does not refresh context-file instructions for ordinary QWEN.md writes', async () => {
+    it('does not refresh context-file instructions for ordinary CANOPY.md writes', async () => {
       await submitSlashCommandAndCompleteTool(
-        createCompletedFileWrite({ filePath: '/test/dir/QWEN.md' }),
+        createCompletedFileWrite({ filePath: '/test/dir/CANOPY.md' }),
         false,
       );
 
@@ -10033,7 +10033,7 @@ describe('useGeminiStream', () => {
       await completeToolWrite(
         createCompletedFileWrite({
           callId: 'ordinary-write-context-call',
-          filePath: '/test/dir/QWEN.md',
+          filePath: '/test/dir/CANOPY.md',
         }),
       );
 
@@ -10110,7 +10110,7 @@ describe('useGeminiStream', () => {
         request: {
           callId: 'write-memory-call-1',
           name: 'write_file',
-          args: { file_path: '/workspace/.qwen/memory/project.md' },
+          args: { file_path: '/workspace/.canopy/memory/project.md' },
           isClientInitiated: false,
           prompt_id: 'prompt-id-memory-write',
         },
@@ -10183,7 +10183,7 @@ describe('useGeminiStream', () => {
           },
           {
             toolName: 'write_file',
-            args: { file_path: '/workspace/.qwen/memory/project.md' },
+            args: { file_path: '/workspace/.canopy/memory/project.md' },
             status: 'success',
           },
         ],
@@ -11622,7 +11622,7 @@ describe('useGeminiStream', () => {
             type: ServerGeminiEventType.Thought,
             value: {
               subject: '',
-              description: ' user mentioned globally installed qwen,',
+              description: ' user mentioned globally installed canopy,',
             },
           };
           await holdStream;
@@ -11644,7 +11644,7 @@ describe('useGeminiStream', () => {
       await waitFor(() => {
         expect(result.current.thought).toEqual({
           subject: 'Evaluating installation approach',
-          description: 'The user mentioned globally installed qwen,',
+          description: 'The user mentioned globally installed canopy,',
         });
       });
 

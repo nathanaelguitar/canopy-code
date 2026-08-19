@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen
+ * Copyright 2025 Canopy
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -50,7 +50,7 @@ import {
  * enumeration answered "usable" for everything outside it, and two such
  * shapes reached the stamp in the wild — a tsx dev launch whose argv[1] is a
  * 0644 `index.ts`, and `node <pkg-dir>` whose argv[1] is the DIRECTORY, both
- * of which a shell exec answers with exit 126 while `${QWEN_CODE_CLI:-qwen}`
+ * of which a shell exec answers with exit 126 while `${CANOPY_CODE_CLI:-canopy}`
  * would have fallen back on empty.
  *
  * Usable means: a REGULAR file (a directory passes an X_OK probe — search
@@ -64,9 +64,9 @@ import {
  * the answer for a given entry does not change in-process.
  *
  * Exported because a producer of the stamp has to apply the same test the
- * consumer here does: `qwen review run` stamps the entry it re-enters, and a
+ * consumer here does: `canopy review run` stamps the entry it re-enters, and a
  * stamp this function would blank is worse than no stamp — it names a path the
- * skill's `"${QWEN_CODE_CLI:-qwen}"` cannot exec, instead of falling back.
+ * skill's `"${CANOPY_CODE_CLI:-canopy}"` cannot exec, instead of falling back.
  */
 const SCRIPT_ENTRY_RE = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/i;
 const unusableCache = new Map<string, boolean>();
@@ -91,7 +91,7 @@ export function isUnusableScriptEntry(path: string): boolean {
     }
   } catch {
     // Missing, unreadable or non-executable is unusable either way; fall back
-    // to `qwen`.
+    // to `canopy`.
     unusable = true;
   }
   unusableCache.set(path, unusable);
@@ -105,9 +105,9 @@ export function getShellContextEnvVars(): Record<string, string> {
   // like the daemon) over the process-global env slot, which only ever
   // reflects the first session created in this process.
   const sessionId =
-    sessionIdContext.getStore() ?? process.env['QWEN_CODE_SESSION_ID'];
+    sessionIdContext.getStore() ?? process.env['CANOPY_CODE_SESSION_ID'];
   if (sessionId) {
-    env['QWEN_CODE_SESSION_ID'] = sessionId;
+    env['CANOPY_CODE_SESSION_ID'] = sessionId;
   }
 
   // The project dir a subprocess needs to find this session's harness records
@@ -120,25 +120,25 @@ export function getShellContextEnvVars(): Record<string, string> {
   // would hand its subprocesses another session's directory.
   const projectDir =
     (sessionId ? getSessionProjectDir(sessionId) : undefined) ??
-    process.env['QWEN_CODE_PROJECT_DIR'];
+    process.env['CANOPY_CODE_PROJECT_DIR'];
   if (projectDir) {
-    env['QWEN_CODE_PROJECT_DIR'] = projectDir;
+    env['CANOPY_CODE_PROJECT_DIR'] = projectDir;
   }
 
   // The CLI a subprocess should call to reach *this* build.
   //
-  // A skill that shells out to `qwen …` gets whatever `qwen` PATH resolves to,
+  // A skill that shells out to `canopy …` gets whatever `canopy` PATH resolves to,
   // which is not necessarily the code that launched it: run `npm run dev:daemon`
-  // on a machine with an older global install and every `qwen review …` the
+  // on a machine with an older global install and every `canopy review …` the
   // /review skill issues lands in the old binary. Measured: a current-source
-  // daemon told its shell to run `qwen review agent-prompt --role 0`, PATH
+  // daemon told its shell to run `canopy review agent-prompt --role 0`, PATH
   // resolved to a v0.19.10 global whose `agent-prompt` predates `--role`, and the
   // run died on `Missing required argument: chunk` — the skill and the CLI running
   // it were different programs.
   //
   // So the entry is passed down instead of rediscovered. The bin wrapper sets it
   // (it is the executable entry, and knows its own path); a subprocess prefers it
-  // and falls back to `qwen` when it is absent, which is exactly the old behaviour.
+  // and falls back to `canopy` when it is absent, which is exactly the old behaviour.
   //
   // Passed down only when a shell could actually exec it. The variable predates
   // this mechanism with a SECOND meaning: the desktop app's tooling sets it to a
@@ -153,12 +153,12 @@ export function getShellContextEnvVars(): Record<string, string> {
   // every spawn site composes the child env as `{...process.env, ...this}`, so
   // a key omitted here arrives anyway, inherited through the spread. The first
   // cut omitted, and on exactly the hosts the filter was written for the value
-  // leaked through and every `"${QWEN_CODE_CLI:-qwen}"` died on exit 126.
-  // Empty is safe for the consumer: the `:-` expansion falls back to `qwen` on
+  // leaked through and every `"${CANOPY_CODE_CLI:-canopy}"` died on exit 126.
+  // Empty is safe for the consumer: the `:-` expansion falls back to `canopy` on
   // unset AND on empty.
-  const cliEntry = process.env['QWEN_CODE_CLI'];
+  const cliEntry = process.env['CANOPY_CODE_CLI'];
   if (cliEntry) {
-    env['QWEN_CODE_CLI'] = isUnusableScriptEntry(cliEntry) ? '' : cliEntry;
+    env['CANOPY_CODE_CLI'] = isUnusableScriptEntry(cliEntry) ? '' : cliEntry;
   }
 
   // The model id that is ACTIVE in this session, for subprocesses that report
@@ -175,19 +175,19 @@ export function getShellContextEnvVars(): Record<string, string> {
   // stale to leak.
   const model =
     (sessionId ? getSessionModel(sessionId) : undefined) ??
-    process.env['QWEN_CODE_MODEL'];
+    process.env['CANOPY_CODE_MODEL'];
   if (model) {
-    env['QWEN_CODE_MODEL'] = model;
+    env['CANOPY_CODE_MODEL'] = model;
   }
 
   // For agent/prompt IDs: explicitly set empty string when no ALS context
-  // exists, so that stale values inherited from a parent qwen-code process
+  // exists, so that stale values inherited from a parent canopy-code process
   // (via process.env spread) are overwritten rather than leaked.
   const agentId = getCurrentAgentId();
-  env['QWEN_CODE_AGENT_ID'] = agentId ?? '';
+  env['CANOPY_CODE_AGENT_ID'] = agentId ?? '';
 
   const promptId = promptIdContext.getStore();
-  env['QWEN_CODE_PROMPT_ID'] = promptId ?? '';
+  env['CANOPY_CODE_PROMPT_ID'] = promptId ?? '';
 
   if (isShellTracePropagationEnabled()) {
     const ctx = getTraceContext();

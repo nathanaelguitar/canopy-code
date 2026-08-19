@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -86,7 +86,7 @@ describe('SessionTranscriptReader', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     runtimeDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), 'qwen-transcript-reader-'),
+      path.join(os.tmpdir(), 'canopy-transcript-reader-'),
     );
     workspaceDir = path.join(runtimeDir, 'workspace');
     await fs.mkdir(workspaceDir, { recursive: true });
@@ -918,15 +918,15 @@ describe('SessionTranscriptReader', () => {
       recoverGoalFromRecords(loaded!.conversation.messages),
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.transcript_index_ms',
+      'canopy-code.daemon.session_restore.transcript_index_ms',
       expect.any(Number),
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.resume_state_select_ms',
+      'canopy-code.daemon.session_restore.resume_state_select_ms',
       expect.any(Number),
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.selected_record_read_ms',
+      'canopy-code.daemon.session_restore.selected_record_read_ms',
       expect.any(Number),
     );
     for (const attribute of [
@@ -939,20 +939,20 @@ describe('SessionTranscriptReader', () => {
       'replay_bytes',
     ]) {
       expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-        `qwen-code.daemon.session_restore.${attribute}`,
+        `canopy-code.daemon.session_restore.${attribute}`,
         expect.any(Number),
       );
     }
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.index_cache_state',
+      'canopy-code.daemon.session_restore.index_cache_state',
       'fresh',
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.replay_mode',
+      'canopy-code.daemon.session_restore.replay_mode',
       'none',
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.compression_selected',
+      'canopy-code.daemon.session_restore.compression_selected',
       expect.any(Boolean),
     );
   });
@@ -1807,11 +1807,11 @@ describe('SessionTranscriptReader', () => {
     expect(liveResume?.artifactSnapshot).toEqual(liveLoad?.artifactSnapshot);
     expect(liveResume).not.toHaveProperty('runtime');
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.index_cache_state',
+      'canopy-code.daemon.session_restore.index_cache_state',
       'miss',
     );
     expect(mockAddDaemonRequestAttribute).toHaveBeenCalledWith(
-      'qwen-code.daemon.session_restore.index_cache_state',
+      'canopy-code.daemon.session_restore.index_cache_state',
       'hit',
     );
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Qwen Team
+ * Copyright 2025 Canopy Team
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -338,7 +338,7 @@ function recordRestoreStage(stage: string, startedAt: number): void {
   const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
   if (Number.isFinite(durationMs) && durationMs >= 0) {
     addDaemonRequestAttribute(
-      `qwen-code.daemon.session_restore.${stage}_ms`,
+      `canopy-code.daemon.session_restore.${stage}_ms`,
       durationMs,
     );
   }
@@ -346,15 +346,15 @@ function recordRestoreStage(stage: string, startedAt: number): void {
 
 function recordRestoreIndexAttributes(index: TranscriptIndex): void {
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.transcript_bytes',
+    'canopy-code.daemon.session_restore.transcript_bytes',
     index.snapshotSize,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.records_indexed',
+    'canopy-code.daemon.session_restore.records_indexed',
     index.byUuid.size,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.active_records',
+    'canopy-code.daemon.session_restore.active_records',
     index.runtimeUuids.length,
   );
 }
@@ -383,19 +383,19 @@ function recordRestoreSelectionAttributes(
   replayUuids: ReadonlySet<string>,
 ): void {
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.selected_records',
+    'canopy-code.daemon.session_restore.selected_records',
     selectedUuids.size,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.selected_bytes',
+    'canopy-code.daemon.session_restore.selected_bytes',
     selectedRecordBytes(index, selectedUuids),
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.replay_records',
+    'canopy-code.daemon.session_restore.replay_records',
     replayUuids.size,
   );
   addDaemonRequestAttribute(
-    'qwen-code.daemon.session_restore.replay_bytes',
+    'canopy-code.daemon.session_restore.replay_bytes',
     selectedRecordBytes(index, replayUuids),
   );
 }
@@ -2046,11 +2046,11 @@ export class SessionTranscriptReader {
     const filePath = this.getSessionFilePath(sessionId);
     validateRestoreReplaySelection(options.replay);
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.replay_mode',
+      'canopy-code.daemon.session_restore.replay_mode',
       options.replay.kind,
     );
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.index_cache_state',
+      'canopy-code.daemon.session_restore.index_cache_state',
       'fresh',
     );
     let stats: fs.Stats;
@@ -2123,11 +2123,11 @@ export class SessionTranscriptReader {
       }
     }
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.compression_selected',
+      'canopy-code.daemon.session_restore.compression_selected',
       compressionPosition >= 0,
     );
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.legacy_full_model_history',
+      'canopy-code.daemon.session_restore.legacy_full_model_history',
       compressionPosition < 0,
     );
 
@@ -2522,7 +2522,7 @@ export class SessionTranscriptReader {
     const filePath = this.getSessionFilePath(sessionId);
     validateRestoreReplaySelection(options.replay);
     addDaemonRequestAttribute(
-      'qwen-code.daemon.session_restore.replay_mode',
+      'canopy-code.daemon.session_restore.replay_mode',
       options.replay.kind,
     );
     let stats: fs.Stats;
@@ -2544,7 +2544,7 @@ export class SessionTranscriptReader {
         lastUpdated,
         onCacheState: (state) =>
           addDaemonRequestAttribute(
-            'qwen-code.daemon.session_restore.index_cache_state',
+            'canopy-code.daemon.session_restore.index_cache_state',
             state,
           ),
       });
