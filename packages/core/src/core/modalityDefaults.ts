@@ -56,6 +56,12 @@ const MODALITY_PATTERNS: Array<[RegExp, InputModalities]> = [
   [/^qwen3-coder-/, {}],
   // Qwen3.6-35B-A3B (local quant variants) — image + video
   [/^qwen3\.6-35b/, { image: true, video: true }],
+  // Qwen3.8-27B (local NVFP4/GGUF served checkpoints, e.g. RadixArk builds)
+  // — native VL architecture (Qwen3_5ForConditionalGeneration, vision_config
+  // present, language_model_only: false), confirmed by direct image request
+  // against the SGLang server; the served model name has no -vl- marker so
+  // it needs its own entry ahead of the generic qwen fallback below.
+  [/^qwen3\.8-27b/, { image: true, video: true }],
   [/^qwen/, {}],
 
   // -------------------
