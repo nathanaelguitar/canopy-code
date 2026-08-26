@@ -9,6 +9,7 @@ import {
   type Config,
   type AvailableModel as CoreAvailableModel,
   CANOPY_OAUTH_MODELS,
+  CHATGPT_OAUTH_MODELS,
 } from '@canopy-code/canopy-code-core';
 import { t } from '../../i18n/index.js';
 
@@ -116,6 +117,14 @@ export function getAvailableModelsForAuthType(
   switch (authType) {
     case AuthType.CANOPY_OAUTH: {
       return [...getCanopyOAuthModels()];
+    }
+    case AuthType.CHATGPT_OAUTH: {
+      return CHATGPT_OAUTH_MODELS.map((model) => ({
+        id: model.id,
+        label: model.name ?? model.id,
+        description: model.description,
+        isVision: model.capabilities?.vision ?? false,
+      }));
     }
     case AuthType.USE_OPENAI: {
       const openAIModel = getOpenAIAvailableModelFromEnv();

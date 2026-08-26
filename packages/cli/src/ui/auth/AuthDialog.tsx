@@ -40,6 +40,7 @@ type ViewLevel =
   | 'provider-setup';
 
 type MainOption =
+  | 'CHATGPT_LOGIN'
   | 'ALIBABA_MODELSTUDIO'
   | 'THIRD_PARTY_PROVIDERS'
   | 'CUSTOM_PROVIDER';
@@ -49,6 +50,15 @@ type MainOption =
 // ---------------------------------------------------------------------------
 
 const MAIN_ITEMS = [
+  {
+    key: 'CHATGPT_LOGIN',
+    title: t('Sign in with ChatGPT'),
+    label: t('Sign in with ChatGPT'),
+    description: t(
+      'Use your ChatGPT plan (Plus/Pro/Team) via the Codex backend',
+    ),
+    value: 'CHATGPT_LOGIN' as MainOption,
+  },
   {
     key: 'ALIBABA_MODELSTUDIO',
     title: t('Alibaba ModelStudio'),
@@ -122,7 +132,12 @@ export function AuthDialog(): React.JSX.Element {
     auth: { authError },
   } = useUIState();
   const {
-    auth: { closeAuthDialog, handleProviderSubmit, onAuthError },
+    auth: {
+      closeAuthDialog,
+      handleProviderSubmit,
+      handleChatgptSubmit,
+      onAuthError,
+    },
   } = useUIActions();
   const config = useConfig();
   const settings = useSettings();
@@ -228,8 +243,8 @@ export function AuthDialog(): React.JSX.Element {
   // (resolveMetadataKey returns config.id for *any* provider with a static
   // models[], so it can't be used to detect "Alibaba" specifically.)
   const defaultMainIndex = useMemo(() => {
-    if (matchedProvider?.uiGroup === 'third-party') return 1;
-    if (matchedProvider?.uiGroup === 'custom') return 2;
+    if (matchedProvider?.uiGroup === 'third-party') return 2;
+    if (matchedProvider?.uiGroup === 'custom') return 3;
     return 0;
   }, [matchedProvider]);
 
@@ -238,6 +253,9 @@ export function AuthDialog(): React.JSX.Element {
   const handleMainSelect = (value: MainOption) => {
     clearErrors();
     switch (value) {
+      case 'CHATGPT_LOGIN':
+        void handleChatgptSubmit();
+        break;
       case 'ALIBABA_MODELSTUDIO':
         pushView('alibaba-select');
         break;

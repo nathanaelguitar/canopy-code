@@ -80,7 +80,7 @@ export class FileMessageHandler extends BaseMessageHandler {
         projectRoot: rootPath,
         ignoreDirs: ['.git', 'node_modules'],
         useGitignore: true,
-        useQwenignore: false,
+        useCanopyignore: false,
         cache: true,
         cacheTtl: 30000,
         enableRecursiveFileSearch: true,
@@ -394,7 +394,7 @@ export class FileMessageHandler extends BaseMessageHandler {
           if (
             discovery.shouldIgnoreFile(uri.fsPath, {
               respectGitIgnore: true,
-              respectQwenIgnore: false,
+              respectCanopyIgnore: false,
             })
           ) {
             return;

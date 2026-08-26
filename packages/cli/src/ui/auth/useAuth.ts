@@ -9,6 +9,7 @@ import {
   AuthType,
   getErrorMessage,
   logAuth,
+  loginWithChatgpt,
   type Config,
   buildInstallPlan,
   applyProviderInstallPlan,
@@ -16,7 +17,7 @@ import {
   type ProviderSetupInputs,
 } from '@canopy-code/canopy-code-core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { LoadedSettings } from '../../config/settings.js';
+import { SettingScope, type LoadedSettings } from '../../config/settings.js';
 import { createLoadedSettingsAdapter } from '../../config/loadedSettingsAdapter.js';
 import { useCanopyAuth } from '../hooks/use-canopy-auth.js';
 import { AuthState, MessageType } from '../types.js';
@@ -73,6 +74,8 @@ export type AuthController = {
       providerConfig: ProviderConfig,
       inputs: ProviderSetupInputs,
     ) => Promise<void>;
+    /** Run the interactive ChatGPT sign-in and switch to it. */
+    handleChatgptSubmit: () => Promise<void>;
     openAuthDialog: () => void;
     cancelAuthentication: () => void;
   };
@@ -212,6 +215,40 @@ export const useAuthCommand = (
     [settings, config, completeAuthentication, addItem, handleAuthFailure],
   );
 
+  // -- ChatGPT OAuth --------------------------------------------------------
+
+  const handleChatgptSubmit = useCallback(async () => {
+    const protocol = AuthType.CHATGPT_OAUTH;
+    try {
+      setPendingAuthType(protocol);
+      setIsAuthenticating(true);
+      setAuthError(null);
+
+      await loginWithChatgpt(config);
+      settings.setValue(
+        SettingScope.User,
+        'security.auth.selectedType',
+        protocol,
+      );
+      config.getModelsConfig().syncAfterAuthRefresh(protocol);
+      await config.refreshAuth(protocol);
+
+      completeAuthentication();
+
+      const feedbackItem: HistoryItemWithoutId & Record<string, unknown> = {
+        type: MessageType.INFO,
+        text: t(
+          'Successfully signed in with ChatGPT. Use /model to switch models.',
+        ),
+      };
+      addItem(feedbackItem, Date.now());
+
+      logAuth(config, new AuthEvent(protocol, 'manual', 'success'));
+    } catch (error) {
+      handleAuthFailure(error, protocol);
+    }
+  }, [settings, config, completeAuthentication, addItem, handleAuthFailure]);
+
   // -- Dialog open / close / cancel ----------------------------------------
 
   const openAuthDialog = useCallback(() => {
@@ -244,6 +281,7 @@ export const useAuthCommand = (
     const val = process.env['CANOPY_DEFAULT_AUTH_TYPE'];
     const valid = [
       AuthType.CANOPY_OAUTH,
+      AuthType.CHATGPT_OAUTH,
       AuthType.USE_OPENAI,
       AuthType.USE_ANTHROPIC,
       AuthType.USE_GEMINI,
@@ -286,6 +324,7 @@ export const useAuthCommand = (
       onAuthError,
       closeAuthDialog,
       handleProviderSubmit,
+      handleChatgptSubmit,
       openAuthDialog,
       cancelAuthentication,
     }),
@@ -294,6 +333,7 @@ export const useAuthCommand = (
       onAuthError,
       closeAuthDialog,
       handleProviderSubmit,
+      handleChatgptSubmit,
       openAuthDialog,
       cancelAuthentication,
     ],
@@ -311,6 +351,7 @@ export const useAuthCommand = (
     canopyAuthState,
     closeAuthDialog,
     handleProviderSubmit,
+    handleChatgptSubmit,
     openAuthDialog,
     cancelAuthentication,
     state,

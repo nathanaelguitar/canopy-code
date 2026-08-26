@@ -259,6 +259,12 @@ export function validateAuthMethod(
     return null;
   }
 
+  if (authMethod === AuthType.CHATGPT_OAUTH) {
+    // Credentials live in ~/.canopy/chatgpt_auth.json; the generator triggers
+    // the interactive sign-in on first use, so nothing to check here.
+    return null;
+  }
+
   if (authMethod === AuthType.CANOPY_OAUTH) {
     // Canopy OAuth free tier was discontinued on 2026-04-15.
     // Block new OAuth setups; existing cached tokens still work until server rejects them.

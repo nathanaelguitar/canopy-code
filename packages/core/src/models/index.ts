@@ -36,6 +36,8 @@ export {
   PROVIDER_SOURCED_FIELDS,
   CANOPY_OAUTH_ALLOWED_MODELS,
   CANOPY_OAUTH_MODELS,
+  CHATGPT_OAUTH_ALLOWED_MODELS,
+  CHATGPT_OAUTH_MODELS,
 } from './constants.js';
 
 // Model configuration resolver

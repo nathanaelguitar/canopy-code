@@ -18,6 +18,7 @@ export * from './permissions/index.js';
 // Model configuration
 export {
   DEFAULT_CANOPY_MODEL,
+  DEFAULT_CHATGPT_MODEL,
   DEFAULT_CANOPY_FLASH_MODEL,
   DEFAULT_CANOPY_EMBEDDING_MODEL,
   MAINLINE_CODER_MODEL,
@@ -43,6 +44,7 @@ export {
   MODEL_GENERATION_CONFIG_FIELDS,
   type OnModelChangeCallback,
   CANOPY_OAUTH_MODELS,
+  CHATGPT_OAUTH_MODELS,
   resolveModelConfig,
   type ResolvedModelConfig,
   validateModelConfig,
@@ -631,6 +633,7 @@ export * from './utils/sideQuery.js';
 // ============================================================================
 
 export * from './canopy/canopy-oauth2.js';
+export * from './canopy/chatgpt-oauth.js';
 
 // ============================================================================
 // Message Bus Types

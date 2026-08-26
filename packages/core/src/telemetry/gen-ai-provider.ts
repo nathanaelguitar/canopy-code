@@ -9,6 +9,7 @@ export type GenAiOutputType = 'text' | 'json' | 'image' | 'speech';
 export type GenAiAuthType =
   | 'openai'
   | 'canopy-oauth'
+  | 'chatgpt-oauth'
   | 'gemini'
   | 'vertex-ai'
   | 'anthropic';

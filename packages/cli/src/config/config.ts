@@ -956,6 +956,7 @@ export async function parseArguments(): Promise<CliArgs> {
             AuthType.USE_OPENAI,
             AuthType.USE_ANTHROPIC,
             AuthType.CANOPY_OAUTH,
+            AuthType.CHATGPT_OAUTH,
             AuthType.USE_GEMINI,
             AuthType.USE_VERTEX_AI,
           ],

@@ -56,6 +56,7 @@ export interface ContentGenerator {
 export enum AuthType {
   USE_OPENAI = 'openai',
   CANOPY_OAUTH = 'canopy-oauth',
+  CHATGPT_OAUTH = 'chatgpt-oauth',
   USE_GEMINI = 'gemini',
   USE_VERTEX_AI = 'vertex-ai',
   USE_ANTHROPIC = 'anthropic',
@@ -305,6 +306,12 @@ export function validateModelConfig(
     return { valid: true, errors: [] };
   }
 
+  // ChatGPT OAuth doesn't need validation - it uses dynamic tokens stored in
+  // ~/.canopy/chatgpt_auth.json.
+  if (config.authType === AuthType.CHATGPT_OAUTH) {
+    return { valid: true, errors: [] };
+  }
+
   // API key is required for all other auth types
   if (!config.apiKey) {
     if (isStrictModelProvider) {
@@ -542,6 +549,19 @@ export async function createContentGenerator(
         }
         throw new Error(error instanceof Error ? error.message : String(error));
       }
+    } else if (authType === AuthType.CHATGPT_OAUTH) {
+      loadBaseGenerator = async () => {
+        // Triggers interactive browser sign-in the first time (or after the
+        // refresh token has expired), mirroring the canopy-oauth flow.
+        await import('../canopy/chatgpt-oauth.js').then(
+          async ({ ensureChatgptAuthenticated }) =>
+            ensureChatgptAuthenticated(config),
+        );
+        const { createChatgptContentGenerator } = await import(
+          './chatgptContentGenerator/index.js'
+        );
+        return createChatgptContentGenerator(generatorConfig, config);
+      };
     } else if (authType === AuthType.USE_ANTHROPIC) {
       loadBaseGenerator = async () => {
         const { createAnthropicContentGenerator } = await import(

@@ -6,6 +6,7 @@
 
 import {
   DEFAULT_CANOPY_MODEL,
+  DEFAULT_CHATGPT_MODEL,
   MAINLINE_CODER_MODEL,
 } from '../config/models.js';
 
@@ -98,12 +99,51 @@ export const AUTH_ENV_MAPPINGS = {
     baseUrl: [],
     model: [],
   },
+  'chatgpt-oauth': {
+    apiKey: [],
+    baseUrl: [],
+    model: [],
+  },
 } as const satisfies Record<AuthType, AuthEnvMapping>;
 
 export const DEFAULT_MODELS = {
   openai: MAINLINE_CODER_MODEL,
   'canopy-oauth': DEFAULT_CANOPY_MODEL,
+  'chatgpt-oauth': DEFAULT_CHATGPT_MODEL,
 } as Partial<Record<AuthType, string>>;
+
+/**
+ * Hard-coded ChatGPT (Codex backend) models that are always available when
+ * signed in with ChatGPT. These cannot be overridden by user configuration.
+ */
+export const CHATGPT_OAUTH_MODELS: ModelConfig[] = [
+  {
+    id: 'gpt-5.2-codex',
+    name: 'gpt-5.2-codex',
+    description: 'Latest GPT-5.x Codex model on the ChatGPT backend',
+    capabilities: { vision: true },
+  },
+  {
+    id: 'gpt-5.1-codex-max',
+    name: 'gpt-5.1-codex-max',
+    description: 'GPT-5.1 Codex Max — highest-effort reasoning variant',
+    capabilities: { vision: true },
+  },
+  {
+    id: 'gpt-5.1-codex',
+    name: 'gpt-5.1-codex',
+    description: 'GPT-5.1 Codex — balanced coding model',
+    capabilities: { vision: true },
+  },
+];
+
+/**
+ * Derive allowed models from CHATGPT_OAUTH_MODELS for authorization.
+ * This ensures single source of truth (SSOT).
+ */
+export const CHATGPT_OAUTH_ALLOWED_MODELS = CHATGPT_OAUTH_MODELS.map(
+  (model) => model.id,
+) as readonly string[];
 
 /**
  * Hard-coded Canopy OAuth models that are always available.

@@ -20,7 +20,10 @@
 
 import { AuthType } from '../core/contentGenerator.js';
 import type { ContentGeneratorConfig } from '../core/contentGenerator.js';
-import { DEFAULT_CANOPY_MODEL } from '../config/models.js';
+import {
+  DEFAULT_CANOPY_MODEL,
+  DEFAULT_CHATGPT_MODEL,
+} from '../config/models.js';
 import { defaultModalities } from '../core/modalityDefaults.js';
 import { knownTokenLimit } from '../core/tokenLimits.js';
 import {
@@ -41,6 +44,7 @@ import {
   AUTH_ENV_MAPPINGS,
   DEFAULT_MODELS,
   CANOPY_OAUTH_ALLOWED_MODELS,
+  CHATGPT_OAUTH_ALLOWED_MODELS,
   MODEL_GENERATION_CONFIG_FIELDS,
 } from './constants.js';
 import type { ModelConfig as ModelProviderConfig } from './types.js';
@@ -157,6 +161,11 @@ export function resolveModelConfig(
   // Special handling for Canopy OAuth
   if (authType === AuthType.CANOPY_OAUTH) {
     return resolveCanopyOAuthConfig(input, warnings);
+  }
+
+  // Special handling for ChatGPT OAuth
+  if (authType === AuthType.CHATGPT_OAUTH) {
+    return resolveChatgptOAuthConfig(input, warnings);
   }
 
   // Get auth-specific env var mappings.
@@ -365,6 +374,69 @@ function resolveCanopyOAuthConfig(
     authType: AuthType.CANOPY_OAUTH,
     model: resolvedModel,
     apiKey: 'CANOPY_OAUTH_DYNAMIC_TOKEN',
+    proxy,
+    ...generationConfig,
+  };
+
+  return { config, sources, warnings };
+}
+
+/**
+ * Special resolver for ChatGPT OAuth authentication.
+ * Only hard-coded Codex backend models are allowed; tokens are dynamic.
+ */
+function resolveChatgptOAuthConfig(
+  input: ModelConfigSourcesInput,
+  warnings: string[],
+): ModelConfigResolutionResult {
+  const { cli, settings, proxy, modelProvider } = input;
+  const sources: ConfigSources = {};
+
+  const allowedModels = new Set<string>(CHATGPT_OAUTH_ALLOWED_MODELS);
+
+  // Determine requested model
+  const requestedModel = cli?.model || settings?.model;
+  let resolvedModel: string;
+  let modelSource: ConfigSource;
+
+  if (requestedModel && allowedModels.has(requestedModel)) {
+    resolvedModel = requestedModel;
+    modelSource = cli?.model
+      ? cliSource('--model')
+      : settingsSource('model.name');
+  } else {
+    if (requestedModel) {
+      warnings.push(
+        `Warning: Unsupported ChatGPT OAuth model '${requestedModel}', falling back to '${DEFAULT_CHATGPT_MODEL}'.`,
+      );
+    }
+    resolvedModel = DEFAULT_CHATGPT_MODEL;
+    modelSource = defaultSource(`fallback to '${DEFAULT_CHATGPT_MODEL}'`);
+  }
+
+  sources['model'] = modelSource;
+  sources['apiKey'] = computedSource('ChatGPT OAuth dynamic token');
+  sources['authType'] = computedSource('provided by caller');
+
+  if (proxy) {
+    sources['proxy'] = computedSource('Config.getProxy()');
+  }
+
+  // Resolve generation config from settings and modelProvider
+  const generationConfig = resolveGenerationConfig(
+    settings?.generationConfig,
+    modelProvider?.generationConfig,
+    AuthType.CHATGPT_OAUTH,
+    resolvedModel,
+    sources,
+  );
+
+  applyTimeoutEnvOverride(input.env, generationConfig, sources, modelProvider);
+
+  const config: ContentGeneratorConfig = {
+    authType: AuthType.CHATGPT_OAUTH,
+    model: resolvedModel,
+    apiKey: 'CHATGPT_OAUTH_DYNAMIC_TOKEN',
     proxy,
     ...generationConfig,
   };

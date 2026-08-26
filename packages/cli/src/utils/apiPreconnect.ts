@@ -36,6 +36,7 @@ let preconnectInFlight: Promise<void> | undefined;
 const DEFAULT_BASE_URLS: Record<string, string> = {
   openai: 'https://api.openai.com',
   'canopy-oauth': 'https://coding.dashscope.aliyuncs.com',
+  'chatgpt-oauth': 'https://chatgpt.com',
   anthropic: 'https://api.anthropic.com',
   dashscope: 'https://dashscope.aliyuncs.com',
 };
