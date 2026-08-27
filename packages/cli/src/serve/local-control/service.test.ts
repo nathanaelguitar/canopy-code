@@ -91,6 +91,11 @@ describe('LocalControlService', () => {
       }),
     ).toBe(true);
 
+    const retargeted = await service.enable({ target: '/session/current' });
+    expect(new URL(retargeted.url!).pathname).toBe('/session/current');
+    expect(new URL(retargeted.url!).hash).toBe(new URL(first.url!).hash);
+    expect(attached).toHaveLength(1);
+
     await Promise.all([service.disable(), service.disable()]);
     expect(service.active).toBe(false);
     expect(detached).toEqual(attached);

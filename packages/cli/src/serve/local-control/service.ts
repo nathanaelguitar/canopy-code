@@ -167,10 +167,10 @@ export class LocalControlService {
   }
 
   /**
-   * Bring the LAN listener up. Enabling while already active is a no-op that
-   * returns the existing status rather than re-minting: a second scan of the
-   * same QR must keep working, and silently invalidating the token the user is
-   * mid-pairing with would be indistinguishable from a bug.
+   * Bring the LAN listener up. An already-active listener keeps its token and
+   * network binding, but may retarget its pairing URL to the caller's current
+   * session. That lets a second terminal share its own session without
+   * invalidating a phone that is still pairing through the original URL.
    */
   async enable(
     options: LocalControlEnableOptions = {},
@@ -181,7 +181,19 @@ export class LocalControlService {
   async #enable(
     options: LocalControlEnableOptions,
   ): Promise<LocalControlStatus> {
-    if (this.active) return this.status();
+    if (this.active) {
+      if (options.target && this.#token && this.#selected) {
+        const scheme = this.#deps.tlsPaths ? 'https' : 'http';
+        const authority = `${this.#selected.address}:${this.#deps.getPort()}`;
+        this.#url = buildPairedUrl(
+          scheme,
+          authority,
+          this.#token.secret,
+          options.target,
+        );
+      }
+      return this.status();
+    }
 
     const network = options.network ?? 'lan';
     const selected =

@@ -28,6 +28,7 @@ interface LocalControlEnableResponse {
  */
 async function readPairingUrlFromLog(
   logPath: string,
+  sessionId: string,
 ): Promise<string | undefined> {
   const deadline = Date.now() + 3000;
   while (Date.now() < deadline) {
@@ -37,8 +38,18 @@ async function readPairingUrlFromLog(
     } catch {
       return undefined;
     }
-    const match = text.match(/canopy serve: Local Control pairing URL: (\S+)/);
-    if (match) return match[1];
+    const urls = text.matchAll(
+      /canopy serve: Local Control pairing URL: (\S+)/g,
+    );
+    for (const match of Array.from(urls).reverse()) {
+      try {
+        if (new URL(match[1]).pathname === `/session/${sessionId}`) {
+          return match[1];
+        }
+      } catch {
+        // Ignore malformed diagnostic lines and keep looking for this session.
+      }
+    }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   return undefined;
@@ -139,7 +150,10 @@ export async function enableRemoteControl(
   let pairingUrl = response.url;
   if (!pairingUrl && response.urlRedacted) {
     pairingUrl = daemonSession.daemonLogPath
-      ? await readPairingUrlFromLog(daemonSession.daemonLogPath)
+      ? await readPairingUrlFromLog(
+          daemonSession.daemonLogPath,
+          daemonSession.sessionId,
+        )
       : undefined;
   }
   if (!pairingUrl) {
