@@ -101,6 +101,7 @@ import {
   UPDATE_COMPLETE_EXIT_CODE,
 } from './utils/processUtils.js';
 import { getInstallationInfo } from './utils/installationInfo.js';
+import { attachDaemonSession } from './ui/daemon-attach/attach-daemon-session.js';
 
 const debugLogger = createDebugLogger('STARTUP');
 
@@ -394,6 +395,10 @@ export async function main() {
   markAcpStartup('argsParseEnd');
   profileCheckpoint('after_parse_arguments');
   const isAcpMode = argv.acp || argv.experimentalAcp;
+  // Stage A is deliberately opt-in. Stage C will make this the interactive
+  // default once terminal+phone co-driving has shipped and been exercised.
+  const daemonAttachEnabled =
+    process.env['CANOPY_CODE_DAEMON_ATTACH'] === '1' && !isAcpMode;
   const privateAcpChildEnv =
     isAcpMode && privateAcpParentCapability !== undefined
       ? {
@@ -1169,6 +1174,13 @@ export async function main() {
       // startInteractiveUI) and so the first paint uses the refined theme
       // when the probe finishes in time.
       await themeAutoDetectionComplete;
+      const daemonSession = daemonAttachEnabled
+        ? await attachDaemonSession({
+            workspaceCwd: process.cwd(),
+            sessionId: config.getSessionId(),
+            resume: argv.continue || argv.resume !== undefined,
+          })
+        : undefined;
       const { startInteractiveUI } = await import('./ui/startInteractiveUI.js');
       await startInteractiveUI(
         config,
@@ -1179,6 +1191,7 @@ export async function main() {
         {
           postRenderConnectIde: deferIdeConnection,
           extensionRefreshState,
+          daemonSession,
         },
       );
       // Clean up corruption env vars so subsequent relaunch children

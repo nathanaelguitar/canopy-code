@@ -166,6 +166,8 @@ import {
   useGeminiStream,
   type CancelSubmitInfo,
 } from './hooks/useGeminiStream.js';
+import { useDaemonStream } from './daemon-attach/use-daemon-stream.js';
+import type { DaemonAttachedSession } from './daemon-attach/attach-daemon-session.js';
 import type { TrackedExecutingToolCall } from './hooks/useReactToolScheduler.js';
 import { useVim } from './hooks/vim.js';
 import { isBtwCommand, isSlashCommand } from './utils/commandUtils.js';
@@ -633,6 +635,8 @@ interface AppContainerProps {
    * stays write-free (static remount bump only), matching pre-PR behavior.
    */
   repaintViewport?: () => void;
+  /** Immutable for this mounted TUI: execution lives in the daemon. */
+  daemonSession?: DaemonAttachedSession;
 }
 
 /**
@@ -2124,23 +2128,7 @@ export const AppContainer = (props: AppContainerProps) => {
     [],
   );
 
-  const {
-    streamingState,
-    submitQuery,
-    initError,
-    pendingHistoryItems: pendingGeminiHistoryItems,
-    clearPendingState,
-    thought,
-    cancelOngoingRequest,
-    preemptGoalTurn,
-    retryLastPrompt,
-    handleApprovalModeChange,
-    activePtyId,
-    loopDetectionConfirmationRequest,
-    pendingToolCalls,
-    streamingResponseLengthRef,
-    isReceivingContent,
-  } = useGeminiStream(
+  const geminiStream = useGeminiStream(
     config.getGeminiClient(),
     historyManager.history,
     historyManager.addItem,
@@ -2167,6 +2155,30 @@ export const AppContainer = (props: AppContainerProps) => {
     midTurnRestoreRef,
     goalQueueRef,
   );
+  // Always mount this hook so normal and daemon-attached renders keep the
+  // same hook order. Without a session it has no SSE connection or effects.
+  const daemonStream = useDaemonStream(
+    props.daemonSession,
+    historyManager.addItem,
+  );
+
+  const {
+    streamingState,
+    submitQuery,
+    initError,
+    pendingHistoryItems: pendingGeminiHistoryItems,
+    clearPendingState,
+    thought,
+    cancelOngoingRequest,
+    preemptGoalTurn,
+    retryLastPrompt,
+    handleApprovalModeChange,
+    activePtyId,
+    loopDetectionConfirmationRequest,
+    pendingToolCalls,
+    streamingResponseLengthRef,
+    isReceivingContent,
+  } = props.daemonSession ? daemonStream : geminiStream;
   cancelOngoingRequestRef.current = cancelOngoingRequest;
   clearPendingStateRef.current = clearPendingState;
 
@@ -2731,6 +2743,10 @@ export const AppContainer = (props: AppContainerProps) => {
         !isProcessing &&
         isSlashCommand(submittedValue)
       ) {
+        if (props.daemonSession) {
+          void handleSlashCommand(submittedValue);
+          return;
+        }
         void Promise.resolve(
           submitQuery(
             submittedValue,
@@ -2760,6 +2776,7 @@ export const AppContainer = (props: AppContainerProps) => {
       settings.merged.ui?.disableWorkflowKeywordTrigger,
       setBufferText,
       vimEnabled,
+      props.daemonSession,
     ],
   );
 

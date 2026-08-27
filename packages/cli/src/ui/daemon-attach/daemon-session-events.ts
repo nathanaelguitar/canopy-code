@@ -83,6 +83,7 @@ export async function streamDaemonSessionEvents(
       );
       url.searchParams.set('clientId', options.clientId);
       const headers: Record<string, string> = {};
+      headers['X-Canopy-Client-Id'] = options.clientId;
       if (lastEventId !== undefined) {
         headers['Last-Event-ID'] = String(lastEventId);
       }
@@ -152,9 +153,21 @@ export function submitDaemonPrompt(
   clientId: string,
   prompt: Array<{ type: 'text'; text: string }>,
 ): Promise<unknown> {
-  return postJson(baseUrl, `/session/${encodeURIComponent(sessionId)}/prompt`, {
-    clientId,
-    prompt,
+  return fetch(
+    new URL(`/session/${encodeURIComponent(sessionId)}/prompt`, baseUrl),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Canopy-Client-Id': clientId,
+      },
+      body: JSON.stringify({ clientId, prompt }),
+    },
+  ).then(async (res) => {
+    const json = await res.json().catch(() => undefined);
+    if (!res.ok)
+      throw { status: res.status, body: json } satisfies DaemonRequestError;
+    return json;
   });
 }
 

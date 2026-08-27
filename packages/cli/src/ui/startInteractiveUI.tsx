@@ -55,6 +55,7 @@ import { sanitizeTerminalText } from './utils/textUtils.js';
 import { startPostRenderPrefetches } from '../startup/startup-prefetch.js';
 import { computeWindowTitle, writeTerminalTitle } from './utils/windowTitle.js';
 import { getCliVersion } from '../utils/version.js';
+import type { DaemonAttachedSession } from './daemon-attach/attach-daemon-session.js';
 
 const debugLogger = createDebugLogger('STARTUP');
 
@@ -67,6 +68,7 @@ export interface StartInteractiveUIOptions {
   postRenderConnectIde?: boolean;
   postRenderInitializeTelemetry?: boolean;
   extensionRefreshState?: ExtensionRefreshState;
+  daemonSession?: DaemonAttachedSession;
 }
 
 export async function startInteractiveUI(
@@ -204,6 +206,7 @@ export async function startInteractiveUI(
                         initialUseVirtualViewport={useVP}
                         extensionRefreshState={options.extensionRefreshState}
                         repaintViewport={resizeReflow.repaint}
+                        daemonSession={options.daemonSession}
                       />
                     </BackgroundTaskViewProvider>
                   </AgentViewProvider>

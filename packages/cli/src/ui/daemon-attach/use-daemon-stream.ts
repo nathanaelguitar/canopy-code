@@ -58,11 +58,12 @@ export interface UseDaemonStreamExtra {
 }
 
 export function useDaemonStream(
-  baseUrl: string,
-  sessionId: string,
-  clientId: string,
+  session: { baseUrl: string; sessionId: string; clientId: string } | undefined,
   addItem: UseHistoryManagerReturn['addItem'],
 ): ReturnType<typeof useGeminiStream> & UseDaemonStreamExtra {
+  const baseUrl = session?.baseUrl;
+  const sessionId = session?.sessionId;
+  const clientId = session?.clientId;
   const [streamingState, setStreamingState] = useState<StreamingState>(
     StreamingState.Idle,
   );
@@ -97,23 +98,32 @@ export function useDaemonStream(
       switch (evt.event) {
         case 'session_update': {
           const payload = evt.data as {
+            promptId?: string;
+            data?: {
+              update?: {
+                sessionUpdate?: string;
+                content?: { type: string; text?: string };
+                toolCallId?: string;
+              };
+            };
             update?: {
               sessionUpdate?: string;
               content?: { type: string; text?: string };
               toolCallId?: string;
             };
           };
-          const kind = payload.update?.sessionUpdate;
-          const text = payload.update?.content?.text;
+          // The daemon's typed SSE envelope carries the ACP update under
+          // `data.update`; tolerate the older flat shape for compatibility.
+          const update = payload.data?.update ?? payload.update;
+          const kind = update?.sessionUpdate;
+          const text = update?.content?.text;
           if (kind === 'user_message_chunk') {
-            // Echo of our own submission (or the phone's) — already shown
-            // locally when we submitted it; the daemon echoes it back so
-            // every attached client (including ones that didn't submit it)
-            // can render it. Only render it here when it did NOT originate
-            // from this client, to avoid a double render of our own turns.
-            // v1: render unconditionally is simpler and only doubles the
-            // *local submitter's* own message, which is visually harmless
-            // (it's the same text) — revisit if that reads as a bug.
+            // The local submitter already renders its text optimistically;
+            // every other co-driver (including the phone) must appear in the
+            // terminal transcript from this daemon echo.
+            if (text && payload.promptId !== activePromptIdRef.current) {
+              addItem({ type: 'user', text }, Date.now());
+            }
             break;
           }
           if (kind === 'agent_message_chunk' && text) {
@@ -163,6 +173,7 @@ export function useDaemonStream(
           setStreamingState(StreamingState.Idle);
           break;
         }
+        case 'turn_complete':
         case 'turn_finished':
         case 'stop': {
           commitPendingText();
@@ -177,6 +188,7 @@ export function useDaemonStream(
   );
 
   useEffect(() => {
+    if (!baseUrl || !sessionId || !clientId) return;
     const controller = new AbortController();
     void streamDaemonSessionEvents({
       baseUrl,
@@ -191,6 +203,7 @@ export function useDaemonStream(
 
   const submitQuery = useCallback(
     async (query: PartListUnion) => {
+      if (!baseUrl || !sessionId || !clientId) return;
       const text =
         typeof query === 'string'
           ? query
@@ -234,6 +247,7 @@ export function useDaemonStream(
         | { outcome: 'selected'; optionId: string }
         | { outcome: 'cancelled' },
     ) => {
+      if (!baseUrl || !sessionId) return;
       await answerDaemonPermission(baseUrl, sessionId, requestId, outcome);
       setPendingPermission((current) =>
         current?.requestId === requestId ? undefined : current,
