@@ -1791,6 +1791,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       experimentalLsp: undefined,
       channel: undefined,
       chatRecording: undefined,
+      remoteControl: undefined,
       sessionId: undefined,
       fallbackModel: undefined,
     });
@@ -1917,6 +1918,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       experimentalLsp: undefined,
       channel: undefined,
       chatRecording: undefined,
+      remoteControl: undefined,
       sessionId: undefined,
       fallbackModel: undefined,
     });
@@ -2042,6 +2044,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       experimentalLsp: undefined,
       channel: undefined,
       chatRecording: undefined,
+      remoteControl: undefined,
       sessionId: undefined,
       fallbackModel: undefined,
     });
@@ -2163,6 +2166,7 @@ describe('gemini.tsx main function kitty protocol', () => {
       experimentalLsp: undefined,
       channel: undefined,
       chatRecording: undefined,
+      remoteControl: undefined,
       sessionId: undefined,
       fallbackModel: undefined,
     });

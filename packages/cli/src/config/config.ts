@@ -192,6 +192,11 @@ export interface CliArgs {
    * so --continue and --resume would not take effect.
    */
   chatRecording: boolean | undefined;
+  /**
+   * Run this interactive session on the local daemon (Stage C default-on).
+   * Undefined means "use the settings default" — see resolvedRemoteControl.
+   */
+  remoteControl: boolean | undefined;
   /** Resume the most recent session for the current project */
   continue: boolean | undefined;
   /** Resume a specific session by its ID */
@@ -654,6 +659,11 @@ export async function parseArguments(): Promise<CliArgs> {
       type: 'boolean',
       description:
         'Enable chat recording to disk. If false, chat history is not saved and --continue/--resume will not work.',
+    })
+    .option('remote-control', {
+      type: 'boolean',
+      description:
+        'Run this interactive session on the local canopy serve daemon so it can be co-driven from the Web Shell or /remote-control. On by default for interactive sessions; use --no-remote-control to keep this session local-only. Never applies to --acp or non-interactive runs regardless of this setting.',
     })
     .command('$0 [query..]', 'Launch Canopy Code CLI', (yargsInstance: Argv) =>
       yargsInstance

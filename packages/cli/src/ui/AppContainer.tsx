@@ -2183,6 +2183,45 @@ export const AppContainer = (props: AppContainerProps) => {
   cancelOngoingRequestRef.current = cancelOngoingRequest;
   clearPendingStateRef.current = clearPendingState;
 
+  // Stage C: attempt Tailscale pairing automatically once per mount when
+  // this session is daemon-attached. Unlike the explicit /remote-control
+  // command, a missing tailnet interface is the expected common case (most
+  // sessions won't have Tailscale installed) and must stay silent rather
+  // than greet every session start with an error.
+  const daemonSessionForAutoRemoteControl = props.daemonSession;
+  useEffect(() => {
+    if (!daemonSessionForAutoRemoteControl) return;
+    let cancelled = false;
+    void (async () => {
+      const { enableRemoteControl } = await import(
+        './daemon-attach/enable-remote-control.js'
+      );
+      const workspaceName =
+        config.getWorkingDir()?.split('/').pop() ?? 'canopy session';
+      const outcome = await enableRemoteControl(
+        daemonSessionForAutoRemoteControl,
+        workspaceName,
+      );
+      if (cancelled || outcome.status !== 'enabled') return;
+      const lines = [
+        'Remote Control is on for this session. Scan from any device on your tailnet:',
+        '',
+        outcome.pairingUrl,
+      ];
+      if (outcome.qrText) lines.push('', outcome.qrText);
+      historyManager.addItem(
+        { type: 'info', text: lines.join('\n') },
+        Date.now(),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally once per mount: daemonSessionForAutoRemoteControl is
+    // immutable for the life of this component (see AppContainerProps).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [daemonSessionForAutoRemoteControl]);
+
   // Now that streamingState is available, keep isIdleRef in sync and
   // flush any deferred update notifications when the model finishes responding.
   isIdleRef.current = streamingState === StreamingState.Idle;

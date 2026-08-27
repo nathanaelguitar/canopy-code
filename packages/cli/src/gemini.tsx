@@ -395,10 +395,6 @@ export async function main() {
   markAcpStartup('argsParseEnd');
   profileCheckpoint('after_parse_arguments');
   const isAcpMode = argv.acp || argv.experimentalAcp;
-  // Stage A is deliberately opt-in. Stage C will make this the interactive
-  // default once terminal+phone co-driving has shipped and been exercised.
-  const daemonAttachEnabled =
-    process.env['CANOPY_CODE_DAEMON_ATTACH'] === '1' && !isAcpMode;
   const privateAcpChildEnv =
     isAcpMode && privateAcpParentCapability !== undefined
       ? {
@@ -437,6 +433,15 @@ export async function main() {
     ? createMinimalSettings()
     : loadSettings();
   markAcpStartup('settingsLoadEnd');
+  // Stage C default: interactive sessions run daemon-attached unless
+  // explicitly opted out. --acp and non-interactive runs are gated at their
+  // own call site (only the interactive branch ever calls
+  // attachDaemonSession) so this flag alone can't accidentally spawn a
+  // daemon for a script or an ACP-spawned child, regardless of settings.
+  // Precedence mirrors chat-recording: CLI flag > settings file > default.
+  const daemonAttachEnabled =
+    !isAcpMode &&
+    (argv.remoteControl ?? settings.merged.general?.remoteControl ?? true);
 
   // Propagate corruption state to child process via env vars so
   // relaunchAppInChildProcess() doesn't lose the marker.

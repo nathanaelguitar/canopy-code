@@ -692,6 +692,16 @@ const SETTINGS_SCHEMA = {
           'Enable saving chat history to disk. Disabling this will also prevent --continue and --resume from working.',
         showInDialog: false,
       },
+      remoteControl: {
+        type: 'boolean',
+        label: 'Remote Control',
+        category: 'General',
+        requiresRestart: true,
+        default: true,
+        description:
+          'Run interactive sessions on the local canopy serve daemon so they can be co-driven from the Web Shell or /remote-control. Disabling this keeps sessions local-only (--acp and non-interactive runs are never affected either way).',
+        showInDialog: false,
+      },
       defaultFileEncoding: {
         type: 'enum',
         label: 'Default File Encoding',
