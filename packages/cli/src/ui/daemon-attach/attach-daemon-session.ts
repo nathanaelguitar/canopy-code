@@ -11,6 +11,14 @@ export interface DaemonAttachedSession {
   baseUrl: string;
   sessionId: string;
   clientId: string;
+  /**
+   * Present only when this process spawned the daemon (unknown on reuse).
+   * The daemon's stdout/stderr stay bound to this file for its whole
+   * lifetime, which is where to find anything printed after startup that
+   * an HTTP response won't carry for an unauthenticated caller — e.g. the
+   * Local Control pairing URL (see ensure-workspace-daemon.ts).
+   */
+  daemonLogPath?: string;
 }
 
 async function post(
@@ -67,5 +75,10 @@ export async function attachDaemonSession(options: {
   // later SSE and mutation requests.
   const registeredClientId =
     typeof result['clientId'] === 'string' ? result['clientId'] : clientId;
-  return { baseUrl: daemon.baseUrl, sessionId, clientId: registeredClientId };
+  return {
+    baseUrl: daemon.baseUrl,
+    sessionId,
+    clientId: registeredClientId,
+    daemonLogPath: daemon.logPath,
+  };
 }

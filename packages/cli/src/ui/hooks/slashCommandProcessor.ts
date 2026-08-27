@@ -17,6 +17,7 @@ import { type PartListUnion } from '@google/genai';
 import process from 'node:process';
 import type { UseHistoryManagerReturn } from './useHistoryManager.js';
 import type { ArenaDialogType } from './useArenaCommand.js';
+import type { DaemonAttachedSession } from '../daemon-attach/attach-daemon-session.js';
 import {
   type Logger,
   type Config,
@@ -230,6 +231,7 @@ export const useSlashCommandProcessor = (
   updateItem: UseHistoryManagerReturn['updateItem'],
   setSessionName?: (name: string | null) => void,
   extensionRefreshState?: ExtensionRefreshState,
+  daemonSession?: DaemonAttachedSession,
 ) => {
   const fallbackExtensionRefreshStateRef = useRef<ExtensionRefreshState | null>(
     null,
@@ -513,6 +515,7 @@ export const useSlashCommandProcessor = (
         settings,
         logger,
         extensionRefreshState: activeExtensionRefreshState,
+        daemonSession,
       },
       ui: {
         get history() {
@@ -578,6 +581,7 @@ export const useSlashCommandProcessor = (
       extensionsUpdateState,
       isIdleRef,
       activeExtensionRefreshState,
+      daemonSession,
     ],
   );
 

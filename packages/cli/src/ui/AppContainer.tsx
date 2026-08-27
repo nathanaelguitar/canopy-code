@@ -1890,6 +1890,7 @@ export const AppContainer = (props: AppContainerProps) => {
     historyManager.updateItem,
     setSessionName,
     extensionRefreshState,
+    props.daemonSession,
   );
 
   // onDebugMessage should log to debug logfile, not update footer debugMessage

@@ -11,6 +11,11 @@ import {
   NoLanInterfaceError,
   UnknownLanInterfaceError,
 } from '../local-control/lan-interfaces.js';
+import {
+  AmbiguousTailscaleInterfaceError,
+  NoTailscaleInterfaceError,
+  UnknownTailscaleInterfaceError,
+} from '../local-control/tailscale-interface.js';
 import { listenerIdentityOf } from '../local-control/listener-identity.js';
 import { isLoopbackBind } from '../loopback-binds.js';
 import {
@@ -150,6 +155,7 @@ export function registerWorkspaceLocalControlRoutes(
       const body = (deps.safeBody(req) ?? {}) as {
         address?: unknown;
         target?: unknown;
+        network?: unknown;
       };
       try {
         const ui = await withUiData(
@@ -157,6 +163,7 @@ export function registerWorkspaceLocalControlRoutes(
             address:
               typeof body.address === 'string' ? body.address : undefined,
             target: typeof body.target === 'string' ? body.target : undefined,
+            network: body.network === 'tailscale' ? 'tailscale' : undefined,
           }),
         );
         if (!requestWasAuthenticated(req) && ui.url) {
@@ -222,6 +229,22 @@ function sendEnableError(res: Response, error: unknown): void {
       code: error.code,
       interfaces: listLanCandidates(),
     });
+    return;
+  }
+  if (error instanceof AmbiguousTailscaleInterfaceError) {
+    res.status(409).json({
+      error: error.message,
+      code: error.code,
+      interfaces: error.candidates,
+    });
+    return;
+  }
+  if (error instanceof NoTailscaleInterfaceError) {
+    res.status(409).json({ error: error.message, code: error.code });
+    return;
+  }
+  if (error instanceof UnknownTailscaleInterfaceError) {
+    res.status(409).json({ error: error.message, code: error.code });
     return;
   }
   if (error instanceof InvalidLocalControlTargetError) {

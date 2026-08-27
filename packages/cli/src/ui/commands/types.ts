@@ -5,6 +5,7 @@
  */
 
 import type { MutableRefObject, ReactNode } from 'react';
+import type { DaemonAttachedSession } from '../daemon-attach/attach-daemon-session.js';
 import type { Content, PartListUnion } from '@google/genai';
 import type {
   Config,
@@ -54,6 +55,8 @@ export interface CommandContext {
     settings: LoadedSettings;
     logger: Logger | null;
     extensionRefreshState?: ExtensionRefreshState;
+    /** Set only when this interactive session is daemon-attached (Stage A). */
+    daemonSession?: DaemonAttachedSession;
   };
   // UI state and history management
   ui: {

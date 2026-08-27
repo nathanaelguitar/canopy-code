@@ -43,6 +43,18 @@ export interface EnsureWorkspaceDaemonResult {
   port: number;
   /** True if this call spawned the daemon; false if an existing one was reused. */
   spawned: boolean;
+  /**
+   * Path to the daemon's stdout/stderr log, present only when this call
+   * spawned the daemon (unknown on reuse in v1 — no daemon registry exists
+   * to look it up by workspace). The daemon's stdio stays bound to this
+   * file for its entire lifetime (Node's spawn redirection isn't just for
+   * startup), so it's where to find anything the daemon prints later that
+   * an HTTP response won't carry for an unauthenticated caller — e.g. the
+   * Local Control pairing URL, which `/workspace/local-control/enable`
+   * deliberately withholds from unauthenticated response bodies and prints
+   * here instead (see workspace-local-control.ts's `presentStatus`).
+   */
+  logPath?: string;
 }
 
 export class DaemonSpawnTimeoutError extends Error {
@@ -150,6 +162,7 @@ function spawnDaemon(
         baseUrl: `http://127.0.0.1:${match[1]}`,
         port: Number(match[1]),
         spawned: true,
+        logPath,
       });
     }, 100);
 

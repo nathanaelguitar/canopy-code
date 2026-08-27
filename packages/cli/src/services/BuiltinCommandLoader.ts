@@ -57,6 +57,7 @@ import { trustCommand } from '../ui/commands/trustCommand.js';
 import { quitCommand } from '../ui/commands/quitCommand.js';
 import { recapCommand } from '../ui/commands/recapCommand.js';
 import { reloadPluginsCommand } from '../ui/commands/reload-plugins-command.js';
+import { remoteControlCommand } from '../ui/commands/remote-control-command.js';
 import { renameCommand } from '../ui/commands/renameCommand.js';
 import { restoreCommand } from '../ui/commands/restoreCommand.js';
 import { resumeCommand } from '../ui/commands/resumeCommand.js';
@@ -164,6 +165,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       quitCommand,
       recapCommand,
       reloadPluginsCommand,
+      remoteControlCommand,
       renameCommand,
       restoreCommand(this.config),
       resumeCommand,
