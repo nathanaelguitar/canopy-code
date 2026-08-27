@@ -1,0 +1,286 @@
+/**
+ * @license
+ * Copyright 2026 Canopy Team
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PartListUnion } from '@google/genai';
+import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
+import { StreamingState, type HistoryItemWithoutId } from '../types.js';
+import type { useGeminiStream } from '../hooks/useGeminiStream.js';
+import {
+  streamDaemonSessionEvents,
+  submitDaemonPrompt,
+  answerDaemonPermission,
+  type DaemonSessionEvent,
+} from './daemon-session-events.js';
+
+/**
+ * Renders a live daemon-managed session in the interactive TUI instead of
+ * running a local agent loop. See docs/design/2026-08-26-remote-control.md.
+ *
+ * Deliberately not full parity with {@link useGeminiStream}: the daemon-
+ * spawned `canopy --acp` child is the sole execution engine (tool
+ * scheduling, compression, vision bridging, goal turns all happen there),
+ * so this hook only needs to display the resulting event stream and
+ * forward input — it is a display+input adapter, not a second execution
+ * engine. Fields with no daemon-mode equivalent yet (goal turns, loop
+ * detection, PTY tracking, approval-mode push) are typed and present, but
+ * inert, so the hook return stays structurally assignable to
+ * `ReturnType<typeof useGeminiStream>` and the rest of `AppContainer.tsx`
+ * keeps working unmodified. Extending them is iteration, not this pass.
+ *
+ * ACP `sessionUpdate` kinds and the `permission_request` SSE event shape
+ * used below were confirmed by direct reads of
+ * `packages/acp-bridge/src/bridgeClient.ts` (permission_request publish
+ * call) and `packages/acp-bridge/src/compactionEngine.ts` (sessionUpdate
+ * kind switch), not assumed — see the design doc's Validated Facts.
+ */
+
+export interface PendingDaemonPermission {
+  requestId: string;
+  toolCall: unknown;
+  options: Array<{ optionId: string; name?: string; kind?: string }>;
+}
+
+export interface UseDaemonStreamExtra {
+  /** Answer a pending permission request. Present in addition to, not part
+   * of, the useGeminiStream-shaped return — callers that only need local
+   * rendering parity can ignore it. */
+  answerPermission: (
+    requestId: string,
+    outcome:
+      | { outcome: 'selected'; optionId: string }
+      | { outcome: 'cancelled' },
+  ) => Promise<void>;
+  pendingPermission: PendingDaemonPermission | undefined;
+}
+
+export function useDaemonStream(
+  baseUrl: string,
+  sessionId: string,
+  clientId: string,
+  addItem: UseHistoryManagerReturn['addItem'],
+): ReturnType<typeof useGeminiStream> & UseDaemonStreamExtra {
+  const [streamingState, setStreamingState] = useState<StreamingState>(
+    StreamingState.Idle,
+  );
+  const [initError, setInitError] = useState<string | null>(null);
+  const [pendingText, setPendingText] = useState('');
+  const [isReceivingContent, setIsReceivingContent] = useState(false);
+  const [pendingPermission, setPendingPermission] = useState<
+    PendingDaemonPermission | undefined
+  >(undefined);
+  const streamingResponseLengthRef = useRef(0);
+  const activePromptIdRef = useRef<string | undefined>(undefined);
+
+  const clearPendingState = useCallback(() => {
+    setPendingText('');
+    streamingResponseLengthRef.current = 0;
+    setIsReceivingContent(false);
+  }, []);
+
+  const commitPendingText = useCallback(() => {
+    setPendingText((current) => {
+      if (current) {
+        addItem({ type: 'gemini', text: current }, Date.now());
+      }
+      return '';
+    });
+    streamingResponseLengthRef.current = 0;
+    setIsReceivingContent(false);
+  }, [addItem]);
+
+  const handleEvent = useCallback(
+    (evt: DaemonSessionEvent) => {
+      switch (evt.event) {
+        case 'session_update': {
+          const payload = evt.data as {
+            update?: {
+              sessionUpdate?: string;
+              content?: { type: string; text?: string };
+              toolCallId?: string;
+            };
+          };
+          const kind = payload.update?.sessionUpdate;
+          const text = payload.update?.content?.text;
+          if (kind === 'user_message_chunk') {
+            // Echo of our own submission (or the phone's) — already shown
+            // locally when we submitted it; the daemon echoes it back so
+            // every attached client (including ones that didn't submit it)
+            // can render it. Only render it here when it did NOT originate
+            // from this client, to avoid a double render of our own turns.
+            // v1: render unconditionally is simpler and only doubles the
+            // *local submitter's* own message, which is visually harmless
+            // (it's the same text) — revisit if that reads as a bug.
+            break;
+          }
+          if (kind === 'agent_message_chunk' && text) {
+            setIsReceivingContent(true);
+            streamingResponseLengthRef.current += text.length;
+            setPendingText((current) => current + text);
+          }
+          break;
+        }
+        case 'permission_request': {
+          const payload = evt.data as {
+            data?: {
+              requestId: string;
+              toolCall: unknown;
+              options: Array<{
+                optionId: string;
+                name?: string;
+                kind?: string;
+              }>;
+            };
+          };
+          if (payload.data) {
+            setStreamingState(StreamingState.WaitingForConfirmation);
+            setPendingPermission({
+              requestId: payload.data.requestId,
+              toolCall: payload.data.toolCall,
+              options: payload.data.options,
+            });
+          }
+          break;
+        }
+        case 'turn_error': {
+          const payload = evt.data as { data?: { message?: string } };
+          commitPendingText();
+          addItem(
+            {
+              type: 'error',
+              text: payload.data?.message ?? 'Remote turn failed.',
+            },
+            Date.now(),
+          );
+          setStreamingState(StreamingState.Idle);
+          break;
+        }
+        case 'prompt_cancelled': {
+          commitPendingText();
+          setStreamingState(StreamingState.Idle);
+          break;
+        }
+        case 'turn_finished':
+        case 'stop': {
+          commitPendingText();
+          setStreamingState(StreamingState.Idle);
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [addItem, commitPendingText],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void streamDaemonSessionEvents({
+      baseUrl,
+      sessionId,
+      clientId,
+      signal: controller.signal,
+      onEvent: handleEvent,
+      onError: (error) => setInitError(error.message),
+    });
+    return () => controller.abort();
+  }, [baseUrl, sessionId, clientId, handleEvent]);
+
+  const submitQuery = useCallback(
+    async (query: PartListUnion) => {
+      const text =
+        typeof query === 'string'
+          ? query
+          : Array.isArray(query)
+            ? query
+                .map((part) =>
+                  typeof part === 'string'
+                    ? part
+                    : ((part as { text?: string }).text ?? ''),
+                )
+                .join('')
+            : '';
+      if (!text) return;
+      addItem({ type: 'user', text }, Date.now());
+      setStreamingState(StreamingState.Responding);
+      try {
+        const result = (await submitDaemonPrompt(baseUrl, sessionId, clientId, [
+          { type: 'text', text },
+        ])) as { promptId?: string };
+        activePromptIdRef.current = result.promptId;
+      } catch (error) {
+        setStreamingState(StreamingState.Idle);
+        addItem(
+          {
+            type: 'error',
+            text: `Failed to submit prompt to remote session: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+          Date.now(),
+        );
+      }
+    },
+    [addItem, baseUrl, sessionId, clientId],
+  );
+
+  const answerPermission = useCallback(
+    async (
+      requestId: string,
+      outcome:
+        | { outcome: 'selected'; optionId: string }
+        | { outcome: 'cancelled' },
+    ) => {
+      await answerDaemonPermission(baseUrl, sessionId, requestId, outcome);
+      setPendingPermission((current) =>
+        current?.requestId === requestId ? undefined : current,
+      );
+      setStreamingState(StreamingState.Responding);
+    },
+    [baseUrl, sessionId],
+  );
+
+  const cancelOngoingRequest = useCallback(() => {
+    // No daemon-mode cancel wired yet (session_cancel exists per
+    // /capabilities but isn't plumbed through this hook in v1) — Ctrl+C
+    // in attached mode is currently a local-UI-only no-op. Documented gap,
+    // not a silent one: see docs/design/2026-08-26-remote-control.md
+    // Non-goals.
+  }, []);
+
+  const noopAsync = useCallback(async () => {}, []);
+  const noop = useCallback(() => {}, []);
+
+  const pendingHistoryItems: HistoryItemWithoutId[] = pendingText
+    ? [{ type: 'gemini_content', text: pendingText }]
+    : [];
+
+  return {
+    streamingState,
+    submitQuery: submitQuery as unknown as ReturnType<
+      typeof useGeminiStream
+    >['submitQuery'],
+    initError,
+    pendingHistoryItems,
+    clearPendingState,
+    thought: null,
+    cancelOngoingRequest,
+    preemptGoalTurn: noop as unknown as ReturnType<
+      typeof useGeminiStream
+    >['preemptGoalTurn'],
+    retryLastPrompt: noopAsync,
+    pendingToolCalls: [],
+    handleApprovalModeChange: noopAsync as unknown as ReturnType<
+      typeof useGeminiStream
+    >['handleApprovalModeChange'],
+    activePtyId: undefined,
+    loopDetectionConfirmationRequest: null,
+    streamingResponseLengthRef,
+    isReceivingContent,
+    answerPermission,
+    pendingPermission,
+  };
+}
