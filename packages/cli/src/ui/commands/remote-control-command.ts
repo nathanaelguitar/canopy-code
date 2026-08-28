@@ -69,9 +69,9 @@ export const remoteControlCommand: SlashCommand = {
     }
     lines.push(
       '',
-      outcome.webhookSent
-        ? 'A pairing notification was sent to CanopyChat.'
-        : 'Set CANOPY_CHAT_WEBHOOK_URL to also push a notification to CanopyChat.',
+      outcome.pairingPending
+        ? 'Open the pairing URL in CanopyChat and approve this computer. The session will be delivered after approval.'
+        : 'The session was delivered to your paired CanopyChat device.',
       'Turn Remote Control off from the Web Shell Settings card, or press Ctrl+C to exit.',
     );
 
