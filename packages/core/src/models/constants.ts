@@ -118,6 +118,12 @@ export const DEFAULT_MODELS = {
  */
 export const CHATGPT_OAUTH_MODELS: ModelConfig[] = [
   {
+    id: 'gpt-5.6',
+    name: 'gpt-5.6',
+    description: 'Latest GPT-5.6 coding model on the ChatGPT Codex backend',
+    capabilities: { vision: true },
+  },
+  {
     id: 'gpt-5.2-codex',
     name: 'gpt-5.2-codex',
     description: 'Latest GPT-5.x Codex model on the ChatGPT backend',

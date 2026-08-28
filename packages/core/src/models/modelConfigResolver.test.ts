@@ -12,6 +12,7 @@ import {
 import { AuthType } from '../core/contentGenerator.js';
 import {
   DEFAULT_CANOPY_MODEL,
+  DEFAULT_CHATGPT_MODEL,
   MAINLINE_CODER_MODEL,
 } from '../config/models.js';
 
@@ -300,6 +301,22 @@ describe('modelConfigResolver', () => {
         expect(result.config.timeout).toBe(60000);
         expect(result.config.proxy).toBe('http://proxy.example.com:8080');
         expect(result.sources['timeout'].kind).toBe('env');
+      });
+    });
+
+    describe('ChatGPT OAuth auth type', () => {
+      it('uses GPT-5.6 by default and accepts it explicitly', () => {
+        const result = resolveModelConfig({
+          authType: AuthType.CHATGPT_OAUTH,
+          cli: { model: 'gpt-5.6' },
+          settings: {},
+          env: {},
+        });
+
+        expect(DEFAULT_CHATGPT_MODEL).toBe('gpt-5.6');
+        expect(result.config.model).toBe('gpt-5.6');
+        expect(result.config.apiKey).toBe('CHATGPT_OAUTH_DYNAMIC_TOKEN');
+        expect(result.sources['model'].kind).toBe('cli');
       });
     });
 
