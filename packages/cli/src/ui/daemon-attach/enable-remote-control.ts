@@ -5,7 +5,14 @@
  */
 
 import { readFile } from 'node:fs/promises';
+import { hostname } from 'node:os';
+import { HybridTokenStorage } from '@canopy-code/canopy-code-core';
 import type { DaemonAttachedSession } from './attach-daemon-session.js';
+
+// Deliberately fixed to the private beta Worker. This is not a user-configured
+// webhook and is not read from the shell environment.
+const REMOTE_CONTROL_API = 'https://founding-api.canopychat.app/v1/remote-control';
+const REMOTE_CONTROL_SECRET = 'private-remote-control-device';
 
 interface LocalControlEnableResponse {
   active?: boolean;
@@ -14,6 +21,72 @@ interface LocalControlEnableResponse {
   qrText?: string;
   error?: string;
   code?: string;
+}
+
+interface PairingStartResponse {
+  pairing_id: string;
+  pairing_url: string;
+  polling_token: string;
+  expires_at: string;
+}
+
+const deviceStorage = new HybridTokenStorage('Canopy Code');
+
+async function apiRequest(path: string, init: RequestInit): Promise<Response> {
+  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
+    ...init,
+    headers: { Accept: 'application/json', ...(init.headers ?? {}) },
+  });
+}
+
+async function sendSession(accessToken: string, session: {
+  sessionId: string;
+  workspaceName: string;
+  url: string;
+}): Promise<'sent' | 'unauthorized' | 'unavailable'> {
+  const response = await apiRequest('/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({
+      session_id: session.sessionId,
+      workspace_name: session.workspaceName,
+      url: session.url,
+    }),
+  });
+  if (response.status === 401 || response.status === 403) return 'unauthorized';
+  if (!response.ok) return 'unavailable';
+  return 'sent';
+}
+
+async function pairAndSend(session: {
+  sessionId: string;
+  workspaceName: string;
+  url: string;
+}): Promise<PairingStartResponse | undefined> {
+  const response = await apiRequest('/pairings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ device_name: hostname().slice(0, 120) || 'Canopy Code computer' }),
+  });
+  if (!response.ok) return undefined;
+  const pairing = (await response.json()) as PairingStartResponse;
+  void (async () => {
+    const deadline = Date.parse(pairing.expires_at);
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const poll = await apiRequest(`/pairings/${encodeURIComponent(pairing.pairing_id)}`, {
+        headers: { Authorization: `Bearer ${pairing.polling_token}` },
+      });
+      if (poll.status === 202) continue;
+      if (!poll.ok) return;
+      const result = (await poll.json()) as { access_token?: string; status: string };
+      if (result.status !== 'approved' || !result.access_token) return;
+      await deviceStorage.setSecret(REMOTE_CONTROL_SECRET, result.access_token);
+      await sendSession(result.access_token, session);
+      return;
+    }
+  })();
+  return pairing;
 }
 
 /**
@@ -62,46 +135,19 @@ async function readPairingUrlFromLog(
  * webhook delivery problem must not stop the operator from getting their
  * QR code, and must not stop startup either (the auto-enable caller).
  */
-async function notifyCanopyChat(
-  webhookUrl: string,
-  payload: {
-    url: string;
-    sessionId: string;
-    workspaceName: string;
-    title?: string;
-  },
-): Promise<void> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-  } catch {
-    // Best-effort.
-  }
-}
-
 export type RemoteControlOutcome =
   | {
       status: 'enabled';
       pairingUrl: string;
       qrText?: string;
-      webhookSent: boolean;
+      pairingPending: boolean;
     }
   | { status: 'unavailable'; reason: string }
   | { status: 'error'; message: string };
 
 /**
- * Enable Tailscale pairing on the daemon backing `daemonSession` and fire
- * the CanopyChat webhook if configured. Shared by the explicit
+ * Enable Tailscale pairing on the daemon backing `daemonSession` and deliver
+ * the session through the private authenticated Worker API. Shared by the explicit
  * `/remote-control` command and the Stage C startup auto-enable — the
  * command always reports its outcome to the user; the startup path only
  * reports success (an `unavailable` "no tailnet interface" result is the
@@ -166,34 +212,49 @@ export async function enableRemoteControl(
     };
   }
 
-  const webhookUrl = process.env['CANOPY_CHAT_WEBHOOK_URL'];
-  if (webhookUrl) {
-    void notifyCanopyChat(webhookUrl, {
-      url: pairingUrl,
-      sessionId: daemonSession.sessionId,
-      workspaceName,
-    });
+  const session = { sessionId: daemonSession.sessionId, workspaceName, url: pairingUrl };
+  let pairingPending = false;
+  let accessToken: string | null = null;
+  try { accessToken = await deviceStorage.getSecret(REMOTE_CONTROL_SECRET); } catch { accessToken = null; }
+  if (accessToken) {
+    const sent = await sendSession(accessToken, session);
+    if (sent === 'unauthorized') {
+      try { await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET); } catch { /* already absent */ }
+      accessToken = null;
+    }
+  }
+  let publicPairingUrl: string;
+  if (!accessToken) {
+    const pairing = await pairAndSend(session);
+    if (!pairing) {
+      return {
+        status: 'error',
+        message: 'CanopyChat pairing is unavailable. No localhost fallback was created.',
+      };
+    }
+    publicPairingUrl = pairing.pairing_url;
+    pairingPending = true;
+  } else {
+    publicPairingUrl = pairingUrl;
   }
 
-  let qrText = response.qrText;
-  if (!qrText) {
-    try {
-      const { default: qrcode } = (await import('qrcode-terminal')) as {
-        default: typeof import('qrcode-terminal');
-      };
-      qrcode.setErrorLevel('Q');
-      qrcode.generate(pairingUrl, { small: true }, (code) => {
-        qrText = code.trimEnd();
-      });
-    } catch {
-      // Best-effort — the raw URL is still usable without a QR.
-    }
+  let qrText: string | undefined;
+  try {
+    const { default: qrcode } = (await import('qrcode-terminal')) as {
+      default: typeof import('qrcode-terminal');
+    };
+    qrcode.setErrorLevel('Q');
+    qrcode.generate(publicPairingUrl, { small: true }, (code) => {
+      qrText = code.trimEnd();
+    });
+  } catch {
+    // Best-effort — the raw URL is still usable without a QR.
   }
 
   return {
     status: 'enabled',
-    pairingUrl,
+    pairingUrl: publicPairingUrl,
     qrText,
-    webhookSent: webhookUrl !== undefined,
+    pairingPending,
   };
 }
