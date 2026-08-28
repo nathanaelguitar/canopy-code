@@ -345,9 +345,10 @@ export function ModelDialog({
       modelsByAuthTypeMap.get(authType)!.push(model);
     }
 
-    // Fixed order: canopy-oauth first, then others in a stable order
+    // Fixed order: OAuth choices first, then configured API providers.
     const authTypeOrder: AuthType[] = [
       AuthType.CANOPY_OAUTH,
+      AuthType.CHATGPT_OAUTH,
       AuthType.USE_OPENAI,
       AuthType.USE_ANTHROPIC,
       AuthType.USE_GEMINI,

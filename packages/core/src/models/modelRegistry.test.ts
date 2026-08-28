@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   ModelRegistry,
   CANOPY_OAUTH_MODELS,
+  CHATGPT_OAUTH_MODELS,
   modelRegistryKey,
   resolveProviderProtocol,
 } from './modelRegistry.js';
@@ -43,6 +44,20 @@ describe('ModelRegistry', () => {
       const canopyModels = registry.getModelsForAuthType(AuthType.CANOPY_OAUTH);
       expect(canopyModels.length).toBe(CANOPY_OAUTH_MODELS.length);
       expect(canopyModels[0].id).toBe('coder-model');
+    });
+
+    it('should always include hard-coded ChatGPT OAuth models', () => {
+      const registry = new ModelRegistry();
+
+      const chatgptModels = registry.getModelsForAuthType(
+        AuthType.CHATGPT_OAUTH,
+      );
+      expect(chatgptModels.map((model) => model.id)).toEqual(
+        CHATGPT_OAUTH_MODELS.map((model) => model.id),
+      );
+      expect(chatgptModels.map((model) => model.id)).toContain('gpt-5.6-sol');
+      expect(chatgptModels.map((model) => model.id)).toContain('gpt-5.6-terra');
+      expect(chatgptModels.map((model) => model.id)).toContain('gpt-5.6-luna');
     });
 
     it('should initialize with empty config', () => {

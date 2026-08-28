@@ -8112,6 +8112,40 @@ describe('DaemonSessionProvider', () => {
     });
   });
 
+  it('restarts a half-open SSE stream after repeated heartbeat failures', async () => {
+    sdkMocks.capabilities.mockResolvedValue({
+      v: 1,
+      mode: 'http-bridge',
+      features: ['client_heartbeat'],
+      modelServices: [],
+      workspaceCwd: '/mock-workspace',
+    });
+    const events = vi.fn(createIdleEvents());
+    sdkMocks.sessions.push(
+      createMockSession({
+        heartbeat: vi.fn(async () => {
+          throw new Error('network changed');
+        }),
+        events,
+      }),
+    );
+
+    function Harness() {
+      useDaemonConnection();
+      return null;
+    }
+
+    await renderWithProvider(<Harness />, {
+      autoConnect: true,
+      heartbeatIntervalMs: 1,
+      heartbeatFailureThreshold: 1,
+      reconnectDelayMs: 1,
+      maxReconnectDelayMs: 1,
+    });
+
+    await vi.waitFor(() => expect(events.mock.calls.length).toBeGreaterThan(1));
+  });
+
   it('ignores a late heartbeat failure from a replaced same-id attachment', async () => {
     vi.stubGlobal(
       'fetch',

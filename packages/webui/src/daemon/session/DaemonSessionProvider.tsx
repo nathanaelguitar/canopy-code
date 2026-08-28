@@ -749,6 +749,32 @@ export function DaemonSessionProvider(props: DaemonSessionProviderProps) {
     };
   }, []);
 
+  // Mobile browsers commonly suspend a tab while the device changes networks
+  // or goes into a pocket. An SSE fetch can then stay half-open: it has not
+  // delivered an error, but it will never receive another event either. Wake
+  // the normal Last-Event-ID resume path as soon as connectivity or foreground
+  // execution returns; aborting an already-closed controller is harmless.
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return undefined;
+    }
+    const resumeStream = () => {
+      eventStreamRef.current?.controller.abort(
+        new Error('Network or foreground resume requested'),
+      );
+      reconnectAbortRef.current?.abort();
+    };
+    const onVisibilityChange = () => {
+      if (!document.hidden) resumeStream();
+    };
+    window.addEventListener('online', resumeStream);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('online', resumeStream);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
   const sessionEffectWorkspaceCwd = restoreWorkspaceCwd ?? workspaceCwd;
 
   useEffect(() => {
@@ -2876,6 +2902,17 @@ export function DaemonSessionProvider(props: DaemonSessionProviderProps) {
             heartbeatFailureThreshold
           ) {
             return;
+          }
+          // A failed heartbeat proves this client can no longer reach the
+          // daemon, but a fetch-backed SSE stream may remain half-open and
+          // never report that failure itself (especially after a phone changes
+          // Wi-Fi/cellular networks). Abort it so the main loop reconnects
+          // with Last-Event-ID and preserves the in-memory transcript.
+          const eventStream = eventStreamRef.current;
+          if (eventStream?.sessionId === session.sessionId) {
+            eventStream.controller.abort(
+              new Error('Heartbeat failure requires SSE reconnect'),
+            );
           }
           const errorStatus = heartbeatFailureState.lastHttpError?.status;
           const effectiveMessage =

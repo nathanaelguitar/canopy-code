@@ -16,12 +16,12 @@ import {
   type AvailableModel,
 } from './types.js';
 import { DEFAULT_CANOPY_MODEL } from '../config/models.js';
-import { CANOPY_OAUTH_MODELS } from './constants.js';
+import { CANOPY_OAUTH_MODELS, CHATGPT_OAUTH_MODELS } from './constants.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 
 const debugLogger = createDebugLogger('MODEL_REGISTRY');
 
-export { CANOPY_OAUTH_MODELS } from './constants.js';
+export { CANOPY_OAUTH_MODELS, CHATGPT_OAUTH_MODELS } from './constants.js';
 
 /**
  * Validates if a string key is a valid AuthType enum value.
@@ -107,8 +107,9 @@ export class ModelRegistry {
     this.modelsByAuthType = new Map();
     this.providerProtocolConfig = providerProtocolConfig ?? {};
 
-    // Always register canopy-oauth models (hard-coded, cannot be overridden)
+    // OAuth model sets are hard-coded and cannot be overridden by settings.
     this.registerAuthTypeModels(AuthType.CANOPY_OAUTH, CANOPY_OAUTH_MODELS);
+    this.registerAuthTypeModels(AuthType.CHATGPT_OAUTH, CHATGPT_OAUTH_MODELS);
 
     // Register user-configured models for other providers
     this.registerProvidersConfig(modelProvidersConfig);
@@ -147,8 +148,11 @@ export class ModelRegistry {
         continue;
       }
 
-      // canopy-oauth uses hard-coded models and cannot be overridden
-      if (protocol === AuthType.CANOPY_OAUTH) {
+      // OAuth providers use hard-coded models and cannot be overridden.
+      if (
+        protocol === AuthType.CANOPY_OAUTH ||
+        protocol === AuthType.CHATGPT_OAUTH
+      ) {
         continue;
       }
 

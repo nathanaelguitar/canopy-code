@@ -376,6 +376,7 @@ function getAvailableModelIds(
 
 export const modelCommand: SlashCommand = {
   name: 'model',
+  altNames: ['models'],
   completionPriority: 100,
   get description() {
     return t(

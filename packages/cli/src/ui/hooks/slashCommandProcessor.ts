@@ -124,6 +124,7 @@ const SLASH_COMMAND_ROOTS_HIDE_INVOCATION = new Set([
 const BARE_SLASH_COMMANDS_HIDE_INVOCATION = new Set([
   'effort',
   'model',
+  'models',
   'statusline',
 ]);
 const MAX_EXTENSION_CONTENT_REFRESH_PASSES = 5;
@@ -154,7 +155,7 @@ function shouldHideSlashCommandInvocation(
 
   const path = canonicalPath.join(' ');
   if (BARE_SLASH_COMMANDS_HIDE_INVOCATION.has(path)) {
-    if (path === 'model') {
+    if (path === 'model' || path === 'models') {
       return isPickerOnlyModelInvocation(args);
     }
     return args.trim() === '';
