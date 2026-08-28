@@ -6,6 +6,10 @@
 
 import { readFile } from 'node:fs/promises';
 import type { DaemonAttachedSession } from './attach-daemon-session.js';
+import {
+  queueRemoteControlSession,
+  type RemoteDeliveryStatus,
+} from './remote-control-pairing.js';
 
 interface LocalControlEnableResponse {
   active?: boolean;
@@ -55,53 +59,19 @@ async function readPairingUrlFromLog(
   return undefined;
 }
 
-/**
- * Fire-and-forget webhook so the CanopyChat iOS app can push a notification
- * with a deep link. Config presence is the opt-in — no configured URL means
- * no network call at all, silently. Never blocks or fails the caller: a
- * webhook delivery problem must not stop the operator from getting their
- * QR code, and must not stop startup either (the auto-enable caller).
- */
-async function notifyCanopyChat(
-  webhookUrl: string,
-  payload: {
-    url: string;
-    sessionId: string;
-    workspaceName: string;
-    title?: string;
-  },
-): Promise<void> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-  } catch {
-    // Best-effort.
-  }
-}
-
 export type RemoteControlOutcome =
   | {
       status: 'enabled';
       pairingUrl: string;
       qrText?: string;
-      webhookSent: boolean;
+      deliveryStatus: RemoteDeliveryStatus;
     }
   | { status: 'unavailable'; reason: string }
   | { status: 'error'; message: string };
 
 /**
- * Enable Tailscale pairing on the daemon backing `daemonSession` and fire
- * the CanopyChat webhook if configured. Shared by the explicit
+ * Enable Tailscale pairing on the daemon backing `daemonSession` and publish
+ * the resulting ephemeral link through the paired CanopyChat device. Shared by the explicit
  * `/remote-control` command and the Stage C startup auto-enable — the
  * command always reports its outcome to the user; the startup path only
  * reports success (an `unavailable` "no tailnet interface" result is the
@@ -166,14 +136,11 @@ export async function enableRemoteControl(
     };
   }
 
-  const webhookUrl = process.env['CANOPY_CHAT_WEBHOOK_URL'];
-  if (webhookUrl) {
-    void notifyCanopyChat(webhookUrl, {
-      url: pairingUrl,
-      sessionId: daemonSession.sessionId,
-      workspaceName,
-    });
-  }
+  const deliveryStatus = await queueRemoteControlSession({
+    url: pairingUrl,
+    sessionId: daemonSession.sessionId,
+    workspaceName,
+  });
 
   let qrText = response.qrText;
   if (!qrText) {
@@ -194,6 +161,6 @@ export async function enableRemoteControl(
     status: 'enabled',
     pairingUrl,
     qrText,
-    webhookSent: webhookUrl !== undefined,
+    deliveryStatus,
   };
 }

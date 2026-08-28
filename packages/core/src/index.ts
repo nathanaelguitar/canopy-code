@@ -467,6 +467,7 @@ export type {
 } from './mcp/oauth-provider.js';
 export { MCPOAuthTokenStorage } from './mcp/oauth-token-storage.js';
 export { KeychainTokenStorage } from './mcp/token-storage/keychain-token-storage.js';
+export { HybridTokenStorage } from './mcp/token-storage/hybrid-token-storage.js';
 export type {
   OAuthCredentials,
   OAuthToken,

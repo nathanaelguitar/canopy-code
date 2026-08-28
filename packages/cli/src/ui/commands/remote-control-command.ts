@@ -11,6 +11,11 @@ import {
 } from './types.js';
 import { MessageType } from '../types.js';
 import { enableRemoteControl } from '../daemon-attach/enable-remote-control.js';
+import {
+  disconnectRemoteControl,
+  finishRemoteControlPairing,
+  startRemoteControlPairing,
+} from '../daemon-attach/remote-control-pairing.js';
 
 function workspaceNameOf(context: CommandContext): string {
   return (
@@ -69,9 +74,9 @@ export const remoteControlCommand: SlashCommand = {
     }
     lines.push(
       '',
-      outcome.webhookSent
-        ? 'A pairing notification was sent to CanopyChat.'
-        : 'Set CANOPY_CHAT_WEBHOOK_URL to also push a notification to CanopyChat.',
+      outcome.deliveryStatus === 'queued'
+        ? 'A pairing notification is being sent to CanopyChat.'
+        : 'Connect your phone once with /remote-control connect to receive notifications automatically.',
       'Turn Remote Control off from the Web Shell Settings card, or press Ctrl+C to exit.',
     );
 
@@ -81,4 +86,55 @@ export const remoteControlCommand: SlashCommand = {
     );
     return;
   },
+  subCommands: [
+    {
+      name: 'connect',
+      description: 'Pair this computer with your signed-in CanopyChat app',
+      kind: CommandKind.BUILT_IN,
+      supportedModes: ['interactive'] as const,
+      action: async (context: CommandContext) => {
+        try {
+          const challenge = await startRemoteControlPairing();
+          context.ui.addItem(
+            {
+              type: MessageType.INFO,
+              text: `Open this on your signed-in phone to approve this computer:\n\n${challenge.pairingUrl}\n\nWaiting for approval…`,
+            },
+            Date.now(),
+          );
+          await finishRemoteControlPairing(challenge, context.abortSignal);
+          return {
+            type: 'message' as const,
+            messageType: 'info' as const,
+            content:
+              'This computer is connected. Future /remote-control sessions will notify your phone automatically.',
+          };
+        } catch (error) {
+          return {
+            type: 'message' as const,
+            messageType: 'error' as const,
+            content:
+              error instanceof Error
+                ? error.message
+                : 'CanopyChat pairing failed.',
+          };
+        }
+      },
+    },
+    {
+      name: 'disconnect',
+      description: 'Remove this computer’s CanopyChat remote-control access',
+      kind: CommandKind.BUILT_IN,
+      supportedModes: ['interactive'] as const,
+      action: async () => {
+        await disconnectRemoteControl();
+        return {
+          type: 'message' as const,
+          messageType: 'info' as const,
+          content:
+            'This computer is disconnected from CanopyChat Remote Control.',
+        };
+      },
+    },
+  ],
 };
