@@ -46,6 +46,7 @@ async function apiRequest(path: string, init: RequestInit): Promise<Response> {
 async function sendSession(accessToken: string, session: {
   sessionId: string;
   workspaceName: string;
+  sessionTitle?: string;
   url: string;
 }): Promise<'sent' | 'unauthorized' | 'unavailable'> {
   const response = await apiRequest('/sessions', {
@@ -54,6 +55,7 @@ async function sendSession(accessToken: string, session: {
     body: JSON.stringify({
       session_id: session.sessionId,
       workspace_name: session.workspaceName,
+      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
       url: session.url,
     }),
   });
@@ -65,6 +67,7 @@ async function sendSession(accessToken: string, session: {
 async function pairAndSend(session: {
   sessionId: string;
   workspaceName: string;
+  sessionTitle?: string;
   url: string;
 }): Promise<PairingStartResult> {
   const response = await apiRequest('/pairings', {
@@ -152,6 +155,7 @@ export type RemoteControlOutcome =
 export async function enableRemoteControl(
   daemonSession: DaemonAttachedSession,
   workspaceName: string,
+  sessionTitle?: string,
 ): Promise<RemoteControlOutcome> {
   let response: LocalControlEnableResponse;
   try {
@@ -204,7 +208,12 @@ export async function enableRemoteControl(
     };
   }
 
-  const session = { sessionId: daemonSession.sessionId, workspaceName, url: pairingUrl };
+  const session = {
+    sessionId: daemonSession.sessionId,
+    workspaceName,
+    ...(sessionTitle?.trim() ? { sessionTitle: sessionTitle.trim() } : {}),
+    url: pairingUrl,
+  };
   let pairingPending = false;
   let accessToken: string | null = null;
   try { accessToken = await deviceStorage.getSecret(REMOTE_CONTROL_SECRET); } catch { accessToken = null; }

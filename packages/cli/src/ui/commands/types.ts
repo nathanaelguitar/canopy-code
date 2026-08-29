@@ -102,6 +102,8 @@ export interface CommandContext {
     toggleVimEnabled: () => Promise<boolean>;
     setGeminiMdFileCount: (count: number) => void;
     reloadCommands: () => void | Promise<void>;
+    /** Current Canopy Code session title, when one has been recorded. */
+    sessionName?: string | null;
     setSessionName: (name: string | null) => void;
     extensionsUpdateState: Map<string, ExtensionUpdateStatus>;
     dispatchExtensionStateUpdate: (action: ExtensionUpdateAction) => void;

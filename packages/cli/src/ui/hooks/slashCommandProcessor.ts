@@ -232,6 +232,7 @@ export const useSlashCommandProcessor = (
   setSessionName?: (name: string | null) => void,
   extensionRefreshState?: ExtensionRefreshState,
   daemonSession?: DaemonAttachedSession,
+  sessionName?: string | null,
 ) => {
   const fallbackExtensionRefreshStateRef = useRef<ExtensionRefreshState | null>(
     null,
@@ -544,6 +545,7 @@ export const useSlashCommandProcessor = (
         toggleVimEnabled,
         setGeminiMdFileCount,
         reloadCommands,
+        sessionName,
         setSessionName: setSessionName ?? (() => {}),
         extensionsUpdateState,
         dispatchExtensionStateUpdate: actions.dispatchExtensionStateUpdate,
@@ -578,6 +580,7 @@ export const useSlashCommandProcessor = (
       setGeminiMdFileCount,
       reloadCommands,
       setSessionName,
+      sessionName,
       extensionsUpdateState,
       isIdleRef,
       activeExtensionRefreshState,

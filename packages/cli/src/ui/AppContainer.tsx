@@ -1891,6 +1891,7 @@ export const AppContainer = (props: AppContainerProps) => {
     setSessionName,
     extensionRefreshState,
     props.daemonSession,
+    sessionName,
   );
 
   // onDebugMessage should log to debug logfile, not update footer debugMessage
@@ -2201,6 +2202,7 @@ export const AppContainer = (props: AppContainerProps) => {
       const outcome = await enableRemoteControl(
         daemonSessionForAutoRemoteControl,
         workspaceName,
+        sessionName ?? undefined,
       );
       if (cancelled || outcome.status !== 'enabled') return;
       const lines = [
