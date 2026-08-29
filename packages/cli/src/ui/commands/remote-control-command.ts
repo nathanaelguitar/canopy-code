@@ -59,19 +59,19 @@ export const remoteControlCommand: SlashCommand = {
       };
     }
 
-    const lines = [
-      'Remote Control is on. Scan this QR code from any device on your tailnet:',
-      '',
-      outcome.pairingUrl,
-    ];
-    if (outcome.qrText) {
-      lines.push('', outcome.qrText);
-    }
+    const lines = outcome.pairingPending
+      ? [
+          'Remote Control is on. Open this pairing link in CanopyChat:',
+          '',
+          outcome.pairingUrl,
+          ...(outcome.qrText ? ['', outcome.qrText] : []),
+          '',
+          'Approve this computer in CanopyChat. Future sessions will be delivered by notification.',
+        ]
+      : [
+          'Remote Control is on. The session was sent to your paired CanopyChat device.',
+        ];
     lines.push(
-      '',
-      outcome.pairingPending
-        ? 'Open the pairing URL in CanopyChat and approve this computer. The session will be delivered after approval.'
-        : 'The session was delivered to your paired CanopyChat device.',
       'Turn Remote Control off from the Web Shell Settings card, or press Ctrl+C to exit.',
     );
 
