@@ -3060,8 +3060,41 @@ export class GeminiClient {
 
       const turn = new Turn(this.getChat(), prompt_id, goalPermit);
 
-      // Determine the model to use for this turn
-      const model = options?.modelOverride ?? this.config.getModel();
+      // Determine the model to use for this turn. A resumed session can carry
+      // a per-turn override for a model that has since been removed from the
+      // provider registry (for example, after replacing a local checkpoint).
+      // Do this validation in the core request path as well as the TUI: daemon
+      // and non-interactive callers bypass the React hook entirely.
+      const requestedModelOverride = options?.modelOverride;
+      let effectiveModelOverride = requestedModelOverride;
+      if (requestedModelOverride) {
+        const bareModel = requestedModelOverride.endsWith('\0')
+          ? requestedModelOverride.slice(0, -1)
+          : requestedModelOverride;
+        const configuredModel = this.config.getModel();
+        let overrideIsConfigured = bareModel === configuredModel;
+        if (!overrideIsConfigured) {
+          try {
+            const configuredModels = this.config.getAllConfiguredModels();
+            // An empty registry is valid for minimal SDK/test configs; leave
+            // those callers' explicit selectors untouched.
+            overrideIsConfigured =
+              configuredModels.length === 0 ||
+              configuredModels.some((candidate) => candidate.id === bareModel);
+          } catch {
+            overrideIsConfigured = true;
+          }
+        }
+        if (!overrideIsConfigured) {
+          this.config
+            .getDebugLogger()
+            .warn(
+              `Clearing stale model override '${bareModel}' before request; active model is '${configuredModel}'.`,
+            );
+          effectiveModelOverride = undefined;
+        }
+      }
+      const model = effectiveModelOverride ?? this.config.getModel();
 
       // Assemble the outgoing request. IDE context is merged into the
       // user prompt's first text part, then on UserQuery / Cron turns

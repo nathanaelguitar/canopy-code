@@ -19,6 +19,21 @@ const SSE_STREAM_ID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
+ * Default idle-read budget for the SSE body: how long `subscribeEvents`
+ * will wait for ANY bytes — including the server's `: heartbeat` comment,
+ * sent every 15s (`packages/cli/src/serve/routes/sse-events.ts`) — before
+ * treating the connection as silently dead and throwing so the caller's
+ * reconnect loop can act. 3x the heartbeat interval tolerates one or two
+ * missed beats (a slow mobile network, a backgrounded tab throttling
+ * timers) without false-positiving a still-live connection. See
+ * `parseSseStream`'s `idleTimeoutMs` doc for why this exists at all — a
+ * connection whose TCP socket dies without a FIN/RST (the common case for
+ * a phone that sleeps, or a carrier NAT reclaiming an idle mapping)
+ * otherwise leaves the reader parked forever with no error and no signal.
+ */
+export const DEFAULT_SSE_IDLE_TIMEOUT_MS = 45_000;
+
+/**
  * Default REST+SSE transport. Delegates `fetch()` to the underlying
  * `_fetch` callable and implements `subscribeEvents()` by opening an
  * SSE connection to `GET /session/:id/events`.
@@ -31,6 +46,7 @@ export class RestSseTransport implements DaemonTransport {
   private readonly token: string | undefined;
   private readonly _fetch: typeof globalThis.fetch;
   private readonly activeSseRequests = new Set<AbortController>();
+  private readonly idleTimeoutMs: number | undefined;
   private _disposed = false;
 
   readonly type = 'rest' as const;
@@ -41,11 +57,19 @@ export class RestSseTransport implements DaemonTransport {
     baseUrl: string,
     token: string | undefined,
     fetchFn: typeof globalThis.fetch,
+    /**
+     * Idle-read budget passed to `parseSseStream`. Defaults to
+     * {@link DEFAULT_SSE_IDLE_TIMEOUT_MS}; pass `0` or `undefined`
+     * explicitly to disable (matches `parseSseStream`'s own "no timer"
+     * behavior when `idleTimeoutMs` is `undefined`).
+     */
+    idleTimeoutMs: number | undefined = DEFAULT_SSE_IDLE_TIMEOUT_MS,
   ) {
     this.baseUrl = baseUrl;
     this.token = token;
     this._fetch = fetchFn;
     this.restFetch = fetchFn;
+    this.idleTimeoutMs = idleTimeoutMs || undefined;
   }
 
   get connected(): boolean {
@@ -221,7 +245,7 @@ export class RestSseTransport implements DaemonTransport {
         opts.onEpoch?.(responseEpoch);
       }
 
-      yield* parseSseStream(res.body, fetchSignal);
+      yield* parseSseStream(res.body, fetchSignal, this.idleTimeoutMs);
     } finally {
       requestCtrl.abort();
       this.activeSseRequests.delete(requestCtrl);

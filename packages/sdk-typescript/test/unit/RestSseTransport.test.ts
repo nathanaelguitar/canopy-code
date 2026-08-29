@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { RestSseTransport } from '../../src/daemon/RestSseTransport.js';
+import { SseIdleTimeoutError } from '../../src/daemon/sse.js';
 import { DaemonTransportClosedError } from '../../src/daemon/DaemonTransport.js';
 import { DaemonHttpError } from '../../src/daemon/DaemonHttpError.js';
 
@@ -621,6 +622,42 @@ describe('RestSseTransport', () => {
 
       await gen.return(undefined);
       expect(calls[0].signal?.aborted).toBe(true);
+    });
+
+    it('constructor idleTimeoutMs forces a reconnect-worthy error on a silently-dead SSE body', async () => {
+      // The failure this closes: a connection whose TCP socket dies
+      // without a FIN/RST (a phone that sleeps, a carrier NAT reclaiming
+      // an idle mapping) never rejects and never closes — the generator
+      // just hangs. Without a passed-through idle timeout, this held-open
+      // body would sit forever; the constructor's 4th arg is what forces
+      // it to throw instead so a caller's reconnect loop gets a chance to
+      // run at all.
+      const onCancel = vi.fn();
+      const { fetch } = recordingFetch(() =>
+        heldOpenSseResponse(
+          'data: {"type":"a","data":{},"id":1,"v":1}\n\n',
+          onCancel,
+        ),
+      );
+      const transport = new RestSseTransport('http://d', undefined, fetch, 30);
+      const gen = transport.subscribeEvents('s1');
+
+      expect((await gen.next()).done).toBe(false); // the first frame still arrives
+      await expect(gen.next()).rejects.toThrow(SseIdleTimeoutError);
+      expect(onCancel).toHaveBeenCalled();
+    });
+
+    it('idleTimeoutMs of 0 disables the idle timeout, same as undefined', async () => {
+      const { fetch } = recordingFetch(() =>
+        heldOpenSseResponse('data: {"type":"a","data":{},"id":1,"v":1}\n\n'),
+      );
+      const transport = new RestSseTransport('http://d', undefined, fetch, 0);
+      const gen = transport.subscribeEvents('s1');
+
+      expect((await gen.next()).done).toBe(false);
+      // Held open well past what would be a short idle budget; must not throw.
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      await gen.return(undefined);
     });
 
     it('signal abort prevents iteration', async () => {

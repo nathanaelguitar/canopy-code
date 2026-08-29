@@ -22,6 +22,24 @@ export class SseFramingError extends Error {
 }
 
 /**
+ * Raised by `parseSseStream` when no bytes at all — not even a heartbeat
+ * comment — have arrived within `idleTimeoutMs`. Distinguishes "the
+ * connection is silently dead" (mobile network drop, phone sleep, a NAT
+ * or carrier gateway that reclaims the socket without a FIN/RST) from a
+ * genuine upstream error, so callers with their own reconnect/backoff
+ * loop (e.g. `DaemonSessionProvider`) can tell the two apart if they
+ * want to, while both still trigger the same "reconnect" path by default
+ * since this is a regular thrown `Error`.
+ */
+export class SseIdleTimeoutError extends Error {
+  constructor(idleTimeoutMs: number) {
+    super(
+      `parseSseStream: no data received for ${idleTimeoutMs}ms — connection presumed dead`,
+    );
+  }
+}
+
+/**
  * Parse an SSE-encoded event-stream `Response.body` into a stream of
  * `DaemonEvent`s.
  *
@@ -40,6 +58,20 @@ export class SseFramingError extends Error {
  *
  * The body stream is cancelled in `finally` so `for await … break` paths and
  * AbortSignal cancellation both clean up cleanly.
+ *
+ * `idleTimeoutMs`, when given, bounds how long the reader will wait for
+ * ANY bytes — including a pure `: heartbeat` comment frame, which is
+ * otherwise silently dropped by `parseFrame` and never reaches the
+ * caller — before treating the connection as dead and throwing
+ * {@link SseIdleTimeoutError}. Without this, a connection whose TCP
+ * socket dies silently (no FIN/RST — the common case for a phone that
+ * sleeps, or a carrier NAT that reclaims an idle mapping) leaves the
+ * generator parked on `reader.read()` forever: no data, no error, no
+ * signal a caller's reconnect loop can act on. The server side
+ * (`packages/cli/src/serve/routes/sse-events.ts`) sends a heartbeat
+ * comment every 15s specifically so a live-but-quiet connection keeps
+ * resetting this timer; callers should set `idleTimeoutMs` to a small
+ * multiple of that (the SDK transports default to 45s).
  */
 /**
  * Hard cap on accumulated unread UTF-16 code units (`buf.length`)
@@ -70,10 +102,53 @@ const MAX_BUF_CHARS = 16 * 1024 * 1024;
 export async function* parseSseStream(
   body: ReadableStream<Uint8Array>,
   signal?: AbortSignal,
+  idleTimeoutMs?: number,
 ): AsyncGenerator<DaemonEvent> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buf = '';
+
+  // Idle-read watchdog — see the `idleTimeoutMs` doc above. Rearmed on
+  // every read attempt; cleared as soon as that attempt settles (by data,
+  // by upstream error, or by the timer itself). `unref()`'d so a pending
+  // timer never keeps a Node process alive on its own.
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  const clearIdleTimer = () => {
+    if (idleTimer !== undefined) {
+      clearTimeout(idleTimer);
+      idleTimer = undefined;
+    }
+  };
+  const readWithIdleTimeout = (): Promise<
+    ReadableStreamReadResult<Uint8Array>
+  > => {
+    const pending = reader.read();
+    if (idleTimeoutMs === undefined) return pending;
+    return new Promise((resolve, reject) => {
+      idleTimer = setTimeout(() => {
+        reject(new SseIdleTimeoutError(idleTimeoutMs));
+        // Fire-and-forget: unblocks the abandoned `reader.read()` above so
+        // it settles (and its `.then` below becomes a no-op on an
+        // already-rejected promise) instead of leaking a parked read.
+        reader.cancel().catch(() => {
+          /* already cancelled or detached */
+        });
+      }, idleTimeoutMs);
+      if (typeof idleTimer === 'object' && idleTimer && 'unref' in idleTimer) {
+        (idleTimer as unknown as { unref: () => void }).unref();
+      }
+      pending.then(
+        (result) => {
+          clearIdleTimer();
+          resolve(result);
+        },
+        (err: unknown) => {
+          clearIdleTimer();
+          reject(err);
+        },
+      );
+    });
+  };
 
   // Wire abort to `reader.cancel()` so an idle/stalled upstream
   // doesn't trap the generator inside `await reader.read()`. Polling
@@ -118,7 +193,7 @@ export async function* parseSseStream(
       let value: Uint8Array | undefined;
       let done: boolean;
       try {
-        ({ value, done } = await reader.read());
+        ({ value, done } = await readWithIdleTimeout());
       } catch (err) {
         if (signal?.aborted) return;
         throw err;
@@ -168,6 +243,7 @@ export async function* parseSseStream(
       buf = consumed.tail;
     }
   } finally {
+    clearIdleTimer();
     if (signal && onAbort) {
       signal.removeEventListener('abort', onAbort);
     }

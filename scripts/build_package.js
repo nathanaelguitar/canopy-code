@@ -18,7 +18,7 @@
 // limitations under the License.
 
 import { execSync } from 'node:child_process';
-import { rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 if (!process.cwd().includes('packages')) {
@@ -39,6 +39,14 @@ execSync('tsc --build', { stdio: 'inherit' });
 
 // copy .{md,json} files
 execSync('node ../../scripts/copy_files.js', { stdio: 'inherit' });
+
+// The CLI package exposes dist/index.js as its executable bin entry. TypeScript
+// emits it using the process umask (commonly 0644), which makes a development
+// install that symlinks directly into this workspace fail with EACCES. Keep
+// the generated entrypoint executable after every package rebuild.
+if (process.env.npm_package_name === '@canopy-code/canopy-code') {
+  chmodSync(join(process.cwd(), 'dist', 'index.js'), 0o755);
+}
 
 // touch dist/.last_build
 writeFileSync(join(process.cwd(), 'dist', '.last_build'), '');

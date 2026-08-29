@@ -49,6 +49,17 @@ export type ScheduleFn = (
 ) => void;
 export type MarkToolsAsSubmittedFn = (callIds: string[]) => void;
 
+/** A user-visible lifecycle event for a tool invocation. */
+export interface ToolCallLifecycleEvent {
+  phase: 'started' | 'completed';
+  request: ToolCallRequestInfo;
+  status?: CoreStatus;
+  resultDisplay?: unknown;
+  error?: string;
+}
+
+export type ToolCallLifecycleHandler = (event: ToolCallLifecycleEvent) => void;
+
 export type TrackedScheduledToolCall = ScheduledToolCall & {
   responseSubmittedToGemini?: boolean;
 };
@@ -113,6 +124,7 @@ export function useReactToolScheduler(
   getPreferredEditor: () => EditorType | undefined,
   onEditorClose: () => void,
   onToolResultFullTurnModel?: (model: string) => boolean,
+  onToolCallLifecycle?: ToolCallLifecycleHandler,
 ): [TrackedToolCall[], ScheduleFn, MarkToolsAsSubmittedFn] {
   const [toolCallsForDisplay, setToolCallsForDisplay] = useState<
     TrackedToolCall[]
@@ -142,9 +154,18 @@ export function useReactToolScheduler(
 
   const allToolCallsCompleteHandler: AllToolCallsCompleteHandler = useCallback(
     async (completedToolCalls) => {
+      for (const completedToolCall of completedToolCalls) {
+        onToolCallLifecycle?.({
+          phase: 'completed',
+          request: completedToolCall.request,
+          status: completedToolCall.status,
+          resultDisplay: completedToolCall.response.resultDisplay,
+          error: completedToolCall.response.error?.message,
+        });
+      }
       await onComplete(completedToolCalls);
     },
-    [onComplete],
+    [onComplete, onToolCallLifecycle],
   );
 
   const toolCallsUpdateHandler: ToolCallsUpdateHandler = useCallback(
@@ -225,15 +246,63 @@ export function useReactToolScheduler(
       signal: AbortSignal,
       modelOverride?: string,
     ) => {
-      if (!modelOverride?.endsWith('\0')) {
-        void scheduler.schedule(request, signal).catch((error: unknown) => {
-          if (signal.aborted) return;
-          debugLogger.error(
-            `Tool scheduling failed: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-          );
+      const requests = Array.isArray(request) ? request : [request];
+      for (const toolRequest of requests) {
+        onToolCallLifecycle?.({
+          phase: 'started',
+          request: toolRequest,
         });
+      }
+
+      if (!modelOverride?.endsWith('\0')) {
+        void scheduler
+          .schedule(request, signal)
+          .catch(async (error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            if (signal.aborted) {
+              for (const toolRequest of requests) {
+                onToolCallLifecycle?.({
+                  phase: 'completed',
+                  request: toolRequest,
+                  status: 'cancelled',
+                  error: message,
+                  resultDisplay: message,
+                });
+              }
+              return;
+            }
+
+            debugLogger.error(`Tool scheduling failed: ${message}`);
+            const completedCalls: CompletedToolCall[] = requests.map(
+              (toolRequest) => {
+                const toolError = new Error(
+                  `Tool scheduling failed: ${message}`,
+                );
+                const responseParts = convertToFunctionErrorResponse(
+                  toolRequest.name,
+                  toolRequest.callId,
+                  toolError.message,
+                  toolError.message,
+                );
+                return {
+                  status: 'error',
+                  request: toolRequest,
+                  response: {
+                    callId: toolRequest.callId,
+                    responseParts,
+                    resultDisplay: toolError.message,
+                    error: toolError,
+                    errorType: ToolErrorType.UNHANDLED_EXCEPTION,
+                    executionStatus: 'not_started',
+                    contentLength: toolError.message.length,
+                  },
+                };
+              },
+            );
+            setToolCallsForDisplay((prev) => [...prev, ...completedCalls]);
+            await allToolCallsCompleteHandler(completedCalls);
+          });
         return;
       }
       void (async () => {
@@ -252,7 +321,6 @@ export function useReactToolScheduler(
           );
           const message =
             'Full-turn tool scheduling failed. The tool was not executed.';
-          const requests = Array.isArray(request) ? request : [request];
           const completedCalls: CompletedToolCall[] = requests.map(
             (toolRequest) => {
               const toolError = new Error(message);
@@ -283,7 +351,7 @@ export function useReactToolScheduler(
         }
       })();
     },
-    [allToolCallsCompleteHandler, config, scheduler],
+    [allToolCallsCompleteHandler, config, onToolCallLifecycle, scheduler],
   );
 
   const markToolsAsSubmitted: MarkToolsAsSubmittedFn = useCallback(

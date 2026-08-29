@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseSseStream } from '../../src/daemon/sse.js';
+import { parseSseStream, SseIdleTimeoutError } from '../../src/daemon/sse.js';
 import type { DaemonEvent } from '../../src/daemon/types.js';
 
 function bodyFromString(s: string): ReadableStream<Uint8Array> {
@@ -315,5 +315,100 @@ describe('parseSseStream', () => {
     const events = await collect(parseSseStream(stream));
     expect(events).toHaveLength(1);
     expect(events[0]?.data as string).toBe('中');
+  });
+
+  describe('idleTimeoutMs', () => {
+    it('throws SseIdleTimeoutError when no bytes arrive within the budget', async () => {
+      // A stream that never enqueues and never closes — the real shape of
+      // a TCP connection that died silently (no FIN/RST): `reader.read()`
+      // just sits there forever with nothing to distinguish it from a
+      // slow-but-alive connection, which is exactly the gap this option
+      // closes.
+      const stream = new ReadableStream<Uint8Array>({
+        start() {
+          /* never enqueue, never close */
+        },
+        cancel() {
+          /* accept the forced cancel on timeout */
+        },
+      });
+
+      await expect(
+        (async () => {
+          for await (const _ev of parseSseStream(stream, undefined, 30)) {
+            /* drain */
+          }
+        })(),
+      ).rejects.toThrow(SseIdleTimeoutError);
+    });
+
+    it('does not time out when no idleTimeoutMs is given, even if the stream is slow', async () => {
+      const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          await new Promise((resolve) => setTimeout(resolve, 60));
+          controller.enqueue(
+            new TextEncoder().encode(
+              'id: 1\nevent: x\ndata: {"id":1,"v":1,"type":"x","data":"ok"}\n\n',
+            ),
+          );
+          controller.close();
+        },
+      });
+      const events = await collect(parseSseStream(stream));
+      expect(events).toHaveLength(1);
+    });
+
+    it('a heartbeat-only frame resets the idle timer, keeping the stream alive', async () => {
+      // Mirrors the server's real cadence (a `: heartbeat` comment frame
+      // with no `data:` line, which `parseFrame` silently drops) arriving
+      // faster than the idle budget, followed eventually by a real event.
+      // Regression target: heartbeat bytes must reset the watchdog even
+      // though they never reach the caller as a yielded event.
+      const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          for (let i = 0; i < 3; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 15));
+            controller.enqueue(encoder.encode(': heartbeat\n\n'));
+          }
+          controller.enqueue(
+            encoder.encode(
+              'id: 1\nevent: x\ndata: {"id":1,"v":1,"type":"x","data":"ok"}\n\n',
+            ),
+          );
+          controller.close();
+        },
+      });
+
+      // 45ms budget vs. 15ms-spaced heartbeats: each read arrives well
+      // inside the window, so the stream must complete without throwing.
+      const events = await collect(parseSseStream(stream, undefined, 45));
+      expect(events).toHaveLength(1);
+      expect(events[0]?.id).toBe(1);
+    });
+
+    it('a heartbeat cadence slower than the budget still times out', async () => {
+      // The inverse of the previous test: heartbeats arrive, but too
+      // slowly to beat the idle budget — confirms the timer is a real
+      // per-read deadline, not a one-shot "did anything ever arrive" check.
+      const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          controller.enqueue(encoder.encode(': heartbeat\n\n'));
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          controller.enqueue(encoder.encode(': heartbeat\n\n'));
+          controller.close();
+        },
+      });
+
+      await expect(
+        (async () => {
+          for await (const _ev of parseSseStream(stream, undefined, 40)) {
+            /* drain */
+          }
+        })(),
+      ).rejects.toThrow(SseIdleTimeoutError);
+    });
   });
 });

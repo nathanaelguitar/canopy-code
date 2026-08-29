@@ -112,6 +112,7 @@ import {
   type TrackedCancelledToolCall,
   type TrackedExecutingToolCall,
   type TrackedWaitingToolCall,
+  type ToolCallLifecycleEvent,
 } from './useReactToolScheduler.js';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -170,6 +171,45 @@ function clearModelOverride(
   inlineActiveRef: { current: boolean },
 ): void {
   applyModelOverride(modelOverrideRef, inlineActiveRef, undefined, false);
+}
+
+/**
+ * Drop a per-turn model selector that no longer belongs to the active
+ * provider. This matters after a provider/model is replaced in settings (or a
+ * session is resumed): the header can show the new main model while an old
+ * skill/inline override still gets forwarded to the API and produces a 404.
+ * A trailing NUL marks a full-turn skill selector, so validate its bare id but
+ * preserve the marker when the selector is still valid.
+ */
+function getActiveModelOverride(
+  config: Config,
+  modelOverrideRef: { current: string | undefined },
+  inlineActiveRef: { current: boolean },
+): string | undefined {
+  const rawOverride = modelOverrideRef.current;
+  if (!rawOverride) return undefined;
+
+  const modelId = rawOverride.endsWith('\0')
+    ? rawOverride.slice(0, -1)
+    : rawOverride;
+  const currentModel = config.getModel();
+  let isActive = modelId === currentModel;
+  if (!isActive) {
+    try {
+      isActive = isInlineModelOverrideAllowed(config, modelId);
+    } catch {
+      // Keep the request path fail-open for unusual test/minimal Config
+      // implementations; the current-model check above remains authoritative.
+      isActive = false;
+    }
+  }
+  if (isActive) return rawOverride;
+
+  debugLogger.warn(
+    `clearing stale model override '${modelId}' before request; active model is '${currentModel}'`,
+  );
+  clearModelOverride(modelOverrideRef, inlineActiveRef);
+  return undefined;
 }
 
 const MID_TURN_AT_COMMAND_RESOLVE_TIMEOUT_MS = 10_000;
@@ -466,6 +506,50 @@ export interface CancelSubmitInfo {
    * strip that prompt so it can't merge into the user's next real message.
    */
   wasGoalTurn: boolean;
+}
+
+const TOOL_LOG_VALUE_LIMIT = 900;
+const TOOL_LOG_SENSITIVE_KEY =
+  /(?:password|passcode|token|secret|api[-_]?key|authorization|cookie)/i;
+
+function formatToolLogValue(value: unknown): string {
+  let serialized: string;
+  if (typeof value === 'string') {
+    serialized = value;
+  } else {
+    try {
+      serialized =
+        JSON.stringify(value, (key, nestedValue) =>
+          key && TOOL_LOG_SENSITIVE_KEY.test(key) ? '[REDACTED]' : nestedValue,
+        ) ?? String(value);
+    } catch {
+      serialized = String(value);
+    }
+  }
+
+  const singleLine = serialized.replace(/\s+/g, ' ');
+  return singleLine.length > TOOL_LOG_VALUE_LIMIT
+    ? `${singleLine.slice(0, TOOL_LOG_VALUE_LIMIT)}…`
+    : singleLine;
+}
+
+function formatToolLifecycleMessage(event: ToolCallLifecycleEvent): string {
+  const toolName = event.request.name;
+  const callId = event.request.callId ? ` [${event.request.callId}]` : '';
+
+  if (event.phase === 'started') {
+    return `⚙ Tool call started: ${toolName}${callId} args=${formatToolLogValue(event.request.args)}`;
+  }
+
+  if (event.status === 'error') {
+    return `✕ Tool call failed: ${toolName}${callId} error=${formatToolLogValue(event.error ?? event.resultDisplay ?? 'unknown error')}`;
+  }
+
+  if (event.status === 'cancelled') {
+    return `↪ Tool call cancelled: ${toolName}${callId}${event.error ? ` reason=${formatToolLogValue(event.error)}` : ''}`;
+  }
+
+  return `✓ Tool call completed: ${toolName}${callId}${event.resultDisplay === undefined ? '' : ` result=${formatToolLogValue(event.resultDisplay)}`}`;
 }
 
 /**
@@ -888,6 +972,22 @@ export const useGeminiStream = (
   } = useSessionStats();
   const storage = config.storage;
 
+  const handleToolCallLifecycle = useCallback(
+    (event: ToolCallLifecycleEvent) => {
+      addItem(
+        {
+          type:
+            event.phase === 'completed' && event.status === 'error'
+              ? MessageType.ERROR
+              : MessageType.INFO,
+          text: formatToolLifecycleMessage(event),
+        },
+        Date.now(),
+      );
+    },
+    [addItem],
+  );
+
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
     useReactToolScheduler(
       async (completedToolCallsFromScheduler) => {
@@ -918,6 +1018,7 @@ export const useGeminiStream = (
       getPreferredEditor,
       onEditorClose,
       canUseToolResultFullTurnModel,
+      handleToolCallLifecycle,
     );
 
   const pendingToolCallGroupDisplay = useMemo(
@@ -1406,6 +1507,22 @@ export const useGeminiStream = (
         await logger?.logMessage(MessageSenderType.USER, trimmedQuery);
         canUndoLastLoggedUserMessageRef.current =
           !preserveTurnOwnership && logger != null;
+
+        // An explicit main-model selection must supersede any stale per-turn
+        // override left by a skill or a prior inline `/model` request. Without
+        // clearing it here, `/model gpt-…` updates the header while the next
+        // request can still be routed to the old local model.
+        const modelCommandMatch = /^\/models?(?:\s|$)/.exec(trimmedQuery);
+        const modelCommandArgs = modelCommandMatch
+          ? trimmedQuery.slice(modelCommandMatch[0].length).trim()
+          : '';
+        const isAuxiliaryModelCommand =
+          /^--(?:fast|voice|vision|compaction|image)(?:\s|$)/.test(
+            modelCommandArgs,
+          );
+        if (modelCommandMatch && !isAuxiliaryModelCommand) {
+          clearModelOverride(modelOverrideRef, inlineModelOverrideActiveRef);
+        }
 
         // Handle UI-only commands first
         const slashCommandResult = isSlashCommand(trimmedQuery)
@@ -3706,11 +3823,20 @@ export const useGeminiStream = (
             dualOutput.emitUserMessage(userParts);
           }
 
+          // Validate immediately before constructing the request. A resumed
+          // session can retain a skill/inline override from a model that has
+          // since been removed from the active provider; forwarding it makes
+          // an otherwise healthy endpoint return a misleading 404.
+          const effectiveModelOverride = getActiveModelOverride(
+            config,
+            modelOverrideRef,
+            inlineModelOverrideActiveRef,
+          );
           const sendOptions = {
             type: submitType,
             notificationDisplayText: metadata?.notificationDisplayText,
             todoWorkChainId: metadata?.todoWorkChainId,
-            modelOverride: modelOverrideRef.current,
+            modelOverride: effectiveModelOverride,
             steerInput: metadata?.steerInput,
             ...(submittedPrompt !== undefined ? { submittedPrompt } : {}),
             ...(!allowConcurrentBtwDuringResponse &&
