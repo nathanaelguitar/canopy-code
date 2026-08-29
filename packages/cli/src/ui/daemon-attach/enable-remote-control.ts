@@ -36,10 +36,7 @@ type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  // A leading slash would make URL() resolve against the origin and discard
-  // the versioned Worker path (`/v1/remote-control`).
-  const relativePath = path.replace(/^\/+/, '');
-  return fetch(new URL(relativePath, `${REMOTE_CONTROL_API}/`), {
+  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
     ...init,
     headers: { Accept: 'application/json', ...(init.headers ?? {}) },
   });
@@ -50,6 +47,7 @@ async function sendSession(
   session: {
     sessionId: string;
     workspaceName: string;
+    sessionTitle?: string;
     url: string;
   },
 ): Promise<'sent' | 'unauthorized' | 'unavailable'> {
@@ -62,6 +60,7 @@ async function sendSession(
     body: JSON.stringify({
       session_id: session.sessionId,
       workspace_name: session.workspaceName,
+      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
       url: session.url,
     }),
   });
@@ -73,6 +72,7 @@ async function sendSession(
 async function pairAndSend(session: {
   sessionId: string;
   workspaceName: string;
+  sessionTitle?: string;
   url: string;
 }): Promise<PairingStartResult> {
   const response = await apiRequest('/pairings', {
@@ -123,7 +123,6 @@ async function pairAndSend(session: {
  */
 async function readPairingUrlFromLog(
   logPath: string,
-  sessionId: string,
 ): Promise<string | undefined> {
   const deadline = Date.now() + 3000;
   while (Date.now() < deadline) {
@@ -133,18 +132,8 @@ async function readPairingUrlFromLog(
     } catch {
       return undefined;
     }
-    const urls = text.matchAll(
-      /canopy serve: Local Control pairing URL: (\S+)/g,
-    );
-    for (const match of Array.from(urls).reverse()) {
-      try {
-        if (new URL(match[1]).pathname === `/session/${sessionId}`) {
-          return match[1];
-        }
-      } catch {
-        // Ignore malformed diagnostic lines and keep looking for this session.
-      }
-    }
+    const match = text.match(/canopy serve: Local Control pairing URL: (\S+)/);
+    if (match) return match[1];
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   return undefined;
@@ -179,6 +168,7 @@ export type RemoteControlOutcome =
 export async function enableRemoteControl(
   daemonSession: DaemonAttachedSession,
   workspaceName: string,
+  sessionTitle?: string,
 ): Promise<RemoteControlOutcome> {
   let response: LocalControlEnableResponse;
   try {
@@ -218,10 +208,7 @@ export async function enableRemoteControl(
   let pairingUrl = response.url;
   if (!pairingUrl && response.urlRedacted) {
     pairingUrl = daemonSession.daemonLogPath
-      ? await readPairingUrlFromLog(
-          daemonSession.daemonLogPath,
-          daemonSession.sessionId,
-        )
+      ? await readPairingUrlFromLog(daemonSession.daemonLogPath)
       : undefined;
   }
   if (!pairingUrl) {
@@ -237,6 +224,7 @@ export async function enableRemoteControl(
   const session = {
     sessionId: daemonSession.sessionId,
     workspaceName,
+    ...(sessionTitle?.trim() ? { sessionTitle: sessionTitle.trim() } : {}),
     url: pairingUrl,
   };
   let pairingPending = false;

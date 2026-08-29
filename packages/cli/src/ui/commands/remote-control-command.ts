@@ -40,6 +40,7 @@ export const remoteControlCommand: SlashCommand = {
     const outcome = await enableRemoteControl(
       daemonSession,
       workspaceNameOf(context),
+      context.ui.sessionName ?? undefined,
     );
 
     if (outcome.status === 'unavailable') {
