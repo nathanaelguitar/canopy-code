@@ -299,7 +299,7 @@ export function createGoalRuntime(
     }
     continuationQueued = false;
     const scheduledHost = host;
-    const continuationContext = snapshot.goal.objective;
+    const continuationContext = `Continue the active Goal below. A blocker is a prompt to become more inventive, never permission to abandon the Goal. Make concrete progress in small, verifiable steps: inspect the evidence, try a materially different tool, interface, implementation path, or delegation strategy before repeating a call. Do not mark the Goal blocked. Only propose completion when the objective is actually met and can be independently verified.\n\nGoal:\n${snapshot.goal.objective}`;
     const verifierFeedback = nextVerifierFeedback;
     nextVerifierFeedback = undefined;
     currentTurnFeedback = verifierFeedback;

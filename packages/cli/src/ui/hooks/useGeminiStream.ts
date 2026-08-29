@@ -573,7 +573,11 @@ export const useGeminiStream = (
     }
   }, []);
   const failClosedGoalTurn = useCallback(
-    async (binding: GoalTurnBinding, reason: string): Promise<void> => {
+    async (
+      binding: GoalTurnBinding,
+      reason: string,
+      options: { pauseGoal?: boolean } = {},
+    ): Promise<void> => {
       if (!binding.controller.signal.aborted) {
         binding.controller.abort(reason);
       }
@@ -588,7 +592,15 @@ export const useGeminiStream = (
           return;
         }
 
-        if (runtime.getSnapshot().goal?.status === 'active') {
+        // Most invalid Goal-tool states must pause the Goal: proceeding could
+        // otherwise lose a tool result. A loop guard is different: the turn
+        // has reached a safe boundary and the runtime can start a fresh turn
+        // with its per-turn guard reset. Do not make the user revive it by
+        // hand just because a smaller model repeated a call.
+        if (
+          options.pauseGoal !== false &&
+          runtime.getSnapshot().goal?.status === 'active'
+        ) {
           try {
             await runtime.dispatch({
               action: 'pause',
@@ -3873,7 +3885,27 @@ export const useGeminiStream = (
           if (loopDetected) {
             cleanupReviewLease = true;
             loopDetectedRef.current = false;
-            handleLoopDetectedEvent();
+            if (goalBinding) {
+              // A Goal is deliberately multi-turn. Treat a loop guard as the
+              // end of this attempt, not as a terminal failure or a request to
+              // disable the guard. finishTurn() queues a fresh Goal turn whose
+              // tool-call budget is independent from this one.
+              await failClosedGoalTurn(
+                goalBinding,
+                'Goal turn stopped by loop protection; continuing with a different approach',
+                { pauseGoal: false },
+              );
+              goalBinding = undefined;
+              addItem(
+                {
+                  type: 'info',
+                  text: 'Goal loop guard stopped one attempt. Continuing the active Goal with a fresh turn and a different tool strategy.',
+                },
+                Date.now(),
+              );
+            } else {
+              handleLoopDetectedEvent();
+            }
           }
 
           if (lastPromptErroredRef.current || goalTerminalErrorRef.current) {

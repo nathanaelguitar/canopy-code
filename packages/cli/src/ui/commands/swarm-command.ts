@@ -4,11 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type {
+  GoalControlRequest,
+  GoalRuntime,
+} from '@canopy-code/canopy-code-core';
 import {
   CommandKind,
+  type CommandContext,
+  type GoalControlActionReturn,
+  type GoalCommandOperation,
   type MessageActionReturn,
   type SlashCommand,
-  type SubmitPromptActionReturn,
 } from './types.js';
 
 const SWARM_DIRECTIVE = `
@@ -27,15 +33,27 @@ for any concurrent edits, collect results, integrate them yourself, and run the
 relevant tests before declaring the task complete.
 `;
 
+function errorMessage(content: string): MessageActionReturn {
+  return { type: 'message', messageType: 'error', content };
+}
+
+function goalControl(
+  operation: GoalCommandOperation,
+  response: Awaited<ReturnType<GoalRuntime['dispatch']>>,
+  cause: 'create' | 'replace',
+): GoalControlActionReturn {
+  return { type: 'goal_control', operation, response, cause };
+}
+
 export const swarmCommand: SlashCommand = {
   name: 'swarm',
   description: 'Coordinate an efficient subagent swarm for a coding task',
   kind: CommandKind.BUILT_IN,
   supportedModes: ['interactive'] as const,
   action: async (
-    _context,
+    context: CommandContext,
     args,
-  ): Promise<SubmitPromptActionReturn | MessageActionReturn> => {
+  ): Promise<GoalControlActionReturn | MessageActionReturn> => {
     const task = args.trim();
     if (!task) {
       return {
@@ -46,13 +64,36 @@ export const swarmCommand: SlashCommand = {
       };
     }
 
-    return {
-      type: 'submit_prompt',
-      content: [
-        {
-          text: `${SWARM_DIRECTIVE}\n\nCoding task:\n${task}`,
-        },
-      ],
-    };
+    const { config } = context.services;
+    if (!config) return errorMessage('Configuration is not available.');
+    if (!config.isTrustedFolder()) {
+      return errorMessage(
+        '/swarm is only available in trusted workspaces. Trust this folder via `/trust` and try again.',
+      );
+    }
+
+    try {
+      const runtime = await config.getGoalRuntimeReady();
+      const current = runtime.getSnapshot().goal;
+      const objective = `${SWARM_DIRECTIVE}\n\nCoding task:\n${task}`;
+      const request: GoalControlRequest = current
+        ? {
+            action: 'replace',
+            objective,
+            expectedGoalId: current.goalId,
+            expectedRevision: current.revision,
+          }
+        : { action: 'create', objective };
+      const operation: GoalCommandOperation = { kind: 'set', objective };
+      return goalControl(
+        operation,
+        await runtime.dispatch(request),
+        request.action,
+      );
+    } catch (error) {
+      return errorMessage(
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   },
 };

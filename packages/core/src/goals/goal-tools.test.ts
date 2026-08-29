@@ -635,7 +635,7 @@ describe('UpdateGoalTool', () => {
       readyForVerification: true,
       goalLifecycleChanged: false,
       nextAction:
-        'End this turn without user-facing text. Do not claim the Goal is complete or blocked. The Goal status card will report the independent verification result.',
+        'End this turn without user-facing text. Do not claim the Goal is complete. The Goal status card will report the independent verification result.',
     });
     expect(result.returnDisplay).toContain(
       'queued for independent verification',
@@ -644,7 +644,7 @@ describe('UpdateGoalTool', () => {
     expect(runtime.getSnapshot().goal?.status).toBe('active');
   });
 
-  it('keeps audit-only blocker proposals in the current turn', async () => {
+  it('does not expose blocked as a model-selectable terminal state', async () => {
     const { runtime, permit: activePermit } = await activeRuntime();
     const tool = new UpdateGoalTool(makeConfig(runtime));
     const build = () =>
@@ -657,21 +657,7 @@ describe('UpdateGoalTool', () => {
         }),
       );
 
-    const first = await build().execute(new AbortController().signal);
-    const second = await build().execute(new AbortController().signal);
-
-    for (const result of [first, second]) {
-      expect(JSON.parse(String(result.llmContent))).toEqual({
-        proposalRecorded: result === first,
-        readyForVerification: false,
-        goalLifecycleChanged: false,
-        nextAction:
-          'Continue this turn without claiming the Goal is complete or blocked. A repeated-blocker audit requires the same blocker mode and exact same reason text across three consecutive Goal turns, with current evidence cited on each turn.',
-      });
-      expect(result.terminateTurn).toBeUndefined();
-    }
-    expect(first.returnDisplay).toContain('blocker audit');
-    expect(second.returnDisplay).toContain('already recorded');
+    expect(build).toThrow(/status/i);
   });
 
   it('rejects a second proposal in the same exact turn', async () => {
@@ -694,7 +680,7 @@ describe('UpdateGoalTool', () => {
       readyForVerification: true,
       goalLifecycleChanged: false,
       nextAction:
-        'End this turn without user-facing text. Do not claim the Goal is complete or blocked. The Goal status card will report the independent verification result.',
+        'End this turn without user-facing text. Do not claim the Goal is complete. The Goal status card will report the independent verification result.',
     });
     expect(second.returnDisplay).toContain('already recorded');
     expect(second.returnDisplay).not.toContain('Goal is complete');
@@ -705,7 +691,7 @@ describe('UpdateGoalTool', () => {
     const { runtime, permit: activePermit } = await activeRuntime();
     const invocation = goalTurnContext.run(activePermit, () =>
       new UpdateGoalTool(makeConfig(runtime)).build({
-        status: 'blocked',
+        status: 'complete',
         reason: 'Needs authority',
         evidenceRefs: ['user-request-1'],
         blockerKind: 'authority',
@@ -759,7 +745,7 @@ describe('UpdateGoalTool', () => {
     expect(() =>
       goalTurnContext.run(permit, () =>
         tool.build({
-          status: 'blocked',
+          status: 'complete',
           reason: 'Waiting for authority',
           evidenceRefs: [],
         }),
@@ -768,7 +754,7 @@ describe('UpdateGoalTool', () => {
     expect(() =>
       goalTurnContext.run(permit, () =>
         tool.build({
-          status: 'blocked',
+          status: 'complete',
           reason: 'Waiting for authority',
           evidenceRefs: ['   '],
         }),
