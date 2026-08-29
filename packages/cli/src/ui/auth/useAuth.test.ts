@@ -17,6 +17,7 @@ import {
   resolveBaseUrl,
   type ProviderSetupInputs,
 } from '@canopy-code/canopy-code-core';
+import * as canopyCore from '@canopy-code/canopy-code-core';
 import {
   useAuthCommand,
   normalizeCustomModelIds,
@@ -48,6 +49,7 @@ vi.mock('../../config/modelProvidersScope.js', () => ({
 const createSettings = () => ({
   merged: {
     modelProviders: {},
+    security: { auth: { selectedType: undefined as string | undefined } },
   },
   setValue: vi.fn(),
   recomputeMerged: vi.fn(),
@@ -75,6 +77,11 @@ const createConfig = (recordSlashCommand = vi.fn()) => {
 describe('useAuthCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(canopyCore, 'loginWithChatgpt').mockResolvedValue({
+      credentials: {} as never,
+      email: 'test@example.com',
+      planType: undefined,
+    });
   });
 
   it('exposes closeAuthDialog that flips isAuthDialogOpen to false', () => {
@@ -269,6 +276,58 @@ describe('useAuthCommand', () => {
       'sk-token-plan',
     );
     expect(config.refreshAuth).toHaveBeenCalledWith(AuthType.USE_OPENAI);
+  });
+
+  it('keeps the active provider when ChatGPT is connected for advisor use', async () => {
+    const settings = createSettings();
+    settings.merged.security = {
+      auth: { selectedType: AuthType.USE_OPENAI },
+    };
+    const config = createConfig();
+    const addItem = vi.fn();
+
+    const { result } = renderHook(() =>
+      useAuthCommand(settings as never, config as never, addItem),
+    );
+
+    await act(async () => {
+      await result.current.handleChatgptSubmit();
+    });
+
+    expect(settings.setValue).not.toHaveBeenCalledWith(
+      'User',
+      'security.auth.selectedType',
+      AuthType.CHATGPT_OAUTH,
+    );
+    expect(config.refreshAuth).toHaveBeenCalledWith(AuthType.USE_OPENAI);
+    expect(addItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringContaining('current provider remains active'),
+      }),
+      expect.any(Number),
+    );
+  });
+
+  it('selects ChatGPT as primary when no provider is active yet', async () => {
+    const settings = createSettings();
+    const config = createConfig();
+    config.getAuthType = vi.fn(() => undefined);
+    const addItem = vi.fn();
+
+    const { result } = renderHook(() =>
+      useAuthCommand(settings as never, config as never, addItem),
+    );
+
+    await act(async () => {
+      await result.current.handleChatgptSubmit();
+    });
+
+    expect(settings.setValue).toHaveBeenCalledWith(
+      'User',
+      'security.auth.selectedType',
+      AuthType.CHATGPT_OAUTH,
+    );
+    expect(config.refreshAuth).toHaveBeenCalledWith(AuthType.CHATGPT_OAUTH);
   });
 
   it('configures Custom API Key via the provider install plan flow', async () => {

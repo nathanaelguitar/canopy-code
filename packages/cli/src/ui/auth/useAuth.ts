@@ -74,7 +74,7 @@ export type AuthController = {
       providerConfig: ProviderConfig,
       inputs: ProviderSetupInputs,
     ) => Promise<void>;
-    /** Run the interactive ChatGPT sign-in and switch to it. */
+    /** Run the interactive ChatGPT sign-in without displacing an active provider. */
     handleChatgptSubmit: () => Promise<void>;
     openAuthDialog: () => void;
     cancelAuthentication: () => void;
@@ -219,27 +219,44 @@ export const useAuthCommand = (
 
   const handleChatgptSubmit = useCallback(async () => {
     const protocol = AuthType.CHATGPT_OAUTH;
+    // ChatGPT credentials are also used by /advisor.  Keep the provider that
+    // is already serving the current session (for example a local OpenAI-
+    // compatible endpoint) instead of making an OAuth sign-in unexpectedly
+    // replace the primary model.  A session with no active provider still
+    // selects ChatGPT as its primary provider, preserving the first-login
+    // experience.
+    const activeAuthType = config.getAuthType();
+    const preserveActiveProvider =
+      activeAuthType !== undefined && activeAuthType !== protocol;
+    const refreshAuthType = preserveActiveProvider ? activeAuthType : protocol;
+
     try {
       setPendingAuthType(protocol);
       setIsAuthenticating(true);
       setAuthError(null);
 
       await loginWithChatgpt(config);
-      settings.setValue(
-        SettingScope.User,
-        'security.auth.selectedType',
-        protocol,
-      );
-      config.getModelsConfig().syncAfterAuthRefresh(protocol);
-      await config.refreshAuth(protocol);
+      if (!preserveActiveProvider) {
+        settings.setValue(
+          SettingScope.User,
+          'security.auth.selectedType',
+          protocol,
+        );
+      }
+      config.getModelsConfig().syncAfterAuthRefresh(refreshAuthType);
+      await config.refreshAuth(refreshAuthType);
 
       completeAuthentication();
 
       const feedbackItem: HistoryItemWithoutId & Record<string, unknown> = {
         type: MessageType.INFO,
-        text: t(
-          'Successfully signed in with ChatGPT. Use /model to switch models.',
-        ),
+        text: preserveActiveProvider
+          ? t(
+              'Successfully signed in with ChatGPT. Your current provider remains active; use /advisor to use ChatGPT for reviews.',
+            )
+          : t(
+              'Successfully signed in with ChatGPT. Use /model to switch models.',
+            ),
       };
       addItem(feedbackItem, Date.now());
 
