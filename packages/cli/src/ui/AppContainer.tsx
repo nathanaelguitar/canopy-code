@@ -2184,11 +2184,13 @@ export const AppContainer = (props: AppContainerProps) => {
   cancelOngoingRequestRef.current = cancelOngoingRequest;
   clearPendingStateRef.current = clearPendingState;
 
-  // Stage C: attempt Tailscale pairing automatically once per mount when
+  // Stage C: attempt Tailscale pairing automatically when
   // this session is daemon-attached. Unlike the explicit /remote-control
   // command, a missing tailnet interface is the expected common case (most
   // sessions won't have Tailscale installed) and must stay silent rather
-  // than greet every session start with an error.
+  // than greet every session start with an error. When a title is generated
+  // or changed later, re-deliver the same URL with the new title; the phone
+  // deduplicates by URL and updates its existing record.
   const daemonSessionForAutoRemoteControl = props.daemonSession;
   useEffect(() => {
     if (!daemonSessionForAutoRemoteControl) return;
@@ -2219,10 +2221,7 @@ export const AppContainer = (props: AppContainerProps) => {
     return () => {
       cancelled = true;
     };
-    // Intentionally once per mount: daemonSessionForAutoRemoteControl is
-    // immutable for the life of this component (see AppContainerProps).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [daemonSessionForAutoRemoteControl]);
+  }, [daemonSessionForAutoRemoteControl, sessionName]);
 
   // Now that streamingState is available, keep isIdleRef in sync and
   // flush any deferred update notifications when the model finishes responding.
