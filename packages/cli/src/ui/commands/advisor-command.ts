@@ -133,6 +133,7 @@ async function askAdvisor(
   context: CommandContext,
   focus: string,
   abortSignal: AbortSignal,
+  selectedAdvisor?: { model: string; reasoningEffort?: string },
 ): Promise<{ text: string; model: string }> {
   const { config } = context.services;
   if (!config) throw new Error(t('Config not loaded.'));
@@ -147,9 +148,11 @@ async function askAdvisor(
 
   const advisorModelSetting =
     context.services.settings.merged.advisorModel?.trim() || undefined;
-  const advisorSelection = advisorModelSetting
-    ? parseAdvisorModelSetting(advisorModelSetting)
-    : undefined;
+  const advisorSelection =
+    selectedAdvisor ??
+    (advisorModelSetting
+      ? parseAdvisorModelSetting(advisorModelSetting)
+      : undefined);
 
   // Tools are always stripped (NO_TOOLS), matching /btw and the "You have NO
   // tools" framing of the advisor prompt. This accepts a cache-prefix miss in
@@ -176,6 +179,41 @@ async function askAdvisor(
     text: formatAdvisorReview(result.jsonResult),
     model: result.model,
   };
+}
+
+async function runInteractiveAdvisor(
+  context: CommandContext,
+  focus: string,
+  abortSignal: AbortSignal,
+  selectedAdvisor?: { model: string; reasoningEffort?: string },
+): Promise<void> {
+  if (abortSignal.aborted) return;
+  const { ui } = context;
+  ui.setPendingItem({
+    type: MessageType.INFO,
+    text: t('Consulting advisor...'),
+  });
+  try {
+    const review = await askAdvisor(
+      context,
+      focus,
+      abortSignal,
+      selectedAdvisor,
+    );
+    if (abortSignal.aborted) return;
+    ui.addItem(
+      { type: MessageType.ADVISOR, text: review.text, model: review.model },
+      Date.now(),
+    );
+  } catch (error) {
+    if (abortSignal.aborted) return;
+    ui.addItem(
+      { type: MessageType.ERROR, text: formatAdvisorError(error) },
+      Date.now(),
+    );
+  } finally {
+    if (!abortSignal.aborted) ui.setPendingItem(null);
+  }
 }
 
 export const advisorCommand: SlashCommand = {
@@ -252,29 +290,37 @@ export const advisorCommand: SlashCommand = {
       };
     }
 
-    try {
-      ui.setPendingItem({
-        type: MessageType.INFO,
-        text: t('Consulting advisor...'),
-      });
-
-      const review = await askAdvisor(context, focus, abortSignal);
-
-      if (abortSignal.aborted) return;
-
-      ui.addItem(
-        { type: MessageType.ADVISOR, text: review.text, model: review.model },
-        Date.now(),
-      );
-    } catch (error) {
-      if (abortSignal.aborted) return;
-
-      ui.addItem(
-        { type: MessageType.ERROR, text: formatAdvisorError(error) },
-        Date.now(),
-      );
-    } finally {
-      if (!abortSignal.aborted) ui.setPendingItem(null);
+    // The slash-command processor supplies the canonical invocation name. A
+    // direct programmatic caller (used by integrations and unit tests) has no
+    // picker surface, so retain the immediate execution behavior there.
+    if (context.invocation?.name !== 'advisor') {
+      await runInteractiveAdvisor(context, focus, abortSignal);
+      return;
     }
+
+    const persistedAdvisorSetting =
+      context.services.settings.merged.advisorModel?.trim() || undefined;
+    const persistedAdvisorSelection = persistedAdvisorSetting
+      ? parseAdvisorModelSetting(persistedAdvisorSetting)
+      : undefined;
+
+    return {
+      type: 'advisor_picker',
+      initialModel: persistedAdvisorSelection?.model || config.getModel(),
+      initialReasoningEffort: persistedAdvisorSelection?.reasoningEffort,
+      onSelect: async (model: string, reasoningEffort: string) => {
+        // Keep the last picker choice as the default for the next /advisor.
+        context.services.settings.setValue(
+          'User' as Parameters<typeof context.services.settings.setValue>[0],
+          'advisorModel',
+          `${model} ${reasoningEffort}`,
+        );
+        await runInteractiveAdvisor(context, focus, abortSignal, {
+          model,
+          reasoningEffort,
+        });
+      },
+      onCancel: () => undefined,
+    };
   },
 };

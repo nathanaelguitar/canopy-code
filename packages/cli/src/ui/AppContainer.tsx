@@ -133,6 +133,7 @@ import { useModelCommand } from './hooks/useModelCommand.js';
 import { useArenaCommand } from './hooks/useArenaCommand.js';
 import { useApprovalModeCommand } from './hooks/useApprovalModeCommand.js';
 import { useEffortCommand } from './hooks/use-effort-command.js';
+import { useAdvisorDialog } from './hooks/use-advisor-dialog.js';
 import { useBranchCommand } from './hooks/useBranchCommand.js';
 import { useResumeCommand } from './hooks/useResumeCommand.js';
 import { useDeleteCommand } from './hooks/useDeleteCommand.js';
@@ -1449,6 +1450,13 @@ export const AppContainer = (props: AppContainerProps) => {
   const { isEffortDialogOpen, openEffortDialog, handleEffortSelect } =
     useEffortCommand(settings, config, historyManager.addItem);
 
+  const {
+    advisorDialog,
+    openAdvisorDialog,
+    closeAdvisorDialog,
+    selectAdvisorDialog,
+  } = useAdvisorDialog();
+
   const auth = useAuthCommand(
     settings,
     config,
@@ -1794,6 +1802,7 @@ export const AppContainer = (props: AppContainerProps) => {
       openPermissionsDialog,
       openApprovalModeDialog,
       openEffortDialog,
+      openAdvisorDialog,
       quit: (messages: HistoryItem[]) => {
         try {
           cancelOngoingRequestRef.current();
@@ -1844,6 +1853,7 @@ export const AppContainer = (props: AppContainerProps) => {
       openPermissionsDialog,
       openApprovalModeDialog,
       openEffortDialog,
+      openAdvisorDialog,
       addConfirmUpdateExtensionRequest,
       openSubagentCreateDialog,
       openAgentsManagerDialog,
@@ -3417,6 +3427,7 @@ export const AppContainer = (props: AppContainerProps) => {
     isStatsDialogOpen ||
     isApprovalModeDialogOpen ||
     isEffortDialogOpen ||
+    advisorDialog !== null ||
     isResumeDialogOpen ||
     isDeleteDialogOpen ||
     isHelpDialogOpen ||
@@ -3975,6 +3986,8 @@ export const AppContainer = (props: AppContainerProps) => {
     handleApprovalModeSelect,
     isEffortDialogOpen,
     handleEffortSelect,
+    isAdvisorDialogOpen: advisorDialog !== null,
+    closeAdvisorDialog,
     isAuthDialogOpen,
     closeAuthDialog,
     pendingAuthType,
@@ -4477,6 +4490,8 @@ export const AppContainer = (props: AppContainerProps) => {
       isPermissionsDialogOpen,
       isApprovalModeDialogOpen,
       isEffortDialogOpen,
+      isAdvisorDialogOpen: advisorDialog !== null,
+      advisorDialog,
       isResumeDialogOpen,
       resumeMatchedSessions,
       isDeleteDialogOpen,
@@ -4622,6 +4637,7 @@ export const AppContainer = (props: AppContainerProps) => {
       isPermissionsDialogOpen,
       isApprovalModeDialogOpen,
       isEffortDialogOpen,
+      advisorDialog,
       isResumeDialogOpen,
       resumeMatchedSessions,
       isDeleteDialogOpen,
@@ -4755,6 +4771,9 @@ export const AppContainer = (props: AppContainerProps) => {
       handleThemeHighlight,
       handleApprovalModeSelect,
       handleEffortSelect,
+      openAdvisorDialog,
+      closeAdvisorDialog,
+      selectAdvisorDialog,
       auth: authActions,
       handleEditorSelect,
       exitEditorDialog,
@@ -4847,6 +4866,9 @@ export const AppContainer = (props: AppContainerProps) => {
       handleThemeHighlight,
       handleApprovalModeSelect,
       handleEffortSelect,
+      openAdvisorDialog,
+      closeAdvisorDialog,
+      selectAdvisorDialog,
       authActions,
       handleEditorSelect,
       exitEditorDialog,

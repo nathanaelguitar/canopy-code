@@ -21,6 +21,10 @@ import type { HistoryItem } from '../types.js';
 import type { RestoreOption } from '../components/RewindSelector.js';
 import { type ArenaDialogType } from '../hooks/useArenaCommand.js';
 import type { StatusLinePresetConfig } from '../statusLinePresets.js';
+import type {
+  AdvisorDialogOptions,
+  AdvisorDialogSelection,
+} from '../hooks/use-advisor-dialog.js';
 
 export type HelpTab = 'general' | 'commands' | 'custom-commands';
 
@@ -42,6 +46,9 @@ export interface UIActions {
     scope: SettingScope,
   ) => void;
   handleEffortSelect: (effort: ReasoningEffort | undefined) => void;
+  openAdvisorDialog: (options: AdvisorDialogOptions) => void;
+  closeAdvisorDialog: () => void;
+  selectAdvisorDialog: (selection: AdvisorDialogSelection) => void;
   auth: AuthController['actions'];
   handleEditorSelect: (
     editorType: EditorType | undefined,

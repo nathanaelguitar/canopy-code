@@ -285,6 +285,15 @@ export interface ConfirmActionReturn {
   };
 }
 
+/** The interactive advisor model/effort picker. */
+export interface AdvisorPickerActionReturn {
+  type: 'advisor_picker';
+  initialModel?: string;
+  initialReasoningEffort?: string;
+  onSelect: (model: string, reasoningEffort: string) => void | Promise<void>;
+  onCancel: () => void;
+}
+
 export type SlashCommandActionReturn =
   | ToolActionReturn
   | MessageActionReturn
@@ -295,7 +304,8 @@ export type SlashCommandActionReturn =
   | SubmitPromptActionReturn
   | GoalControlActionReturn
   | ConfirmShellCommandsActionReturn
-  | ConfirmActionReturn;
+  | ConfirmActionReturn
+  | AdvisorPickerActionReturn;
 
 export enum CommandKind {
   BUILT_IN = 'built-in',

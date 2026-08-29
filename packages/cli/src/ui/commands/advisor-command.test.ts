@@ -155,6 +155,40 @@ describe('advisorCommand', () => {
   });
 
   describe('interactive mode', () => {
+    it('returns a model-and-effort picker for slash invocations', async () => {
+      const pickerContext = createMockCommandContext({
+        invocation: { raw: '/advisor', name: 'advisor', args: '' },
+        services: {
+          config: createConfig(),
+          settings: {
+            merged: {},
+            setValue: vi.fn(),
+          },
+        },
+      });
+
+      const result = await advisorCommand.action!(pickerContext, '');
+
+      expect(result).toMatchObject({
+        type: 'advisor_picker',
+        initialModel: 'test-model',
+      });
+      expect(mockRunForkedAgent).not.toHaveBeenCalled();
+
+      if (!result || result.type !== 'advisor_picker') {
+        throw new Error('Expected advisor picker result');
+      }
+      mockRunForkedAgent.mockResolvedValue(advisorResult('gpt-5.6-luna'));
+      await result.onSelect('chatgpt-oauth:gpt-5.6-luna', 'high');
+      expect(pickerContext.services.settings.setValue).toHaveBeenCalled();
+      expect(mockRunForkedAgent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'chatgpt-oauth:gpt-5.6-luna',
+          reasoningEffort: 'high',
+        }),
+      );
+    });
+
     it('should show pending item, add an advisor review item, then clear pending', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult('resolved-model'));
 

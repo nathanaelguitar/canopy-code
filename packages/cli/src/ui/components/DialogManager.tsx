@@ -31,6 +31,7 @@ import { ArenaStopDialog } from './arena/ArenaStopDialog.js';
 import { ArenaStatusDialog } from './arena/ArenaStatusDialog.js';
 import { ApprovalModeDialog } from './ApprovalModeDialog.js';
 import { EffortDialog } from './EffortDialog.js';
+import { AdvisorDialog } from './AdvisorDialog.js';
 import { theme } from '../semantic-colors.js';
 import { useUIState } from '../contexts/UIStateContext.js';
 import { useUIActions } from '../contexts/UIActionsContext.js';
@@ -360,6 +361,16 @@ export const DialogManager = ({
           onSelect={uiActions.handleEffortSelect}
         />
       </Box>
+    );
+  }
+  if (uiState.isAdvisorDialogOpen && uiState.advisorDialog) {
+    return (
+      <AdvisorDialog
+        initialModel={uiState.advisorDialog.initialModel}
+        initialReasoningEffort={uiState.advisorDialog.initialReasoningEffort}
+        onSelect={uiActions.selectAdvisorDialog}
+        onCancel={uiActions.closeAdvisorDialog}
+      />
     );
   }
   if (uiState.activeArenaDialog === 'start') {

@@ -225,6 +225,14 @@ function handleCommandResult(
         originalType: 'confirm_action',
       };
 
+    case 'advisor_picker':
+      return {
+        type: 'unsupported',
+        reason:
+          'The advisor model picker is interactive only. Set advisorModel directly for non-interactive use.',
+        originalType: 'advisor_picker',
+      };
+
     default: {
       // Exhaustiveness check
       const _exhaustive: never = result;

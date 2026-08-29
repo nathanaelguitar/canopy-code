@@ -29,6 +29,10 @@ export interface DialogCloseOptions {
   isEffortDialogOpen: boolean;
   handleEffortSelect: (effort: ReasoningEffort | undefined) => void;
 
+  // Advisor model/effort picker
+  isAdvisorDialogOpen: boolean;
+  closeAdvisorDialog: () => void;
+
   // Auth dialog
   isAuthDialogOpen: boolean;
   closeAuthDialog: () => void;
@@ -109,6 +113,11 @@ export function useDialogClose(options: DialogCloseOptions) {
     if (options.isEffortDialogOpen) {
       // Mimic ESC behavior: onSelect(undefined) - keeps the current effort.
       options.handleEffortSelect(undefined);
+      return true;
+    }
+
+    if (options.isAdvisorDialogOpen) {
+      options.closeAdvisorDialog();
       return true;
     }
 

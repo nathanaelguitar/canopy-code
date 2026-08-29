@@ -186,6 +186,8 @@ describe('useSlashCommandProcessor', () => {
     openTrustDialog: vi.fn(),
     openPermissionsDialog: vi.fn(),
     openApprovalModeDialog: vi.fn(),
+    openEffortDialog: vi.fn(),
+    openAdvisorDialog: vi.fn(),
     openHelpDialog: mockOpenHelpDialog,
     openResumeDialog: vi.fn(),
     handleResume: vi.fn(),

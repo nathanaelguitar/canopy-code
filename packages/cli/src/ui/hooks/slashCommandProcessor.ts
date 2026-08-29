@@ -188,6 +188,15 @@ export interface SlashCommandProcessorActions {
   openPermissionsDialog: () => void;
   openApprovalModeDialog: () => void;
   openEffortDialog: () => void;
+  openAdvisorDialog: (options: {
+    initialModel?: string;
+    initialReasoningEffort?: string;
+    onSelect: (selection: {
+      model: string;
+      reasoningEffort: string;
+    }) => void | Promise<void>;
+    onCancel: () => void;
+  }) => void;
   openResumeDialog: (matchedSessions?: SessionListItem[]) => void;
   handleResume: (sessionId: string) => Promise<void>;
   handleBranch: (name?: string) => Promise<void>;
@@ -1464,6 +1473,44 @@ export const useSlashCommandProcessor = (
                     true,
                     invocationItemId,
                   );
+                }
+                case 'advisor_picker': {
+                  await new Promise<void>((resolve) => {
+                    let settled = false;
+                    const settle = () => {
+                      if (settled) return;
+                      settled = true;
+                      resolve();
+                    };
+                    actions.openAdvisorDialog({
+                      initialModel: result.initialModel,
+                      initialReasoningEffort: result.initialReasoningEffort,
+                      onSelect: (selection) => {
+                        void Promise.resolve(
+                          result.onSelect(
+                            selection.model,
+                            selection.reasoningEffort,
+                          ),
+                        )
+                          .catch((error: unknown) => {
+                            addMessage({
+                              type: MessageType.ERROR,
+                              content:
+                                error instanceof Error
+                                  ? error.message
+                                  : String(error),
+                              timestamp: new Date(),
+                            });
+                          })
+                          .finally(settle);
+                      },
+                      onCancel: () => {
+                        result.onCancel();
+                        settle();
+                      },
+                    });
+                  });
+                  return { type: 'handled' };
                 }
                 case 'stream_messages': {
                   // stream_messages is only used in ACP/Zed integration mode

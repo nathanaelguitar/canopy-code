@@ -41,6 +41,7 @@ import { type ProviderUpdateRequest } from '../hooks/useProviderUpdates.js';
 import { type ArenaDialogType } from '../hooks/useArenaCommand.js';
 import type { StatusLinePresetConfig } from '../statusLinePresets.js';
 import type { StartupIdeConnectionStatus } from '../../utils/events.js';
+import type { AdvisorDialogOptions } from '../hooks/use-advisor-dialog.js';
 
 export interface PendingSkillView {
   name: string;
@@ -80,6 +81,8 @@ export interface UIState {
   isPermissionsDialogOpen: boolean;
   isApprovalModeDialogOpen: boolean;
   isEffortDialogOpen: boolean;
+  isAdvisorDialogOpen: boolean;
+  advisorDialog: AdvisorDialogOptions | null;
   isResumeDialogOpen: boolean;
   resumeMatchedSessions: SessionListItem[] | undefined;
   isDeleteDialogOpen: boolean;
