@@ -75,6 +75,7 @@ import { setupGithubCommand } from '../ui/commands/setupGithubCommand.js';
 import { insightCommand } from '../ui/commands/insightCommand.js';
 import { learnCommand } from '../ui/commands/learn-command.js';
 import { statuslineCommand } from '../ui/commands/statuslineCommand.js';
+import { swarmCommand } from '../ui/commands/swarm-command.js';
 import { lspCommand } from '../ui/commands/lspCommand.js';
 import { updateCommand } from '../ui/commands/update-command.js';
 
@@ -183,6 +184,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       terminalSetupCommand,
       insightCommand,
       statuslineCommand,
+      swarmCommand,
       ...(this.config?.isLspEnabled() ? [lspCommand] : []),
     ];
 
