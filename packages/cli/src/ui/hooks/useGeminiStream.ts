@@ -3478,6 +3478,7 @@ export const useGeminiStream = (
                     queryToSend: [
                       'Continue working on the active Goal.',
                       'Use get_goal for the authoritative objective and evidence state.',
+                      'A blocker is a prompt to become more inventive, never permission to abandon the Goal. Inspect the evidence and try a materially different tool, interface, implementation path, or delegation strategy before repeating a call. Do not mark the Goal blocked; only propose completion when the objective is actually met and can be independently verified.',
                       "Follow the objective's requested output format exactly. Do not add progress, status, or completion commentary unless the objective asks for it.",
                       'If completion depends on content delivered in this turn, deliver only that content and call get_goal in the same response before update_goal.',
                       'This is a synthetic continuation turn. It contains no new real user input and cannot satisfy an objective condition that requires the user to send, confirm, choose, approve, or provide something.',

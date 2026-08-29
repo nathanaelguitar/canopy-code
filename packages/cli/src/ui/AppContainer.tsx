@@ -170,7 +170,11 @@ import { useDaemonStream } from './daemon-attach/use-daemon-stream.js';
 import type { DaemonAttachedSession } from './daemon-attach/attach-daemon-session.js';
 import type { TrackedExecutingToolCall } from './hooks/useReactToolScheduler.js';
 import { useVim } from './hooks/vim.js';
-import { isBtwCommand, isSlashCommand } from './utils/commandUtils.js';
+import {
+  copyToClipboard,
+  isBtwCommand,
+  isSlashCommand,
+} from './utils/commandUtils.js';
 import {
   detectWorkflowKeyword,
   buildWorkflowSteeringNotice,
@@ -3336,8 +3340,10 @@ export const AppContainer = (props: AppContainerProps) => {
 
     refreshStatic();
   }, [renderMode, refreshStatic]);
-  const [ctrlCPressedOnce, setCtrlCPressedOnce] = useState(false);
-  const ctrlCTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Ctrl+C is reserved for copying the last response. Session exit is an
+  // explicit `/quit` action (or Ctrl+D with an empty prompt), so keep this
+  // value false for the legacy footer/context contract.
+  const ctrlCPressedOnce = false;
   const [ctrlDPressedOnce, setCtrlDPressedOnce] = useState(false);
   const ctrlDTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [escapePressedOnce, setEscapePressedOnce] = useState(false);
@@ -4081,6 +4087,44 @@ export const AppContainer = (props: AppContainerProps) => {
     ],
   );
 
+  const copyLastAssistantOutput = useCallback(async () => {
+    try {
+      const chat = await config.getGeminiClient()?.getChat();
+      const lastAssistantMessage = chat
+        ?.getHistoryShallow()
+        .filter((message) => message.role === 'model')
+        .at(-1);
+      const text = lastAssistantMessage?.parts
+        ?.filter((part) => part.text && !part.thought)
+        .map((part) => part.text)
+        .join('');
+      if (!text) {
+        historyManager.addItem(
+          { type: MessageType.INFO, text: 'No output available to copy.' },
+          Date.now(),
+        );
+        return;
+      }
+      await copyToClipboard(text);
+      historyManager.addItem(
+        {
+          type: MessageType.INFO,
+          text: 'Last output copied to the clipboard.',
+        },
+        Date.now(),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      historyManager.addItem(
+        {
+          type: MessageType.ERROR,
+          text: `Failed to copy to the clipboard. ${message}`,
+        },
+        Date.now(),
+      );
+    }
+  }, [config, historyManager]);
+
   const handleGlobalKeypress = useCallback(
     (key: Key) => {
       // Debug log keystrokes if enabled
@@ -4096,21 +4140,9 @@ export const AppContainer = (props: AppContainerProps) => {
       }
 
       if (keyMatchers[Command.QUIT](key)) {
-        if (isAuthenticating) {
-          return;
-        }
-
-        // On first press: set flag, start timer, and call handleExit for cleanup
-        // On second press (within timeout): handleExit sees flag and does fast quit
-        if (!ctrlCPressedOnce) {
-          setCtrlCPressedOnce(true);
-          ctrlCTimerRef.current = setTimeout(() => {
-            setCtrlCPressedOnce(false);
-            ctrlCTimerRef.current = null;
-          }, CTRL_EXIT_PROMPT_DURATION_MS);
-        }
-
-        handleExit(ctrlCPressedOnce, setCtrlCPressedOnce, ctrlCTimerRef);
+        // Never let Ctrl+C terminate a Canopy session. Copy directly instead
+        // of synthesizing `/copy`, so no command invocation enters history.
+        void copyLastAssistantOutput();
         return;
       } else if (keyMatchers[Command.EXIT](key)) {
         // Cancel in-flight btw even when buffer has text (Ctrl+D)
@@ -4124,6 +4156,23 @@ export const AppContainer = (props: AppContainerProps) => {
         handleExit(ctrlDPressedOnce, setCtrlDPressedOnce, ctrlDTimerRef);
         return;
       } else if (keyMatchers[Command.ESCAPE](key)) {
+        // A single Esc always interrupts active model work. Do this before
+        // vim/input-buffer handling so a drafted follow-up or vim INSERT mode
+        // cannot turn Esc into a no-op while the model continues running.
+        if (
+          streamingState === StreamingState.Responding &&
+          !dialogsVisibleRef.current &&
+          !embeddedShellFocused
+        ) {
+          if (escapeTimerRef.current) {
+            clearTimeout(escapeTimerRef.current);
+            escapeTimerRef.current = null;
+          }
+          cancelOngoingRequest?.();
+          setEscapePressedOnce(false);
+          return;
+        }
+
         // In vim INSERT mode, let vim's own handler (in InputPrompt) consume
         // the Esc to switch to NORMAL mode. Without this guard, both handlers
         // fire on the same keypress — vim switches mode AND AppContainer
@@ -4157,22 +4206,6 @@ export const AppContainer = (props: AppContainerProps) => {
             setEscapePressedOnce(false);
             escapeTimerRef.current = null;
           }, CTRL_EXIT_PROMPT_DURATION_MS);
-          return;
-        }
-
-        // Input is empty, cancel request immediately (no double-press needed)
-        // Skip when a dialog (background tasks, etc.) is open — ESC should
-        // close the dialog, not cancel the running request.
-        if (
-          streamingState === StreamingState.Responding &&
-          !dialogsVisibleRef.current
-        ) {
-          if (escapeTimerRef.current) {
-            clearTimeout(escapeTimerRef.current);
-            escapeTimerRef.current = null;
-          }
-          cancelOngoingRequest?.();
-          setEscapePressedOnce(false);
           return;
         }
 
@@ -4214,8 +4247,8 @@ export const AppContainer = (props: AppContainerProps) => {
         }
       }
 
-      // Note: Ctrl+C/D btw cancellation is handled inside handleExit
-      // (step 3), not here, because Command.QUIT/EXIT match first.
+      // Ctrl+D can still cancel a BTW request via handleExit. Ctrl+C copies
+      // the latest response and intentionally has no cancellation/exit role.
 
       let enteringConstrainHeightMode = false;
       if (!constrainHeight) {
@@ -4319,9 +4352,7 @@ export const AppContainer = (props: AppContainerProps) => {
       config,
       ideContextState,
       handleExit,
-      ctrlCPressedOnce,
-      setCtrlCPressedOnce,
-      ctrlCTimerRef,
+      copyLastAssistantOutput,
       ctrlDPressedOnce,
       setCtrlDPressedOnce,
       ctrlDTimerRef,
@@ -4341,7 +4372,6 @@ export const AppContainer = (props: AppContainerProps) => {
       // ESLint requires it here because the callback calls settings.setValue().
       // debugKeystrokeLogging is read at call time, so no stale closure risk.
       settings,
-      isAuthenticating,
       setRenderMode,
       refreshStatic,
       handleDoubleEscRewind,

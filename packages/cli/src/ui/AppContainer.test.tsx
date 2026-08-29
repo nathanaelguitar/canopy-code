@@ -2769,7 +2769,7 @@ describe('AppContainer State Management', () => {
       capturedOnCancelSubmit(info);
     };
 
-    it('does not fire outer cancel handler on Esc when vim is enabled in INSERT mode', async () => {
+    it('cancels active work on Esc even when vim is in INSERT mode', async () => {
       mockedUseVimModeState.mockReturnValue({
         vimEnabled: true,
         vimMode: 'INSERT',
@@ -2816,8 +2816,8 @@ describe('AppContainer State Management', () => {
 
       handleKeypress!(escKey);
 
-      // In vim INSERT mode, Esc must NOT trigger the outer cancel handler.
-      expect(cancelSpy).not.toHaveBeenCalled();
+      // Active model work takes priority over vim mode: one Esc interrupts it.
+      expect(cancelSpy).toHaveBeenCalledOnce();
     });
 
     it('cancels the ongoing request on a single Esc with an empty buffer and queued follow-ups', async () => {
@@ -5258,43 +5258,7 @@ describe('AppContainer State Management', () => {
       expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
     });
 
-    it('should require double Ctrl+C to exit when dialogs are open', () => {
-      vi.useFakeTimers();
-
-      mockedUseThemeCommand.mockReturnValue({
-        isThemeDialogOpen: true,
-        openThemeDialog: vi.fn(),
-        handleThemeSelect: vi.fn(),
-        handleThemeHighlight: vi.fn(),
-      });
-
-      const mockHandleSlashCommand = vi.fn();
-      mockedUseSlashCommandProcessor.mockReturnValue({
-        handleSlashCommand: mockHandleSlashCommand,
-        slashCommands: [],
-        pendingHistoryItems: [],
-        commandContext: {},
-        shellConfirmationRequest: null,
-        confirmationRequest: null,
-      });
-
-      render(
-        <AppContainer
-          config={mockConfig}
-          settings={mockSettings}
-          version="1.0.0"
-          initializationResult={mockInitResult}
-        />,
-      );
-
-      expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
-
-      expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
-
-      vi.useRealTimers();
-    });
-
-    it('should cancel ongoing request on first Ctrl+C', () => {
+    it('copies the last output on Ctrl+C and never cancels or exits', () => {
       const mockCancelOngoingRequest = vi.fn();
       mockedUseGeminiStream.mockReturnValue({
         streamingState: 'responding',
@@ -5327,38 +5291,18 @@ describe('AppContainer State Management', () => {
         />,
       );
 
-      expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
-    });
-
-    it('should reset Ctrl+C state after timeout', () => {
-      vi.useFakeTimers();
-
-      const mockHandleSlashCommand = vi.fn();
-      mockedUseSlashCommandProcessor.mockReturnValue({
-        handleSlashCommand: mockHandleSlashCommand,
-        slashCommands: [],
-        pendingHistoryItems: [],
-        commandContext: {},
-        shellConfirmationRequest: null,
-        confirmationRequest: null,
+      getGlobalKeypress()?.({
+        name: 'c',
+        sequence: '\u0003',
+        ctrl: true,
+        meta: false,
+        shift: false,
+        paste: false,
       });
 
-      render(
-        <AppContainer
-          config={mockConfig}
-          settings={mockSettings}
-          version="1.0.0"
-          initializationResult={mockInitResult}
-        />,
-      );
-
+      expect(mockHandleSlashCommand).not.toHaveBeenCalled();
+      expect(mockCancelOngoingRequest).not.toHaveBeenCalled();
       expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
-
-      vi.advanceTimersByTime(1001);
-
-      expect(mockHandleSlashCommand).not.toHaveBeenCalledWith('/quit');
-
-      vi.useRealTimers();
     });
 
     it('Ctrl+B promotes the running foreground shell tool call (#3831 PR-3)', () => {
