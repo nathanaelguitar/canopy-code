@@ -194,6 +194,20 @@ describe('<ToolGroupMessage />', () => {
       expect(frame).not.toContain('MockTool');
     });
 
+    it('renders collapsible tools individually when showToolCalls is enabled', () => {
+      const toolCalls = [
+        createToolCall({ callId: 'read-1', name: 'ReadFile' }),
+        createToolCall({ callId: 'search-1', name: 'Grep' }),
+      ];
+      const { lastFrame } = renderWithProviders(
+        <ToolGroupMessage {...baseProps} toolCalls={toolCalls} showToolCalls />,
+      );
+      const frame = lastFrame() ?? '';
+      expect(frame).toContain('MockTool[read-1]');
+      expect(frame).toContain('MockTool[search-1]');
+      expect(frame).not.toContain('Searched');
+    });
+
     it('renders image-bearing collapsible tools individually', () => {
       const toolCalls = [
         createToolCall({

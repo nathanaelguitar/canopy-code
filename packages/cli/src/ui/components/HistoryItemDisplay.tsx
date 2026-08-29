@@ -94,6 +94,8 @@ interface HistoryItemDisplayProps {
    * Default false (main view stays at the #5661 partition baseline).
    */
   fullDetail?: boolean;
+  /** Show each tool invocation explicitly (Codex-style call log). */
+  showToolCalls?: boolean;
   /**
    * Head id of the thought group this item belongs to (the `gemini_thought`
    * head id for both the head and its `gemini_thought_content` continuations).
@@ -241,6 +243,7 @@ const HistoryItemDisplayComponent: React.FC<HistoryItemDisplayProps> = ({
   sourceCopyIndexOffsets,
   thoughtExpanded,
   fullDetail = false,
+  showToolCalls = true,
   thoughtHeadId,
 }) => {
   const marginTop = getHistoryItemMarginTop(item);
@@ -413,6 +416,7 @@ const HistoryItemDisplayComponent: React.FC<HistoryItemDisplayProps> = ({
           memoryReadCount={itemForDisplay.memoryReadCount}
           isUserInitiated={itemForDisplay.isUserInitiated}
           fullDetail={fullDetail}
+          showToolCalls={showToolCalls}
         />
       )}
       {itemForDisplay.type === 'tool_use_summary' && (

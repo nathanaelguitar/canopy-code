@@ -161,6 +161,8 @@ interface ToolGroupMessageProps {
    * type-based partition baseline).
    */
   fullDetail?: boolean;
+  /** Render every invocation instead of compacting read/search/list groups. */
+  showToolCalls?: boolean;
 }
 
 // Main component maps the tools using ToolMessage
@@ -176,6 +178,7 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   memoryReadCount,
   isUserInitiated,
   fullDetail = false,
+  showToolCalls = false,
 }) => {
   const config = useConfig();
 
@@ -291,6 +294,7 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   // falls through to its own full ToolMessage instead of the dense panel.
   if (
     !fullDetail &&
+    !showToolCalls &&
     isPureParallelAgentGroup(toolCalls) &&
     !hasSubagentPendingConfirmation
   ) {
@@ -341,6 +345,7 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   // rather than collapsing to the "Recalled/Wrote N memories" badge.
   const allMemOpsComplete =
     !fullDetail &&
+    !showToolCalls &&
     isMemoryOnlyGroup &&
     !hasErrorTool &&
     toolCalls.every((t) => t.status === ToolCallStatus.Success);
@@ -377,6 +382,7 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   const hasTerminalSubagent = inlineToolCalls.some(isTerminalSubagentTool);
   const forceExpandAll =
     fullDetail ||
+    showToolCalls ||
     hasConfirmingTool ||
     hasSubagentPendingConfirmation ||
     hasErrorTool ||
