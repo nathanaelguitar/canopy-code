@@ -11,7 +11,8 @@ import type { DaemonAttachedSession } from './attach-daemon-session.js';
 
 // Deliberately fixed to the private beta Worker. This is not a user-configured
 // webhook and is not read from the shell environment.
-const REMOTE_CONTROL_API = 'https://founding-api.canopychat.app/v1/remote-control';
+const REMOTE_CONTROL_API =
+  'https://founding-api.canopychat.app/v1/remote-control';
 const REMOTE_CONTROL_SECRET = 'private-remote-control-device';
 
 interface LocalControlEnableResponse {
@@ -30,27 +31,34 @@ interface PairingStartResponse {
   expires_at: string;
 }
 
-type PairingStartResult =
-  | { pairing: PairingStartResponse }
-  | { error: string };
+type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
 
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
+  // A leading slash would make URL() resolve against the origin and discard
+  // the versioned Worker path (`/v1/remote-control`).
+  const relativePath = path.replace(/^\/+/, '');
+  return fetch(new URL(relativePath, `${REMOTE_CONTROL_API}/`), {
     ...init,
     headers: { Accept: 'application/json', ...(init.headers ?? {}) },
   });
 }
 
-async function sendSession(accessToken: string, session: {
-  sessionId: string;
-  workspaceName: string;
-  url: string;
-}): Promise<'sent' | 'unauthorized' | 'unavailable'> {
+async function sendSession(
+  accessToken: string,
+  session: {
+    sessionId: string;
+    workspaceName: string;
+    url: string;
+  },
+): Promise<'sent' | 'unauthorized' | 'unavailable'> {
   const response = await apiRequest('/sessions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
     body: JSON.stringify({
       session_id: session.sessionId,
       workspace_name: session.workspaceName,
@@ -70,7 +78,9 @@ async function pairAndSend(session: {
   const response = await apiRequest('/pairings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ device_name: hostname().slice(0, 120) || 'Canopy Code computer' }),
+    body: JSON.stringify({
+      device_name: hostname().slice(0, 120) || 'Canopy Code computer',
+    }),
   });
   if (!response.ok) {
     return { error: `pairing API returned HTTP ${response.status}` };
@@ -80,12 +90,18 @@ async function pairAndSend(session: {
     const deadline = Date.parse(pairing.expires_at);
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      const poll = await apiRequest(`/pairings/${encodeURIComponent(pairing.pairing_id)}`, {
-        headers: { Authorization: `Bearer ${pairing.polling_token}` },
-      });
+      const poll = await apiRequest(
+        `/pairings/${encodeURIComponent(pairing.pairing_id)}`,
+        {
+          headers: { Authorization: `Bearer ${pairing.polling_token}` },
+        },
+      );
       if (poll.status === 202) continue;
       if (!poll.ok) return;
-      const result = (await poll.json()) as { access_token?: string; status: string };
+      const result = (await poll.json()) as {
+        access_token?: string;
+        status: string;
+      };
       if (result.status !== 'approved' || !result.access_token) return;
       await deviceStorage.setSecret(REMOTE_CONTROL_SECRET, result.access_token);
       await sendSession(result.access_token, session);
@@ -218,14 +234,26 @@ export async function enableRemoteControl(
     };
   }
 
-  const session = { sessionId: daemonSession.sessionId, workspaceName, url: pairingUrl };
+  const session = {
+    sessionId: daemonSession.sessionId,
+    workspaceName,
+    url: pairingUrl,
+  };
   let pairingPending = false;
   let accessToken: string | null = null;
-  try { accessToken = await deviceStorage.getSecret(REMOTE_CONTROL_SECRET); } catch { accessToken = null; }
+  try {
+    accessToken = await deviceStorage.getSecret(REMOTE_CONTROL_SECRET);
+  } catch {
+    accessToken = null;
+  }
   if (accessToken) {
     const sent = await sendSession(accessToken, session);
     if (sent === 'unauthorized') {
-      try { await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET); } catch { /* already absent */ }
+      try {
+        await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET);
+      } catch {
+        /* already absent */
+      }
       accessToken = null;
     }
   }
