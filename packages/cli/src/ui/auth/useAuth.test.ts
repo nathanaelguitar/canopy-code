@@ -311,7 +311,7 @@ describe('useAuthCommand', () => {
   it('selects ChatGPT as primary when no provider is active yet', async () => {
     const settings = createSettings();
     const config = createConfig();
-    config.getAuthType = vi.fn(() => undefined);
+    config.getAuthType = vi.fn(() => undefined) as never;
     const addItem = vi.fn();
 
     const { result } = renderHook(() =>
