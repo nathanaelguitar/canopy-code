@@ -116,7 +116,11 @@ export function appendLocalUserTranscriptMessage(
     text,
     undefined,
     undefined,
-    opts.meta,
+    // A server echo must confirm this optimistic row, never append its text to
+    // it. This matters for co-driving: the remote Web Shell renders an
+    // optimistic prompt when the daemon admits it, then receives the same
+    // prompt through the session stream.
+    { ...opts.meta, qwenLocalOptimisticUserMessage: true },
   );
   if (opts.images && opts.images.length > 0) {
     (block as DaemonTextTranscriptBlock).images = [...opts.images];
@@ -664,6 +668,29 @@ function appendTextDelta(
     parentMap && parentId != null ? parentMap[parentId] : state[activeKey];
 
   const existing = getWritableBlockById(state, effectiveId);
+  // A local optimistic user row has already rendered the complete prompt.
+  // The daemon's echo is normally a single user.text.delta; reconcile that
+  // exact echo onto the same block instead of producing `promptprompt`.
+  if (
+    kind === 'user' &&
+    existing?.kind === 'user' &&
+    existing.meta?.qwenLocalOptimisticUserMessage === true
+  ) {
+    if (existing.text === text) {
+      existing.eventId = event.eventId;
+      existing.serverTimestamp = event.serverTimestamp;
+      existing.sourceRecordIds = event.sourceRecordIds
+        ? [...event.sourceRecordIds]
+        : undefined;
+      if (event.promptId !== undefined) existing.promptId = event.promptId;
+      existing.meta = 'meta' in event && event.meta ? { ...event.meta } : undefined;
+      existing.updatedAt = state.now;
+      return;
+    }
+    // Never concatenate a partial or non-matching server echo into a local
+    // full prompt. It will be represented as its own authoritative block.
+    state.activeUserBlockId = undefined;
+  }
   if (
     existing &&
     existing.kind === kind &&
