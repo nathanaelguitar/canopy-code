@@ -396,11 +396,16 @@ function resolveChatgptOAuthConfig(
 
   // Determine requested model
   const requestedModel = cli?.model || settings?.model;
+  // `gpt-5.6` is a public API family alias, but the ChatGPT Codex backend
+  // requires the concrete Sol slug. Treat old persisted settings as a
+  // migration instead of sending the rejected alias over the wire.
+  const canonicalRequestedModel =
+    requestedModel === 'gpt-5.6' ? 'gpt-5.6-sol' : requestedModel;
   let resolvedModel: string;
   let modelSource: ConfigSource;
 
-  if (requestedModel && allowedModels.has(requestedModel)) {
-    resolvedModel = requestedModel;
+  if (canonicalRequestedModel && allowedModels.has(canonicalRequestedModel)) {
+    resolvedModel = canonicalRequestedModel;
     modelSource = cli?.model
       ? cliSource('--model')
       : settingsSource('model.name');

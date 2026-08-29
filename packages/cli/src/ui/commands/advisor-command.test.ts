@@ -501,6 +501,45 @@ describe('advisorCommand', () => {
     });
   });
 
+  it('should split model and reasoning effort and migrate the GPT-5.6 alias', async () => {
+    mockRunForkedAgent.mockResolvedValue(advisorResult('gpt-5.6-luna'));
+    const contextWithModel = createMockCommandContext({
+      services: {
+        config: createConfig(),
+        settings: {
+          merged: { advisorModel: 'chatgpt-oauth:gpt-5.6-luna high' },
+        },
+      },
+    });
+
+    await advisorCommand.action!(contextWithModel, '');
+
+    expect(mockRunForkedAgent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'chatgpt-oauth:gpt-5.6-luna',
+        reasoningEffort: 'high',
+      }),
+    );
+  });
+
+  it('should migrate the persisted ChatGPT GPT-5.6 family alias to Sol', async () => {
+    mockRunForkedAgent.mockResolvedValue(advisorResult('gpt-5.6-sol'));
+    const contextWithModel = createMockCommandContext({
+      services: {
+        config: createConfig(),
+        settings: {
+          merged: { advisorModel: 'chatgpt-oauth:gpt-5.6' },
+        },
+      },
+    });
+
+    await advisorCommand.action!(contextWithModel, '');
+
+    expect(mockRunForkedAgent).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'chatgpt-oauth:gpt-5.6-sol' }),
+    );
+  });
+
   describe('acp mode', () => {
     it('should return message result with review on success', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult());

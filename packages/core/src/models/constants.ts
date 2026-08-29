@@ -118,12 +118,6 @@ export const DEFAULT_MODELS = {
  */
 export const CHATGPT_OAUTH_MODELS: ModelConfig[] = [
   {
-    id: 'gpt-5.6',
-    name: 'gpt-5.6',
-    description: 'GPT-5.6 Sol alias — frontier capability',
-    capabilities: { vision: true },
-  },
-  {
     id: 'gpt-5.6-sol',
     name: 'GPT-5.6 Sol',
     description: 'Frontier capability for complex reasoning and coding',

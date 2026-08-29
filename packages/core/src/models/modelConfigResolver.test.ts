@@ -305,7 +305,7 @@ describe('modelConfigResolver', () => {
     });
 
     describe('ChatGPT OAuth auth type', () => {
-      it('uses GPT-5.6 by default and accepts it explicitly', () => {
+      it('uses the concrete GPT-5.6 Sol slug and migrates the family alias', () => {
         const result = resolveModelConfig({
           authType: AuthType.CHATGPT_OAUTH,
           cli: { model: 'gpt-5.6' },
@@ -313,8 +313,8 @@ describe('modelConfigResolver', () => {
           env: {},
         });
 
-        expect(DEFAULT_CHATGPT_MODEL).toBe('gpt-5.6');
-        expect(result.config.model).toBe('gpt-5.6');
+        expect(DEFAULT_CHATGPT_MODEL).toBe('gpt-5.6-sol');
+        expect(result.config.model).toBe('gpt-5.6-sol');
         expect(result.config.apiKey).toBe('CHATGPT_OAUTH_DYNAMIC_TOKEN');
         expect(result.sources['model'].kind).toBe('cli');
       });

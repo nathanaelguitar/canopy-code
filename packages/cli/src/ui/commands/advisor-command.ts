@@ -37,6 +37,40 @@ interface AdvisorReview {
   recommendation: string;
 }
 
+const ADVISOR_REASONING_EFFORTS = new Set([
+  'none',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+  'max',
+]);
+
+/**
+ * Parse the compact advisor setting form `<model> <effort>` and migrate the
+ * old ChatGPT family alias. The model ID and reasoning effort are independent
+ * wire fields; keeping them separate prevents `gpt-5.6-luna high` from being
+ * sent as an invalid model name.
+ */
+function parseAdvisorModelSetting(raw: string): {
+  model: string;
+  reasoningEffort?: string;
+} {
+  const tokens = raw.trim().split(/\s+/);
+  const last = tokens.at(-1)?.toLowerCase();
+  const reasoningEffort =
+    last && ADVISOR_REASONING_EFFORTS.has(last) ? last : undefined;
+  const model = (reasoningEffort ? tokens.slice(0, -1) : tokens).join(' ');
+  const migratedModel = model.replace(
+    /^(chatgpt-oauth:)?gpt-5\.6$/,
+    '$1gpt-5.6-sol',
+  );
+  return {
+    model: migratedModel,
+    ...(reasoningEffort ? { reasoningEffort } : {}),
+  };
+}
+
 function buildAdvisorPrompt(focus: string): string {
   return [
     '<system-reminder>',
@@ -111,8 +145,11 @@ async function askAdvisor(
     throw new Error(t('No conversation context available for /advisor'));
   }
 
-  const advisorModel =
+  const advisorModelSetting =
     context.services.settings.merged.advisorModel?.trim() || undefined;
+  const advisorSelection = advisorModelSetting
+    ? parseAdvisorModelSetting(advisorModelSetting)
+    : undefined;
 
   // Tools are always stripped (NO_TOOLS), matching /btw and the "You have NO
   // tools" framing of the advisor prompt. This accepts a cache-prefix miss in
@@ -123,7 +160,14 @@ async function askAdvisor(
     userMessage: buildAdvisorPrompt(focus),
     cacheSafeParams,
     jsonSchema: ADVISOR_SCHEMA,
-    ...(advisorModel ? { model: advisorModel } : {}),
+    ...(advisorSelection
+      ? {
+          model: advisorSelection.model,
+          ...(advisorSelection.reasoningEffort
+            ? { reasoningEffort: advisorSelection.reasoningEffort }
+            : {}),
+        }
+      : {}),
     abortSignal,
     disableModelFallbacks: true,
   });

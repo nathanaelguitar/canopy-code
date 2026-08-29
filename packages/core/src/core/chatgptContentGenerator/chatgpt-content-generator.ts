@@ -207,9 +207,17 @@ export class ChatgptContentGenerator implements ContentGenerator {
     // allow an effort override through extra_body.reasoning_effort.
     const reasoningDisabled =
       request.config?.thinkingConfig?.includeThoughts === false;
-    const configuredEffort = (
-      config.extra_body as Record<string, unknown> | undefined
-    )?.['reasoning_effort'] as string | undefined;
+    const requestExtraBody = (
+      request.config as
+        | (GenerateContentParameters['config'] & {
+            extra_body?: Record<string, unknown>;
+          })
+        | undefined
+    )?.extra_body;
+    const configuredEffort = (requestExtraBody?.['reasoning_effort'] ??
+      (config.extra_body as Record<string, unknown> | undefined)?.[
+        'reasoning_effort'
+      ]) as string | undefined;
     const reasoningEffort = reasoningDisabled
       ? undefined
       : (configuredEffort ?? 'medium');

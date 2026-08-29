@@ -332,6 +332,8 @@ export interface CachePathParams {
   jsonSchema?: Record<string, unknown>;
   /** Model override (defaults to cacheSafeParams.model). */
   model?: string;
+  /** Optional reasoning effort override for the forked request. */
+  reasoningEffort?: string;
   /** External cancellation signal. */
   abortSignal?: AbortSignal;
   /** Do not route the query through configured model fallbacks. */
@@ -469,6 +471,7 @@ export async function runForkedAgent(
       abortSignal,
       preserveTools,
       disableModelFallbacks,
+      reasoningEffort,
     } = params;
     const modelSelector = params.model ?? cacheSafeParams.model;
     const modelRuntime = await buildForkedModelRuntime(
@@ -487,6 +490,20 @@ export async function runForkedAgent(
       if (jsonSchema) {
         requestConfig.responseMimeType = 'application/json';
         requestConfig.responseJsonSchema = jsonSchema;
+      }
+      if (reasoningEffort) {
+        (
+          requestConfig as GenerateContentConfig & {
+            extra_body?: Record<string, unknown>;
+          }
+        ).extra_body = {
+          ...((
+            cacheSafeParams.generationConfig as GenerateContentConfig & {
+              extra_body?: Record<string, unknown>;
+            }
+          ).extra_body ?? {}),
+          reasoning_effort: reasoningEffort,
+        };
       }
 
       const sendParams = {
