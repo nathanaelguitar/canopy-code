@@ -30,6 +30,10 @@ interface PairingStartResponse {
   expires_at: string;
 }
 
+type PairingStartResult =
+  | { pairing: PairingStartResponse }
+  | { error: string };
+
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
@@ -62,13 +66,15 @@ async function pairAndSend(session: {
   sessionId: string;
   workspaceName: string;
   url: string;
-}): Promise<PairingStartResponse | undefined> {
+}): Promise<PairingStartResult> {
   const response = await apiRequest('/pairings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ device_name: hostname().slice(0, 120) || 'Canopy Code computer' }),
   });
-  if (!response.ok) return undefined;
+  if (!response.ok) {
+    return { error: `pairing API returned HTTP ${response.status}` };
+  }
   const pairing = (await response.json()) as PairingStartResponse;
   void (async () => {
     const deadline = Date.parse(pairing.expires_at);
@@ -86,7 +92,7 @@ async function pairAndSend(session: {
       return;
     }
   })();
-  return pairing;
+  return { pairing };
 }
 
 /**
@@ -225,14 +231,16 @@ export async function enableRemoteControl(
   }
   let publicPairingUrl: string;
   if (!accessToken) {
-    const pairing = await pairAndSend(session);
-    if (!pairing) {
+    const pairingResult = await pairAndSend(session);
+    if ('error' in pairingResult) {
       return {
         status: 'error',
-        message: 'CanopyChat pairing is unavailable. No localhost fallback was created.',
+        message:
+          `CanopyChat pairing is unavailable: ${pairingResult.error}. ` +
+          'No localhost fallback was created.',
       };
     }
-    publicPairingUrl = pairing.pairing_url;
+    publicPairingUrl = pairingResult.pairing.pairing_url;
     pairingPending = true;
   } else {
     publicPairingUrl = pairingUrl;
