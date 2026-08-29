@@ -2926,6 +2926,95 @@ describe('AppContainer State Management', () => {
       expect(mockPopAllMessages).not.toHaveBeenCalled();
     });
 
+    it('keeps a queued follow-up queued so the idle drain submits it after Esc', async () => {
+      const cancelInfo = cancelInfoFor('current prompt');
+      const mockPopAllMessages = vi.fn().mockReturnValue(null);
+      const cancelSpy = vi.fn(() => capturedOnCancelSubmit?.(cancelInfo));
+      installCancelCapture({
+        streamingState: 'responding',
+        submitQuery: vi.fn(),
+        initError: null,
+        pendingHistoryItems: [],
+        thought: null,
+        cancelOngoingRequest: cancelSpy,
+        retryLastPrompt: vi.fn(),
+      });
+      mockedUseTextBuffer.mockReturnValue({ text: '', setText: vi.fn() });
+      mockedUseMessageQueue.mockReturnValue({
+        pendingSubmissionCount: 1,
+        messageQueue: ['queued follow-up'],
+        addMessage: vi.fn(),
+        clearQueue: vi.fn(),
+        getQueuedMessagesText: vi.fn().mockReturnValue('queued follow-up'),
+        popAllMessages: mockPopAllMessages,
+        drainQueue: vi.fn().mockReturnValue([]),
+        popNextTurn: vi.fn().mockReturnValue(null),
+        removeGoalTurns: vi.fn().mockReturnValue([]),
+      });
+
+      render(
+        <AppContainer
+          config={mockConfig}
+          settings={mockSettings}
+          version="1.0.0"
+          initializationResult={mockInitResult}
+        />,
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+
+      getGlobalKeypress()!(escKey);
+
+      expect(cancelSpy).toHaveBeenCalledOnce();
+      // The cancel callback leaves the queued message available for
+      // useQueuedSubmissionDrain instead of turning it into draft text.
+      expect(mockPopAllMessages).not.toHaveBeenCalled();
+    });
+
+    it('uses a second Esc to stop the replacement turn and clear queued work', async () => {
+      const clearQueue = vi.fn();
+      const cancelSpy = vi.fn();
+      installCancelCapture({
+        streamingState: 'responding',
+        submitQuery: vi.fn(),
+        initError: null,
+        pendingHistoryItems: [],
+        thought: null,
+        cancelOngoingRequest: cancelSpy,
+        retryLastPrompt: vi.fn(),
+      });
+      mockedUseTextBuffer.mockReturnValue({ text: '', setText: vi.fn() });
+      mockedUseMessageQueue.mockReturnValue({
+        pendingSubmissionCount: 1,
+        messageQueue: ['queued follow-up'],
+        addMessage: vi.fn(),
+        clearQueue,
+        getQueuedMessagesText: vi.fn().mockReturnValue('queued follow-up'),
+        popAllMessages: vi.fn().mockReturnValue(null),
+        drainQueue: vi.fn().mockReturnValue([]),
+        popNextTurn: vi.fn().mockReturnValue(null),
+        removeGoalTurns: vi.fn().mockReturnValue([]),
+      });
+
+      render(
+        <AppContainer
+          config={mockConfig}
+          settings={mockSettings}
+          version="1.0.0"
+          initializationResult={mockInitResult}
+        />,
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const handleKeypress = getGlobalKeypress()!;
+      handleKeypress(escKey);
+      handleKeypress(escKey);
+
+      expect(cancelSpy).toHaveBeenCalledTimes(2);
+      expect(clearQueue).toHaveBeenCalledOnce();
+    });
+
     it('does not repopulate the buffer with the previous prompt on ESC cancel', async () => {
       const mockSetText = vi.fn();
       mockedUseTextBuffer.mockReturnValue({

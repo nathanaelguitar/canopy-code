@@ -2114,6 +2114,9 @@ export const AppContainer = (props: AppContainerProps) => {
   }, [config, historyManager, settings.merged]);
 
   const cancelHandlerRef = useRef<(info?: CancelSubmitInfo) => void>(() => {});
+  // One-shot cancellation intents shared by the key handler and the stream's
+  // synchronous cancel callback.
+  const promoteQueuedAfterCancelRef = useRef(false);
   const midTurnDrainRef = useRef<UseMessageQueueReturn['drainQueue'] | null>(
     null,
   );
@@ -2241,7 +2244,7 @@ export const AppContainer = (props: AppContainerProps) => {
     return () => {
       cancelled = true;
     };
-  }, [daemonSessionForAutoRemoteControl, sessionName]);
+  }, [config, daemonSessionForAutoRemoteControl, historyManager, sessionName]);
 
   // Now that streamingState is available, keep isIdleRef in sync and
   // flush any deferred update notifications when the model finishes responding.
@@ -2359,6 +2362,7 @@ export const AppContainer = (props: AppContainerProps) => {
     claimDirectUserAdmission,
     removeGoalTurns,
     popNextSubmission,
+    clearQueue,
     popAllMessages,
     restoreMessages,
     drainQueue,
@@ -2411,6 +2415,18 @@ export const AppContainer = (props: AppContainerProps) => {
     submittedPromptProvenanceUnavailableRef.current = false;
     return submission.modelText;
   }, [popAllMessages, releaseQueuedGoalReservations, removeGoalTurns]);
+
+  // Stop means cancel the active turn and discard work that was waiting
+  // behind it. Keep this separate from popAllQueuedMessages(): cancellation
+  // normally restores queued text for editing, while a double-Esc is an
+  // explicit request to stop the model entirely.
+  const clearQueuedWork = useCallback(() => {
+    const goalTurnKeys = removeGoalTurns();
+    if (goalTurnKeys.length > 0) {
+      releaseQueuedGoalReservations(goalTurnKeys);
+    }
+    clearQueue();
+  }, [clearQueue, releaseQueuedGoalReservations, removeGoalTurns]);
 
   useEffect(() => {
     const host: GoalTurnHost = {
@@ -2876,6 +2892,12 @@ export const AppContainer = (props: AppContainerProps) => {
 
   cancelHandlerRef.current = useCallback(
     (info?: CancelSubmitInfo) => {
+      const promoteQueuedSubmission = promoteQueuedAfterCancelRef.current;
+      // Consume this one-shot intent before any early return below. A queued
+      // follow-up is promoted only for the cancellation initiated by the
+      // first Esc; later cancellations return to the normal edit/restore
+      // behavior.
+      promoteQueuedAfterCancelRef.current = false;
       // Combine the React-state pending items (slash command, retry countdown,
       // tool group, etc.) with the synchronous snapshot of the Gemini pending
       // item from `useGeminiStream`. The snapshot closes the race where a
@@ -2891,14 +2913,15 @@ export const AppContainer = (props: AppContainerProps) => {
       }
       const draftWasEmpty = buffer.text.length === 0;
 
-      // Always drain the queue back into the buffer (claude-code parity:
+      // Normally drain the queue back into the buffer (claude-code parity:
       // popAllEditable preserves queued text on every cancel path, including
-      // tool-execution cancels — never silently drop the user's queued work).
-      const goalTurnKeys = removeGoalTurns();
+      // tool-execution cancels). The Esc interrupt-and-continue path below is
+      // the intentional exception: it leaves queued work for idle admission.
+      const goalTurnKeys = promoteQueuedSubmission ? [] : removeGoalTurns();
       if (goalTurnKeys.length > 0) {
         releaseQueuedGoalReservations(goalTurnKeys);
       }
-      const popped = popAllMessages();
+      const popped = promoteQueuedSubmission ? null : popAllMessages();
       if (popped) {
         restoredSubmissionRef.current = popped;
         submittedPromptProvenanceUnavailableRef.current = false;
@@ -2952,6 +2975,17 @@ export const AppContainer = (props: AppContainerProps) => {
       if (popped !== null) {
         debugLogger.debug(
           'auto-restore bail: queue had items (drained to buffer)',
+        );
+        return;
+      }
+
+      // The queued follow-up is intentionally left in the queue. Once the
+      // stream transitions to Idle, useQueuedSubmissionDrain submits it. Do
+      // not restore the cancelled turn into the composer or rewind its
+      // transcript: Esc was used as an interrupt-and-continue gesture.
+      if (promoteQueuedSubmission) {
+        debugLogger.debug(
+          'cancel: preserving queued submission for immediate admission',
         );
         return;
       }
@@ -3091,6 +3125,7 @@ export const AppContainer = (props: AppContainerProps) => {
       refreshStatic,
       pendingSlashCommandHistoryItems,
       pendingGeminiHistoryItems,
+      promoteQueuedAfterCancelRef,
     ],
   );
 
@@ -3359,6 +3394,10 @@ export const AppContainer = (props: AppContainerProps) => {
   const ctrlDTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [escapePressedOnce, setEscapePressedOnce] = useState(false);
   const escapeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // A first Esc that interrupts a live turn arms a short double-Esc window.
+  // A ref is used alongside React state so two rapid keypresses cannot race
+  // a render and accidentally take the rewind/input-clear path.
+  const escapeCancelArmedRef = useRef(false);
   const dialogsVisibleRef = useRef(false);
   const [isRewindSelectorOpen, setIsRewindSelectorOpen] = useState(false);
   const [rewindEscPending, setRewindEscPending] = useState(false);
@@ -4170,6 +4209,25 @@ export const AppContainer = (props: AppContainerProps) => {
         handleExit(ctrlDPressedOnce, setCtrlDPressedOnce, ctrlDTimerRef);
         return;
       } else if (keyMatchers[Command.ESCAPE](key)) {
+        // A second Esc inside the cancellation window is an explicit
+        // stop-all gesture: cancel any replacement turn and discard queued
+        // prompts. This is deliberately checked before the normal idle
+        // rewind/input handling so it cannot be swallowed by a dialog or
+        // interpreted as a composer action.
+        if (escapeCancelArmedRef.current) {
+          if (escapeTimerRef.current) {
+            clearTimeout(escapeTimerRef.current);
+            escapeTimerRef.current = null;
+          }
+          escapeCancelArmedRef.current = false;
+          setEscapePressedOnce(false);
+          clearQueuedWork();
+          if (streamingState === StreamingState.Responding) {
+            cancelOngoingRequest?.();
+          }
+          return;
+        }
+
         // A single Esc always interrupts active model work. Do this before
         // vim/input-buffer handling so a drafted follow-up or vim INSERT mode
         // cannot turn Esc into a no-op while the model continues running.
@@ -4181,8 +4239,15 @@ export const AppContainer = (props: AppContainerProps) => {
             clearTimeout(escapeTimerRef.current);
             escapeTimerRef.current = null;
           }
+          promoteQueuedAfterCancelRef.current = pendingSubmissionCount > 0;
           cancelOngoingRequest?.();
-          setEscapePressedOnce(false);
+          escapeCancelArmedRef.current = true;
+          setEscapePressedOnce(true);
+          escapeTimerRef.current = setTimeout(() => {
+            escapeCancelArmedRef.current = false;
+            setEscapePressedOnce(false);
+            escapeTimerRef.current = null;
+          }, CTRL_EXIT_PROMPT_DURATION_MS);
           return;
         }
 
@@ -4372,8 +4437,12 @@ export const AppContainer = (props: AppContainerProps) => {
       escapePressedOnce,
       setEscapePressedOnce,
       escapeTimerRef,
+      escapeCancelArmedRef,
+      promoteQueuedAfterCancelRef,
       streamingState,
       cancelOngoingRequest,
+      clearQueuedWork,
+      pendingSubmissionCount,
       buffer,
       handleSlashCommand,
       activePtyId,
