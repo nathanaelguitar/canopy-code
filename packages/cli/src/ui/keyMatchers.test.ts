@@ -50,7 +50,8 @@ describe('keyMatchers', () => {
       key.name === 'left' && !key.shift && !key.ctrl && !key.meta,
     [Command.COMPLETION_TAB_RIGHT]: (key: Key) =>
       key.name === 'right' && !key.shift && !key.ctrl && !key.meta,
-    [Command.ESCAPE]: (key: Key) => key.name === 'escape',
+    [Command.ESCAPE]: (key: Key) =>
+      key.name === 'escape' || key.sequence === '\u001b',
     [Command.SUBMIT]: (key: Key) =>
       key.name === 'return' && !key.ctrl && !key.meta && !key.paste,
     [Command.QUEUE_MESSAGE]: (key: Key) =>
@@ -112,7 +113,13 @@ describe('keyMatchers', () => {
     },
     {
       command: Command.ESCAPE,
-      positive: [createKey('escape'), createKey('escape', { ctrl: true })],
+      positive: [
+        createKey('escape'),
+        createKey('escape', { ctrl: true }),
+        // readline can emit a bare Escape byte without a name when terminal
+        // keyboard protocols are active.
+        createKey('', { sequence: '\u001b' }),
+      ],
       negative: [createKey('e'), createKey('esc')],
     },
 

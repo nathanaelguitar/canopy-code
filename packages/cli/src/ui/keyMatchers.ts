@@ -18,6 +18,18 @@ function matchKeyBinding(keyBinding: KeyBinding, key: Key): boolean {
 
   if (keyBinding.key !== undefined) {
     keyMatches = keyBinding.key === key.name;
+
+    // Some terminals (notably when Kitty keyboard protocol is enabled) pass
+    // a lone Escape byte through readline without assigning it a key name.
+    // Treat the canonical byte sequence as Escape too, so bindings expressed
+    // as `key: "escape"` remain reliable across terminal input modes.
+    if (
+      !keyMatches &&
+      keyBinding.key === 'escape' &&
+      key.sequence === '\u001b'
+    ) {
+      keyMatches = true;
+    }
   } else if (keyBinding.sequence !== undefined) {
     keyMatches = keyBinding.sequence === key.sequence;
   } else {

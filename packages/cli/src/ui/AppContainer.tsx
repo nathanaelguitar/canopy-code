@@ -4175,7 +4175,6 @@ export const AppContainer = (props: AppContainerProps) => {
         // cannot turn Esc into a no-op while the model continues running.
         if (
           streamingState === StreamingState.Responding &&
-          !dialogsVisibleRef.current &&
           !embeddedShellFocused
         ) {
           if (escapeTimerRef.current) {

@@ -2820,6 +2820,50 @@ describe('AppContainer State Management', () => {
       expect(cancelSpy).toHaveBeenCalledOnce();
     });
 
+    it('cancels active work on Esc while a dialog is open', async () => {
+      // Dialogs must not mask the global interrupt path. The model picker and
+      // other overlays can be open while a turn is still streaming, and a
+      // single Esc should stop that work before any dialog-specific cleanup.
+      mockedUseModelCommand.mockReturnValue({
+        isModelDialogOpen: true,
+        openModelDialog: vi.fn(),
+        closeModelDialog: vi.fn(),
+      });
+      const cancelSpy = vi.fn();
+      installCancelCapture({
+        streamingState: 'responding',
+        submitQuery: vi.fn(),
+        initError: null,
+        pendingHistoryItems: [],
+        thought: null,
+        cancelOngoingRequest: cancelSpy,
+        retryLastPrompt: vi.fn(),
+      });
+      mockedUseTextBuffer.mockReturnValue({
+        text: '',
+        setText: vi.fn(),
+      });
+
+      render(
+        <AppContainer
+          config={mockConfig}
+          settings={mockSettings}
+          version="1.0.0"
+          initializationResult={mockInitResult}
+        />,
+      );
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const handleKeypress = getGlobalKeypress();
+      expect(handleKeypress).toBeDefined();
+
+      handleKeypress!(escKey);
+
+      expect(cancelSpy).toHaveBeenCalledOnce();
+    });
+
     it('cancels the ongoing request on a single Esc with an empty buffer and queued follow-ups', async () => {
       // Positive counterpart to the vim-INSERT guard above: while the agent
       // is Responding and the buffer is empty, one Esc must reach the
