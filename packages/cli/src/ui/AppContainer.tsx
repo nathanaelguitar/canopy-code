@@ -2203,12 +2203,18 @@ export const AppContainer = (props: AppContainerProps) => {
         workspaceName,
       );
       if (cancelled || outcome.status !== 'enabled') return;
-      const lines = [
-        'Remote Control is on for this session. Scan from any device on your tailnet:',
-        '',
-        outcome.pairingUrl,
-      ];
-      if (outcome.qrText) lines.push('', outcome.qrText);
+      const lines = outcome.pairingPending
+        ? [
+            'Remote Control is on for this session. Open this pairing link in CanopyChat:',
+            '',
+            outcome.pairingUrl,
+            ...(outcome.qrText ? ['', outcome.qrText] : []),
+            '',
+            'Approve this computer in CanopyChat. Future sessions will be delivered by notification.',
+          ]
+        : [
+            'Remote Control is on for this session. The session was sent to your paired CanopyChat device.',
+          ];
       historyManager.addItem(
         { type: 'info', text: lines.join('\n') },
         Date.now(),
