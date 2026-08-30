@@ -4250,7 +4250,14 @@ export const AppContainer = (props: AppContainerProps) => {
             clearTimeout(escapeTimerRef.current);
             escapeTimerRef.current = null;
           }
-          promoteQueuedAfterCancelRef.current = pendingSubmissionCount > 0;
+          // Read the queue's synchronous ref rather than the React count.
+          // Ctrl+Q can enqueue a prompt and the user can press Esc before the
+          // next render commits `pendingSubmissionCount`; using that stale
+          // count would cancel the turn but route the queued prompt through
+          // the normal edit/restore path instead of submitting it.
+          const queuedSubmissionCount =
+            getPendingSubmissionCount?.() ?? pendingSubmissionCount;
+          promoteQueuedAfterCancelRef.current = queuedSubmissionCount > 0;
           cancelOngoingRequest?.();
           escapeCancelArmedRef.current = true;
           setEscapePressedOnce(true);
@@ -4453,6 +4460,7 @@ export const AppContainer = (props: AppContainerProps) => {
       streamingState,
       cancelOngoingRequest,
       clearQueuedWork,
+      getPendingSubmissionCount,
       pendingSubmissionCount,
       buffer,
       handleSlashCommand,

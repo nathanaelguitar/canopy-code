@@ -2941,7 +2941,10 @@ describe('AppContainer State Management', () => {
       });
       mockedUseTextBuffer.mockReturnValue({ text: '', setText: vi.fn() });
       mockedUseMessageQueue.mockReturnValue({
-        pendingSubmissionCount: 1,
+        // Simulate the Ctrl+Q -> Esc race: the queue ref is updated
+        // synchronously, while React has not committed the count yet.
+        pendingSubmissionCount: 0,
+        getPendingSubmissionCount: vi.fn().mockReturnValue(1),
         messageQueue: ['queued follow-up'],
         addMessage: vi.fn(),
         clearQueue: vi.fn(),
