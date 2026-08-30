@@ -2597,7 +2597,7 @@ const SETTINGS_SCHEMA = {
             label: 'Deferred Tool Preload Threshold (%)',
             category: 'Tools',
             requiresRestart: true,
-            default: 10,
+            default: 0,
             description:
               'Context-window percentage used as the session-start budget for preloading deferred tools (bundled built-ins and MCP alike). When every deferred tool schema fits within the budget, all are declared upfront instead of loaded on demand, keeping the prompt prefix stable for KV caching. Set 0 to always load deferred tools on demand.',
             showInDialog: true,
@@ -2609,7 +2609,7 @@ const SETTINGS_SCHEMA = {
               type: 'number',
               minimum: 0,
               maximum: 100,
-              default: 10,
+              default: 0,
             },
           },
         },
@@ -2839,9 +2839,9 @@ const SETTINGS_SCHEMA = {
             label: 'Enable Computer Use',
             category: 'Tools',
             requiresRestart: true,
-            default: true,
+            default: false,
             description:
-              'When enabled (default), the cua-driver computer_use__* tools are registered as deferred built-ins. Set to false to prevent the driver from being downloaded or spawned.',
+              'When enabled, the cua-driver computer_use__* tools are registered as deferred built-ins. Disabled by default because browser-control is the preferred browser automation path. Enable this only when desktop-level CUA is required.',
             showInDialog: true,
           },
           idleTimeoutMs: {

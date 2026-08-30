@@ -278,7 +278,12 @@ const ACTIVE_TODO_REMINDER_REFRESH_TURNS = 3;
 
 // Default `tools.toolSearch.threshold` (percent of the context window):
 // mirrors the settings-schema default in packages/cli.
-const DEFAULT_TOOL_SEARCH_THRESHOLD = 10;
+// Keep deferred tool schemas out of the initial request.  Loading every
+// deferred built-in up front was especially expensive for the legacy
+// computer-use surface; ToolSearch reveals a tool when the model actually
+// needs it.  Users that prefer prefix-stable eager declarations can still
+// opt in with tools.toolSearch.threshold.
+const DEFAULT_TOOL_SEARCH_THRESHOLD = 0;
 
 import {
   ModelsConfig,
@@ -2037,7 +2042,7 @@ export class Config {
   private readonly artifactOss?: ArtifactOssConfig;
   private workflowsEnabled = false;
   private readonly skipWorkflowUsageWarning: boolean = false;
-  private readonly computerUseEnabled: boolean = true;
+  private readonly computerUseEnabled: boolean = false;
   private readonly computerUseMaxImageDimension?: number;
   private readonly computerUseIdleTimeoutMs?: number;
   private readonly emitToolUseSummaries: boolean = true;
@@ -2323,7 +2328,7 @@ export class Config {
     this.artifactOss = params.artifactOss;
     this.workflowsEnabled = params.workflowsEnabled ?? false;
     this.skipWorkflowUsageWarning = params.skipWorkflowUsageWarning ?? false;
-    this.computerUseEnabled = params.computerUseEnabled ?? true;
+    this.computerUseEnabled = params.computerUseEnabled ?? false;
     this.computerUseMaxImageDimension = params.computerUseMaxImageDimension;
     this.computerUseIdleTimeoutMs = params.computerUseIdleTimeoutMs;
     this.emitToolUseSummaries = params.emitToolUseSummaries ?? true;

@@ -1232,7 +1232,7 @@
               "type": "number",
               "minimum": 0,
               "maximum": 100,
-              "default": 10,
+              "default": 0,
               "description": "Context-window percentage used as the session-start budget for preloading deferred tools (bundled built-ins and MCP alike). When every deferred tool schema fits within the budget, all are declared upfront instead of loaded on demand, keeping the prompt prefix stable for KV caching. Set 0 to always load deferred tools on demand."
             }
           }
@@ -1358,9 +1358,9 @@
           "type": "object",
           "properties": {
             "enabled": {
-              "description": "When enabled (default), the cua-driver computer_use__* tools are registered as deferred built-ins. Set to false to prevent the driver from being downloaded or spawned.",
+              "description": "When enabled, the cua-driver computer_use__* tools are registered as deferred built-ins. Disabled by default because browser-control is the preferred browser automation path. Enable this only when desktop-level CUA is required.",
               "type": "boolean",
-              "default": true
+              "default": false
             },
             "idleTimeoutMs": {
               "description": "Milliseconds to keep the cua-driver process alive after the last computer_use__* call. The default is 300000 (5 minutes). Set to 0 to keep it running until canopy-code exits.",

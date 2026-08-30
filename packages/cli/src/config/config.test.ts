@@ -2707,11 +2707,11 @@ describe('mergeExcludeTools', () => {
     expect(config.getToolSearchThreshold()).toBe(25);
   });
 
-  it('should default tools.toolSearch.threshold to 10', async () => {
+  it('should default tools.toolSearch.threshold to 0', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig({}, argv, undefined, []);
-    expect(config.getToolSearchThreshold()).toBe(10);
+    expect(config.getToolSearchThreshold()).toBe(0);
   });
 
   it('should force tools.toolSearch.threshold to 0 in safe mode', async () => {

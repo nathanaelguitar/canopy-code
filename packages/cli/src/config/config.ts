@@ -2318,7 +2318,7 @@ export async function loadCliConfig(
             'through the CDP tunnel, so computer-use stays disabled.',
         );
       }
-      return tunnelOn ? false : (settings.tools?.computerUse?.enabled ?? true);
+      return tunnelOn ? false : (settings.tools?.computerUse?.enabled ?? false);
     })(),
     computerUseMaxImageDimension:
       settings.tools?.computerUse?.maxImageDimension,
