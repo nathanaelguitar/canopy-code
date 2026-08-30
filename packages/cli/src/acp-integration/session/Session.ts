@@ -815,8 +815,17 @@ function recordDaemonToolCalls(
   if (!loopState || loopState.loopDetected)
     return loopState?.loopDetected ?? false;
   loopState.totalToolCalls += calls.length;
+  // Calls returned in a single response are a concurrent batch. A model may
+  // deliberately fan out several calls of the same kind (including identical
+  // cacheable reads) to move a task forward; that is not a sequential loop.
+  // A repeat can contribute to loop detection only once per tool batch.
+  const keysSeenInBatch = new Set<string>();
   for (const call of calls) {
     const key = getToolCallRepeatKey(call.name ?? '', call.args ?? {});
+    if (keysSeenInBatch.has(key)) {
+      continue;
+    }
+    keysSeenInBatch.add(key);
     const count = (loopState.toolCallKeyCounts.get(key) ?? 0) + 1;
     loopState.toolCallKeyCounts.set(key, count);
     if (count > loopState.maxToolCallKeyRepeat) {

@@ -68,6 +68,18 @@ export interface UseDaemonStreamExtra {
   sessionTitle: string | undefined;
 }
 
+/**
+ * Some OpenAI-compatible providers emit their internal tool wire markers as
+ * ordinary text while also sending a proper structured ACP tool event. The
+ * structured event is authoritative and renders a ToolGroupMessage; marker-
+ * only chunks would otherwise create a wall of `tool_result` noise.
+ */
+function isToolProtocolArtifact(text: string): boolean {
+  return /^(?:tool_(?:call|result)|function_(?:call|response))$/i.test(
+    text.trim(),
+  );
+}
+
 export function useDaemonStream(
   session: { baseUrl: string; sessionId: string; clientId: string } | undefined,
   addItem: UseHistoryManagerReturn['addItem'],
@@ -156,6 +168,9 @@ export function useDaemonStream(
             break;
           }
           if (kind === 'agent_message_chunk' && text) {
+            if (isToolProtocolArtifact(text)) {
+              break;
+            }
             setIsReceivingContent(true);
             streamingResponseLengthRef.current += text.length;
             setPendingText((current) => current + text);
