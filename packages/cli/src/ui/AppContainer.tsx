@@ -2209,6 +2209,7 @@ export const AppContainer = (props: AppContainerProps) => {
   // or changed later, re-deliver the same URL with the new title; the phone
   // deduplicates by URL and updates its existing record.
   const daemonSessionForAutoRemoteControl = props.daemonSession;
+  const autoRemoteControlNoticeSessionRef = useRef<string | null>(null);
   useEffect(() => {
     if (!daemonSessionForAutoRemoteControl) return;
     let cancelled = false;
@@ -2236,15 +2237,25 @@ export const AppContainer = (props: AppContainerProps) => {
         : [
             'Remote Control is on for this session. The session was sent to your paired CanopyChat device.',
           ];
-      historyManager.addItem(
-        { type: 'info', text: lines.join('\n') },
-        Date.now(),
-      );
+      // `historyManager` is intentionally recreated whenever history changes.
+      // Depending on it here would make adding this notice trigger the effect
+      // again, producing an unbounded stream of identical status messages.
+      // The stable `addHistoryItem` callback avoids that feedback loop, while
+      // this session guard also keeps title updates from duplicating the notice.
+      if (
+        autoRemoteControlNoticeSessionRef.current ===
+        daemonSessionForAutoRemoteControl.sessionId
+      ) {
+        return;
+      }
+      autoRemoteControlNoticeSessionRef.current =
+        daemonSessionForAutoRemoteControl.sessionId;
+      addHistoryItem({ type: 'info', text: lines.join('\n') }, Date.now());
     })();
     return () => {
       cancelled = true;
     };
-  }, [config, daemonSessionForAutoRemoteControl, historyManager, sessionName]);
+  }, [addHistoryItem, config, daemonSessionForAutoRemoteControl, sessionName]);
 
   // Now that streamingState is available, keep isIdleRef in sync and
   // flush any deferred update notifications when the model finishes responding.
