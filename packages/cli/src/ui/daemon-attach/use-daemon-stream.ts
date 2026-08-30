@@ -7,7 +7,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PartListUnion } from '@google/genai';
 import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
-import type { HistoryItemToolGroup , StreamingState, type HistoryItemWithoutId  } from '../types.js';
+import { StreamingState } from '../types.js';
+import type { HistoryItemToolGroup, HistoryItemWithoutId } from '../types.js';
 import type { useGeminiStream } from '../hooks/useGeminiStream.js';
 import {
   createDaemonTuiReducerState,
@@ -59,6 +60,12 @@ export interface UseDaemonStreamExtra {
       | { outcome: 'cancelled' },
   ) => Promise<void>;
   pendingPermission: PendingDaemonPermission | undefined;
+  /**
+   * The durable session name reported by the daemon. The ACP child owns
+   * auto-title generation, so an attached terminal must consume this event
+   * instead of relying on its local (non-recording) Config instance.
+   */
+  sessionTitle: string | undefined;
 }
 
 export function useDaemonStream(
@@ -79,6 +86,9 @@ export function useDaemonStream(
   >(undefined);
   const [pendingToolGroup, setPendingToolGroup] = useState<
     HistoryItemToolGroup | undefined
+  >(undefined);
+  const [daemonSessionTitle, setDaemonSessionTitle] = useState<
+    string | undefined
   >(undefined);
   const streamingResponseLengthRef = useRef(0);
   const activePromptIdRef = useRef<string | undefined>(undefined);
@@ -173,6 +183,26 @@ export function useDaemonStream(
           }
           break;
         }
+        case 'session_metadata_updated': {
+          // Title changes are emitted by the ACP child on the daemon event
+          // bus, not through the attached terminal's local Config. Capture
+          // them here so the terminal tag and Remote Control delivery both
+          // use the meaningful auto/manual session title.
+          const payload = evt.data as {
+            sessionId?: string;
+            displayName?: string;
+            data?: { sessionId?: string; displayName?: string };
+          };
+          const metadata = payload.data ?? payload;
+          if (
+            metadata.sessionId === sessionId &&
+            typeof metadata.displayName === 'string' &&
+            metadata.displayName.trim()
+          ) {
+            setDaemonSessionTitle(metadata.displayName.trim());
+          }
+          break;
+        }
         case 'permission_request': {
           const payload = evt.data as {
             data?: {
@@ -224,8 +254,12 @@ export function useDaemonStream(
           break;
       }
     },
-    [addItem, commitPendingText],
+    [addItem, commitPendingText, sessionId],
   );
+
+  useEffect(() => {
+    setDaemonSessionTitle(undefined);
+  }, [sessionId]);
 
   useEffect(() => {
     if (!baseUrl || !sessionId || !clientId) return;
@@ -339,5 +373,6 @@ export function useDaemonStream(
     isReceivingContent,
     answerPermission,
     pendingPermission,
+    sessionTitle: daemonSessionTitle,
   };
 }

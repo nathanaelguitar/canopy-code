@@ -2231,6 +2231,15 @@ export const AppContainer = (props: AppContainerProps) => {
     streamingResponseLengthRef,
     isReceivingContent,
   } = props.daemonSession ? daemonStream : geminiStream;
+  // The daemon-hosted ACP child generates and persists automatic titles.
+  // Unlike the local interactive engine, this attached TUI receives them over
+  // the daemon event stream rather than its own ChatRecordingService.
+  const daemonSessionTitle = props.daemonSession
+    ? daemonStream.sessionTitle
+    : undefined;
+  useEffect(() => {
+    if (daemonSessionTitle) setSessionName(daemonSessionTitle);
+  }, [daemonSessionTitle]);
   cancelOngoingRequestRef.current = cancelOngoingRequest;
   clearPendingStateRef.current = clearPendingState;
 
@@ -2255,7 +2264,7 @@ export const AppContainer = (props: AppContainerProps) => {
       const outcome = await enableRemoteControl(
         daemonSessionForAutoRemoteControl,
         workspaceName,
-        sessionName ?? undefined,
+        sessionName ?? daemonSessionTitle,
       );
       if (cancelled || outcome.status !== 'enabled') return;
       const lines = outcome.pairingPending
@@ -2288,7 +2297,13 @@ export const AppContainer = (props: AppContainerProps) => {
     return () => {
       cancelled = true;
     };
-  }, [addHistoryItem, config, daemonSessionForAutoRemoteControl, sessionName]);
+  }, [
+    addHistoryItem,
+    config,
+    daemonSessionForAutoRemoteControl,
+    daemonSessionTitle,
+    sessionName,
+  ]);
 
   // Now that streamingState is available, keep isIdleRef in sync and
   // flush any deferred update notifications when the model finishes responding.
