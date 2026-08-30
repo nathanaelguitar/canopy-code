@@ -153,8 +153,10 @@ async function pairAndSend(session: {
  */
 async function readPairingUrlFromLog(
   logPath: string,
+  sessionId: string,
 ): Promise<string | undefined> {
   const deadline = Date.now() + 3000;
+  const targetPath = `/session/${encodeURIComponent(sessionId)}`;
   while (Date.now() < deadline) {
     let text: string;
     try {
@@ -162,8 +164,21 @@ async function readPairingUrlFromLog(
     } catch {
       return undefined;
     }
-    const match = text.match(/canopy serve: Local Control pairing URL: (\S+)/);
-    if (match) return match[1];
+    // A workspace daemon outlives individual terminal sessions. Its log can
+    // contain many earlier pairing URLs, so never take the first occurrence:
+    // that would quietly route a newly pushed phone notification to an old,
+    // orphaned session. Select the newest URL for this exact session instead.
+    const urls = Array.from(
+      text.matchAll(/canopy serve: Local Control pairing URL: (\S+)/g),
+      (match) => match[1],
+    );
+    for (const candidate of urls.reverse()) {
+      try {
+        if (new URL(candidate).pathname === targetPath) return candidate;
+      } catch {
+        // Ignore a partially written line and poll again.
+      }
+    }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   return undefined;
@@ -238,7 +253,10 @@ export async function enableRemoteControl(
   let pairingUrl = response.url;
   if (!pairingUrl && response.urlRedacted) {
     pairingUrl = daemonSession.daemonLogPath
-      ? await readPairingUrlFromLog(daemonSession.daemonLogPath)
+      ? await readPairingUrlFromLog(
+          daemonSession.daemonLogPath,
+          daemonSession.sessionId,
+        )
       : undefined;
   }
   if (!pairingUrl) {
