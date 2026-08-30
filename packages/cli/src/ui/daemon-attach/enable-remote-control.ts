@@ -36,11 +36,18 @@ type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
+  // `new URL('/sessions', base)` treats the leading slash as an origin-root
+  // URL and silently drops `/v1/remote-control` from the private API base.
+  return fetch(new URL(path.replace(/^\/+/, ''), `${REMOTE_CONTROL_API}/`), {
     ...init,
     headers: { Accept: 'application/json', ...(init.headers ?? {}) },
   });
 }
+
+type SessionDeliveryResult =
+  | { status: 'sent' }
+  | { status: 'unauthorized' }
+  | { status: 'unavailable'; detail?: string };
 
 async function sendSession(
   accessToken: string,
@@ -50,30 +57,46 @@ async function sendSession(
     sessionTitle?: string;
     url: string;
   },
-): Promise<'sent' | 'unauthorized' | 'unavailable'> {
-  try {
-    const response = await apiRequest('/sessions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        session_id: session.sessionId,
-        workspace_name: session.workspaceName,
-        ...(session.sessionTitle
-          ? { session_title: session.sessionTitle }
-          : {}),
-        url: session.url,
-      }),
-    });
-    if (response.status === 401 || response.status === 403)
-      return 'unauthorized';
-    if (!response.ok) return 'unavailable';
-    return 'sent';
-  } catch {
-    return 'unavailable';
+): Promise<SessionDeliveryResult> {
+  // APNs delivery can briefly fail while the relay opens a new JWT-backed
+  // connection. Treat 5xx responses as transient rather than making the
+  // operator manually re-run `/remote-control`.
+  let detail: string | undefined;
+  for (const retryDelayMs of [0, 400, 1200]) {
+    if (retryDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+    try {
+      const response = await apiRequest('/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          workspace_name: session.workspaceName,
+          ...(session.sessionTitle
+            ? { session_title: session.sessionTitle }
+            : {}),
+          url: session.url,
+        }),
+      });
+      if (response.status === 401 || response.status === 403) {
+        return { status: 'unauthorized' };
+      }
+      if (response.ok) return { status: 'sent' };
+
+      detail = `HTTP ${response.status}`;
+      const body = await response.text().catch(() => '');
+      if (body) detail += `: ${body.slice(0, 500)}`;
+      // Client mistakes are deterministic, not candidates for a retry.
+      if (response.status < 500) break;
+    } catch (error) {
+      detail = error instanceof Error ? error.message : String(error);
+    }
   }
+  return { status: 'unavailable', detail };
 }
 
 async function pairAndSend(session: {
@@ -243,20 +266,20 @@ export async function enableRemoteControl(
   }
   if (accessToken) {
     const sent = await sendSession(accessToken, session);
-    if (sent === 'unauthorized') {
+    if (sent.status === 'unauthorized') {
       try {
         await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET);
       } catch {
         /* already absent */
       }
       accessToken = null;
-    } else if (sent === 'unavailable') {
+    } else if (sent.status === 'unavailable') {
       return {
         status: 'error',
         message:
           'CanopyChat accepted the pairing credential, but its push relay ' +
-          'did not accept this session. Retry /remote-control after checking ' +
-          'the APNs relay.',
+          `did not accept this session${sent.detail ? ` (${sent.detail})` : ''}. ` +
+          'Retry /remote-control after checking the APNs relay.',
       };
     }
   }
