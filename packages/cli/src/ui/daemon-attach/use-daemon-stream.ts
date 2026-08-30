@@ -7,8 +7,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PartListUnion } from '@google/genai';
 import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
-import { StreamingState, type HistoryItemWithoutId } from '../types.js';
+import type { HistoryItemToolGroup , StreamingState, type HistoryItemWithoutId  } from '../types.js';
 import type { useGeminiStream } from '../hooks/useGeminiStream.js';
+import {
+  createDaemonTuiReducerState,
+  reduceDaemonEventToTuiUpdates,
+} from '../daemon/daemon-tui-adapter.js';
 import {
   streamDaemonSessionEvents,
   submitDaemonPrompt,
@@ -73,16 +77,31 @@ export function useDaemonStream(
   const [pendingPermission, setPendingPermission] = useState<
     PendingDaemonPermission | undefined
   >(undefined);
+  const [pendingToolGroup, setPendingToolGroup] = useState<
+    HistoryItemToolGroup | undefined
+  >(undefined);
   const streamingResponseLengthRef = useRef(0);
   const activePromptIdRef = useRef<string | undefined>(undefined);
+  const toolReducerStateRef = useRef(createDaemonTuiReducerState());
+  const pendingToolGroupRef = useRef<HistoryItemToolGroup | undefined>(
+    undefined,
+  );
 
   const clearPendingState = useCallback(() => {
     setPendingText('');
+    pendingToolGroupRef.current = undefined;
+    setPendingToolGroup(undefined);
     streamingResponseLengthRef.current = 0;
     setIsReceivingContent(false);
   }, []);
 
   const commitPendingText = useCallback(() => {
+    const toolGroup = pendingToolGroupRef.current;
+    if (toolGroup) {
+      addItem(toolGroup, Date.now());
+      pendingToolGroupRef.current = undefined;
+      setPendingToolGroup(undefined);
+    }
     setPendingText((current) => {
       if (current) {
         addItem({ type: 'gemini', text: current }, Date.now());
@@ -130,6 +149,27 @@ export function useDaemonStream(
             setIsReceivingContent(true);
             streamingResponseLengthRef.current += text.length;
             setPendingText((current) => current + text);
+            break;
+          }
+          if (kind === 'tool_call' || kind === 'tool_call_update') {
+            // The daemon already emits the full ACP tool-call lifecycle; the
+            // attached terminal used to discard it while the Web Shell showed
+            // it. Reuse the established daemon→TUI reducer so MCP calls,
+            // shell output, status, and errors render identically here.
+            const updates = reduceDaemonEventToTuiUpdates(
+              {
+                id: evt.id,
+                v: 1,
+                type: 'session_update',
+                data: { update },
+              },
+              toolReducerStateRef.current,
+            );
+            for (const toolUpdate of updates) {
+              if (toolUpdate.type !== 'tool_group_update') continue;
+              pendingToolGroupRef.current = toolUpdate.item;
+              setPendingToolGroup(toolUpdate.item);
+            }
           }
           break;
         }
@@ -268,9 +308,12 @@ export function useDaemonStream(
   const noopAsync = useCallback(async () => {}, []);
   const noop = useCallback(() => {}, []);
 
-  const pendingHistoryItems: HistoryItemWithoutId[] = pendingText
-    ? [{ type: 'gemini_content', text: pendingText }]
-    : [];
+  const pendingHistoryItems: HistoryItemWithoutId[] = [
+    ...(pendingToolGroup ? [pendingToolGroup] : []),
+    ...(pendingText
+      ? [{ type: 'gemini_content' as const, text: pendingText }]
+      : []),
+  ];
 
   return {
     streamingState,
