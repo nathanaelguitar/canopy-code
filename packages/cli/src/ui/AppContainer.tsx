@@ -30,6 +30,7 @@ import {
   type HistoryItemUser,
   ToolCallStatus,
   type HistoryItemWithoutId,
+  type SlashCommandProcessorResult,
 } from './types.js';
 import type { RestoreOption } from './components/RewindSelector.js';
 import { MessageType, StreamingState } from './types.js';
@@ -361,6 +362,7 @@ export function useQueuedSubmissionDrain({
   enqueueGoalTurn,
   restoreMessages,
   submitQuery,
+  handleSlashCommand,
   submissionInFlightRef,
   submissionSettledRevision,
 }: {
@@ -375,6 +377,9 @@ export function useQueuedSubmissionDrain({
   enqueueGoalTurn: UseMessageQueueReturn['enqueueGoalTurn'];
   restoreMessages: UseMessageQueueReturn['restoreMessages'];
   submitQuery: ReturnType<typeof useGeminiStream>['submitQuery'];
+  handleSlashCommand?: (
+    rawQuery: string,
+  ) => Promise<SlashCommandProcessorResult | false>;
   submissionInFlightRef: RefObject<boolean>;
   submissionSettledRevision: number;
 }) {
@@ -468,24 +473,51 @@ export function useQueuedSubmissionDrain({
               },
             },
           )
-        : submitQuery(
-            submission.modelText,
-            SendMessageType.UserQuery,
-            undefined,
-            {
-              userAdmission: { turnKey: submission.turnKey },
-              ...(submission.submittedPrompt === undefined
-                ? {}
-                : { submittedPrompt: submission.submittedPrompt }),
-              onAdmissionFailed: () => {
-                restoreMessages(
-                  [submission.modelText],
-                  submission.submittedPrompt,
-                );
-                markAdmissionFailed();
+        : handleSlashCommand && isSlashCommand(submission.modelText)
+          ? handleSlashCommand(submission.modelText).then((result) => {
+              // A slash command queued during a response must be interpreted
+              // by the interactive command processor once idle. Falling
+              // through to submitQuery would send it verbatim to the daemon's
+              // ACP child, which reports interactive-only commands as ACP
+              // unsupported even though the user is in a normal terminal.
+              if (result !== false) return;
+              return submitQuery(
+                submission.modelText,
+                SendMessageType.UserQuery,
+                undefined,
+                {
+                  userAdmission: { turnKey: submission.turnKey },
+                  ...(submission.submittedPrompt === undefined
+                    ? {}
+                    : { submittedPrompt: submission.submittedPrompt }),
+                  onAdmissionFailed: () => {
+                    restoreMessages(
+                      [submission.modelText],
+                      submission.submittedPrompt,
+                    );
+                    markAdmissionFailed();
+                  },
+                },
+              );
+            })
+          : submitQuery(
+              submission.modelText,
+              SendMessageType.UserQuery,
+              undefined,
+              {
+                userAdmission: { turnKey: submission.turnKey },
+                ...(submission.submittedPrompt === undefined
+                  ? {}
+                  : { submittedPrompt: submission.submittedPrompt }),
+                onAdmissionFailed: () => {
+                  restoreMessages(
+                    [submission.modelText],
+                    submission.submittedPrompt,
+                  );
+                  markAdmissionFailed();
+                },
               },
-            },
-          );
+            );
     void Promise.resolve(request)
       .catch((error) => {
         debugLogger.warn('Queued submission failed during admission', error);
@@ -512,6 +544,7 @@ export function useQueuedSubmissionDrain({
     submissionInFlightRef,
     submissionSettledRevision,
     submitQuery,
+    handleSlashCommand,
   ]);
 }
 
@@ -4541,6 +4574,7 @@ export const AppContainer = (props: AppContainerProps) => {
     enqueueGoalTurn,
     restoreMessages,
     submitQuery,
+    handleSlashCommand,
     submissionInFlightRef,
     submissionSettledRevision,
   });
