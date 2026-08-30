@@ -42,6 +42,7 @@ import { type ArenaDialogType } from '../hooks/useArenaCommand.js';
 import type { StatusLinePresetConfig } from '../statusLinePresets.js';
 import type { StartupIdeConnectionStatus } from '../../utils/events.js';
 import type { AdvisorDialogOptions } from '../hooks/use-advisor-dialog.js';
+import type { PendingDaemonPermission } from '../daemon-attach/use-daemon-stream.js';
 
 export interface PendingSkillView {
   name: string;
@@ -99,6 +100,15 @@ export interface UIState {
   settingInputRequests: SettingInputRequest[];
   pluginChoiceRequests: PluginChoiceRequest[];
   loopDetectionConfirmationRequest: LoopDetectionConfirmationRequest | null;
+  pendingDaemonPermission: PendingDaemonPermission | undefined;
+  answerDaemonPermission:
+    | ((
+        requestId: string,
+        outcome:
+          | { outcome: 'selected'; optionId: string }
+          | { outcome: 'cancelled' },
+      ) => Promise<void>)
+    | undefined;
   geminiMdFileCount: number;
   streamingState: StreamingState;
   initError: string | null;

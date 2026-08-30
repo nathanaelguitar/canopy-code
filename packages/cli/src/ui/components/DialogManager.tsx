@@ -61,6 +61,7 @@ import { BackgroundTasksDialog } from './background-view/BackgroundTasksDialog.j
 import { useBackgroundTaskViewState } from '../contexts/BackgroundTaskViewContext.js';
 import { t } from '../../i18n/index.js';
 import { getDialogMaxHeight } from '../utils/layoutUtils.js';
+import { DaemonPermissionDialog } from './DaemonPermissionDialog.js';
 
 interface DialogManagerProps {
   addItem: UseHistoryManagerReturn['addItem'];
@@ -144,6 +145,14 @@ export const DialogManager = ({
         pendingServers={uiState.pendingMcpApprovals}
         remaining={uiState.mcpApprovalRemaining}
         onSelect={uiActions.handleMcpApprovalSelect}
+      />
+    );
+  }
+  if (uiState.pendingDaemonPermission && uiState.answerDaemonPermission) {
+    return (
+      <DaemonPermissionDialog
+        request={uiState.pendingDaemonPermission}
+        onAnswer={uiState.answerDaemonPermission}
       />
     );
   }

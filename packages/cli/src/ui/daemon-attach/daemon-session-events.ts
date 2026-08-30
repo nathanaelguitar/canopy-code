@@ -34,6 +34,16 @@ export interface DaemonSessionEventStreamOptions {
   onError?: (error: Error) => void;
 }
 
+export class DaemonEventStreamHttpError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`SSE connect failed: HTTP ${status}`);
+    this.name = 'DaemonEventStreamHttpError';
+    this.status = status;
+  }
+}
+
 const RECONNECT_DELAY_MS = 1000;
 
 /**
@@ -89,7 +99,7 @@ export async function streamDaemonSessionEvents(
       }
       const res = await fetch(url, { headers, signal: options.signal });
       if (!res.ok || !res.body) {
-        throw new Error(`SSE connect failed: HTTP ${res.status}`);
+        throw new DaemonEventStreamHttpError(res.status);
       }
 
       const reader = res.body.getReader();
@@ -115,9 +125,18 @@ export async function streamDaemonSessionEvents(
       }
     } catch (error) {
       if (options.signal.aborted) return;
-      options.onError?.(
-        error instanceof Error ? error : new Error(String(error)),
-      );
+      const normalized =
+        error instanceof Error ? error : new Error(String(error));
+      options.onError?.(normalized);
+      // A daemon restart loses the in-memory session runtime. Retrying the
+      // same stale subscription can never succeed; let the caller resume the
+      // durable session and reconnect with its newly registered client id.
+      if (
+        normalized instanceof DaemonEventStreamHttpError &&
+        normalized.status === 404
+      ) {
+        return;
+      }
       await new Promise((resolve) => setTimeout(resolve, RECONNECT_DELAY_MS));
     }
   }
@@ -132,10 +151,14 @@ async function postJson(
   baseUrl: string,
   path: string,
   body: unknown,
+  clientId?: string,
 ): Promise<unknown> {
   const res = await fetch(new URL(path, baseUrl), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(clientId ? { 'X-Canopy-Client-Id': clientId } : {}),
+    },
     body: JSON.stringify(body),
   });
   const json = await res.json().catch(() => undefined);
@@ -144,6 +167,24 @@ async function postJson(
     throw error;
   }
   return json;
+}
+
+/** Restore a durable session after the workspace daemon has restarted. */
+export async function resumeDaemonSession(
+  baseUrl: string,
+  sessionId: string,
+  requestedClientId: string,
+): Promise<{ clientId: string }> {
+  const result = (await postJson(
+    baseUrl,
+    `/session/${encodeURIComponent(sessionId)}/resume`,
+    {},
+    requestedClientId,
+  )) as { clientId?: unknown };
+  return {
+    clientId:
+      typeof result.clientId === 'string' ? result.clientId : requestedClientId,
+  };
 }
 
 /** `POST /session/:id/prompt` — submit a user turn. */
@@ -199,6 +240,7 @@ export function cancelDaemonSession(
 export function answerDaemonPermission(
   baseUrl: string,
   sessionId: string,
+  clientId: string,
   requestId: string,
   outcome: unknown,
 ): Promise<unknown> {
@@ -206,5 +248,6 @@ export function answerDaemonPermission(
     baseUrl,
     `/session/${encodeURIComponent(sessionId)}/permission/${encodeURIComponent(requestId)}`,
     { outcome },
+    clientId,
   );
 }

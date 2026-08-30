@@ -15,10 +15,12 @@ import {
   reduceDaemonEventToTuiUpdates,
 } from '../daemon/daemon-tui-adapter.js';
 import {
+  DaemonEventStreamHttpError,
   streamDaemonSessionEvents,
   submitDaemonPrompt,
   cancelDaemonSession,
   answerDaemonPermission,
+  resumeDaemonSession,
   type DaemonSessionEvent,
 } from './daemon-session-events.js';
 
@@ -88,6 +90,7 @@ export function useDaemonStream(
   const baseUrl = session?.baseUrl;
   const sessionId = session?.sessionId;
   const clientId = session?.clientId;
+  const [activeClientId, setActiveClientId] = useState(clientId);
   const [streamingState, setStreamingState] = useState<StreamingState>(
     StreamingState.Idle,
   );
@@ -109,6 +112,7 @@ export function useDaemonStream(
   const pendingToolGroupRef = useRef<HistoryItemToolGroup | undefined>(
     undefined,
   );
+  const recoveryInFlightRef = useRef(false);
 
   const clearPendingState = useCallback(() => {
     setPendingText('');
@@ -275,25 +279,63 @@ export function useDaemonStream(
 
   useEffect(() => {
     setDaemonSessionTitle(undefined);
-  }, [sessionId]);
+    setActiveClientId(clientId);
+    setPendingPermission(undefined);
+    recoveryInFlightRef.current = false;
+  }, [clientId, sessionId]);
 
   useEffect(() => {
-    if (!baseUrl || !sessionId || !clientId) return;
+    if (!baseUrl || !sessionId || !activeClientId) return;
     const controller = new AbortController();
+    let disposed = false;
     void streamDaemonSessionEvents({
       baseUrl,
       sessionId,
-      clientId,
+      clientId: activeClientId,
       signal: controller.signal,
       onEvent: handleEvent,
-      onError: (error) => setInitError(error.message),
+      onError: (error) => {
+        if (
+          error instanceof DaemonEventStreamHttpError &&
+          error.status === 404 &&
+          !recoveryInFlightRef.current
+        ) {
+          recoveryInFlightRef.current = true;
+          const requestedClientId = `terminal-${globalThis.crypto.randomUUID()}`;
+          void resumeDaemonSession(baseUrl, sessionId, requestedClientId)
+            .then(({ clientId: resumedClientId }) => {
+              if (disposed) return;
+              setInitError(null);
+              setActiveClientId(resumedClientId);
+            })
+            .catch((resumeError) => {
+              if (disposed) return;
+              setStreamingState(StreamingState.Idle);
+              setInitError(
+                `The Canopy daemon restarted and this session could not be restored: ${
+                  resumeError instanceof Error
+                    ? resumeError.message
+                    : String(resumeError)
+                }`,
+              );
+            })
+            .finally(() => {
+              recoveryInFlightRef.current = false;
+            });
+          return;
+        }
+        setInitError(error.message);
+      },
     });
-    return () => controller.abort();
-  }, [baseUrl, sessionId, clientId, handleEvent]);
+    return () => {
+      disposed = true;
+      controller.abort();
+    };
+  }, [activeClientId, baseUrl, sessionId, handleEvent]);
 
   const submitQuery = useCallback(
     async (query: PartListUnion) => {
-      if (!baseUrl || !sessionId || !clientId) return;
+      if (!baseUrl || !sessionId || !activeClientId) return;
       const text =
         typeof query === 'string'
           ? query
@@ -310,9 +352,12 @@ export function useDaemonStream(
       addItem({ type: 'user', text }, Date.now());
       setStreamingState(StreamingState.Responding);
       try {
-        const result = (await submitDaemonPrompt(baseUrl, sessionId, clientId, [
-          { type: 'text', text },
-        ])) as { promptId?: string };
+        const result = (await submitDaemonPrompt(
+          baseUrl,
+          sessionId,
+          activeClientId,
+          [{ type: 'text', text }],
+        )) as { promptId?: string };
         activePromptIdRef.current = result.promptId;
       } catch (error) {
         setStreamingState(StreamingState.Idle);
@@ -327,7 +372,7 @@ export function useDaemonStream(
         );
       }
     },
-    [addItem, baseUrl, sessionId, clientId],
+    [activeClientId, addItem, baseUrl, sessionId],
   );
 
   const answerPermission = useCallback(
@@ -337,33 +382,41 @@ export function useDaemonStream(
         | { outcome: 'selected'; optionId: string }
         | { outcome: 'cancelled' },
     ) => {
-      if (!baseUrl || !sessionId) return;
-      await answerDaemonPermission(baseUrl, sessionId, requestId, outcome);
+      if (!baseUrl || !sessionId || !activeClientId) return;
+      await answerDaemonPermission(
+        baseUrl,
+        sessionId,
+        activeClientId,
+        requestId,
+        outcome,
+      );
       setPendingPermission((current) =>
         current?.requestId === requestId ? undefined : current,
       );
       setStreamingState(StreamingState.Responding);
     },
-    [baseUrl, sessionId],
+    [activeClientId, baseUrl, sessionId],
   );
 
   const cancelOngoingRequest = useCallback(() => {
-    if (!baseUrl || !sessionId || !clientId) return;
+    if (!baseUrl || !sessionId || !activeClientId) return;
     // Esc is synchronous at the TUI boundary, while cancellation is a daemon
     // RPC. Keep the turn marked active until its prompt_cancelled/turn_complete
     // SSE event arrives; that preserves the queue hand-off semantics.
-    void cancelDaemonSession(baseUrl, sessionId, clientId).catch((error) => {
-      addItem(
-        {
-          type: 'error',
-          text: `Failed to interrupt remote turn: ${
-            error instanceof Error ? error.message : 'daemon rejected cancel'
-          }`,
-        },
-        Date.now(),
-      );
-    });
-  }, [addItem, baseUrl, clientId, sessionId]);
+    void cancelDaemonSession(baseUrl, sessionId, activeClientId).catch(
+      (error) => {
+        addItem(
+          {
+            type: 'error',
+            text: `Failed to interrupt remote turn: ${
+              error instanceof Error ? error.message : 'daemon rejected cancel'
+            }`,
+          },
+          Date.now(),
+        );
+      },
+    );
+  }, [activeClientId, addItem, baseUrl, sessionId]);
 
   const noopAsync = useCallback(async () => {}, []);
   const noop = useCallback(() => {}, []);

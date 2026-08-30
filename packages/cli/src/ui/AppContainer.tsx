@@ -2237,6 +2237,12 @@ export const AppContainer = (props: AppContainerProps) => {
   const daemonSessionTitle = props.daemonSession
     ? daemonStream.sessionTitle
     : undefined;
+  const pendingDaemonPermission = props.daemonSession
+    ? daemonStream.pendingPermission
+    : undefined;
+  const answerDaemonPermission = props.daemonSession
+    ? daemonStream.answerPermission
+    : undefined;
   useEffect(() => {
     if (daemonSessionTitle) setSessionName(daemonSessionTitle);
   }, [daemonSessionTitle]);
@@ -3499,6 +3505,7 @@ export const AppContainer = (props: AppContainerProps) => {
     shouldShowCommandMigrationNudge ||
     isFolderTrustDialogOpen ||
     isMcpApprovalDialogOpen ||
+    !!pendingDaemonPermission ||
     !!shellConfirmationRequest ||
     !!confirmationRequest ||
     confirmUpdateExtensionRequests.length > 0 ||
@@ -4645,6 +4652,8 @@ export const AppContainer = (props: AppContainerProps) => {
       settingInputRequests,
       pluginChoiceRequests,
       loopDetectionConfirmationRequest,
+      pendingDaemonPermission,
+      answerDaemonPermission,
       geminiMdFileCount,
       streamingState,
       initError,
@@ -4791,6 +4800,8 @@ export const AppContainer = (props: AppContainerProps) => {
       settingInputRequests,
       pluginChoiceRequests,
       loopDetectionConfirmationRequest,
+      pendingDaemonPermission,
+      answerDaemonPermission,
       geminiMdFileCount,
       streamingState,
       initError,
