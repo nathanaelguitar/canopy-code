@@ -10,6 +10,9 @@ repository.
 **Minimum code that solves the problem. Nothing speculative.**
 **(This is the principle we care about most.)**
 
+**Use English for all user-visible responses unless the user explicitly asks
+for another language.**
+
 - No features beyond what was asked.
 - No abstractions for single-use code.
 - No "flexibility" or "configurability" that wasn't requested.
