@@ -51,22 +51,29 @@ async function sendSession(
     url: string;
   },
 ): Promise<'sent' | 'unauthorized' | 'unavailable'> {
-  const response = await apiRequest('/sessions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      session_id: session.sessionId,
-      workspace_name: session.workspaceName,
-      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
-      url: session.url,
-    }),
-  });
-  if (response.status === 401 || response.status === 403) return 'unauthorized';
-  if (!response.ok) return 'unavailable';
-  return 'sent';
+  try {
+    const response = await apiRequest('/sessions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        session_id: session.sessionId,
+        workspace_name: session.workspaceName,
+        ...(session.sessionTitle
+          ? { session_title: session.sessionTitle }
+          : {}),
+        url: session.url,
+      }),
+    });
+    if (response.status === 401 || response.status === 403)
+      return 'unauthorized';
+    if (!response.ok) return 'unavailable';
+    return 'sent';
+  } catch {
+    return 'unavailable';
+  }
 }
 
 async function pairAndSend(session: {
@@ -243,6 +250,14 @@ export async function enableRemoteControl(
         /* already absent */
       }
       accessToken = null;
+    } else if (sent === 'unavailable') {
+      return {
+        status: 'error',
+        message:
+          'CanopyChat accepted the pairing credential, but its push relay ' +
+          'did not accept this session. Retry /remote-control after checking ' +
+          'the APNs relay.',
+      };
     }
   }
   let publicPairingUrl: string;
