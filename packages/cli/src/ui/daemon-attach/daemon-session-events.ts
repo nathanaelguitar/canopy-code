@@ -171,6 +171,30 @@ export function submitDaemonPrompt(
   });
 }
 
+/** `POST /session/:id/cancel` — interrupt the active daemon turn. */
+export function cancelDaemonSession(
+  baseUrl: string,
+  sessionId: string,
+  clientId: string,
+): Promise<unknown> {
+  return fetch(
+    new URL(`/session/${encodeURIComponent(sessionId)}/cancel`, baseUrl),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Canopy-Client-Id': clientId,
+      },
+      body: JSON.stringify({ clientId, reason: 'user_interrupt' }),
+    },
+  ).then(async (res) => {
+    const json = await res.json().catch(() => undefined);
+    if (!res.ok)
+      throw { status: res.status, body: json } satisfies DaemonRequestError;
+    return json;
+  });
+}
+
 /** `POST /session/:id/permission/:requestId` — answer a permission prompt. */
 export function answerDaemonPermission(
   baseUrl: string,

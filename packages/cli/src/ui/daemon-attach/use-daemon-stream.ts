@@ -17,6 +17,7 @@ import {
 import {
   streamDaemonSessionEvents,
   submitDaemonPrompt,
+  cancelDaemonSession,
   answerDaemonPermission,
   type DaemonSessionEvent,
 } from './daemon-session-events.js';
@@ -347,12 +348,22 @@ export function useDaemonStream(
   );
 
   const cancelOngoingRequest = useCallback(() => {
-    // No daemon-mode cancel wired yet (session_cancel exists per
-    // /capabilities but isn't plumbed through this hook in v1) — Ctrl+C
-    // in attached mode is currently a local-UI-only no-op. Documented gap,
-    // not a silent one: see docs/design/2026-08-26-remote-control.md
-    // Non-goals.
-  }, []);
+    if (!baseUrl || !sessionId || !clientId) return;
+    // Esc is synchronous at the TUI boundary, while cancellation is a daemon
+    // RPC. Keep the turn marked active until its prompt_cancelled/turn_complete
+    // SSE event arrives; that preserves the queue hand-off semantics.
+    void cancelDaemonSession(baseUrl, sessionId, clientId).catch((error) => {
+      addItem(
+        {
+          type: 'error',
+          text: `Failed to interrupt remote turn: ${
+            error instanceof Error ? error.message : 'daemon rejected cancel'
+          }`,
+        },
+        Date.now(),
+      );
+    });
+  }, [addItem, baseUrl, clientId, sessionId]);
 
   const noopAsync = useCallback(async () => {}, []);
   const noop = useCallback(() => {}, []);
