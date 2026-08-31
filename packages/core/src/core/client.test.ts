@@ -9446,12 +9446,14 @@ Other open files:
         // consume stream
       }
 
-      // Assert - always-on safeties still run, but opt-in heuristics don't
+      // The client still invokes the safety hook, but the service itself
+      // treats skipLoopDetection as a complete opt-out. Heuristic checks stay
+      // gated at the client boundary.
       expect(ldMock.checkAlwaysOnSafeties).toHaveBeenCalled();
       expect(ldMock.addAndCheckHeuristicLoops).not.toHaveBeenCalled();
     });
 
-    it('hard-stops identical tool calls even when skipLoopDetection is true (always-on guard)', async () => {
+    it('does not stop identical tool calls when skipLoopDetection is true', async () => {
       vi.spyOn(client['config'], 'getSkipLoopDetection').mockReturnValue(true);
 
       mockTurnRunFn.mockReturnValue(
@@ -9483,13 +9485,10 @@ Other open files:
         ),
       );
 
-      // The consecutive-identical guard is always-on: it halts the repetition
-      // regardless of skipLoopDetection so the DashScope server never sees
-      // enough repeats to reject the conversation (issue #5019).
-      expect(events.at(-1)).toEqual({
-        type: GeminiEventType.LoopDetected,
-        value: { loopType: LoopType.CONSECUTIVE_IDENTICAL_TOOL_CALLS },
-      });
+      expect(events).toHaveLength(5);
+      expect(
+        events.every((event) => event.type === GeminiEventType.ToolCallRequest),
+      ).toBe(true);
     });
 
     it('hard-stops identical tool calls when loop detection is enabled', async () => {

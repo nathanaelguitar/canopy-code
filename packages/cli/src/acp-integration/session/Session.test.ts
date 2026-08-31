@@ -7591,6 +7591,10 @@ describe('Session', () => {
       });
 
       it('stops an ACP prompt after repeated invalid tool parameters with fresh ids', async () => {
+        // This test exercises the opt-in guard explicitly. The production
+        // default is skipLoopDetection=true, which must let the model recover
+        // from repeated MCP validation errors.
+        mockConfig.getSkipLoopDetection = vi.fn().mockReturnValue(false);
         mockConfig.getApprovalMode = vi.fn().mockReturnValue(ApprovalMode.YOLO);
         const messageBus = {
           request: vi.fn().mockResolvedValue({

@@ -814,6 +814,11 @@ function recordDaemonToolCalls(
 ): boolean {
   if (!loopState || loopState.loopDetected)
     return loopState?.loopDetected ?? false;
+  // `skipLoopDetection` is the master opt-out for both interactive and daemon
+  // sessions. Do not enforce the adaptive cap or duplicate-call guard when a
+  // user has explicitly disabled loop protection; tool failures are still
+  // returned to the model and remain visible in the transcript.
+  if (config.getSkipLoopDetection()) return false;
   loopState.totalToolCalls += calls.length;
   // Calls returned in a single response are a concurrent batch. A model may
   // deliberately fan out several calls of the same kind (including identical
@@ -834,12 +839,8 @@ function recordDaemonToolCalls(
   }
   // Same per-turn cap semantics as the core LoopDetectionService — the
   // shouldHaltOnTurnToolCallCap predicate is shared with core's
-  // checkTurnToolCallCap so the two runtimes cannot drift (an explicit
-  // model.maxToolCallsPerTurn is a hard cap; the default is adaptive —
-  // past the soft cap a productive turn continues until the
-  // stuck-repetition signal or the hard backstop). Unlike core there is
-  // no in-session disable check — that flag is only set by the interactive
-  // loop-detection dialog, which has no ACP equivalent — and this runs
+  // checkTurnToolCallCap so the two runtimes cannot drift. The master
+  // skipLoopDetection opt-out above is checked before this block.
   // once per batch, before execution: a batch that would cross the cap
   // check is skipped whole, so a turn never executes past an explicit cap
   // or the hard backstop (it can halt up to one batch short), while the
@@ -865,16 +866,7 @@ function recordDaemonToolCalls(
     );
   }
   // Mirror of core's checkGlobalDuplicate: the same (tool, args) pair
-  // repeated GLOBAL_DUPLICATE_THRESHOLD times anywhere in the turn halts
-  // it. Gated on skipLoopDetection exactly as in core — that detector class
-  // is the historically false-positive-prone one (long turns legitimately
-  // re-run the same build/test/read), so it ships off by default, and its
-  // false positives would land hardest on exactly the long turns this
-  // adaptive cap exists to enable. The cap's stuck signal above stays
-  // always-on regardless. "Off by default" depends on the CLI layer: core's
-  // Config defaults skipLoopDetection to false and loadCliConfig applies
-  // `?? true` (cli config.ts), so a Config constructed without that layer
-  // would ship this halt on.
+  // repeated GLOBAL_DUPLICATE_THRESHOLD times anywhere in the turn halts it.
   if (
     !config.getSkipLoopDetection() &&
     loopState.maxToolCallKeyRepeat >= GLOBAL_DUPLICATE_THRESHOLD
@@ -899,6 +891,10 @@ function recordDaemonInvalidToolParams(
 ): boolean {
   if (!loopState || loopState.loopDetected)
     return loopState?.loopDetected ?? false;
+  // Invalid-parameter retries are loop protection too. With the master opt-out
+  // enabled, let the model see the MCP error and try a different call instead
+  // of terminating the entire turn after a fixed number of attempts.
+  if (config.getSkipLoopDetection()) return false;
   // Intentionally bucket by tool name only: repeated parameter errors for the
   // same tool mean the model is stuck on that tool's schema.
   const key = toolName;

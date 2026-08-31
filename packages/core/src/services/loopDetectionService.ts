@@ -343,13 +343,10 @@ export class LoopDetectionService {
   }
 
   /**
-   * Always-on safety checks that fire regardless of the `skipLoopDetection`
-   * config default. Enforces three guards: the consecutive-identical tool-call
-   * loop, the shell inspection-command stagnation loop, and the per-turn
-   * tool-call cap. Call this before the gated heuristic checks so none of the
-   * guards can be bypassed by `skipLoopDetection`. All three honor an
-   * explicit in-session disable; the cap is additionally tunable via the
-   * `model.maxToolCallsPerTurn` setting.
+   * Safety checks for tool calls. `skipLoopDetection` is the master opt-out:
+   * when enabled, no loop guard is allowed to terminate a turn. This matters
+   * for long-running agents that intentionally repeat reads, retries, or
+   * concurrent calls; the caller still receives the individual tool errors.
    */
   checkAlwaysOnSafeties(event: ServerGeminiStreamEvent): boolean {
     if (this.loopDetected) {
@@ -385,9 +382,17 @@ export class LoopDetectionService {
       return false;
     }
 
-    // All always-on guards below honor an explicit in-session disable (the
-    // user's active "stop detecting" choice). When disabled there is no
-    // consumer for the per-call key, so skip the SHA-256 hashing entirely.
+    // This setting is a complete opt-out, not merely a switch for the
+    // heuristic detector below. Keep this check before any counters/hash work
+    // so the legacy always-on guards cannot stop a turn behind the user's
+    // back (and so disabled sessions do not accumulate stale state).
+    if (this.config.getSkipLoopDetection?.() ?? false) {
+      return false;
+    }
+
+    // An in-session disable has the same semantics as the config opt-out.
+    // When disabled there is no consumer for the per-call key, so skip the
+    // SHA-256 hashing entirely.
     if (this.disabledForSession) {
       return false;
     }
@@ -397,18 +402,14 @@ export class LoopDetectionService {
     // can be large (e.g. write_file content), so avoid recomputing per guard.
     const key = this.getToolCallKey(event.value);
 
-    // Always-on stuck-repetition tracking for the adaptive cap (see
+    // Stuck-repetition tracking for the adaptive cap (see
     // checkTurnToolCallCap): lets the cap tell a productive turn from a stuck
-    // one, regardless of skipLoopDetection.
+    // one while loop protection is enabled.
     this.trackCapKeyRepeat(key);
 
     // Consecutive identical tool calls (same name AND identical args) are the
-    // one repetition signal precise enough to halt unconditionally — an
-    // identical call returns an identical result, so it is never productive.
-    // Promoted here from the opt-in tier so it protects every user regardless
-    // of the `skipLoopDetection` config default: the DashScope server rejects
-    // this pattern with a 400 (issue #5019) far below the per-turn cap, so
-    // the gated default left users unprotected.
+    // one repetition signal precise enough to halt when loop protection is
+    // enabled — an identical call usually returns an identical result.
     if (this.checkToolCallLoop(key)) {
       this.loopDetected = true;
       return true;
