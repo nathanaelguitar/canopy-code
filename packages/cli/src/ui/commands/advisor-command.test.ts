@@ -389,6 +389,44 @@ describe('advisorCommand', () => {
       expect(mockContext.ui.setPendingItem).toHaveBeenLastCalledWith(null);
     });
 
+    it('uses attached daemon display history when the local chat is empty', async () => {
+      mockRunForkedAgent.mockResolvedValue(advisorResult());
+      const attachedContext = createMockCommandContext({
+        services: {
+          config: createConfig({
+            getGeminiClient: () => ({
+              getHistoryForForkWindow: () => [],
+              getChat: () => ({ getGenerationConfig: () => ({}) }),
+            }),
+          }),
+          daemonSession: {
+            baseUrl: 'http://127.0.0.1:4170',
+            sessionId: 'daemon-session',
+            clientId: 'terminal-client',
+          },
+        },
+        ui: {
+          history: [
+            { id: 1, type: 'user', text: 'Inspect the form' },
+            { id: 2, type: 'gemini', text: 'I found the form.' },
+          ],
+        },
+      });
+
+      await advisorCommand.action!(attachedContext, 'review the progress');
+
+      expect(mockRunForkedAgent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cacheSafeParams: expect.objectContaining({
+            history: [
+              { role: 'user', parts: [{ text: 'Inspect the form' }] },
+              { role: 'model', parts: [{ text: 'I found the form.' }] },
+            ],
+          }),
+        }),
+      );
+    });
+
     it('should add error item on failure and clear pending', async () => {
       mockRunForkedAgent.mockRejectedValue(new Error('API error'));
 

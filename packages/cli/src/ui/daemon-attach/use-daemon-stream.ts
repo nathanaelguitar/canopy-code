@@ -14,6 +14,7 @@ import {
   createDaemonTuiReducerState,
   reduceDaemonEventToTuiUpdates,
 } from '../daemon/daemon-tui-adapter.js';
+import { sanitizeTerminalText } from '../utils/textUtils.js';
 import {
   DaemonEventStreamHttpError,
   streamDaemonSessionEvents,
@@ -162,7 +163,10 @@ export function useDaemonStream(
           // `data.update`; tolerate the older flat shape for compatibility.
           const update = payload.data?.update ?? payload.update;
           const kind = update?.sessionUpdate;
-          const text = update?.content?.text;
+          const text =
+            typeof update?.content?.text === 'string'
+              ? sanitizeTerminalText(update.content.text)
+              : undefined;
           if (kind === 'user_message_chunk') {
             // The local submitter already renders its text optimistically;
             // every other co-driver (including the phone) must appear in the

@@ -119,7 +119,13 @@ const virtualKeyExtractor = (item: VpItem) =>
     ? 'vp-banner'
     : item.id >= 0
       ? `h-${item.id}`
-      : `p-${-item.id - 1}`;
+      : // Pending output is a live projection: a tool group can appear before
+        // the assistant text and disappear independently.  Index keys make
+        // React/Ink reuse the old row for the new item, leaving stale trailing
+        // glyphs (for example `Gillnanael`) when the measured width changes.
+        // The pending item types are unique in a turn, so key by semantic role
+        // rather than its transient array position.
+        `p-${item.type}`;
 const virtualIsStaticItem = (item: VpItem) =>
   item.type === 'vp-banner' || item.id > 0;
 
@@ -568,9 +574,14 @@ export const MainContent = ({ footerRef }: MainContentProps) => {
             overflow="hidden"
           >
             {pendingHistoryItemsWithSourceCopyOffsets.map(
-              ({ item, sourceCopyIndexOffsets }, i) => (
+              ({ item, sourceCopyIndexOffsets }) => (
                 <HistoryItemDisplay
-                  key={i}
+                  // Pending rows can be inserted/removed while a daemon turn
+                  // streams.  Index keys let Ink reconcile a tool row as text
+                  // (or vice versa), which is what leaves stale characters in
+                  // the terminal after a shorter repaint.  Each pending type
+                  // has one row per turn, so its semantic type is stable.
+                  key={`pending-${item.type}`}
                   availableTerminalHeight={
                     uiState.constrainHeight
                       ? availableTerminalHeight

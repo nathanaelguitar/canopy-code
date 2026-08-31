@@ -9,6 +9,7 @@ import type {
   SlashCommand,
   SlashCommandActionReturn,
 } from './types.js';
+import type { Content } from '@google/genai';
 import { CommandKind } from './types.js';
 import { MessageType } from '../types.js';
 import { t } from '../../i18n/index.js';
@@ -16,6 +17,7 @@ import {
   BTW_MAX_INPUT_LENGTH,
   buildBtwCacheSafeParams,
   runForkedAgent,
+  type CacheSafeParams,
 } from '@canopy-code/canopy-code-core';
 
 const ADVISOR_SCHEMA = {
@@ -129,6 +131,58 @@ function formatAdvisorError(error: unknown): string {
   });
 }
 
+/**
+ * An attached terminal has a display-only Config: the daemon owns the real
+ * GeminiChat and therefore the local client's fork window is intentionally
+ * empty.  The daemon event stream still populates the UI history, so build a
+ * small, text-only cache snapshot from that history for /advisor.  The same
+ * fallback also covers resumed sessions whose local cache snapshot was lost;
+ * startup-only UI rows are ignored because only user/assistant text is copied.
+ */
+function buildAttachedAdvisorCacheSafeParams(
+  context: CommandContext,
+  config: NonNullable<CommandContext['services']['config']>,
+): CacheSafeParams | null {
+  const history: Content[] = [];
+  for (const item of context.ui.history) {
+    if (
+      (item.type === 'user' ||
+        item.type === 'gemini' ||
+        item.type === 'gemini_content') &&
+      typeof item.text === 'string' &&
+      item.text.trim()
+    ) {
+      history.push({
+        role: item.type === 'user' ? 'user' : 'model',
+        parts: [{ text: item.text }],
+      });
+    }
+  }
+
+  if (history.length === 0) return null;
+
+  try {
+    const generationConfig = config
+      .getGeminiClient()
+      .getChat()
+      .getGenerationConfig();
+    if (!generationConfig) return null;
+    return {
+      generationConfig: structuredClone(generationConfig),
+      // Keep the advisor bounded just like the normal cache snapshot.  The
+      // newest turns carry the useful evidence and avoid an oversized fork.
+      history: history.slice(-40),
+      model: config.getModel() ?? '',
+      version: 0,
+    };
+  } catch {
+    // A display-only attached Config may not have a local chat at all.  In
+    // that case the daemon must expose a normal local history before review
+    // can run; preserve the explicit, actionable error below.
+    return null;
+  }
+}
+
 async function askAdvisor(
   context: CommandContext,
   focus: string,
@@ -138,11 +192,14 @@ async function askAdvisor(
   const { config } = context.services;
   if (!config) throw new Error(t('Config not loaded.'));
 
-  const cacheSafeParams = buildBtwCacheSafeParams(config);
-  if (
-    !cacheSafeParams ||
-    config.getGeminiClient().getHistoryForForkWindow().length === 0
-  ) {
+  const localCacheSafeParams = buildBtwCacheSafeParams(config);
+  const localHasHistory =
+    config.getGeminiClient().getHistoryForForkWindow().length > 0;
+  const cacheSafeParams =
+    localCacheSafeParams && localHasHistory
+      ? localCacheSafeParams
+      : buildAttachedAdvisorCacheSafeParams(context, config);
+  if (!cacheSafeParams) {
     throw new Error(t('No conversation context available for /advisor'));
   }
 
