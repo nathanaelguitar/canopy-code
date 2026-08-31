@@ -119,7 +119,10 @@ describe('advisorCommand', () => {
 
     const result = await advisorCommand.action!(mockContext, 'x'.repeat(4096));
 
-    expect(result).toBeUndefined();
+    expect(result).toMatchObject({
+      type: 'submit_prompt',
+      content: [{ text: expect.stringContaining('<advisor-review>') }],
+    });
     expect(mockRunForkedAgent).toHaveBeenCalledTimes(1);
   });
 
@@ -214,7 +217,10 @@ describe('advisorCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledTimes(1);
       expect(mockRunForkedAgent).toHaveBeenCalledTimes(1);
       expect(mockContext.ui.setPendingItem).toHaveBeenLastCalledWith(null);
-      expect(result).toBeUndefined();
+      expect(result).toMatchObject({
+        type: 'submit_prompt',
+        content: [{ text: expect.stringContaining('<advisor-review>') }],
+      });
     });
 
     it('should pass focus into the advisor prompt', async () => {
@@ -613,7 +619,7 @@ describe('advisorCommand', () => {
   });
 
   describe('acp mode', () => {
-    it('should return message result with review on success', async () => {
+    it('should return a prompt that hands the review back to the model', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult());
       const acpContext = createMockCommandContext({
         executionMode: 'acp',
@@ -622,10 +628,9 @@ describe('advisorCommand', () => {
 
       const result = await advisorCommand.action!(acpContext, '');
 
-      expect(result).toEqual({
-        type: 'message',
-        messageType: 'info',
-        content: ADVISOR_MARKDOWN,
+      expect(result).toMatchObject({
+        type: 'submit_prompt',
+        content: [{ text: expect.stringContaining(ADVISOR_MARKDOWN) }],
       });
       expect(mockRunForkedAgent).toHaveBeenCalledTimes(1);
       expect(acpContext.ui.setPendingItem).not.toHaveBeenCalled();

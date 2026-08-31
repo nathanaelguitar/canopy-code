@@ -292,7 +292,15 @@ export interface AdvisorPickerActionReturn {
   type: 'advisor_picker';
   initialModel?: string;
   initialReasoningEffort?: string;
-  onSelect: (model: string, reasoningEffort: string) => void | Promise<void>;
+  /**
+   * Selecting a reviewer may produce a follow-up prompt for the primary
+   * model. This lets /advisor hand its review back to the active agent rather
+   * than displaying a dead-end side conversation.
+   */
+  onSelect: (
+    model: string,
+    reasoningEffort: string,
+  ) => void | Promise<void | SubmitPromptActionReturn>;
   onCancel: () => void;
 }
 

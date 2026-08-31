@@ -814,6 +814,19 @@ function recordDaemonToolCalls(
 ): boolean {
   if (!loopState || loopState.loopDetected)
     return loopState?.loopDetected ?? false;
+  // A single response containing hundreds of calls is almost always a local
+  // model runaway. Bound the batch before it can fan out into MCP work; this
+  // is a process-safety limit, independent of semantic loop detection.
+  const MAX_TOOL_CALLS_PER_BATCH = 64;
+  if (calls.length > MAX_TOOL_CALLS_PER_BATCH) {
+    return recordDaemonLoopDetected(
+      config,
+      promptId,
+      LoopType.TURN_TOOL_CALL_CAP,
+      `Stopping ACP turn after a tool batch contained ${calls.length} calls (maximum ${MAX_TOOL_CALLS_PER_BATCH}).`,
+      loopState,
+    );
+  }
   // `skipLoopDetection` is the master opt-out for both interactive and daemon
   // sessions. Do not enforce the adaptive cap or duplicate-call guard when a
   // user has explicitly disabled loop protection; tool failures are still

@@ -86,6 +86,11 @@ const ALTERNATING_PATTERN_CYCLES = 3;
 // contract) — see checkTurnToolCallCap.
 export const DEFAULT_MAX_TOOL_CALLS_PER_TURN = 100;
 
+// Disabling semantic loop detection must not allow an unbounded malformed
+// turn to exhaust the host process. This backstop halts the current turn while
+// leaving any durable goal resumable.
+export const UNBOUNDED_TOOL_CALLS_PER_TURN_BACKSTOP = 512;
+
 // Hard cap = soft cap * this multiplier, for the adaptive (default) cap only.
 // Absolute backstop that halts regardless of repetition, so a runaway that
 // varies its arguments on every call (which no repetition signal catches) is
@@ -382,18 +387,22 @@ export class LoopDetectionService {
       return false;
     }
 
-    // This setting is a complete opt-out, not merely a switch for the
-    // heuristic detector below. Keep this check before any counters/hash work
-    // so the legacy always-on guards cannot stop a turn behind the user's
-    // back (and so disabled sessions do not accumulate stale state).
-    if (this.config.getSkipLoopDetection?.() ?? false) {
-      return false;
-    }
-
-    // An in-session disable has the same semantics as the config opt-out.
-    // When disabled there is no consumer for the per-call key, so skip the
-    // SHA-256 hashing entirely.
-    if (this.disabledForSession) {
+    // Semantic loop detection remains opt-out, but the process-safety
+    // backstop is not. Small local models can emit malformed calls forever;
+    // stopping this turn prevents an OOM without abandoning the session goal.
+    if (
+      (this.config.getSkipLoopDetection?.() ?? false) ||
+      this.disabledForSession
+    ) {
+      this.turnToolCallTotal++;
+      if (this.turnToolCallTotal > UNBOUNDED_TOOL_CALLS_PER_TURN_BACKSTOP) {
+        this.lastLoopType = LoopType.TURN_TOOL_CALL_CAP;
+        logLoopDetected(
+          this.config,
+          new LoopDetectedEvent(LoopType.TURN_TOOL_CALL_CAP, this.promptId),
+        );
+        return true;
+      }
       return false;
     }
 

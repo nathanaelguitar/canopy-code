@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import type { SubmitPromptResult } from '../types.js';
 
 export interface AdvisorDialogSelection {
   model: string;
@@ -14,7 +15,9 @@ export interface AdvisorDialogSelection {
 export interface AdvisorDialogOptions {
   initialModel?: string;
   initialReasoningEffort?: string;
-  onSelect: (selection: AdvisorDialogSelection) => void | Promise<void>;
+  onSelect: (
+    selection: AdvisorDialogSelection,
+  ) => void | Promise<void | SubmitPromptResult>;
   onCancel: () => void;
 }
 

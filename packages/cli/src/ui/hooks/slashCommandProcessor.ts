@@ -39,6 +39,7 @@ import type {
   HistoryItemWithoutId,
   HistoryItemBtw,
   SlashCommandProcessorResult,
+  SubmitPromptResult,
   HistoryItem,
   ConfirmationRequest,
 } from '../types.js';
@@ -48,6 +49,7 @@ import {
   CommandKind,
   type CommandContext,
   type SlashCommand,
+  type SlashCommandActionReturn,
 } from '../commands/types.js';
 import type { RecentSlashCommand } from './useSlashCompletion.js';
 import { CommandService } from '../../services/CommandService.js';
@@ -194,7 +196,7 @@ export interface SlashCommandProcessorActions {
     onSelect: (selection: {
       model: string;
       reasoningEffort: string;
-    }) => void | Promise<void>;
+    }) => void | Promise<void | SubmitPromptResult>;
     onCancel: () => void;
   }) => void;
   openResumeDialog: (matchedSessions?: SessionListItem[]) => void;
@@ -1478,6 +1480,12 @@ export const useSlashCommandProcessor = (
                   );
                 }
                 case 'advisor_picker': {
+                  let followUpPrompt:
+                    | Extract<
+                        SlashCommandActionReturn,
+                        { type: 'submit_prompt' }
+                      >
+                    | undefined;
                   await new Promise<void>((resolve) => {
                     let settled = false;
                     const settle = () => {
@@ -1495,6 +1503,11 @@ export const useSlashCommandProcessor = (
                             selection.reasoningEffort,
                           ),
                         )
+                          .then((selectedResult) => {
+                            if (selectedResult?.type === 'submit_prompt') {
+                              followUpPrompt = selectedResult;
+                            }
+                          })
                           .catch((error: unknown) => {
                             addMessage({
                               type: MessageType.ERROR,
@@ -1513,7 +1526,7 @@ export const useSlashCommandProcessor = (
                       },
                     });
                   });
-                  return { type: 'handled' };
+                  return followUpPrompt ?? { type: 'handled' };
                 }
                 case 'stream_messages': {
                   // stream_messages is only used in ACP/Zed integration mode

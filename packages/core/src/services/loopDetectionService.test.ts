@@ -18,6 +18,7 @@ import { LoopType } from '../telemetry/types.js';
 import {
   DEFAULT_MAX_TOOL_CALLS_PER_TURN,
   LoopDetectionService,
+  UNBOUNDED_TOOL_CALLS_PER_TURN_BACKSTOP,
   getToolCallRepeatKey,
 } from './loopDetectionService.js';
 
@@ -1695,6 +1696,27 @@ describe('LoopDetectionService', () => {
         ).toBe(false);
       }
       expect(loggers.logLoopDetected).not.toHaveBeenCalled();
+    });
+
+    it('keeps the process-safe backstop when semantic detection is skipped', () => {
+      const svc = new LoopDetectionService({
+        ...makeConfig(Number.POSITIVE_INFINITY),
+        getSkipLoopDetection: () => true,
+      } as Config);
+      svc.reset('');
+
+      for (let i = 0; i < UNBOUNDED_TOOL_CALLS_PER_TURN_BACKSTOP; i++) {
+        expect(
+          svc.checkAlwaysOnSafeties(createToolCallRequestEvent('tool', { i })),
+        ).toBe(false);
+      }
+
+      expect(
+        svc.checkAlwaysOnSafeties(
+          createToolCallRequestEvent('tool', { last: true }),
+        ),
+      ).toBe(true);
+      expect(svc.getLastLoopType()).toBe(LoopType.TURN_TOOL_CALL_CAP);
     });
 
     it('rolls back a failed attempt on retry so its calls do not count', () => {
