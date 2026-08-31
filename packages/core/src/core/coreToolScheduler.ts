@@ -2178,6 +2178,39 @@ export class CoreToolScheduler {
     }
   }
 
+  /**
+   * A model can legitimately hold a tool name from just before an MCP
+   * transport briefly dropped.  Discovery removes the old tool instances
+   * while the health monitor reconnects, so the next call otherwise fails as
+   * "not found in registry" even though the server is still configured.
+   * Give that one call a chance to re-discover the owning server.  This is a
+   * single bounded recovery attempt; it cannot create a retry loop.
+   */
+  private async recoverMissingMcpTool(
+    unknownToolName: string,
+  ): Promise<AnyDeclarativeTool | undefined> {
+    if (!unknownToolName.startsWith('mcp__')) return undefined;
+
+    const servers = this.config.getMcpServerNames?.() ?? [];
+    const prefixOf = (server: string) =>
+      sanitizeToolNameForProvider(`mcp__${server}__`);
+    const server = [...servers]
+      .sort((a, b) => prefixOf(b).length - prefixOf(a).length)
+      .find((candidate) => unknownToolName.startsWith(prefixOf(candidate)));
+    if (!server) return undefined;
+
+    try {
+      await this.toolRegistry.discoverToolsForServer(server);
+      return await this.toolRegistry.ensureTool(unknownToolName);
+    } catch (error) {
+      debugLogger.warn(
+        `MCP recovery for missing tool ${JSON.stringify(unknownToolName)} ` +
+          `on ${JSON.stringify(server)} failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return undefined;
+    }
+  }
+
   /** Suggests similar tool names using Levenshtein distance. */
   private getToolSuggestion(unknownToolName: string, topN = 3): string {
     const allToolNames = this.toolRegistry.getAllToolNames();
@@ -2465,9 +2498,14 @@ export class CoreToolScheduler {
             }
           }
 
-          const toolInstance = await runInRequestGoalContext(reqInfo, () =>
+          let toolInstance = await runInRequestGoalContext(reqInfo, () =>
             this.toolRegistry.ensureTool(canonicalName),
           );
+          if (!toolInstance && canonicalName.startsWith('mcp__')) {
+            toolInstance = await runInRequestGoalContext(reqInfo, () =>
+              this.recoverMissingMcpTool(canonicalName),
+            );
+          }
           resolvedTool = toolInstance;
           if (recordPrevalidationCancellation()) continue;
           if (!toolInstance) {
