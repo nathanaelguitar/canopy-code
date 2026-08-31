@@ -8,9 +8,11 @@ import { spawn } from 'node:child_process';
 import {
   realpathSync,
   existsSync,
+  readdirSync,
   openSync,
   closeSync,
   readFileSync,
+  readlinkSync,
   mkdirSync,
   mkdtempSync,
   renameSync,
@@ -120,6 +122,66 @@ function rememberedDaemonLogPath(
     return undefined;
   }
   return entry.logPath;
+}
+
+/**
+ * Recover the stdout file of a live daemon that was started outside this
+ * process (for example by a desktop launcher or a previous terminal). The
+ * registry is intentionally best-effort, so those daemons used to leave
+ * `/remote-control` without a way to recover the redacted pairing URL. On
+ * Linux, `/proc` gives us a precise, read-only discovery path: match the
+ * daemon's command line and inspect its stdout descriptor. Other platforms
+ * continue to use the normal spawn registry path.
+ */
+function discoverLiveDaemonLog(
+  workspaceCwd: string,
+  port: number,
+): { pid: number; logPath: string } | undefined {
+  if (process.platform !== 'linux') return undefined;
+  let entries: string[];
+  try {
+    entries = readdirSync('/proc');
+  } catch {
+    return undefined;
+  }
+  for (const entry of entries) {
+    if (!/^\d+$/.test(entry)) continue;
+    const pid = Number(entry);
+    let args: string[];
+    try {
+      args = readFileSync(`/proc/${entry}/cmdline`, 'utf8')
+        .split('\0')
+        .filter(Boolean);
+    } catch {
+      continue;
+    }
+    const serveIndex = args.indexOf('serve');
+    if (serveIndex < 0) continue;
+    const portIndex = args.indexOf('--port', serveIndex + 1);
+    const workspaceIndex = args.indexOf('--workspace', serveIndex + 1);
+    if (
+      portIndex < 0 ||
+      workspaceIndex < 0 ||
+      args[portIndex + 1] !== String(port) ||
+      !sameWorkspace(args[workspaceIndex + 1] ?? '', workspaceCwd)
+    ) {
+      continue;
+    }
+    let logPath: string;
+    try {
+      logPath = readlinkSync(`/proc/${entry}/fd/1`);
+    } catch {
+      continue;
+    }
+    if (!logPath.startsWith('/') || !existsSync(logPath)) continue;
+    try {
+      if (!readFileSync(logPath, 'utf8')) continue;
+    } catch {
+      continue;
+    }
+    return { pid, logPath };
+  }
+  return undefined;
 }
 
 export interface EnsureWorkspaceDaemonResult {
@@ -274,11 +336,26 @@ export async function ensureWorkspaceDaemon(
     existing?.workspaceCwd &&
     sameWorkspace(existing.workspaceCwd, workspaceCwd)
   ) {
+    const rememberedLogPath = rememberedDaemonLogPath(
+      workspaceCwd,
+      DEFAULT_DAEMON_PORT,
+    );
+    const discoveredLog = rememberedLogPath
+      ? undefined
+      : discoverLiveDaemonLog(workspaceCwd, DEFAULT_DAEMON_PORT);
+    if (discoveredLog) {
+      rememberDaemonLogPath(
+        workspaceCwd,
+        DEFAULT_DAEMON_PORT,
+        discoveredLog.pid,
+        discoveredLog.logPath,
+      );
+    }
     return {
       baseUrl: `http://127.0.0.1:${DEFAULT_DAEMON_PORT}`,
       port: DEFAULT_DAEMON_PORT,
       spawned: false,
-      logPath: rememberedDaemonLogPath(workspaceCwd, DEFAULT_DAEMON_PORT),
+      logPath: rememberedLogPath ?? discoveredLog?.logPath,
     };
   }
   return spawnDaemon(workspaceCwd);
