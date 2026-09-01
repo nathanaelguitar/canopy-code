@@ -56,6 +56,7 @@ import {
 import {
   resolveWebShellDir,
   isDocumentNavigation,
+  isSessionDocumentNavigation,
 } from './web-shell-static.js';
 import {
   CONDITIONAL_SERVE_FEATURES,
@@ -3481,6 +3482,21 @@ describe('createServeApp', () => {
       expect(res.text).toContain('<div id="root">');
     });
 
+    it('serves the shell for native WebView deep links with a generic Accept header', async () => {
+      // WKWebView can omit Sec-Fetch metadata and send `Accept: */*` for a
+      // top-level URLRequest. The exact session deep-link is still a document
+      // navigation; only explicit JSON requests should remain API-gated.
+      const app = createServeApp({ ...baseOpts, token: 'secret' }, undefined, {
+        webShellDir,
+      });
+      const res = await request(app)
+        .get('/session/abc123')
+        .set('Host', host)
+        .set('Accept', '*/*');
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('<div id="root">');
+    });
+
     it('401s /session/:id for JSON requests', async () => {
       const app = createServeApp({ ...baseOpts, token: 'secret' }, undefined, {
         webShellDir,
@@ -3707,6 +3723,18 @@ describe('createServeApp', () => {
       expect(nav({ accept: 'text/html,application/xhtml+xml' })).toBe(true);
       expect(nav({ accept: 'application/json' })).toBe(false);
       expect(nav({})).toBe(false);
+    });
+
+    it('recognizes generic native session document requests without treating JSON as navigation', () => {
+      const req = (accept?: string) =>
+        ({
+          method: 'GET',
+          path: '/session/abc123',
+          headers: accept === undefined ? {} : { accept },
+        }) as never;
+      expect(isSessionDocumentNavigation(req('*/*'))).toBe(true);
+      expect(isSessionDocumentNavigation(req())).toBe(true);
+      expect(isSessionDocumentNavigation(req('application/json'))).toBe(false);
     });
 
     it('resolveWebShellDir returns undefined or a dir with index.html + assets', () => {

@@ -86,6 +86,23 @@ export function isDocumentNavigation(req: Request): boolean {
 const SESSION_DEEP_LINK_PATH = /^\/session\/[^/]+\/?$/u;
 
 /**
+ * Native web views can omit browser navigation headers and send a generic
+ * wildcard `Accept` header
+ * for a top-level document. The exact session deep-link is safe to serve the
+ * public SPA shell in that case; explicit JSON requests remain API requests.
+ */
+export function isSessionDocumentNavigation(req: Request): boolean {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return false;
+  if (!SESSION_DEEP_LINK_PATH.test(req.path.toLowerCase())) return false;
+  if (isDocumentNavigation(req)) return true;
+  const accept = req.headers.accept?.trim().toLowerCase();
+  return (
+    (!accept || accept === '*/*' || accept.startsWith('*/*;')) &&
+    !accept?.includes('application/json')
+  );
+}
+
+/**
  * True when the request matches a route `mountWebShellAssets` registers
  * BEFORE `bearerAuth`. The deferred-runtime gate in `createDelegatingServeApp`
  * exempts exactly these so a cold daemon answers the shell's entry points the
@@ -111,7 +128,7 @@ export function isPreAuthWebShellRequest(req: Request): boolean {
     reqPath.startsWith('/assets/')
   )
     return true;
-  return SESSION_DEEP_LINK_PATH.test(reqPath) && isDocumentNavigation(req);
+  return isSessionDocumentNavigation(req);
 }
 
 /**
@@ -226,7 +243,7 @@ export function mountWebShellAssets(
   });
   app.get('/', (_req: Request, res: Response) => sendIndex(res));
   app.get('/session/:id', (req: Request, res: Response, next: NextFunction) => {
-    if (!isDocumentNavigation(req)) return next();
+    if (!isSessionDocumentNavigation(req)) return next();
     sendIndex(res);
   });
 }
