@@ -31,6 +31,7 @@ import {
   formatUnsupportedVoiceModelMessage,
   isSelectableVoiceModel,
 } from '../voice/voice-model.js';
+import { refreshOllamaModels } from '../../utils/ollama-model-discovery.js';
 
 const MAIN_MODEL_CONFIGURATION_HINT =
   'Configure models in settings.modelProviders and ensure the required environment variables are set. In interactive mode, run /auth to configure or switch providers, or run /model without arguments to choose from configured models.';
@@ -514,6 +515,17 @@ export const modelCommand: SlashCommand = {
         content: t('Workspace is untrusted; run /trust first or use --global.'),
       };
     }
+
+    // Refresh configured Ollama endpoints before opening any interactive model
+    // picker. Discovery is best-effort and bounded, so an unavailable daemon
+    // never delays or prevents the existing picker from opening.
+    if (
+      context.executionMode === 'interactive' &&
+      isPickerOnlyModelInvocation(args)
+    ) {
+      await refreshOllamaModels(config, settings);
+    }
+
     const scopeSuffix =
       scopeOverride === SettingScope.Workspace
         ? t(' (this project)')
