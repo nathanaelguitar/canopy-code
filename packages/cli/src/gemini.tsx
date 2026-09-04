@@ -1179,7 +1179,16 @@ export async function main() {
       // startInteractiveUI) and so the first paint uses the refined theme
       // when the probe finishes in time.
       await themeAutoDetectionComplete;
-      const daemonSession = daemonAttachEnabled
+      // Authentication onboarding must remain reachable. The daemon's ACP
+      // child cannot create a session without provider credentials, so trying
+      // to attach before the TUI renders turns the first `canopy` launch into
+      // a fatal HTTP 500 instead of letting the user run `/auth`. Once auth is
+      // configured, normal interactive sessions remain daemon-attached.
+      const canAttachDaemon =
+        daemonAttachEnabled &&
+        initializationResult?.shouldOpenAuthDialog === false &&
+        initializationResult?.authError === null;
+      const daemonSession = canAttachDaemon
         ? await attachDaemonSession({
             workspaceCwd: process.cwd(),
             sessionId: config.getSessionId(),

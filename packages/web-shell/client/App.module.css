@@ -435,27 +435,27 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #2a2a2a;
   --sidebar-ring: #747476;
-  --agent-blue-500: #6785ff;
-  --agent-blue-400: #8aa0ff;
-  --agent-blue-300: #b4c3ff;
-  --agent-blue-200: #2f3f88;
-  --agent-blue-100: #1c254f;
-  --agent-purple-300: #bcacfe;
-  --agent-purple-400: #d5cbfe;
-  --agent-purple-600: #9a7cff;
-  --agent-purple-shadow: 0 0 40px rgba(119, 85, 254, 0.28);
+  --agent-blue-500: #4a7c4a;
+  --agent-blue-400: #6b9a6b;
+  --agent-blue-300: #a8c8a8;
+  --agent-blue-200: #2c4a2c;
+  --agent-blue-100: #1e3320;
+  --agent-purple-300: #d4b896;
+  --agent-purple-400: #e8d5ba;
+  --agent-purple-600: #a0784a;
+  --agent-purple-shadow: 0 0 40px rgba(74, 124, 74, 0.28);
   --agent-gray-200: #2a2d34;
   --agent-gray-500: #808598;
   --agent-gray-800: #3b3f49;
   --success-color: #48bb78;
   --warning-color: #ecc94b;
   --error-color: #fc8181;
-  --streaming-label-color: #b794f4;
+  --streaming-label-color: #b8a078;
   --agent-logo-gradient: linear-gradient(
     90deg,
-    #4796e4 0%,
-    #847ace 52%,
-    #c3677f 100%
+    #4a7c4a 0%,
+    #a0784a 52%,
+    #b87333 100%
   );
   --subtle-bg: rgba(255, 255, 255, 0.04);
   --subtle-bg-strong: rgba(255, 255, 255, 0.06);
@@ -470,8 +470,8 @@
   --chat-editor-text-primary: #e4e4e4;
   --chat-editor-text-secondary: #a0a0a0;
   --chat-editor-text-dimmed: #666;
-  --chat-editor-accent-color: #4a9eff;
-  --chat-editor-selection-bg: #3d5a7a;
+  --chat-editor-accent-color: #4a7c4a;
+  --chat-editor-selection-bg: #3d5a3d;
   --chat-editor-selection-color: #ffffff;
   --scrollbar-track: transparent;
   --scrollbar-thumb: #3a3a3a;
@@ -509,27 +509,27 @@
   --sidebar-accent-foreground: #151517;
   --sidebar-border: #e3e4e6;
   --sidebar-ring: #a3a3a5;
-  --agent-blue-500: #0033ff;
-  --agent-blue-400: #335cff;
-  --agent-blue-300: #6785ff;
-  --agent-blue-200: #b4c3ff;
-  --agent-blue-100: #cdd7ff;
-  --agent-purple-300: #d5cbfe;
-  --agent-purple-400: #bcacfe;
-  --agent-purple-600: #7755fe;
-  --agent-purple-shadow: 0 0 40px rgba(203, 207, 254, 0.45);
+  --agent-blue-500: #4a7c4a;
+  --agent-blue-400: #3f6b3f;
+  --agent-blue-300: #6b9a6b;
+  --agent-blue-200: #a8c8a8;
+  --agent-blue-100: #dde9dd;
+  --agent-purple-300: #e8d5ba;
+  --agent-purple-400: #d4b896;
+  --agent-purple-600: #8a6238;
+  --agent-purple-shadow: 0 0 40px rgba(200, 222, 200, 0.45);
   --agent-gray-200: #d4d7e2;
   --agent-gray-500: #808598;
   --agent-gray-800: #3b3f49;
   --success-color: #1f7a3a;
   --warning-color: #9a6a00;
   --error-color: #c0362c;
-  --streaming-label-color: #7b4ab8;
+  --streaming-label-color: #8a6238;
   --agent-logo-gradient: linear-gradient(
     90deg,
-    #0b66c3 0%,
-    #7357b8 52%,
-    #bd4f67 100%
+    #2c5f2c 0%,
+    #8a6238 52%,
+    #a05c24 100%
   );
   --subtle-bg: rgba(32, 31, 25, 0.05);
   --subtle-bg-strong: rgba(32, 31, 25, 0.08);
@@ -544,8 +544,8 @@
   --chat-editor-text-primary: #22231f;
   --chat-editor-text-secondary: #5f6259;
   --chat-editor-text-dimmed: #8b8d84;
-  --chat-editor-accent-color: #0b66c3;
-  --chat-editor-selection-bg: rgba(11, 102, 195, 0.18);
+  --chat-editor-accent-color: #2c5f2c;
+  --chat-editor-selection-bg: rgba(44, 95, 44, 0.18);
   --chat-editor-selection-color: var(--chat-editor-text-primary);
   --scrollbar-track: transparent;
   --scrollbar-thumb: #c7c9cc;

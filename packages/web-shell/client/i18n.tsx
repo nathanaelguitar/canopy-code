@@ -153,7 +153,7 @@ const EN: Messages = {
   'about.noSandbox': 'no sandbox',
   'about.platform': 'OS',
   'about.proxy': 'Proxy',
-  'about.qwenCode': 'Qwen Code',
+  'about.qwenCode': 'Canopy',
   'about.runtime': 'Runtime',
   'about.sandbox': 'Sandbox',
   'about.sessionId': 'Session ID',
@@ -189,9 +189,8 @@ const EN: Messages = {
   'agent.create.location': 'Choose Location',
   'agent.create.method': 'Choose Generation Method',
   'agent.create.method.manual': 'Manual Creation',
-  'agent.create.method.qwen': 'Generate with Qwen Code',
-  'agent.create.method.qwen.recommended':
-    'Generate with Qwen Code (Recommended)',
+  'agent.create.method.qwen': 'Generate with Canopy',
+  'agent.create.method.qwen.recommended': 'Generate with Canopy (Recommended)',
   'agent.create.method.qwen.desc':
     'LLM generates the description and system prompt',
   'agent.create.name': 'Name',
@@ -431,11 +430,11 @@ const EN: Messages = {
   'settings.liveShortcut.capture': 'Press shortcut',
   'settings.liveShortcut.clear': 'Clear',
   'settings.liveShortcut.off': 'Off',
-  'settings.liveSetup.title': 'Qwen Live',
+  'settings.liveSetup.title': 'Canopy Live',
   'settings.liveSetup.experimental': 'Experimental',
   'settings.liveSetup.description':
-    'Talk to Qwen from anywhere on this Mac with Realtime voice, Appshot, and task handoff.',
-  'settings.liveSetup.enable': 'Enable Qwen Live',
+    'Talk to Canopy from anywhere on this Mac with Realtime voice, Appshot, and task handoff.',
+  'settings.liveSetup.enable': 'Enable Canopy Live',
   'settings.liveSetup.apiKey': 'DashScope Realtime API key',
   'settings.liveSetup.apiKeyPlaceholder': 'Enter a DashScope API key',
   'settings.liveSetup.apiKeyReplace': 'Enter a new key to replace it',
@@ -465,9 +464,9 @@ const EN: Messages = {
   'settings.liveSetup.install.launching': 'Opening Host…',
   'settings.liveSetup.install.installed': 'Installed',
   'settings.liveSetup.install.error': 'Setup needs attention',
-  'settings.liveSetup.confirmTitle': 'Enable experimental Qwen Live?',
+  'settings.liveSetup.confirmTitle': 'Enable experimental Canopy Live?',
   'settings.liveSetup.confirmDescription':
-    'Qwen Code will download, verify, install, and open the signed Qwen Live Host app. macOS will then ask you to grant Microphone, Accessibility, and Screen Recording access.',
+    'Canopy will download, verify, install, and open the signed Qwen Live Host app. macOS will then ask you to grant Microphone, Accessibility, and Screen Recording access.',
   'settings.liveSetup.cancel': 'Cancel',
   'settings.liveSetup.confirm': 'Enable and install',
   'live.refresh': 'Refresh status',
@@ -1437,7 +1436,7 @@ const EN: Messages = {
   'help.footer':
     'Tab/Shift+Tab to switch tabs · ↑/↓ or PgUp/PgDn to scroll · Esc to close',
   'help.intro':
-    'Qwen Code understands your codebase, makes edits with your permission, and executes commands right from your terminal.',
+    'Canopy understands your codebase, makes edits with your permission, and executes commands right from your terminal.',
   'help.section.shortcuts': 'Shortcuts',
   'help.search': 'Search commands',
   'help.shortcut.addContext': 'Add files or folders as context',
@@ -1554,13 +1553,13 @@ const EN: Messages = {
   'local.log': 'Show commit history for the workspace',
   'local.prs': 'Show open GitHub pull requests for the workspace',
   'local.directory': 'Manage workspace directories',
-  'local.docs': 'Open the full Qwen Code documentation',
+  'local.docs': 'Open the full Canopy documentation',
   'local.doctor': 'Run installation and environment diagnostics',
   'local.dream': 'Consolidate managed auto-memory topic files',
   'local.effort': 'Set reasoning effort for capable models',
   'local.export': 'Export the current session history to a file',
   'local.forget': 'Remove matching entries from managed auto-memory',
-  'local.hooks': 'Manage Qwen Code hooks',
+  'local.hooks': 'Manage Canopy hooks',
   'local.importConfig': 'Import MCP servers from Claude configs',
   'local.init': 'Analyze the project and create a QWEN.md file',
   'local.insight': 'Generate programming insights from chat history',
@@ -1571,14 +1570,13 @@ const EN: Messages = {
     'List workflow runs or cooperatively pause/resume a live run',
   'skilldesc.batch': 'Run batch operations across many files in parallel',
   'skilldesc.dataviz': 'Design guidance for charts and data visualizations',
-  'skilldesc.extensionCreator':
-    'Create, test, and customize Qwen Code extensions',
+  'skilldesc.extensionCreator': 'Create, test, and customize Canopy extensions',
   'skilldesc.loop': 'Run a prompt on a schedule or self-paced wakeups',
   'skilldesc.newApp': 'Workflow for building a new app from scratch',
-  'skilldesc.qcHelper': 'Answer questions about using Qwen Code',
+  'skilldesc.qcHelper': 'Answer questions about using Canopy',
   'skilldesc.review': 'Review changed code for bugs, security, and quality',
   'skilldesc.simplify': 'Clean up recent changes for reuse and simplicity',
-  'skilldesc.stuck': 'Diagnose frozen or slow Qwen Code sessions',
+  'skilldesc.stuck': 'Diagnose frozen or slow Canopy sessions',
   'skilldesc.agentReproduceAlign':
     'Align a ported Codex/Claude Code feature with the original',
   'skilldesc.agentReproduceFeature':
@@ -1588,22 +1586,22 @@ const EN: Messages = {
   'skilldesc.bugfix': 'Fix a bug from a GitHub issue, reproduce-first',
   'skilldesc.codegraph': 'Analyze the codebase via graph and vector index',
   'skilldesc.createIssue': 'Draft and submit a GitHub issue from an idea',
-  'skilldesc.desktopPet': 'Create a pixel-art desktop pet for Qwen Code',
+  'skilldesc.desktopPet': 'Create a pixel-art desktop pet for Canopy',
   'skilldesc.docsAuditAndRefresh':
     'Audit and refresh docs/ against the codebase',
   'skilldesc.docsUpdateFromDiff': 'Update official docs from local git diff',
-  'skilldesc.e2eTesting': 'Run end-to-end tests of the Qwen Code CLI',
+  'skilldesc.e2eTesting': 'Run end-to-end tests of the Canopy CLI',
   'skilldesc.featDev': 'End-to-end workflow for a non-trivial feature',
   'skilldesc.memoryLeakDebug': 'Diagnose CLI memory leaks via heap snapshots',
   'skilldesc.openworkDesktopSync':
     'Sync packages/desktop with openwork commit-by-commit',
   'skilldesc.preparePr': 'Prepare a GitHub PR title and body from the branch',
-  'skilldesc.qwenCodeClaw': 'Use Qwen Code as a code-understanding agent',
+  'skilldesc.qwenCodeClaw': 'Use Canopy as a code-understanding agent',
   'skilldesc.structuredDebugging':
     'Hypothesis-driven methodology for hard bugs',
   'skilldesc.terminalCapture': 'Automate terminal UI screenshot testing',
   'skilldesc.tmuxRealUserTesting': 'Real-user testing with tmux, saving logs',
-  'skilldesc.triage': 'Triage and review Qwen Code issues and PRs',
+  'skilldesc.triage': 'Triage and review Canopy issues and PRs',
   'local.approvalMode': 'Change approval mode',
   'local.auth': 'Connect an LLM provider',
   'auth.title': 'Connect a Provider',
@@ -1730,7 +1728,7 @@ const EN: Messages = {
   'extensions.manage.setting.enabled': 'Enabled',
   'extensions.manage.setting.unknown': 'Unavailable',
   'extensions.manage.setting.unavailableDescription':
-    'The service did not return scoped extension settings. Restart qwen serve and try again.',
+    'The service did not return scoped extension settings. Restart canopy serve and try again.',
   'extensions.manage.userSetting': 'Global setting',
   'extensions.manage.userSettingDescription':
     'Applies to your workspaces unless a workspace setting overrides it.',
@@ -2621,7 +2619,7 @@ const EN: Messages = {
   'settings.title': 'Settings',
   'channels.title': 'Channels',
   'channels.description':
-    'Connect Qwen Code to the places where your team already works.',
+    'Connect Canopy to the places where your team already works.',
   'channels.summary': (v) =>
     `${v?.workspace ?? ''} · ${v?.count ?? 0} configured`,
   'channels.workspace.current': 'Current workspace',
@@ -2651,15 +2649,15 @@ const EN: Messages = {
   'channels.statusDescription.partial':
     'Connected, but some capabilities are unavailable.',
   'channels.statusDescription.error': 'Needs attention before it can connect.',
-  'channels.startsWithServe': 'Connect when Qwen Code starts',
+  'channels.startsWithServe': 'Connect when Canopy starts',
   'channels.startsWithServe.description':
-    'Automatically bring this Channel online after Qwen Code starts.',
+    'Automatically bring this Channel online after Canopy starts.',
   'channels.unsupported.title': 'Channel management is not supported',
   'channels.unsupported.description':
-    'Update Qwen Code to a version that supports Channel management.',
+    'Update Canopy to a version that supports Channel management.',
   'channels.readOnly.title': 'Channel management is read-only',
   'channels.readOnly.description':
-    'Restart Qwen Code with a bearer token to control channels.',
+    'Restart Canopy with a bearer token to control channels.',
   'channels.loadError.title': 'Channels could not be loaded',
   'channels.empty.title': 'No supported channels configured',
   'channels.empty.description':
@@ -2916,7 +2914,7 @@ const EN: Messages = {
   'settings.requiresRestart': 'This change requires a restart to take effect.',
   'settings.localControl.title': 'Local Control',
   'settings.localControl.description':
-    'Continue this Qwen Code session from a phone on the same trusted network.',
+    'Continue this Canopy session from a phone on the same trusted network.',
   'settings.localControl.on': 'On',
   'settings.localControl.off': 'Off',
   'settings.localControl.network': 'Local network',
