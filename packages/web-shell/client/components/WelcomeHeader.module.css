@@ -21,11 +21,7 @@
 }
 
 .title {
-  background: var(--agent-logo-gradient);
-  background-clip: text;
-  color: var(--primary, var(--agent-blue-500));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--agent-blue-400, #6b9a6b);
 }
 
 .subtitle {

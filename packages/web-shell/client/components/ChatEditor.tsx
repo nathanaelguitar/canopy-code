@@ -85,6 +85,7 @@ import {
   FileTextIcon,
   FolderClosedIcon,
   LoaderCircleIcon,
+  PlusIcon,
   UploadIcon,
   XIcon,
 } from 'lucide-react';
@@ -2840,6 +2841,24 @@ export const ChatEditor = memo(
                   </div>
                 )}
                 <div className={styles.toolbarLeft}>
+                  {uploadEnabled && (
+                    <button
+                      type="button"
+                      className={`${styles.toolBtn} ${styles.attachmentBtn}`}
+                      data-web-shell-attachment-button
+                      data-hide-during-mobile-voice
+                      aria-label={t('composer.upload.attach')}
+                      title={t('composer.upload.attach')}
+                      data-tooltip={t('composer.upload.attach')}
+                      disabled={disabled || fileUpload.isBusy}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        triggerFilePicker('.');
+                      }}
+                    >
+                      <PlusIcon aria-hidden="true" />
+                    </button>
+                  )}
                   {workspaceSelectVisible &&
                     workspaces &&
                     onSelectWorkspace && (

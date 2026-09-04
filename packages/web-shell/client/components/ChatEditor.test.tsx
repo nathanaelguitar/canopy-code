@@ -1597,6 +1597,9 @@ describe('ChatEditor file upload gating', () => {
     expect(
       container.querySelector('[data-web-shell-upload-input]'),
     ).not.toBeNull();
+    expect(
+      container.querySelector('[data-web-shell-attachment-button]'),
+    ).not.toBeNull();
   });
 
   it('fileUploadEnabled={false} force-disables even with the capability', () => {

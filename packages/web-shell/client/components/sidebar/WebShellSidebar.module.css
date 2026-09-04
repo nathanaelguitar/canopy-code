@@ -200,6 +200,13 @@
   display: block;
 }
 
+.brandLogo img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .brandName {
   min-width: 0;
   overflow: hidden;

@@ -63,6 +63,7 @@ import {
 } from 'lucide-react';
 import { WebShellThemeId, type WebShellTheme } from '../../themeContext';
 import { useI18n } from '../../i18n';
+import canopyChatLogoUrl from '../../assets/canopychat-logo.svg';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
@@ -521,18 +522,7 @@ function IconNewChat() {
  * (not stroked) so it opts out of the shared `.navIcon svg` stroke styling.
  */
 function IconCanopyLogo() {
-  return (
-    <svg viewBox="0 0 140 140" aria-hidden="true">
-      <path
-        fill="#4A7C4A"
-        d="M70 8c-32 0-54 22-54 50 0 9 2 17 7 24-11 5-18 14-18 24 0 15 13 26 30 26h70c17 0 30-11 30-26 0-10-7-19-18-24 5-7 7-15 7-24 0-28-22-50-54-50Z"
-      />
-      <path
-        fill="#A0784A"
-        d="M64 116a24 24 0 0 0 12 0l-2 14c0 4-2 6-4 6s-4-2-4-6l-2-14Z"
-      />
-    </svg>
-  );
+  return <img src={canopyChatLogoUrl} alt="" />;
 }
 
 function IconChevron({ expanded }: { expanded: boolean }) {
