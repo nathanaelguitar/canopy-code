@@ -6,8 +6,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PartListUnion } from '@google/genai';
+import {
+  ToolConfirmationOutcome,
+  type ToolAskUserQuestionConfirmationDetails,
+  type ToolCallConfirmationDetails,
+  type ToolConfirmationPayload,
+} from '@canopy-code/canopy-code-core';
 import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
-import { StreamingState } from '../types.js';
+import { StreamingState, ToolCallStatus } from '../types.js';
 import type { HistoryItemToolGroup, HistoryItemWithoutId } from '../types.js';
 import type { useGeminiStream } from '../hooks/useGeminiStream.js';
 import {
@@ -22,6 +28,7 @@ import {
   cancelDaemonSession,
   answerDaemonPermission,
   resumeDaemonSession,
+  type DaemonPermissionResponse,
   type DaemonSessionEvent,
 } from './daemon-session-events.js';
 
@@ -53,6 +60,146 @@ export interface PendingDaemonPermission {
   options: Array<{ optionId: string; name?: string; kind?: string }>;
 }
 
+type DaemonQuestion =
+  ToolAskUserQuestionConfirmationDetails['questions'][number];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function stringField(
+  value: Record<string, unknown>,
+  ...keys: string[]
+): string | undefined {
+  for (const key of keys) {
+    if (typeof value[key] === 'string' && value[key].trim()) {
+      return value[key] as string;
+    }
+  }
+  return undefined;
+}
+
+function getToolCallInput(toolCall: unknown): Record<string, unknown> {
+  if (!isRecord(toolCall)) return {};
+  const nested = toolCall['rawInput'] ?? toolCall['input'] ?? toolCall['args'];
+  return isRecord(nested) ? nested : toolCall;
+}
+
+function extractDaemonQuestions(toolCall: unknown): DaemonQuestion[] {
+  const toolCallRecord = isRecord(toolCall) ? toolCall : undefined;
+  const input = getToolCallInput(toolCall);
+  const metadata = isRecord(toolCallRecord?.['_meta'])
+    ? toolCallRecord['_meta']
+    : undefined;
+  const rawQuestions =
+    metadata?.['canopyQuestions'] ??
+    metadata?.['qwenQuestions'] ??
+    input['questions'] ??
+    toolCallRecord?.['questions'];
+  if (!Array.isArray(rawQuestions)) return [];
+
+  return rawQuestions.flatMap((rawQuestion, index) => {
+    if (!isRecord(rawQuestion)) return [];
+    const rawOptions = rawQuestion['options'];
+    const options = Array.isArray(rawOptions)
+      ? rawOptions.flatMap((rawOption) => {
+          if (!isRecord(rawOption)) return [];
+          return [
+            {
+              label:
+                stringField(rawOption, 'label', 'title', 'value') ?? 'Option',
+              description:
+                stringField(rawOption, 'description', 'detail', 'text') ?? '',
+            },
+          ];
+        })
+      : [];
+
+    return [
+      {
+        header:
+          stringField(rawQuestion, 'header', 'title', 'label') ??
+          `Question ${index + 1}`,
+        question:
+          stringField(rawQuestion, 'question', 'prompt', 'text') ?? 'Question',
+        options,
+        ...(typeof rawQuestion['multiSelect'] === 'boolean'
+          ? { multiSelect: rawQuestion['multiSelect'] }
+          : {}),
+      },
+    ];
+  });
+}
+
+function getPermissionOptionId(
+  permission: PendingDaemonPermission,
+  outcome: ToolConfirmationOutcome,
+): string | undefined {
+  return (
+    permission.options.find((option) => option.optionId === outcome)
+      ?.optionId ??
+    permission.options.find((option) => option.kind === 'allow_once')
+      ?.optionId ??
+    permission.options[0]?.optionId
+  );
+}
+
+export function createDaemonConfirmation(
+  permission: PendingDaemonPermission,
+  answer: (
+    requestId: string,
+    response: DaemonPermissionResponse,
+  ) => Promise<void>,
+): ToolCallConfirmationDetails {
+  const questions = extractDaemonQuestions(permission.toolCall);
+  const toolCall = isRecord(permission.toolCall) ? permission.toolCall : {};
+  const title =
+    stringField(toolCall, 'title', 'name', 'toolName') ?? 'Permission required';
+
+  const onConfirm = async (
+    outcome: ToolConfirmationOutcome,
+    payload?: ToolConfirmationPayload,
+  ) => {
+    if (outcome === ToolConfirmationOutcome.Cancel) {
+      await answer(permission.requestId, { outcome: { outcome: 'cancelled' } });
+      return;
+    }
+
+    const optionId = getPermissionOptionId(permission, outcome);
+    if (!optionId) {
+      await answer(permission.requestId, { outcome: { outcome: 'cancelled' } });
+      return;
+    }
+
+    await answer(permission.requestId, {
+      outcome: { outcome: 'selected', optionId },
+      ...(payload?.answers ? { answers: payload.answers } : {}),
+    });
+  };
+
+  if (questions.length > 0) {
+    return {
+      type: 'ask_user_question',
+      title,
+      questions,
+      onConfirm,
+    };
+  }
+
+  const input = getToolCallInput(permission.toolCall);
+  const command = stringField(input, 'command', 'cmd');
+  return {
+    type: 'info',
+    title,
+    prompt: command
+      ? `Command: ${command}`
+      : `${title} is requesting permission.`,
+    renderPromptAsPlainText: true,
+    hideAlwaysAllow: true,
+    onConfirm,
+  };
+}
+
 export interface UseDaemonStreamExtra {
   /** Answer a pending permission request. Present in addition to, not part
    * of, the useGeminiStream-shaped return — callers that only need local
@@ -62,6 +209,7 @@ export interface UseDaemonStreamExtra {
     outcome:
       | { outcome: 'selected'; optionId: string }
       | { outcome: 'cancelled' },
+    answers?: Record<string, string>,
   ) => Promise<void>;
   pendingPermission: PendingDaemonPermission | undefined;
   /**
@@ -119,6 +267,7 @@ export function useDaemonStream(
     setPendingText('');
     pendingToolGroupRef.current = undefined;
     setPendingToolGroup(undefined);
+    setPendingPermission(undefined);
     streamingResponseLengthRef.current = 0;
     setIsReceivingContent(false);
   }, []);
@@ -249,9 +398,28 @@ export function useDaemonStream(
           }
           break;
         }
+        case 'permission_resolved': {
+          const payload = evt.data as {
+            data?: { requestId?: string };
+            requestId?: string;
+          };
+          const requestId = payload.data?.requestId ?? payload.requestId;
+          if (requestId) {
+            setPendingPermission((current) =>
+              current?.requestId === requestId ? undefined : current,
+            );
+            setStreamingState((current) =>
+              current === StreamingState.WaitingForConfirmation
+                ? StreamingState.Responding
+                : current,
+            );
+          }
+          break;
+        }
         case 'turn_error': {
           const payload = evt.data as { data?: { message?: string } };
           commitPendingText();
+          setPendingPermission(undefined);
           addItem(
             {
               type: 'error',
@@ -264,6 +432,7 @@ export function useDaemonStream(
         }
         case 'prompt_cancelled': {
           commitPendingText();
+          setPendingPermission(undefined);
           setStreamingState(StreamingState.Idle);
           break;
         }
@@ -271,6 +440,7 @@ export function useDaemonStream(
         case 'turn_finished':
         case 'stop': {
           commitPendingText();
+          setPendingPermission(undefined);
           setStreamingState(StreamingState.Idle);
           break;
         }
@@ -385,6 +555,7 @@ export function useDaemonStream(
       outcome:
         | { outcome: 'selected'; optionId: string }
         | { outcome: 'cancelled' },
+      answers?: Record<string, string>,
     ) => {
       if (!baseUrl || !sessionId || !activeClientId) return;
       await answerDaemonPermission(
@@ -392,7 +563,10 @@ export function useDaemonStream(
         sessionId,
         activeClientId,
         requestId,
-        outcome,
+        {
+          outcome,
+          ...(answers ? { answers } : {}),
+        },
       );
       setPendingPermission((current) =>
         current?.requestId === requestId ? undefined : current,
@@ -431,6 +605,33 @@ export function useDaemonStream(
       ? [{ type: 'gemini_content' as const, text: pendingText }]
       : []),
   ];
+
+  if (pendingPermission) {
+    const confirmationDetails = createDaemonConfirmation(
+      pendingPermission,
+      async (requestId, response) => {
+        await answerPermission(requestId, response.outcome, response.answers);
+      },
+    );
+    const toolCall = isRecord(pendingPermission.toolCall)
+      ? pendingPermission.toolCall
+      : {};
+    const name =
+      stringField(toolCall, 'name', 'toolName', 'kind') ?? 'permission';
+    pendingHistoryItems.push({
+      type: 'tool_group',
+      tools: [
+        {
+          callId: pendingPermission.requestId,
+          name,
+          description: confirmationDetails.title,
+          resultDisplay: undefined,
+          status: ToolCallStatus.Confirming,
+          confirmationDetails,
+        },
+      ],
+    });
+  }
 
   return {
     streamingState,
