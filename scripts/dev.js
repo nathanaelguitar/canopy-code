@@ -61,7 +61,10 @@ if (existsSync(userDocsTarget) && !existsSync(qcHelperDocsLink)) {
 // Entry point for the CLI
 const cliEntry = join(cliPackageDir, 'index.ts');
 
-// Create a temporary loader file
+// Create a temporary loader file. Keep both package names here: the repository
+// was rebranded from Qwen Code to Canopy Code, but a few workspace packages
+// still use the legacy name. Mapping both names is what makes `npm run dev`
+// execute one consistent source tree instead of mixing source and stale dist.
 const tmpDir = mkdtempSync(join(tmpdir(), 'qwen-dev-'));
 const loaderPath = join(tmpDir, 'loader.mjs');
 
@@ -74,7 +77,10 @@ import { pathToFileURL } from 'node:url';
 const coreSourceUrl = '${coreSourceUrl}';
 
 export function resolve(specifier, context, nextResolve) {
-  if (specifier === '@qwen-code/qwen-code-core') {
+  if (
+    specifier === '@qwen-code/qwen-code-core' ||
+    specifier === '@canopy-code/canopy-code-core'
+  ) {
     return {
       shortCircuit: true,
       url: coreSourceUrl,

@@ -6,11 +6,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { spawnMock, platformMock, existsSyncMock } = vi.hoisted(() => ({
-  spawnMock: vi.fn(() => ({ on: vi.fn() })),
-  platformMock: vi.fn(() => 'darwin'),
-  existsSyncMock: vi.fn(() => false),
-}));
+const { spawnMock, platformMock, existsSyncMock, writeFileSyncMock } =
+  vi.hoisted(() => ({
+    spawnMock: vi.fn(() => ({ on: vi.fn() })),
+    platformMock: vi.fn(() => 'darwin'),
+    existsSyncMock: vi.fn(() => false),
+    writeFileSyncMock: vi.fn(),
+  }));
 
 vi.mock('node:child_process', () => ({
   spawn: spawnMock,
@@ -26,7 +28,7 @@ vi.mock('node:os', async (importOriginal) => {
 });
 
 vi.mock('node:fs', () => ({
-  writeFileSync: vi.fn(),
+  writeFileSync: writeFileSyncMock,
   mkdtempSync: vi.fn(() => '/tmp/qwen-dev-test'),
   rmSync: vi.fn(),
   existsSync: existsSyncMock,
@@ -136,5 +138,15 @@ describe('scripts/dev.js launcher', () => {
       if (inherited === undefined) delete process.env.QWEN_CODE_CLI;
       else process.env.QWEN_CODE_CLI = inherited;
     }
+  });
+
+  it('aliases both legacy and Canopy core package names to source in dev mode', async () => {
+    await import('../dev.js?aliases-source-core');
+
+    const loaderWrite = writeFileSyncMock.mock.calls.find(([filePath]) =>
+      normalizePath(filePath).endsWith('/loader.mjs'),
+    );
+    expect(loaderWrite?.[1]).toContain("'@qwen-code/qwen-code-core'");
+    expect(loaderWrite?.[1]).toContain("'@canopy-code/canopy-code-core'");
   });
 });

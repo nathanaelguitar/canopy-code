@@ -138,6 +138,18 @@ To start the Qwen Code application from the source code (after building), run th
 npm start
 ```
 
+For source-only development, use `npm run dev`. This runs the CLI directly
+from TypeScript and maps both the legacy `@qwen-code/qwen-code-core` package
+name and the current `@canopy-code/canopy-code-core` package name to
+`packages/core/index.ts`. Keep those aliases in `scripts/dev.js` synchronized
+with package imports; otherwise the CLI can mix source and stale `dist`
+artifacts and fail before making a model request with an error such as
+`does not provide an export named ...`.
+
+```bash
+npm run dev -- --prompt "Reply with exactly OK"
+```
+
 If you'd like to run the source build outside of the qwen-code folder, you can utilize `npm link path/to/qwen-code/packages/cli` (see: [docs](https://docs.npmjs.com/cli/v9/commands/npm-link)) to run with `qwen-code`
 
 ### Running Tests
