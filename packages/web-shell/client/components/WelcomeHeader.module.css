@@ -16,12 +16,13 @@
   gap: 0.35em;
   color: var(--foreground);
   font-size: 28px;
-  font-weight: 600;
+  font-family: ui-serif, Georgia, serif;
+  font-weight: 400;
   line-height: 36px;
 }
 
 .title {
-  color: var(--agent-blue-400, #6b9a6b);
+  color: var(--forest-medium, var(--agent-blue-400, #6b9a6b));
 }
 
 .subtitle {

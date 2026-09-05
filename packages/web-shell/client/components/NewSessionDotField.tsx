@@ -88,8 +88,8 @@ export function NewSessionDotField() {
       context.clearRect(0, 0, width, height);
       context.fillStyle =
         theme === WebShellThemeId.Light
-          ? 'rgba(172, 191, 255, 0.85)'
-          : 'rgba(172, 191, 255, 0.42)';
+          ? 'rgba(107, 68, 35, 0.14)'
+          : 'rgba(212, 184, 150, 0.16)';
       context.beginPath();
 
       const cursorRadiusSquared = 500 * 500;
@@ -126,8 +126,13 @@ export function NewSessionDotField() {
           pointer.y,
           160,
         );
-        glow.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        glow.addColorStop(
+          0,
+          theme === WebShellThemeId.Light
+            ? 'rgba(212, 160, 23, 0.16)'
+            : 'rgba(212, 160, 23, 0.2)',
+        );
+        glow.addColorStop(1, 'rgba(212, 160, 23, 0)');
         context.globalAlpha = glowOpacity;
         context.globalCompositeOperation = 'destination-out';
         context.fillStyle = glow;

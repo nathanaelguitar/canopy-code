@@ -55,10 +55,11 @@
 .chatBubble {
   display: inline-block;
   max-width: 100%;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: var(--foreground);
+  padding: 12px 16px;
+  border-radius: var(--user-bubble-radius, 20px 20px 4px 20px);
+  background: var(--user-bubble-bg, var(--accent));
+  box-shadow: 0 8px 18px rgba(61, 41, 20, 0.16);
+  color: var(--user-bubble-foreground, #ffffff);
   font-family: var(--font-sans, system-ui, sans-serif);
   font-size: 14px;
   line-height: 1.5;

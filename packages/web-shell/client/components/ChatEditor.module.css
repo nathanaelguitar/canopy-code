@@ -11,7 +11,7 @@
 .container {
   position: relative;
   container-type: inline-size;
-  border-radius: 12px;
+  border-radius: 26px;
   margin: 0;
   cursor: text;
   --chat-editor-min-height: 140px;
@@ -20,7 +20,7 @@
   --chat-editor-input-max-height: 300px;
   --chat-editor-attachments-max-height: 136px;
   --chat-send-button-disabled-foreground: var(--secondary-foreground);
-  --chat-send-button-foreground: #fafafa;
+  --chat-send-button-foreground: #ffffff;
 }
 
 .content {
@@ -32,9 +32,15 @@
   max-height: var(--chat-editor-max-height, min(350px, 40vh));
   flex-direction: column;
   overflow: visible;
-  border: 1.5px solid var(--agent-gray-200);
+  border: 1px solid transparent;
   border-radius: inherit;
-  background: var(--chat-editor-bg-primary);
+  background:
+    linear-gradient(var(--chat-editor-bg-primary), var(--chat-editor-bg-primary))
+      padding-box,
+    var(--composer-border-gradient) border-box;
+  box-shadow:
+    0 16px 32px -8px rgba(61, 41, 20, 0.24),
+    0 2px 5px rgba(61, 41, 20, 0.16);
   opacity: 1;
   padding: 12px;
 }
@@ -59,7 +65,7 @@
 .specularEffect::before {
   position: absolute;
   inset: 20px;
-  border-radius: 12px;
+  border-radius: 26px;
   content: '';
   opacity: 0;
   transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
@@ -68,14 +74,14 @@
 
 .specularEffect[data-theme='light']::before {
   box-shadow:
-    0 0 0 4px rgba(205, 217, 255, 0.5),
-    0 16px 46px rgba(51, 92, 255, 0.08);
+    0 0 0 4px rgba(160, 120, 74, 0.28),
+    0 16px 46px rgba(107, 68, 35, 0.1);
 }
 
 .specularEffect[data-theme='dark']::before {
   box-shadow:
-    0 0 0 4px rgba(83, 103, 159, 0.3),
-    0 18px 54px rgba(51, 92, 255, 0.18);
+    0 0 0 4px rgba(212, 184, 150, 0.22),
+    0 18px 54px rgba(107, 68, 35, 0.24);
 }
 
 .container:hover .specularEffect::before,
@@ -1722,9 +1728,9 @@
 
 .sendBtn {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: none;
   background: var(--agent-gray-200);
   color: var(--chat-send-button-disabled-foreground);
@@ -1744,7 +1750,7 @@
 
 .sendBtn:not(:disabled) {
   border: none;
-  background: var(--agent-gray-800);
+  background: var(--send-button-bg, var(--agent-gray-800));
   box-shadow: var(--agent-purple-shadow);
   color: var(--chat-send-button-foreground);
   cursor: pointer;
@@ -1761,7 +1767,7 @@
 .sendBtnRunning,
 .sendBtnRunning:not(:disabled) {
   border: none;
-  background: var(--agent-gray-800);
+  background: var(--send-button-bg, var(--agent-gray-800));
   box-shadow: none;
   color: var(--chat-send-button-foreground);
   cursor: pointer;

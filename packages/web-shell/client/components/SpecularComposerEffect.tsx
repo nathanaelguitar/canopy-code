@@ -286,9 +286,9 @@ export function SpecularComposerEffect({
       gl.uniform2f(halfSize, (width / 2) * dpr, (height / 2) * dpr);
       gl.uniform3f(
         lineColor,
-        theme === WebShellThemeId.Light ? 0.2 : 0.403922,
-        theme === WebShellThemeId.Light ? 0.360784 : 0.521569,
-        1,
+        theme === WebShellThemeId.Light ? 0.627451 : 0.831373,
+        theme === WebShellThemeId.Light ? 0.470588 : 0.721569,
+        theme === WebShellThemeId.Light ? 0.290196 : 0.588235,
       );
       gl.uniform1f(radius, Math.min(cornerRadius, height / 2) * dpr);
       gl.uniform1f(angleUniform, angle);

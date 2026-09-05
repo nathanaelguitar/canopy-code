@@ -17,7 +17,7 @@
       updates this meta tag in the same tick it applies the theme class so
       mobile browsers never flash the default (white) bar.
     -->
-    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="theme-color" content="#241d14" />
     <title>Canopy Web chat</title>
     <!--
       Apply the stored theme class + theme-color before first paint so the
@@ -27,7 +27,7 @@
       THEME_STORAGE_KEY in main.tsx.
     -->
     <script>
-      !function(){try{var k='qwen-code-web-shell-theme',p=new URLSearchParams(location.search),t=p.get('theme');if(t!=='dark'&&t!=='light'){try{t=localStorage.getItem(k)}catch(_){t=null}}if(t!=='dark'&&t!=='light')t='dark';document.documentElement.classList.add('theme-'+t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',t==='light'?'#ffffff':'#0d0d0d')}catch(e){console.warn('theme-init:',e)}}();
+      !function(){try{var k='qwen-code-web-shell-theme',p=new URLSearchParams(location.search),t=p.get('theme');if(t!=='dark'&&t!=='light'){try{t=localStorage.getItem(k)}catch(_){t=null}}if(t!=='dark'&&t!=='light')t='dark';document.documentElement.classList.add('theme-'+t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',t==='light'?'#ead9be':'#241d14')}catch(e){console.warn('theme-init:',e)}}();
     </script>
     <!--
       Favicon is inlined as a data: URI rather than a /favicon.svg file because

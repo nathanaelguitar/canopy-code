@@ -1,10 +1,10 @@
 .themeDark {
-  --background: #0d0d0d;
-  --foreground: #fafafa;
-  --muted: #161616;
-  --muted-foreground: #808598;
-  --secondary: #1e1e1e;
-  --border: #2a2a2a;
+  --background: #241d14;
+  --foreground: #f5ede0;
+  --muted: #302820;
+  --muted-foreground: #b0a090;
+  --secondary: #3a2f24;
+  --border: #4a3a2a;
   --agent-blue-500: #6785ff;
   /* Chart series colors — mirror App.module.css .themeDark. DialogShell portals
      to document.body, outside the app root that defines these, so the dialog's
@@ -23,12 +23,12 @@
 }
 
 .themeLight {
-  --background: #ffffff;
-  --foreground: #0a0a0b;
-  --muted: #f3f3f5;
-  --muted-foreground: #a3a3a5;
-  --secondary: #f3f3f5;
-  --border: #e3e4e6;
+  --background: #ead9be;
+  --foreground: #1a1612;
+  --muted: #f0ebe3;
+  --muted-foreground: #706050;
+  --secondary: #eadfc9;
+  --border: #d8c5a4;
   --agent-blue-500: #0033ff;
   /* Chart series colors — mirror App.module.css .themeLight (see .themeDark). */
   --agent-blue-400: #335cff;

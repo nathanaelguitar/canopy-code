@@ -32,7 +32,8 @@
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  background: var(--background);
+  background-color: var(--background);
+  background-image: var(--app-bg-layers);
   color: var(--foreground);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -74,7 +75,8 @@
   flex: 0 0 auto;
   align-items: center;
   border-bottom: 1px solid var(--border);
-  background: var(--background);
+  background-color: color-mix(in srgb, var(--background) 86%, transparent);
+  background-image: none;
 }
 
 .customChatHeader {
@@ -481,6 +483,82 @@
   --git-mode-worktree: #b48eff;
   --git-mode-valid: #48bb78;
   --git-mode-invalid: #fc8181;
+  --oak-dark: #3d2914;
+  --oak-medium: #6b4423;
+  --oak-light: #a0784a;
+  --oak-pale: #d4b896;
+  --oak-cream: #f5ede0;
+  --forest-medium: #4a7c4a;
+  --copper: #b87333;
+  --amber: #d4a017;
+  --warm-gray-100: #f0ebe3;
+  --warm-gray-400: #b0a090;
+  --warm-gray-500: #907868;
+  --warm-gray-600: #706050;
+  --warm-gray-700: #504030;
+  --warm-gray-800: #302820;
+  --warm-gray-900: #1a1612;
+  --background: #241d14;
+  --app-bg-layers:
+    radial-gradient(70% 60% at 8% 0%, rgba(212, 160, 23, 0.1), transparent 70%),
+    radial-gradient(65% 55% at 92% 100%, rgba(74, 124, 74, 0.09), transparent 72%),
+    linear-gradient(162deg, #201a14 0%, #2c2318 55%, #3a2e1f 100%);
+  --foreground: var(--oak-cream);
+  --card: var(--warm-gray-800);
+  --card-foreground: var(--oak-cream);
+  --popover: #3a2e1f;
+  --popover-foreground: var(--oak-cream);
+  --primary: var(--oak-medium);
+  --primary-foreground: #ffffff;
+  --secondary: #3a2f24;
+  --secondary-foreground: var(--oak-pale);
+  --muted: var(--warm-gray-800);
+  --muted-foreground: var(--warm-gray-400);
+  --accent: #3a2e1f;
+  --accent-foreground: var(--oak-cream);
+  --border: #4a3a2a;
+  --ring: var(--oak-pale);
+  --sidebar-background: rgba(26, 22, 18, 0.78);
+  --sidebar-foreground: var(--oak-cream);
+  --sidebar-primary: var(--oak-medium);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(212, 184, 150, 0.1);
+  --sidebar-accent-foreground: var(--oak-cream);
+  --sidebar-border: rgba(212, 184, 150, 0.16);
+  --sidebar-ring: var(--oak-pale);
+  --agent-blue-500: var(--forest-medium);
+  --agent-blue-400: #6b9a6b;
+  --agent-blue-300: #a8c8a8;
+  --agent-blue-200: #2c4a2c;
+  --agent-blue-100: #1e3320;
+  --agent-purple-300: var(--oak-pale);
+  --agent-purple-400: #e8d5ba;
+  --agent-purple-600: var(--oak-light);
+  --agent-purple-shadow: 0 10px 28px rgba(61, 41, 20, 0.34);
+  --agent-gray-200: #4a3a2a;
+  --agent-gray-500: var(--warm-gray-400);
+  --agent-gray-800: var(--oak-medium);
+  --chat-editor-bg-primary: var(--warm-gray-800);
+  --chat-editor-bg-tertiary: #3a2e1f;
+  --chat-editor-border-color: #4a3a2a;
+  --chat-editor-text-primary: var(--oak-cream);
+  --chat-editor-text-secondary: var(--warm-gray-400);
+  --chat-editor-text-dimmed: var(--warm-gray-500);
+  --chat-editor-accent-color: var(--oak-light);
+  --chat-editor-selection-bg: rgba(74, 124, 74, 0.3);
+  --scrollbar-thumb: #5a4630;
+  --scrollbar-thumb-hover: #80613d;
+  --user-bubble-bg: var(--oak-medium);
+  --user-bubble-foreground: #ffffff;
+  --user-bubble-radius: 20px 20px 4px 20px;
+  --send-button-bg: linear-gradient(145deg, var(--oak-light), var(--oak-medium));
+  --composer-border-gradient: linear-gradient(
+    180deg,
+    rgba(212, 184, 150, 0.38),
+    rgba(107, 68, 35, 0.3)
+  );
+  --dot-field-color: rgba(212, 184, 150, 0.16);
+  --dot-field-glow: rgba(212, 160, 23, 0.2);
 }
 
 .themeLight {
@@ -555,6 +633,82 @@
   --git-mode-worktree: #6b3fa0;
   --git-mode-valid: #1f7a3a;
   --git-mode-invalid: #c0362c;
+  --oak-dark: #3d2914;
+  --oak-medium: #6b4423;
+  --oak-light: #a0784a;
+  --oak-pale: #d4b896;
+  --oak-cream: #f5ede0;
+  --forest-medium: #4a7c4a;
+  --copper: #b87333;
+  --amber: #d4a017;
+  --warm-gray-100: #f0ebe3;
+  --warm-gray-400: #b0a090;
+  --warm-gray-500: #907868;
+  --warm-gray-600: #706050;
+  --warm-gray-700: #504030;
+  --warm-gray-800: #302820;
+  --warm-gray-900: #1a1612;
+  --background: #ead9be;
+  --app-bg-layers:
+    radial-gradient(70% 60% at 8% 0%, rgba(212, 160, 23, 0.12), transparent 70%),
+    radial-gradient(65% 55% at 92% 100%, rgba(74, 124, 74, 0.09), transparent 72%),
+    linear-gradient(162deg, #f5ede0 0%, #eaddc6 52%, #d8c5a4 100%);
+  --foreground: var(--warm-gray-900);
+  --card: var(--oak-cream);
+  --card-foreground: var(--warm-gray-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--warm-gray-900);
+  --primary: var(--oak-medium);
+  --primary-foreground: #ffffff;
+  --secondary: #eadfc9;
+  --secondary-foreground: var(--oak-medium);
+  --muted: var(--warm-gray-100);
+  --muted-foreground: var(--warm-gray-600);
+  --accent: #eadfc9;
+  --accent-foreground: var(--oak-dark);
+  --border: #d8c5a4;
+  --ring: var(--oak-light);
+  --sidebar-background: rgba(245, 237, 224, 0.82);
+  --sidebar-foreground: var(--warm-gray-900);
+  --sidebar-primary: var(--oak-medium);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(107, 68, 35, 0.08);
+  --sidebar-accent-foreground: var(--oak-dark);
+  --sidebar-border: rgba(107, 68, 35, 0.18);
+  --sidebar-ring: var(--oak-light);
+  --agent-blue-500: var(--forest-medium);
+  --agent-blue-400: #3f6b3f;
+  --agent-blue-300: #6b9a6b;
+  --agent-blue-200: #a8c8a8;
+  --agent-blue-100: #dde9dd;
+  --agent-purple-300: var(--oak-pale);
+  --agent-purple-400: var(--oak-light);
+  --agent-purple-600: #8a6238;
+  --agent-purple-shadow: 0 10px 28px rgba(61, 41, 20, 0.12);
+  --agent-gray-200: #d8c5a4;
+  --agent-gray-500: var(--warm-gray-600);
+  --agent-gray-800: var(--oak-medium);
+  --chat-editor-bg-primary: #ffffff;
+  --chat-editor-bg-tertiary: var(--warm-gray-100);
+  --chat-editor-border-color: #d8c5a4;
+  --chat-editor-text-primary: var(--warm-gray-900);
+  --chat-editor-text-secondary: var(--warm-gray-600);
+  --chat-editor-text-dimmed: var(--warm-gray-500);
+  --chat-editor-accent-color: var(--forest-medium);
+  --chat-editor-selection-bg: rgba(74, 124, 74, 0.18);
+  --scrollbar-thumb: #c7b18e;
+  --scrollbar-thumb-hover: var(--oak-light);
+  --user-bubble-bg: rgba(107, 68, 35, 0.92);
+  --user-bubble-foreground: #ffffff;
+  --user-bubble-radius: 20px 20px 4px 20px;
+  --send-button-bg: linear-gradient(145deg, var(--oak-light), var(--oak-medium));
+  --composer-border-gradient: linear-gradient(
+    180deg,
+    rgba(160, 120, 74, 0.7),
+    rgba(216, 197, 164, 0.45)
+  );
+  --dot-field-color: rgba(107, 68, 35, 0.14);
+  --dot-field-glow: rgba(212, 160, 23, 0.16);
 }
 
 .content {
@@ -736,7 +890,6 @@
   padding-right: 20px;
   padding-left: 20px;
   flex-shrink: 0;
-  transition: width 320ms ease;
 }
 
 .bottomPanels {
