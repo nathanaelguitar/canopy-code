@@ -44,6 +44,17 @@ export class DaemonEventStreamHttpError extends Error {
   }
 }
 
+export type DaemonPermissionOutcome =
+  | { outcome: 'selected'; optionId: string }
+  | { outcome: 'cancelled' };
+
+export interface DaemonPermissionResponse {
+  outcome: DaemonPermissionOutcome;
+  answers?: Record<string, string>;
+}
+
+type LegacyDaemonPermissionResponse = DaemonPermissionOutcome;
+
 const RECONNECT_DELAY_MS = 1000;
 
 /**
@@ -242,12 +253,16 @@ export function answerDaemonPermission(
   sessionId: string,
   clientId: string,
   requestId: string,
-  outcome: unknown,
+  response: DaemonPermissionResponse | LegacyDaemonPermissionResponse,
 ): Promise<unknown> {
+  const normalizedResponse: DaemonPermissionResponse =
+    typeof response.outcome === 'string'
+      ? { outcome: response }
+      : response;
   return postJson(
     baseUrl,
     `/session/${encodeURIComponent(sessionId)}/permission/${encodeURIComponent(requestId)}`,
-    { outcome },
+    normalizedResponse,
     clientId,
   );
 }
