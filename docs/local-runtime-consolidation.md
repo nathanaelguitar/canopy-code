@@ -11,6 +11,12 @@ retry/path fix. The source of truth for future syncs is the DGX checkout:
 
 `/home/nathanaelguitar/repos/qwen-code`
 
+During consolidation, the unique CLI work from the old `remote-attach` branch
+was reviewed against DGX history. The session-title change was already present
+on DGX; the attention-notification and branding/autocorrect changes were
+carried into the canonical history as `2324d68acb` and `2fa39030b5`. The
+parent AetherChat/iOS commits were not mixed into this CLI repository.
+
 ## Host runtime policy
 
 - Do not use Homebrew's `canopy`, `qwen-code`, or Node installation as the
@@ -53,3 +59,5 @@ That archive contains the old `canopy-code` tree, the Aether/iOS
 `AetherChat-dev-tools` tree, and the DGX bundle used for this consolidation.
 The Aether/iOS repository remains available there for its product history, but
 its nested `dev-tools` checkout is deprecated as a Canopy Code CLI source.
+The old `canopy-code` branch was `feat/web-shell-oak-theme`; its uncommitted
+`.canopy/` state and model-constant edit remain inside the archive.
