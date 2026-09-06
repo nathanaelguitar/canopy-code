@@ -915,7 +915,10 @@
 }
 
 .toolbarLeading {
-  margin-left: -5px;
+  /* Keep custom leading actions (including the attachment affordance) clear
+     of the composer edge. The old negative offset made the first control
+     especially easy to miss on narrow iPhone touch targets. */
+  margin-left: 0;
   min-width: 0;
 }
 
@@ -930,6 +933,25 @@
 
 .toolbarStart {
   min-width: 0;
+}
+
+/* Hosts can supply the leading attachment action. Give it a stable touch
+   target without changing its visual icon size. */
+.toolbarStart :global(button) {
+  min-width: 36px;
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+  .toolbarLeading {
+    margin-left: 4px;
+  }
+
+  .toolbarStart :global(button) {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 .toolbarEnd {
