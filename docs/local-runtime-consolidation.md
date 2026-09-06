@@ -27,6 +27,10 @@ parent AetherChat/iOS commits were not mixed into this CLI repository.
   the checked-in CLI build in this checkout.
 - The old Homebrew launcher at `/opt/homebrew/bin/canopy` is not the canonical
   launcher and must not be selected by PATH ordering.
+- The latest locally available Impeccable skill (`4.1.1`) is installed for
+  Canopy Code at `/Users/nathanaelguitar/.canopy/skills/impeccable/`. This is
+  the user-level skill root used by the fork, so it is available to every
+  Canopy Code workspace without copying it into individual repositories.
 
 ## Rebuilding after DGX changes
 
