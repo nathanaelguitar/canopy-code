@@ -5964,4 +5964,14 @@ describe('classifyPastedImagePaths', () => {
       classifyPastedImagePaths('@/a/img.png describe this').allImages,
     ).toBe(false);
   });
+
+  it('decodes a file:// URI (e.g. drag-and-drop from a file manager)', () => {
+    const result = classifyPastedImagePaths(
+      'file:///home/user/Screenshots/Screenshot%20from%202026-09-05%2019-39-14.png',
+    );
+    expect(result.allImages).toBe(true);
+    expect(result.imagePaths).toEqual([
+      '/home/user/Screenshots/Screenshot from 2026-09-05 19-39-14.png',
+    ]);
+  });
 });

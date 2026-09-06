@@ -80,6 +80,29 @@ export class EnhancedErrorHandler implements ErrorHandler {
       });
     }
 
+    // `errorMessage` (via getErrorMessage) may have appended the underlying
+    // `cause` detail (e.g. "Connection error. (cause: ECONNRESET: ...)") that
+    // the bare SDK error's own `.message` lacks — SDKs like `openai` attach a
+    // `cause` but leave their own generic message (e.g. "Connection error.")
+    // unchanged. Surface that enrichment on the rethrown error itself, not
+    // just in the debug log, so callers that only read `.message` (including
+    // the ACP bridge's generic JSON-RPC error formatter, which drops `.cause`
+    // entirely) show something actionable instead of the generic string.
+    // Mutating `.message` in place (rather than wrapping in a new Error)
+    // preserves the error's class, `status`, `code`, and `cause` so retry
+    // classification elsewhere keeps working.
+    if (
+      redactedError instanceof Error &&
+      redactedError.message !== errorMessage
+    ) {
+      try {
+        redactedError.message = errorMessage;
+      } catch {
+        // Frozen/non-writable error object — fall back to the original
+        // message rather than crash the error path itself.
+      }
+    }
+
     throw redactedError;
   }
 
