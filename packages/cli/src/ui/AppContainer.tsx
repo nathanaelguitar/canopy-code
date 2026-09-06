@@ -2212,6 +2212,7 @@ export const AppContainer = (props: AppContainerProps) => {
   const daemonStream = useDaemonStream(
     props.daemonSession,
     historyManager.addItem,
+    historyManager.clearItems,
   );
 
   const {

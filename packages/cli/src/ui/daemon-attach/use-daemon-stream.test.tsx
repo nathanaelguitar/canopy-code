@@ -6,6 +6,8 @@
 
 const daemonMocks = vi.hoisted(() => ({
   answerDaemonPermission: vi.fn(),
+  detachDaemonSession: vi.fn(),
+  loadDaemonSession: vi.fn(),
   streamDaemonSessionEvents: vi.fn(),
   submitDaemonPrompt: vi.fn(),
 }));
@@ -30,17 +32,122 @@ import type { DaemonSessionEvent } from './daemon-session-events.js';
 
 describe('useDaemonStream permission rendering', () => {
   let onEvent: ((event: DaemonSessionEvent) => void) | undefined;
+  let onResyncRequired: ((reason?: string) => void) | undefined;
 
   beforeEach(() => {
     onEvent = undefined;
+    onResyncRequired = undefined;
     daemonMocks.answerDaemonPermission.mockReset().mockResolvedValue(undefined);
     daemonMocks.submitDaemonPrompt.mockReset();
+    daemonMocks.detachDaemonSession.mockReset().mockResolvedValue(undefined);
+    daemonMocks.loadDaemonSession.mockReset();
     daemonMocks.streamDaemonSessionEvents
       .mockReset()
-      .mockImplementation((options: { onEvent: typeof onEvent }) => {
-        onEvent = options.onEvent;
-        return Promise.resolve();
+      .mockImplementation(
+        (options: {
+          onEvent: typeof onEvent;
+          onResyncRequired?: typeof onResyncRequired;
+        }) => {
+          onEvent = options.onEvent;
+          onResyncRequired = options.onResyncRequired;
+          return Promise.resolve();
+        },
+      );
+  });
+
+  it('deduplicates replayed ids and shows a catching-up indicator', async () => {
+    daemonMocks.loadDaemonSession.mockResolvedValue({
+      clientId: 'client-after-resync',
+      lastEventId: 3,
+      eventEpoch: 'epoch-1',
+      compactedReplay: [
+        {
+          id: 1,
+          event: 'session_update',
+          data: {
+            update: {
+              sessionUpdate: 'agent_message_chunk',
+              content: { type: 'text', text: 'already-seen' },
+            },
+          },
+        },
+      ],
+      liveJournal: [
+        {
+          id: 1,
+          event: 'session_update',
+          data: {
+            update: {
+              sessionUpdate: 'agent_message_chunk',
+              content: { type: 'text', text: 'already-seen' },
+            },
+          },
+        },
+        {
+          id: 2,
+          event: 'session_update',
+          data: {
+            update: {
+              sessionUpdate: 'agent_message_chunk',
+              content: { type: 'text', text: 'recovered' },
+            },
+          },
+        },
+      ],
+    });
+    const addItem = vi.fn() as unknown as UseHistoryManagerReturn['addItem'];
+    const clearHistory = vi.fn() as UseHistoryManagerReturn['clearItems'];
+    const session = {
+      baseUrl: 'http://daemon.test',
+      sessionId: 'session-1',
+      clientId: 'client-1',
+    };
+    const { result } = renderHook(() =>
+      useDaemonStream(session, addItem, clearHistory),
+    );
+
+    await waitFor(() => expect(onEvent).toBeDefined());
+    vi.useFakeTimers();
+    try {
+      act(() => {
+        onEvent?.({
+          id: 1,
+          event: 'session_update',
+          data: {
+            update: {
+              sessionUpdate: 'agent_message_chunk',
+              content: { type: 'text', text: 'already-seen' },
+            },
+          },
+        });
+        onResyncRequired?.('ring_evicted');
       });
+      expect(result.current.pendingHistoryItems).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Catching up with daemon session…' }),
+        ]),
+      );
+
+      await act(async () => {
+        vi.advanceTimersByTime(250);
+        await vi.runAllTimersAsync();
+      });
+
+      const pendingText = result.current.pendingHistoryItems.find(
+        (item) => item.type === 'gemini_content',
+      );
+      expect(clearHistory).toHaveBeenCalledOnce();
+      expect(pendingText).toMatchObject({
+        text: 'already-seenrecovered',
+      });
+      expect(result.current.pendingHistoryItems).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'already-seenalready-seen' }),
+        ]),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('renders daemon questions through the shared TUI confirmation dialog', async () => {

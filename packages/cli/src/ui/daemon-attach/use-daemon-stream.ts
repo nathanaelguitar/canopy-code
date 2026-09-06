@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PartListUnion } from '@google/genai';
 import {
+  createDebugLogger,
   ToolConfirmationOutcome,
   type ToolAskUserQuestionConfirmationDetails,
   type ToolCallConfirmationDetails,
@@ -33,6 +34,12 @@ import {
   type DaemonPermissionResponse,
   type DaemonSessionEvent,
 } from './daemon-session-events.js';
+
+const MAX_RESYNC_ATTEMPTS = 3;
+const RESYNC_BASE_DELAY_MS = 250;
+const RESYNC_MAX_DELAY_MS = 4_000;
+const MAX_TRACKED_DAEMON_EVENT_IDS = 8_192;
+const debugLogger = createDebugLogger('DAEMON_STREAM');
 
 /**
  * Renders a live daemon-managed session in the interactive TUI instead of
@@ -237,6 +244,7 @@ function isToolProtocolArtifact(text: string): boolean {
 export function useDaemonStream(
   session: { baseUrl: string; sessionId: string; clientId: string } | undefined,
   addItem: UseHistoryManagerReturn['addItem'],
+  clearHistory?: UseHistoryManagerReturn['clearItems'],
 ): ReturnType<typeof useGeminiStream> & UseDaemonStreamExtra {
   const baseUrl = session?.baseUrl;
   const sessionId = session?.sessionId;
@@ -257,6 +265,7 @@ export function useDaemonStream(
   const [daemonSessionTitle, setDaemonSessionTitle] = useState<
     string | undefined
   >(undefined);
+  const [isResyncing, setIsResyncing] = useState(false);
   const streamingResponseLengthRef = useRef(0);
   const activePromptIdRef = useRef<string | undefined>(undefined);
   const toolReducerStateRef = useRef(createDaemonTuiReducerState());
@@ -268,8 +277,73 @@ export function useDaemonStream(
   const pendingRenderTimerRef = useRef<
     ReturnType<typeof setTimeout> | undefined
   >(undefined);
-  const replayingResyncRef = useRef(false);
   const resyncCursorRef = useRef<number | undefined>(undefined);
+  const isResyncingRef = useRef(false);
+  const rebuildingHistoryRef = useRef(false);
+  const eventEpochRef = useRef<string | undefined>(undefined);
+  const processedEventIdsRef = useRef(new Set<number>());
+  const pendingPermissionRef = useRef<PendingDaemonPermission | undefined>(
+    undefined,
+  );
+  const resyncSawTerminalRef = useRef(false);
+  const resyncResolvedPermissionIdsRef = useRef(new Set<string>());
+  const resyncAttemptsRef = useRef(0);
+  const resyncDelayTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const detachInFlightRef = useRef(new Map<string, Promise<void>>());
+
+  const updateEventEpoch = useCallback((epoch: string) => {
+    if (
+      eventEpochRef.current !== undefined &&
+      eventEpochRef.current !== epoch
+    ) {
+      processedEventIdsRef.current.clear();
+    }
+    eventEpochRef.current = epoch;
+  }, []);
+
+  const setResyncing = useCallback((value: boolean) => {
+    isResyncingRef.current = value;
+    setIsResyncing(value);
+  }, []);
+
+  const detachClientWithRetry = useCallback(
+    (clientToDetach: string) => {
+      const existing = detachInFlightRef.current.get(clientToDetach);
+      if (existing) return existing;
+      const operation = (async () => {
+        let lastError: unknown;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await detachDaemonSession(
+              baseUrl ?? '',
+              sessionId ?? '',
+              clientToDetach,
+            );
+            return;
+          } catch (error) {
+            lastError = error;
+            if (attempt < 2) {
+              await new Promise((resolve) =>
+                setTimeout(resolve, 250 * 2 ** attempt),
+              );
+            }
+          }
+        }
+        debugLogger.warn(
+          `[Canopy] Failed to detach daemon client ${clientToDetach}: ${
+            lastError instanceof Error ? lastError.message : String(lastError)
+          }`,
+        );
+      })().finally(() => {
+        detachInFlightRef.current.delete(clientToDetach);
+      });
+      detachInFlightRef.current.set(clientToDetach, operation);
+      return operation;
+    },
+    [baseUrl, sessionId],
+  );
 
   const flushPendingRender = useCallback(() => {
     pendingRenderTimerRef.current = undefined;
@@ -280,8 +354,8 @@ export function useDaemonStream(
   const schedulePendingRender = useCallback(() => {
     if (pendingRenderTimerRef.current !== undefined) return;
     // Tool progress can arrive many times per second. Rendering every SSE
-    // frame makes Ink retain a long chain of intermediate trees and was the
-    // direct cause of the TUI-only heap exhaustion seen during browser runs.
+    // frame makes Ink retain a long chain of intermediate trees and can make
+    // long browser-driven turns unnecessarily expensive for the TUI.
     pendingRenderTimerRef.current = setTimeout(flushPendingRender, 50);
   }, [flushPendingRender]);
 
@@ -294,10 +368,13 @@ export function useDaemonStream(
     setPendingText('');
     pendingToolGroupRef.current = undefined;
     setPendingToolGroup(undefined);
+    pendingPermissionRef.current = undefined;
     setPendingPermission(undefined);
+    setStreamingState(StreamingState.Idle);
+    setResyncing(false);
     streamingResponseLengthRef.current = 0;
     setIsReceivingContent(false);
-  }, []);
+  }, [setResyncing]);
 
   const commitPendingText = useCallback(() => {
     if (pendingRenderTimerRef.current !== undefined) {
@@ -320,6 +397,18 @@ export function useDaemonStream(
 
   const handleEvent = useCallback(
     (evt: DaemonSessionEvent) => {
+      if (evt.id !== undefined) {
+        if (processedEventIdsRef.current.has(evt.id)) return;
+        processedEventIdsRef.current.add(evt.id);
+        while (
+          processedEventIdsRef.current.size > MAX_TRACKED_DAEMON_EVENT_IDS
+        ) {
+          const oldest = processedEventIdsRef.current.values().next().value;
+          if (typeof oldest !== 'number') break;
+          processedEventIdsRef.current.delete(oldest);
+        }
+        if (!isResyncingRef.current) resyncAttemptsRef.current = 0;
+      }
       switch (evt.event) {
         case 'session_update': {
           const payload = evt.data as {
@@ -351,8 +440,8 @@ export function useDaemonStream(
             // terminal transcript from this daemon echo.
             if (
               text &&
-              !replayingResyncRef.current &&
-              payload.promptId !== activePromptIdRef.current
+              (rebuildingHistoryRef.current ||
+                payload.promptId !== activePromptIdRef.current)
             ) {
               addItem({ type: 'user', text }, Date.now());
             }
@@ -362,6 +451,7 @@ export function useDaemonStream(
             if (isToolProtocolArtifact(text)) {
               break;
             }
+            setStreamingState(StreamingState.Responding);
             setIsReceivingContent(true);
             streamingResponseLengthRef.current += text.length;
             pendingTextRef.current += text;
@@ -423,12 +513,14 @@ export function useDaemonStream(
             };
           };
           if (payload.data) {
-            setStreamingState(StreamingState.WaitingForConfirmation);
-            setPendingPermission({
+            const permission = {
               requestId: payload.data.requestId,
               toolCall: payload.data.toolCall,
               options: payload.data.options,
-            });
+            };
+            pendingPermissionRef.current = permission;
+            setStreamingState(StreamingState.WaitingForConfirmation);
+            setPendingPermission(permission);
           }
           break;
         }
@@ -439,6 +531,12 @@ export function useDaemonStream(
           };
           const requestId = payload.data?.requestId ?? payload.requestId;
           if (requestId) {
+            if (isResyncingRef.current) {
+              resyncResolvedPermissionIdsRef.current.add(requestId);
+            }
+            if (pendingPermissionRef.current?.requestId === requestId) {
+              pendingPermissionRef.current = undefined;
+            }
             setPendingPermission((current) =>
               current?.requestId === requestId ? undefined : current,
             );
@@ -451,8 +549,10 @@ export function useDaemonStream(
           break;
         }
         case 'turn_error': {
+          if (isResyncingRef.current) resyncSawTerminalRef.current = true;
           const payload = evt.data as { data?: { message?: string } };
           commitPendingText();
+          pendingPermissionRef.current = undefined;
           setPendingPermission(undefined);
           addItem(
             {
@@ -465,7 +565,9 @@ export function useDaemonStream(
           break;
         }
         case 'prompt_cancelled': {
+          if (isResyncingRef.current) resyncSawTerminalRef.current = true;
           commitPendingText();
+          pendingPermissionRef.current = undefined;
           setPendingPermission(undefined);
           setStreamingState(StreamingState.Idle);
           break;
@@ -473,23 +575,62 @@ export function useDaemonStream(
         case 'turn_complete':
         case 'turn_finished':
         case 'stop': {
+          if (isResyncingRef.current) resyncSawTerminalRef.current = true;
           commitPendingText();
+          pendingPermissionRef.current = undefined;
           setPendingPermission(undefined);
           setStreamingState(StreamingState.Idle);
+          break;
+        }
+        case 'replay_complete':
+          setResyncing(false);
+          break;
+        case 'client_evicted':
+        case 'stream_error': {
+          const payload = evt.data as {
+            reason?: unknown;
+            message?: unknown;
+            data?: { reason?: unknown; message?: unknown };
+          };
+          const detail = payload.data ?? payload;
+          setResyncing(false);
+          setStreamingState(StreamingState.Idle);
+          setInitError(
+            `Daemon event stream ended: ${
+              typeof detail.message === 'string'
+                ? detail.message
+                : typeof detail.reason === 'string'
+                  ? detail.reason
+                  : evt.event
+            }`,
+          );
           break;
         }
         default:
           break;
       }
     },
-    [addItem, commitPendingText, schedulePendingRender, sessionId],
+    [
+      addItem,
+      commitPendingText,
+      schedulePendingRender,
+      sessionId,
+      setResyncing,
+    ],
   );
 
   useEffect(() => {
     setDaemonSessionTitle(undefined);
     setActiveClientId(clientId);
     resyncCursorRef.current = undefined;
+    eventEpochRef.current = undefined;
+    processedEventIdsRef.current.clear();
     pendingTextRef.current = '';
+    pendingPermissionRef.current = undefined;
+    resyncResolvedPermissionIdsRef.current.clear();
+    resyncAttemptsRef.current = 0;
+    isResyncingRef.current = false;
+    setIsResyncing(false);
     setPendingPermission(undefined);
     recoveryInFlightRef.current = false;
   }, [clientId, sessionId]);
@@ -498,6 +639,9 @@ export function useDaemonStream(
     () => () => {
       if (pendingRenderTimerRef.current !== undefined) {
         clearTimeout(pendingRenderTimerRef.current);
+      }
+      if (resyncDelayTimerRef.current !== undefined) {
+        clearTimeout(resyncDelayTimerRef.current);
       }
     },
     [],
@@ -514,48 +658,117 @@ export function useDaemonStream(
       ...(resyncCursorRef.current !== undefined
         ? { lastEventId: resyncCursorRef.current }
         : {}),
+      ...(eventEpochRef.current !== undefined
+        ? { eventEpoch: eventEpochRef.current }
+        : {}),
       signal: controller.signal,
       onEvent: handleEvent,
-      onResyncRequired: () => {
+      onEpoch: updateEventEpoch,
+      onResyncRequired: (reason) => {
         if (disposed || recoveryInFlightRef.current) return;
         recoveryInFlightRef.current = true;
         const oldClientId = activeClientId;
         const requestedClientId = `terminal-${globalThis.crypto.randomUUID()}`;
+        const attempt = resyncAttemptsRef.current + 1;
+        resyncAttemptsRef.current = attempt;
+        setResyncing(true);
+        debugLogger.warn(
+          `[Canopy] Daemon session resync requested${
+            reason ? ` (${reason})` : ''
+          }; attempt ${attempt}/${MAX_RESYNC_ATTEMPTS}`,
+        );
         controller.abort();
-        void loadDaemonSession(baseUrl, sessionId, requestedClientId)
-          .then((resync) => {
-            if (disposed) return;
-            clearPendingState();
-            toolReducerStateRef.current = createDaemonTuiReducerState();
-            replayingResyncRef.current = true;
-            for (const event of resync.liveJournal ?? []) {
-              handleEvent(event);
+        if (attempt > MAX_RESYNC_ATTEMPTS) {
+          setResyncing(false);
+          setStreamingState(StreamingState.Idle);
+          setInitError(
+            `The daemon session could not resync after ${MAX_RESYNC_ATTEMPTS} attempts${
+              reason ? ` (${reason})` : ''
+            }. Restart Canopy to reconnect.`,
+          );
+          recoveryInFlightRef.current = false;
+          return;
+        }
+        const delayMs = Math.min(
+          RESYNC_BASE_DELAY_MS * 2 ** (attempt - 1),
+          RESYNC_MAX_DELAY_MS,
+        );
+        resyncDelayTimerRef.current = setTimeout(() => {
+          resyncDelayTimerRef.current = undefined;
+          void (async () => {
+            try {
+              const resync = await loadDaemonSession(
+                baseUrl,
+                sessionId,
+                requestedClientId,
+              );
+              // Always release the old attachment, including when the TUI
+              // unmounted while /load was in flight.
+              void detachClientWithRetry(oldClientId);
+              if (disposed) return;
+              if (resync.eventEpoch) updateEventEpoch(resync.eventEpoch);
+
+              const previousPermission = pendingPermissionRef.current;
+              resyncSawTerminalRef.current = false;
+              resyncResolvedPermissionIdsRef.current.clear();
+              const replayEvents = [
+                ...(resync.compactedReplay ?? []),
+                ...(resync.liveJournal ?? []),
+              ];
+              const rebuildHistory =
+                Boolean(clearHistory) &&
+                (resync.compactedReplay?.length ?? 0) > 0;
+              if (rebuildHistory) {
+                clearHistory?.();
+                processedEventIdsRef.current.clear();
+              } else if (resync.compactedReplay?.length) {
+                // Even without a history setter (for example in an embedded
+                // consumer), the reducer must see the complete snapshot.
+                processedEventIdsRef.current.clear();
+              }
+              clearPendingState();
+              setResyncing(true);
+              toolReducerStateRef.current = createDaemonTuiReducerState();
+              rebuildingHistoryRef.current = rebuildHistory;
+              try {
+                for (const event of replayEvents) {
+                  handleEvent(event);
+                }
+              } finally {
+                rebuildingHistoryRef.current = false;
+              }
+              setResyncing(false);
+              if (
+                previousPermission &&
+                !pendingPermissionRef.current &&
+                !resyncSawTerminalRef.current &&
+                !resyncResolvedPermissionIdsRef.current.has(
+                  previousPermission.requestId,
+                )
+              ) {
+                pendingPermissionRef.current = previousPermission;
+                setPendingPermission(previousPermission);
+                setStreamingState(StreamingState.WaitingForConfirmation);
+              }
+              resyncCursorRef.current = resync.lastEventId;
+              setInitError(null);
+              setActiveClientId(resync.clientId);
+            } catch (resyncError) {
+              if (disposed) return;
+              setResyncing(false);
+              setStreamingState(StreamingState.Idle);
+              setInitError(
+                `The daemon lost part of this session stream and could not resync: ${
+                  resyncError instanceof Error
+                    ? resyncError.message
+                    : String(resyncError)
+                }`,
+              );
+            } finally {
+              recoveryInFlightRef.current = false;
             }
-            replayingResyncRef.current = false;
-            resyncCursorRef.current = resync.lastEventId;
-            setInitError(null);
-            setActiveClientId(resync.clientId);
-            // The load has installed a fresh attachment. Drop the one whose
-            // stream reported the gap so repeated browser runs do not leave a
-            // growing list of stale daemon clients behind.
-            void detachDaemonSession(baseUrl, sessionId, oldClientId).catch(
-              () => undefined,
-            );
-          })
-          .catch((resyncError) => {
-            if (disposed) return;
-            setStreamingState(StreamingState.Idle);
-            setInitError(
-              `The daemon lost part of this session stream and could not resync: ${
-                resyncError instanceof Error
-                  ? resyncError.message
-                  : String(resyncError)
-              }`,
-            );
-          })
-          .finally(() => {
-            recoveryInFlightRef.current = false;
-          });
+          })();
+        }, delayMs);
       },
       onError: (error) => {
         if (
@@ -568,6 +781,8 @@ export function useDaemonStream(
           void resumeDaemonSession(baseUrl, sessionId, requestedClientId)
             .then(({ clientId: resumedClientId }) => {
               if (disposed) return;
+              eventEpochRef.current = undefined;
+              processedEventIdsRef.current.clear();
               setInitError(null);
               setActiveClientId(resumedClientId);
             })
@@ -593,8 +808,23 @@ export function useDaemonStream(
     return () => {
       disposed = true;
       controller.abort();
+      if (resyncDelayTimerRef.current !== undefined) {
+        clearTimeout(resyncDelayTimerRef.current);
+        resyncDelayTimerRef.current = undefined;
+      }
+      void detachClientWithRetry(activeClientId);
     };
-  }, [activeClientId, baseUrl, clearPendingState, handleEvent, sessionId]);
+  }, [
+    activeClientId,
+    baseUrl,
+    clearPendingState,
+    clearHistory,
+    detachClientWithRetry,
+    handleEvent,
+    sessionId,
+    setResyncing,
+    updateEventEpoch,
+  ]);
 
   const submitQuery = useCallback(
     async (query: PartListUnion) => {
@@ -657,6 +887,7 @@ export function useDaemonStream(
           ...(answers ? { answers } : {}),
         },
       );
+      pendingPermissionRef.current = undefined;
       setPendingPermission((current) =>
         current?.requestId === requestId ? undefined : current,
       );
@@ -689,6 +920,9 @@ export function useDaemonStream(
   const noop = useCallback(() => {}, []);
 
   const pendingHistoryItems: HistoryItemWithoutId[] = [
+    ...(isResyncing
+      ? [{ type: 'info' as const, text: 'Catching up with daemon session…' }]
+      : []),
     ...(pendingToolGroup ? [pendingToolGroup] : []),
     ...(pendingText
       ? [{ type: 'gemini_content' as const, text: pendingText }]

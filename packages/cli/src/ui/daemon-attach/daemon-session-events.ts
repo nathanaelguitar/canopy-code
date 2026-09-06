@@ -29,10 +29,14 @@ export interface DaemonSessionEventStreamOptions {
   clientId: string;
   /** Resume from this event id on (re)connect, via the `Last-Event-ID` header. */
   lastEventId?: number;
+  /** Epoch paired with `lastEventId` for deterministic daemon-restart detection. */
+  eventEpoch?: string;
   signal: AbortSignal;
   onEvent: (event: DaemonSessionEvent) => void;
   /** Called when the daemon says the replay ring no longer covers the cursor. */
-  onResyncRequired?: () => void;
+  onResyncRequired?: (reason?: string) => void;
+  /** Called when the daemon advertises the epoch for this stream. */
+  onEpoch?: (epoch: string) => void;
   /** Called on a connection error before an automatic reconnect attempt. */
   onError?: (error: Error) => void;
 }
@@ -76,8 +80,10 @@ function parseFrame(frame: string): DaemonSessionEvent | undefined {
     if (colonIndex === -1) continue;
     const field = line.slice(0, colonIndex);
     const value = line.slice(colonIndex + 1).replace(/^ /, '');
-    if (field === 'id') id = Number(value);
-    else if (field === 'event') event = value;
+    if (field === 'id') {
+      const parsedId = Number(value);
+      id = Number.isFinite(parsedId) ? parsedId : undefined;
+    } else if (field === 'event') event = value;
     else if (field === 'data') dataRaw = (dataRaw ?? '') + value;
   }
   if (dataRaw === undefined) return undefined;
@@ -86,6 +92,17 @@ function parseFrame(frame: string): DaemonSessionEvent | undefined {
   } catch {
     return undefined;
   }
+}
+
+function eventReason(data: unknown): string | undefined {
+  if (typeof data !== 'object' || data === null) return undefined;
+  const record = data as { reason?: unknown; data?: unknown };
+  if (typeof record.reason === 'string') return record.reason;
+  if (typeof record.data === 'object' && record.data !== null) {
+    const nested = record.data as { reason?: unknown };
+    if (typeof nested.reason === 'string') return nested.reason;
+  }
+  return undefined;
 }
 
 /**
@@ -98,6 +115,8 @@ export async function streamDaemonSessionEvents(
   options: DaemonSessionEventStreamOptions,
 ): Promise<void> {
   let lastEventId = options.lastEventId;
+  let eventEpoch = options.eventEpoch;
+  let awaitingResync = false;
 
   while (!options.signal.aborted) {
     try {
@@ -111,9 +130,17 @@ export async function streamDaemonSessionEvents(
       if (lastEventId !== undefined) {
         headers['Last-Event-ID'] = String(lastEventId);
       }
+      if (eventEpoch !== undefined) {
+        headers['X-Canopy-Event-Epoch'] = eventEpoch;
+      }
       const res = await fetch(url, { headers, signal: options.signal });
       if (!res.ok || !res.body) {
         throw new DaemonEventStreamHttpError(res.status);
+      }
+      const responseEpoch = res.headers.get('X-Canopy-Event-Epoch');
+      if (responseEpoch) {
+        eventEpoch = responseEpoch;
+        options.onEpoch?.(responseEpoch);
       }
 
       const reader = res.body.getReader();
@@ -134,9 +161,32 @@ export async function streamDaemonSessionEvents(
           if (parsed) {
             if (parsed.id !== undefined) lastEventId = parsed.id;
             if (parsed.event === 'state_resync_required') {
-              options.onResyncRequired?.();
+              awaitingResync = true;
+              options.onResyncRequired?.(eventReason(parsed.data));
+              options.onEvent(parsed);
+              continue;
+            }
+            if (awaitingResync) {
+              if (
+                parsed.event === 'client_evicted' ||
+                parsed.event === 'stream_error'
+              ) {
+                options.onEvent(parsed);
+              }
+              // The daemon intentionally keeps the old stream open and may
+              // already have queued replay/live frames behind the resync
+              // signal. Do not apply them: the snapshot load is the only
+              // authoritative replacement for the missing range.
+              continue;
             }
             options.onEvent(parsed);
+            if (parsed.event === 'client_evicted') {
+              options.onResyncRequired?.(
+                eventReason(parsed.data) ?? 'client_evicted',
+              );
+              return;
+            }
+            if (parsed.event === 'stream_error') return;
           }
         }
       }
@@ -208,7 +258,35 @@ export interface DaemonSessionResync {
   clientId: string;
   lastEventId?: number;
   eventEpoch?: string;
+  compactedReplay?: DaemonSessionEvent[];
   liveJournal?: DaemonSessionEvent[];
+}
+
+function mapReplayEvents(value: unknown): DaemonSessionEvent[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value.flatMap((rawEvent) => {
+    if (
+      typeof rawEvent !== 'object' ||
+      rawEvent === null ||
+      typeof (rawEvent as { type?: unknown }).type !== 'string'
+    ) {
+      return [];
+    }
+    const event = rawEvent as {
+      id?: unknown;
+      type: string;
+      data: unknown;
+    };
+    return [
+      {
+        ...(typeof event.id === 'number' && Number.isFinite(event.id)
+          ? { id: event.id }
+          : {}),
+        event: event.type,
+        data: event.data,
+      },
+    ];
+  });
 }
 
 /** Reload the daemon's bounded replay snapshot after SSE ring eviction. */
@@ -226,8 +304,11 @@ export async function loadDaemonSession(
     clientId?: unknown;
     lastEventId?: unknown;
     eventEpoch?: unknown;
+    compactedReplay?: unknown;
     liveJournal?: unknown;
   };
+  const compactedReplay = mapReplayEvents(result.compactedReplay);
+  const liveJournal = mapReplayEvents(result.liveJournal);
   return {
     clientId:
       typeof result.clientId === 'string' ? result.clientId : requestedClientId,
@@ -237,31 +318,8 @@ export async function loadDaemonSession(
     ...(typeof result.eventEpoch === 'string'
       ? { eventEpoch: result.eventEpoch }
       : {}),
-    ...(Array.isArray(result.liveJournal)
-      ? {
-          liveJournal: result.liveJournal.flatMap((rawEvent) => {
-            if (
-              typeof rawEvent !== 'object' ||
-              rawEvent === null ||
-              typeof (rawEvent as { type?: unknown }).type !== 'string'
-            ) {
-              return [];
-            }
-            const event = rawEvent as {
-              id?: unknown;
-              type: string;
-              data: unknown;
-            };
-            return [
-              {
-                ...(typeof event.id === 'number' ? { id: event.id } : {}),
-                event: event.type,
-                data: event.data,
-              },
-            ];
-          }),
-        }
-      : {}),
+    ...(compactedReplay ? { compactedReplay } : {}),
+    ...(liveJournal ? { liveJournal } : {}),
   };
 }
 
@@ -271,7 +329,7 @@ export async function detachDaemonSession(
   sessionId: string,
   clientId: string,
 ): Promise<void> {
-  await fetch(
+  const response = await fetch(
     new URL(`/session/${encodeURIComponent(sessionId)}/detach`, baseUrl),
     {
       method: 'POST',
@@ -282,6 +340,9 @@ export async function detachDaemonSession(
       body: '{}',
     },
   );
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`Daemon detach failed: HTTP ${response.status}`);
+  }
 }
 
 /** `POST /session/:id/prompt` — submit a user turn. */
