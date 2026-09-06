@@ -29,20 +29,8 @@
     <script>
       !function(){try{var k='qwen-code-web-shell-theme',p=new URLSearchParams(location.search),t=p.get('theme');if(t!=='dark'&&t!=='light'){try{t=localStorage.getItem(k)}catch(_){t=null}}if(t!=='dark'&&t!=='light')t='dark';document.documentElement.classList.add('theme-'+t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',t==='light'?'#ead9be':'#241d14')}catch(e){console.warn('theme-init:',e)}}();
     </script>
-    <!--
-      Favicon is inlined as a data: URI rather than a /favicon.svg file because
-      the daemon's static server only exposes /assets/* and / (see
-      packages/cli/src/serve/web-shell-static.ts) — a file at the dist root
-      would never be reachable. The data: URI is allowed by the shell CSP
-      (img-src 'self' data: blob:). The artwork is the CanopyChat oak
-      identity mark (forest-green canopy over an oak trunk), matching the
-      sidebar logo.
-    -->
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22140%22%20height%3D%22140%22%20viewBox%3D%220%200%20140%20140%22%3E%3Cpath%20fill%3D%22%234A7C4A%22%20d%3D%22M70%208c-32%200-54%2022-54%2050%200%209%202%2017%207%2024-11%205-18%2014-18%2024%200%2015%2013%2026%2030%2026h70c17%200%2030-11%2030-26%200-10-7-19-18-24%205-7%207-15%207-24%200-28-22-50-54-50Z%22%2F%3E%3Cpath%20fill%3D%22%23A0784A%22%20d%3D%22M64%20116a24%2024%200%200%200%2012%200l-2%2014c0%204-2%206-4%206s-4-2-4-6l-2-14Z%22%2F%3E%3C%2Fsvg%3E"
-    />
+    <!-- Shared Canopy tree mark used by the iOS app and web shell. -->
+    <link rel="icon" type="image/svg+xml" href="/assets/canopy-tree.svg" />
   </head>
   <body>
     <!--
