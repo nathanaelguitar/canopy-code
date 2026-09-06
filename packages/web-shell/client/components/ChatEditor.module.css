@@ -921,6 +921,8 @@
 }
 
 .toolbarLeading {
+  /* Keep custom leading actions clear of the composer edge on narrow screens. */
+  margin-left: 0;
   min-width: 0;
 }
 

@@ -43,6 +43,19 @@ test('renders the textarea backend instead of CodeMirror on touch devices', asyn
   ).toHaveCount(0);
 });
 
+test('keeps iOS keyboard assistance enabled in the mobile composer', async ({
+  page,
+}, testInfo) => {
+  const scenario = createWebShellDaemonScenario();
+  const daemon = await installScenario(page, scenario, testInfo);
+
+  await gotoSession(page, scenario, daemon);
+  const textarea = page.locator(COMPOSER_TEXTAREA);
+  await expect(textarea).toHaveAttribute('autocapitalize', 'sentences');
+  await expect(textarea).toHaveAttribute('autocorrect', 'on');
+  await expect(textarea).toHaveAttribute('spellcheck', 'true');
+});
+
 test('anchors the empty mobile composer with the textarea backend', async ({
   page,
 }, testInfo) => {

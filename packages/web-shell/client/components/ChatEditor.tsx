@@ -2810,9 +2810,9 @@ export const ChatEditor = memo(
                   disabled={core.disabled}
                   rows={1}
                   enterKeyHint="enter"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
+                  autoCapitalize="sentences"
+                  autoCorrect="on"
+                  spellCheck={true}
                   data-web-shell-composer-editor
                 />
               ) : (
