@@ -27,6 +27,8 @@ import {
   submitDaemonPrompt,
   cancelDaemonSession,
   answerDaemonPermission,
+  detachDaemonSession,
+  loadDaemonSession,
   resumeDaemonSession,
   type DaemonPermissionResponse,
   type DaemonSessionEvent,
@@ -262,8 +264,33 @@ export function useDaemonStream(
     undefined,
   );
   const recoveryInFlightRef = useRef(false);
+  const pendingTextRef = useRef('');
+  const pendingRenderTimerRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
+  const replayingResyncRef = useRef(false);
+  const resyncCursorRef = useRef<number | undefined>(undefined);
+
+  const flushPendingRender = useCallback(() => {
+    pendingRenderTimerRef.current = undefined;
+    setPendingText(pendingTextRef.current);
+    setPendingToolGroup(pendingToolGroupRef.current);
+  }, []);
+
+  const schedulePendingRender = useCallback(() => {
+    if (pendingRenderTimerRef.current !== undefined) return;
+    // Tool progress can arrive many times per second. Rendering every SSE
+    // frame makes Ink retain a long chain of intermediate trees and was the
+    // direct cause of the TUI-only heap exhaustion seen during browser runs.
+    pendingRenderTimerRef.current = setTimeout(flushPendingRender, 50);
+  }, [flushPendingRender]);
 
   const clearPendingState = useCallback(() => {
+    if (pendingRenderTimerRef.current !== undefined) {
+      clearTimeout(pendingRenderTimerRef.current);
+      pendingRenderTimerRef.current = undefined;
+    }
+    pendingTextRef.current = '';
     setPendingText('');
     pendingToolGroupRef.current = undefined;
     setPendingToolGroup(undefined);
@@ -273,18 +300,20 @@ export function useDaemonStream(
   }, []);
 
   const commitPendingText = useCallback(() => {
+    if (pendingRenderTimerRef.current !== undefined) {
+      clearTimeout(pendingRenderTimerRef.current);
+      pendingRenderTimerRef.current = undefined;
+    }
     const toolGroup = pendingToolGroupRef.current;
     if (toolGroup) {
       addItem(toolGroup, Date.now());
       pendingToolGroupRef.current = undefined;
       setPendingToolGroup(undefined);
     }
-    setPendingText((current) => {
-      if (current) {
-        addItem({ type: 'gemini', text: current }, Date.now());
-      }
-      return '';
-    });
+    const text = pendingTextRef.current;
+    pendingTextRef.current = '';
+    if (text) addItem({ type: 'gemini', text }, Date.now());
+    setPendingText('');
     streamingResponseLengthRef.current = 0;
     setIsReceivingContent(false);
   }, [addItem]);
@@ -320,7 +349,11 @@ export function useDaemonStream(
             // The local submitter already renders its text optimistically;
             // every other co-driver (including the phone) must appear in the
             // terminal transcript from this daemon echo.
-            if (text && payload.promptId !== activePromptIdRef.current) {
+            if (
+              text &&
+              !replayingResyncRef.current &&
+              payload.promptId !== activePromptIdRef.current
+            ) {
               addItem({ type: 'user', text }, Date.now());
             }
             break;
@@ -331,7 +364,8 @@ export function useDaemonStream(
             }
             setIsReceivingContent(true);
             streamingResponseLengthRef.current += text.length;
-            setPendingText((current) => current + text);
+            pendingTextRef.current += text;
+            schedulePendingRender();
             break;
           }
           if (kind === 'tool_call' || kind === 'tool_call_update') {
@@ -351,7 +385,7 @@ export function useDaemonStream(
             for (const toolUpdate of updates) {
               if (toolUpdate.type !== 'tool_group_update') continue;
               pendingToolGroupRef.current = toolUpdate.item;
-              setPendingToolGroup(toolUpdate.item);
+              schedulePendingRender();
             }
           }
           break;
@@ -448,15 +482,26 @@ export function useDaemonStream(
           break;
       }
     },
-    [addItem, commitPendingText, sessionId],
+    [addItem, commitPendingText, schedulePendingRender, sessionId],
   );
 
   useEffect(() => {
     setDaemonSessionTitle(undefined);
     setActiveClientId(clientId);
+    resyncCursorRef.current = undefined;
+    pendingTextRef.current = '';
     setPendingPermission(undefined);
     recoveryInFlightRef.current = false;
   }, [clientId, sessionId]);
+
+  useEffect(
+    () => () => {
+      if (pendingRenderTimerRef.current !== undefined) {
+        clearTimeout(pendingRenderTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!baseUrl || !sessionId || !activeClientId) return;
@@ -466,8 +511,52 @@ export function useDaemonStream(
       baseUrl,
       sessionId,
       clientId: activeClientId,
+      ...(resyncCursorRef.current !== undefined
+        ? { lastEventId: resyncCursorRef.current }
+        : {}),
       signal: controller.signal,
       onEvent: handleEvent,
+      onResyncRequired: () => {
+        if (disposed || recoveryInFlightRef.current) return;
+        recoveryInFlightRef.current = true;
+        const oldClientId = activeClientId;
+        const requestedClientId = `terminal-${globalThis.crypto.randomUUID()}`;
+        controller.abort();
+        void loadDaemonSession(baseUrl, sessionId, requestedClientId)
+          .then((resync) => {
+            if (disposed) return;
+            clearPendingState();
+            toolReducerStateRef.current = createDaemonTuiReducerState();
+            replayingResyncRef.current = true;
+            for (const event of resync.liveJournal ?? []) {
+              handleEvent(event);
+            }
+            replayingResyncRef.current = false;
+            resyncCursorRef.current = resync.lastEventId;
+            setInitError(null);
+            setActiveClientId(resync.clientId);
+            // The load has installed a fresh attachment. Drop the one whose
+            // stream reported the gap so repeated browser runs do not leave a
+            // growing list of stale daemon clients behind.
+            void detachDaemonSession(baseUrl, sessionId, oldClientId).catch(
+              () => undefined,
+            );
+          })
+          .catch((resyncError) => {
+            if (disposed) return;
+            setStreamingState(StreamingState.Idle);
+            setInitError(
+              `The daemon lost part of this session stream and could not resync: ${
+                resyncError instanceof Error
+                  ? resyncError.message
+                  : String(resyncError)
+              }`,
+            );
+          })
+          .finally(() => {
+            recoveryInFlightRef.current = false;
+          });
+      },
       onError: (error) => {
         if (
           error instanceof DaemonEventStreamHttpError &&
@@ -505,7 +594,7 @@ export function useDaemonStream(
       disposed = true;
       controller.abort();
     };
-  }, [activeClientId, baseUrl, sessionId, handleEvent]);
+  }, [activeClientId, baseUrl, clearPendingState, handleEvent, sessionId]);
 
   const submitQuery = useCallback(
     async (query: PartListUnion) => {

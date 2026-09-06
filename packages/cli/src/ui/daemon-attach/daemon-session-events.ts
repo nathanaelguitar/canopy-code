@@ -17,7 +17,8 @@
  */
 
 export interface DaemonSessionEvent {
-  id: number;
+  /** Synthetic control frames (for example resync signals) are not sequenced. */
+  id?: number;
   event: string;
   data: unknown;
 }
@@ -30,6 +31,8 @@ export interface DaemonSessionEventStreamOptions {
   lastEventId?: number;
   signal: AbortSignal;
   onEvent: (event: DaemonSessionEvent) => void;
+  /** Called when the daemon says the replay ring no longer covers the cursor. */
+  onResyncRequired?: () => void;
   /** Called on a connection error before an automatic reconnect attempt. */
   onError?: (error: Error) => void;
 }
@@ -77,7 +80,7 @@ function parseFrame(frame: string): DaemonSessionEvent | undefined {
     else if (field === 'event') event = value;
     else if (field === 'data') dataRaw = (dataRaw ?? '') + value;
   }
-  if (dataRaw === undefined || id === undefined) return undefined;
+  if (dataRaw === undefined) return undefined;
   try {
     return { id, event, data: JSON.parse(dataRaw) };
   } catch {
@@ -129,7 +132,10 @@ export async function streamDaemonSessionEvents(
           buffered = buffered.slice(boundary + 2);
           const parsed = parseFrame(frame);
           if (parsed) {
-            lastEventId = parsed.id;
+            if (parsed.id !== undefined) lastEventId = parsed.id;
+            if (parsed.event === 'state_resync_required') {
+              options.onResyncRequired?.();
+            }
             options.onEvent(parsed);
           }
         }
@@ -198,6 +204,86 @@ export async function resumeDaemonSession(
   };
 }
 
+export interface DaemonSessionResync {
+  clientId: string;
+  lastEventId?: number;
+  eventEpoch?: string;
+  liveJournal?: DaemonSessionEvent[];
+}
+
+/** Reload the daemon's bounded replay snapshot after SSE ring eviction. */
+export async function loadDaemonSession(
+  baseUrl: string,
+  sessionId: string,
+  requestedClientId: string,
+): Promise<DaemonSessionResync> {
+  const result = (await postJson(
+    baseUrl,
+    `/session/${encodeURIComponent(sessionId)}/load`,
+    {},
+    requestedClientId,
+  )) as {
+    clientId?: unknown;
+    lastEventId?: unknown;
+    eventEpoch?: unknown;
+    liveJournal?: unknown;
+  };
+  return {
+    clientId:
+      typeof result.clientId === 'string' ? result.clientId : requestedClientId,
+    ...(typeof result.lastEventId === 'number'
+      ? { lastEventId: result.lastEventId }
+      : {}),
+    ...(typeof result.eventEpoch === 'string'
+      ? { eventEpoch: result.eventEpoch }
+      : {}),
+    ...(Array.isArray(result.liveJournal)
+      ? {
+          liveJournal: result.liveJournal.flatMap((rawEvent) => {
+            if (
+              typeof rawEvent !== 'object' ||
+              rawEvent === null ||
+              typeof (rawEvent as { type?: unknown }).type !== 'string'
+            ) {
+              return [];
+            }
+            const event = rawEvent as {
+              id?: unknown;
+              type: string;
+              data: unknown;
+            };
+            return [
+              {
+                ...(typeof event.id === 'number' ? { id: event.id } : {}),
+                event: event.type,
+                data: event.data,
+              },
+            ];
+          }),
+        }
+      : {}),
+  };
+}
+
+/** Release the old terminal attachment after a state-resync handoff. */
+export async function detachDaemonSession(
+  baseUrl: string,
+  sessionId: string,
+  clientId: string,
+): Promise<void> {
+  await fetch(
+    new URL(`/session/${encodeURIComponent(sessionId)}/detach`, baseUrl),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Canopy-Client-Id': clientId,
+      },
+      body: '{}',
+    },
+  );
+}
+
 /** `POST /session/:id/prompt` — submit a user turn. */
 export function submitDaemonPrompt(
   baseUrl: string,
@@ -256,9 +342,7 @@ export function answerDaemonPermission(
   response: DaemonPermissionResponse | LegacyDaemonPermissionResponse,
 ): Promise<unknown> {
   const normalizedResponse: DaemonPermissionResponse =
-    typeof response.outcome === 'string'
-      ? { outcome: response }
-      : response;
+    typeof response.outcome === 'string' ? { outcome: response } : response;
   return postJson(
     baseUrl,
     `/session/${encodeURIComponent(sessionId)}/permission/${encodeURIComponent(requestId)}`,

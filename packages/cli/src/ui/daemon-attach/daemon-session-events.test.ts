@@ -41,6 +41,36 @@ describe('daemon session events', () => {
     );
   });
 
+  it('delivers id-less state resync control frames to the consumer', async () => {
+    const controller = new AbortController();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          'event: state_resync_required\ndata: {"reason":"ring_evicted"}\n\n',
+          { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    const onEvent = vi.fn();
+    const onResyncRequired = vi.fn(() => controller.abort());
+
+    await streamDaemonSessionEvents({
+      baseUrl: 'http://daemon.test',
+      sessionId: 'session-1',
+      clientId: 'client-1',
+      signal: controller.signal,
+      onEvent,
+      onResyncRequired,
+    });
+
+    expect(onResyncRequired).toHaveBeenCalledOnce();
+    expect(onEvent).toHaveBeenCalledWith({
+      event: 'state_resync_required',
+      data: { reason: 'ring_evicted' },
+    });
+  });
+
   it('restores a durable session with a newly registered client id', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ clientId: 'registered-client' }), {
