@@ -8,6 +8,10 @@ import { readFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { HybridTokenStorage } from '@canopy-code/canopy-code-core';
 import type { DaemonAttachedSession } from './attach-daemon-session.js';
+import {
+  streamDaemonSessionEvents,
+  type DaemonSessionEvent,
+} from './daemon-session-events.js';
 
 // Deliberately fixed to the private beta Worker. This is not a user-configured
 // webhook and is not read from the shell environment.
@@ -31,80 +35,179 @@ interface PairingStartResponse {
   expires_at: string;
 }
 
+type RemoteAttentionKind = 'permission_request' | 'clarification';
+
+interface RemoteSession {
+  sessionId: string;
+  workspaceName: string;
+  sessionTitle?: string;
+  url: string;
+}
+
 type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
 
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  // `new URL('/sessions', base)` treats the leading slash as an origin-root
-  // URL and silently drops `/v1/remote-control` from the private API base.
-  return fetch(new URL(path.replace(/^\/+/, ''), `${REMOTE_CONTROL_API}/`), {
+  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
     ...init,
     headers: { Accept: 'application/json', ...(init.headers ?? {}) },
   });
 }
 
-type SessionDeliveryResult =
-  | { status: 'sent' }
-  | { status: 'unauthorized' }
-  | { status: 'unavailable'; detail?: string };
-
 async function sendSession(
   accessToken: string,
+  session: RemoteSession,
+): Promise<'sent' | 'unauthorized' | 'unavailable'> {
+  const response = await apiRequest('/sessions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      session_id: session.sessionId,
+      workspace_name: session.workspaceName,
+      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
+      url: session.url,
+    }),
+  });
+  if (response.status === 401 || response.status === 403) return 'unauthorized';
+  if (!response.ok) return 'unavailable';
+  return 'sent';
+}
+
+async function sendAttention(
+  accessToken: string,
+  session: RemoteSession,
+  attention: { kind: RemoteAttentionKind; title: string; body: string },
+): Promise<void> {
+  await apiRequest('/sessions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      session_id: session.sessionId,
+      workspace_name: session.workspaceName,
+      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
+      url: session.url,
+      notification_type: attention.kind,
+      notification_title: attention.title,
+      notification_body: attention.body,
+    }),
+  }).catch(() => undefined);
+}
+
+const attentionMonitors = new Map<string, AbortController>();
+
+function recordOf(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function attentionFromEvent(event: DaemonSessionEvent):
+  | {
+      key: string;
+      kind: RemoteAttentionKind;
+      title: string;
+      body: string;
+    }
+  | undefined {
+  if (event.event !== 'permission_request') return undefined;
+  const envelope = recordOf(event.data);
+  const data = recordOf(envelope?.['data']) ?? envelope;
+  if (!data) return undefined;
+  const requestId =
+    typeof data['requestId'] === 'string'
+      ? data['requestId']
+      : String(event.id);
+  const toolCall = recordOf(data['toolCall']);
+  const meta = recordOf(toolCall?.['_meta']);
+  const isQuestion =
+    meta?.['qwenInteractionKind'] === 'user_question' ||
+    meta?.['canopyInteractionKind'] === 'user_question' ||
+    meta?.['toolName'] === 'ask_user_question' ||
+    toolCall?.['name'] === 'ask_user_question' ||
+    toolCall?.['kind'] === 'ask_user_question';
+  if (isQuestion) {
+    const rawInput = recordOf(toolCall?.['rawInput']);
+    const rawQuestionsValue = Array.isArray(meta?.['canopyQuestions'])
+      ? meta['canopyQuestions']
+      : Array.isArray(meta?.['qwenQuestions'])
+        ? meta['qwenQuestions']
+        : Array.isArray(rawInput?.['questions'])
+          ? rawInput['questions']
+          : Array.isArray(toolCall?.['questions'])
+            ? toolCall['questions']
+            : [];
+    const rawQuestions: unknown[] = Array.isArray(rawQuestionsValue)
+      ? (rawQuestionsValue as unknown[])
+      : [];
+    const firstQuestion = rawQuestions
+      .map((question: unknown) => recordOf(question)?.['question'])
+      .find(
+        (question): question is string =>
+          typeof question === 'string' && question.trim().length > 0,
+      )
+      ?.trim();
+    return {
+      key: `${requestId}:clarification`,
+      kind: 'clarification',
+      title: 'Canopy has a question',
+      body: firstQuestion
+        ? firstQuestion.slice(0, 180)
+        : 'Canopy Code is waiting for your answer.',
+    };
+  }
+  const actionTitle =
+    typeof toolCall?.['title'] === 'string' ? toolCall['title'].trim() : '';
+  return {
+    key: `${requestId}:permission_request`,
+    kind: 'permission_request',
+    title: 'Canopy needs your approval',
+    body: actionTitle
+      ? actionTitle.slice(0, 180)
+      : 'Approve an action to let Canopy Code continue.',
+  };
+}
+
+function startAttentionMonitor(
+  daemonSession: DaemonAttachedSession,
+  accessToken: string,
+  session: RemoteSession,
+): void {
+  const monitorKey = `${daemonSession.baseUrl}:${daemonSession.sessionId}`;
+  if (attentionMonitors.has(monitorKey)) return;
+  const controller = new AbortController();
+  attentionMonitors.set(monitorKey, controller);
+  const seen = new Set<string>();
+  void streamDaemonSessionEvents({
+    baseUrl: daemonSession.baseUrl,
+    sessionId: daemonSession.sessionId,
+    clientId: daemonSession.clientId,
+    signal: controller.signal,
+    onEvent: (event) => {
+      const attention = attentionFromEvent(event);
+      if (!attention || seen.has(attention.key)) return;
+      seen.add(attention.key);
+      if (seen.size > 512) seen.delete(seen.values().next().value as string);
+      void sendAttention(accessToken, session, attention);
+    },
+  });
+}
+
+async function pairAndSend(
   session: {
     sessionId: string;
     workspaceName: string;
     sessionTitle?: string;
     url: string;
   },
-): Promise<SessionDeliveryResult> {
-  // APNs delivery can briefly fail while the relay opens a new JWT-backed
-  // connection. Treat 5xx responses as transient rather than making the
-  // operator manually re-run `/remote-control`.
-  let detail: string | undefined;
-  for (const retryDelayMs of [0, 400, 1200]) {
-    if (retryDelayMs > 0) {
-      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
-    }
-    try {
-      const response = await apiRequest('/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          session_id: session.sessionId,
-          workspace_name: session.workspaceName,
-          ...(session.sessionTitle
-            ? { session_title: session.sessionTitle }
-            : {}),
-          url: session.url,
-        }),
-      });
-      if (response.status === 401 || response.status === 403) {
-        return { status: 'unauthorized' };
-      }
-      if (response.ok) return { status: 'sent' };
-
-      detail = `HTTP ${response.status}`;
-      const body = await response.text().catch(() => '');
-      if (body) detail += `: ${body.slice(0, 500)}`;
-      // Client mistakes are deterministic, not candidates for a retry.
-      if (response.status < 500) break;
-    } catch (error) {
-      detail = error instanceof Error ? error.message : String(error);
-    }
-  }
-  return { status: 'unavailable', detail };
-}
-
-async function pairAndSend(session: {
-  sessionId: string;
-  workspaceName: string;
-  sessionTitle?: string;
-  url: string;
-}): Promise<PairingStartResult> {
+  onAuthorized: (accessToken: string) => void,
+): Promise<PairingStartResult> {
   const response = await apiRequest('/pairings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -134,7 +237,8 @@ async function pairAndSend(session: {
       };
       if (result.status !== 'approved' || !result.access_token) return;
       await deviceStorage.setSecret(REMOTE_CONTROL_SECRET, result.access_token);
-      await sendSession(result.access_token, session);
+      const sent = await sendSession(result.access_token, session);
+      if (sent === 'sent') onAuthorized(result.access_token);
       return;
     }
   })();
@@ -153,10 +257,8 @@ async function pairAndSend(session: {
  */
 async function readPairingUrlFromLog(
   logPath: string,
-  sessionId: string,
 ): Promise<string | undefined> {
   const deadline = Date.now() + 3000;
-  const targetPath = `/session/${encodeURIComponent(sessionId)}`;
   while (Date.now() < deadline) {
     let text: string;
     try {
@@ -164,21 +266,8 @@ async function readPairingUrlFromLog(
     } catch {
       return undefined;
     }
-    // A workspace daemon outlives individual terminal sessions. Its log can
-    // contain many earlier pairing URLs, so never take the first occurrence:
-    // that would quietly route a newly pushed phone notification to an old,
-    // orphaned session. Select the newest URL for this exact session instead.
-    const urls = Array.from(
-      text.matchAll(/canopy serve: Local Control pairing URL: (\S+)/g),
-      (match) => match[1],
-    );
-    for (const candidate of urls.reverse()) {
-      try {
-        if (new URL(candidate).pathname === targetPath) return candidate;
-      } catch {
-        // Ignore a partially written line and poll again.
-      }
-    }
+    const match = text.match(/canopy serve: Local Control pairing URL: (\S+)/);
+    if (match) return match[1];
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   return undefined;
@@ -253,10 +342,7 @@ export async function enableRemoteControl(
   let pairingUrl = response.url;
   if (!pairingUrl && response.urlRedacted) {
     pairingUrl = daemonSession.daemonLogPath
-      ? await readPairingUrlFromLog(
-          daemonSession.daemonLogPath,
-          daemonSession.sessionId,
-        )
+      ? await readPairingUrlFromLog(daemonSession.daemonLogPath)
       : undefined;
   }
   if (!pairingUrl) {
@@ -269,7 +355,7 @@ export async function enableRemoteControl(
     };
   }
 
-  const session = {
+  const session: RemoteSession = {
     sessionId: daemonSession.sessionId,
     workspaceName,
     ...(sessionTitle?.trim() ? { sessionTitle: sessionTitle.trim() } : {}),
@@ -284,26 +370,22 @@ export async function enableRemoteControl(
   }
   if (accessToken) {
     const sent = await sendSession(accessToken, session);
-    if (sent.status === 'unauthorized') {
+    if (sent === 'sent')
+      startAttentionMonitor(daemonSession, accessToken, session);
+    if (sent === 'unauthorized') {
       try {
         await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET);
       } catch {
         /* already absent */
       }
       accessToken = null;
-    } else if (sent.status === 'unavailable') {
-      return {
-        status: 'error',
-        message:
-          'CanopyChat accepted the pairing credential, but its push relay ' +
-          `did not accept this session${sent.detail ? ` (${sent.detail})` : ''}. ` +
-          'Retry /remote-control after checking the APNs relay.',
-      };
     }
   }
   let publicPairingUrl: string;
   if (!accessToken) {
-    const pairingResult = await pairAndSend(session);
+    const pairingResult = await pairAndSend(session, (authorizedToken) => {
+      startAttentionMonitor(daemonSession, authorizedToken, session);
+    });
     if ('error' in pairingResult) {
       return {
         status: 'error',
