@@ -263,6 +263,30 @@ describe('EnhancedErrorHandler', () => {
       );
     });
 
+    it('surfaces the underlying cause on the rethrown error, not just the debug log', () => {
+      // Mirrors the openai SDK's APIConnectionError: a generic message with
+      // the real network failure attached as `cause`. Consumers that only
+      // read `.message` (e.g. the ACP bridge's JSON-RPC error formatter,
+      // which drops `.cause` entirely) previously saw the bare "Connection
+      // error." with no indication of what actually failed underneath.
+      const cause = Object.assign(new Error('fetch failed'), {
+        code: 'ECONNRESET',
+      });
+      const connectionError = new Error('Connection error.', { cause });
+      let thrown: unknown;
+
+      try {
+        errorHandler.handle(connectionError, mockContext, mockRequest);
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBe(connectionError);
+      expect((thrown as Error).message).toBe(
+        'Connection error. (cause: ECONNRESET: fetch failed)',
+      );
+    });
+
     it('should use custom suppression function', () => {
       const suppressLogging = vi.fn(() => true);
       errorHandler = new EnhancedErrorHandler(suppressLogging);

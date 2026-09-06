@@ -131,10 +131,21 @@ export function classifyPastedImagePaths(pasted: string): {
   const imagePaths: string[] = [];
   let allImages = tokens.length > 0;
   for (const token of tokens) {
-    const normalized = token
+    let normalized = token
       .replace(/^@/, '') // strip the `@` reference prefix
       .replace(/^["']|["']$/g, '') // strip surrounding quotes
       .replace(/\\ /g, ' '); // unescape shell-escaped spaces
+    if (/^file:\/\//i.test(normalized)) {
+      // Drag-and-drop / "Copy as Path" from a file manager or browser often
+      // yields a file:// URI (percent-encoded) rather than a bare path.
+      try {
+        normalized = decodeURIComponent(
+          normalized.replace(/^file:\/\/(localhost)?/i, ''),
+        );
+      } catch {
+        // Malformed percent-encoding — fall through with the un-decoded path.
+      }
+    }
     if (PASTED_IMAGE_EXTENSIONS.test(normalized)) {
       imagePaths.push(normalized);
     } else {
