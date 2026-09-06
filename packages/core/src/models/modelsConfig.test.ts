@@ -2146,6 +2146,32 @@ describe('ModelsConfig', () => {
       expect(openaiModels[1].id).toBe('registry-model');
     });
 
+    it('should expose native vision capabilities for a runtime Qwen VLM', () => {
+      const modelsConfig = new ModelsConfig({
+        initialAuthType: AuthType.USE_OPENAI,
+        generationConfig: {
+          model: 'qwen3.8-flash-next-nvfp4',
+          apiKey: 'sk-test-key',
+          baseUrl: 'https://runtime.example.com/v1',
+        },
+        generationConfigSources: {
+          model: { kind: 'programmatic', detail: 'test' },
+          apiKey: { kind: 'programmatic', detail: 'test' },
+          baseUrl: { kind: 'programmatic', detail: 'test' },
+        },
+      });
+
+      modelsConfig.detectAndCaptureRuntimeModel();
+
+      const runtimeModel = modelsConfig
+        .getAllConfiguredModels()
+        .find((model) => model.isRuntimeModel);
+
+      expect(runtimeModel?.id).toBe('qwen3.8-flash-next-nvfp4');
+      expect(runtimeModel?.isVision).toBe(true);
+      expect(runtimeModel?.modalities?.image).toBe(true);
+    });
+
     it('should create/update runtime snapshot via updateCredentials', () => {
       const modelsConfig = new ModelsConfig({
         initialAuthType: AuthType.USE_OPENAI,

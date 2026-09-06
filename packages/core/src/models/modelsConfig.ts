@@ -1373,17 +1373,21 @@ export class ModelsConfig {
       return undefined;
     }
 
+    const modalities =
+      snapshot.generationConfig?.modalities ??
+      defaultModalities(snapshot.modelId);
+
     return {
       id: snapshot.modelId,
       label: snapshot.modelId,
       authType: snapshot.authType,
-      /**
-       * `isVision` is for automatic switching of canopy-oauth vision model.
-       * Runtime models are basically specified via CLI arguments, env variables,
-       * or settings for other auth types.
-       */
-      isVision: false,
+      // Runtime models are specified via CLI arguments, env variables, or
+      // settings, so derive their capabilities from the same explicit
+      // modalities/defaults used by the active generation config. Hardcoding
+      // false here made native VLMs look text-only to the harness.
+      isVision: modalities.image === true,
       contextWindowSize: snapshot.generationConfig?.contextWindowSize,
+      modalities,
       isRuntimeModel: true,
       runtimeSnapshotId: snapshot.id,
     };

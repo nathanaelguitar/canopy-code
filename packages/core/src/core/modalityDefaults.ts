@@ -62,6 +62,9 @@ const MODALITY_PATTERNS: Array<[RegExp, InputModalities]> = [
   // against the SGLang server; the served model name has no -vl- marker so
   // it needs its own entry ahead of the generic qwen fallback below.
   [/^qwen3\.8-27b/, { image: true, video: true }],
+  // Qwen3.8 Flash-Next NVFP4 is also served as a native vision-language model,
+  // but its wire name does not contain the usual `-vl-` marker.
+  [/^qwen3\.8-flash-next/, { image: true }],
   [/^qwen/, {}],
 
   // -------------------

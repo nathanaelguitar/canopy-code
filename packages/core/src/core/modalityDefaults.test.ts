@@ -174,6 +174,14 @@ describe('defaultModalities', () => {
       expect(m.audio).toBeUndefined();
     });
 
+    it('returns image for qwen3.8-flash-next NVFP4 variants', () => {
+      const m = defaultModalities('qwen3.8-flash-next-nvfp4');
+      expect(m.image).toBe(true);
+      expect(m.video).toBeUndefined();
+      expect(m.pdf).toBeUndefined();
+      expect(m.audio).toBeUndefined();
+    });
+
     it('returns text-only for qwen-turbo', () => {
       expect(defaultModalities('qwen-turbo')).toEqual({});
     });
