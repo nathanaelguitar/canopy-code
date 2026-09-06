@@ -49,32 +49,55 @@ type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
 const deviceStorage = new HybridTokenStorage('Canopy Code');
 
 async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  return fetch(new URL(path, `${REMOTE_CONTROL_API}/`), {
+  return fetch(new URL(path.replace(/^\/+/, ''), `${REMOTE_CONTROL_API}/`), {
     ...init,
     headers: { Accept: 'application/json', ...(init.headers ?? {}) },
   });
 }
 
+type SessionDeliveryResult =
+  | { status: 'sent' }
+  | { status: 'unauthorized' }
+  | { status: 'unavailable'; detail?: string };
+
 async function sendSession(
   accessToken: string,
   session: RemoteSession,
-): Promise<'sent' | 'unauthorized' | 'unavailable'> {
-  const response = await apiRequest('/sessions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      session_id: session.sessionId,
-      workspace_name: session.workspaceName,
-      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
-      url: session.url,
-    }),
-  });
-  if (response.status === 401 || response.status === 403) return 'unauthorized';
-  if (!response.ok) return 'unavailable';
-  return 'sent';
+): Promise<SessionDeliveryResult> {
+  let detail: string | undefined;
+  for (const retryDelayMs of [0, 400, 1200]) {
+    if (retryDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+    try {
+      const response = await apiRequest('/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          workspace_name: session.workspaceName,
+          ...(session.sessionTitle
+            ? { session_title: session.sessionTitle }
+            : {}),
+          url: session.url,
+        }),
+      });
+      if (response.status === 401 || response.status === 403) {
+        return { status: 'unauthorized' };
+      }
+      if (response.ok) return { status: 'sent' };
+      detail = `HTTP ${response.status}`;
+      const body = await response.text().catch(() => '');
+      if (body) detail += `: ${body.slice(0, 500)}`;
+      if (response.status < 500) break;
+    } catch (error) {
+      detail = error instanceof Error ? error.message : String(error);
+    }
+  }
+  return { status: 'unavailable', detail };
 }
 
 async function sendAttention(
@@ -238,7 +261,7 @@ async function pairAndSend(
       if (result.status !== 'approved' || !result.access_token) return;
       await deviceStorage.setSecret(REMOTE_CONTROL_SECRET, result.access_token);
       const sent = await sendSession(result.access_token, session);
-      if (sent === 'sent') onAuthorized(result.access_token);
+      if (sent.status === 'sent') onAuthorized(result.access_token);
       return;
     }
   })();
@@ -370,9 +393,9 @@ export async function enableRemoteControl(
   }
   if (accessToken) {
     const sent = await sendSession(accessToken, session);
-    if (sent === 'sent')
+    if (sent.status === 'sent')
       startAttentionMonitor(daemonSession, accessToken, session);
-    if (sent === 'unauthorized') {
+    if (sent.status === 'unauthorized') {
       try {
         await deviceStorage.deleteSecret(REMOTE_CONTROL_SECRET);
       } catch {
