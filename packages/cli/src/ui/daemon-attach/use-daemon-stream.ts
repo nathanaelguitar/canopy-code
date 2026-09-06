@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import type { PartListUnion } from '@google/genai';
 import {
   createDebugLogger,
@@ -227,6 +228,28 @@ export interface UseDaemonStreamExtra {
    * instead of relying on its local (non-recording) Config instance.
    */
   sessionTitle: string | undefined;
+  /**
+   * Pollable daemon connection health. The ref identity is stable and the
+   * object is mutated in place on every applied event, so polling it never
+   * triggers renders by itself — consumers read `.current` on their own
+   * animation tick, mirroring `streamingResponseLengthRef`. Powers the
+   * catching-up / stalled / degraded-cursor indicators.
+   */
+  daemonHealthRef: RefObject<DaemonHealth>;
+}
+
+/**
+ * Live connection health for a daemon-attached TUI. All fields describe the
+ * attached stream; `lastFrameAtMs` drives the stalled-stream detector.
+ */
+export interface DaemonHealth {
+  isResyncing: boolean;
+  resyncAttempts: number;
+  lastEventId: number | undefined;
+  eventEpoch: string | undefined;
+  /** Wall-clock ms of the last applied sequenced event (0 = none yet). */
+  lastFrameAtMs: number;
+  activeClientId: string | undefined;
 }
 
 /**
@@ -292,6 +315,14 @@ export function useDaemonStream(
     undefined,
   );
   const detachInFlightRef = useRef(new Map<string, Promise<void>>());
+  const daemonHealthRef = useRef<DaemonHealth>({
+    isResyncing: false,
+    resyncAttempts: 0,
+    lastEventId: undefined,
+    eventEpoch: undefined,
+    lastFrameAtMs: 0,
+    activeClientId: clientId,
+  });
 
   const updateEventEpoch = useCallback((epoch: string) => {
     if (
@@ -301,10 +332,12 @@ export function useDaemonStream(
       processedEventIdsRef.current.clear();
     }
     eventEpochRef.current = epoch;
+    daemonHealthRef.current.eventEpoch = epoch;
   }, []);
 
   const setResyncing = useCallback((value: boolean) => {
     isResyncingRef.current = value;
+    daemonHealthRef.current.isResyncing = value;
     setIsResyncing(value);
   }, []);
 
@@ -400,6 +433,8 @@ export function useDaemonStream(
       if (evt.id !== undefined) {
         if (processedEventIdsRef.current.has(evt.id)) return;
         processedEventIdsRef.current.add(evt.id);
+        daemonHealthRef.current.lastEventId = evt.id;
+        daemonHealthRef.current.lastFrameAtMs = Date.now();
         while (
           processedEventIdsRef.current.size > MAX_TRACKED_DAEMON_EVENT_IDS
         ) {
@@ -631,6 +666,14 @@ export function useDaemonStream(
     resyncAttemptsRef.current = 0;
     isResyncingRef.current = false;
     setIsResyncing(false);
+    Object.assign(daemonHealthRef.current, {
+      isResyncing: false,
+      resyncAttempts: 0,
+      lastEventId: undefined,
+      eventEpoch: undefined,
+      lastFrameAtMs: 0,
+      activeClientId: clientId,
+    });
     setPendingPermission(undefined);
     recoveryInFlightRef.current = false;
   }, [clientId, sessionId]);
@@ -671,6 +714,7 @@ export function useDaemonStream(
         const requestedClientId = `terminal-${globalThis.crypto.randomUUID()}`;
         const attempt = resyncAttemptsRef.current + 1;
         resyncAttemptsRef.current = attempt;
+        daemonHealthRef.current.resyncAttempts = attempt;
         setResyncing(true);
         debugLogger.warn(
           `[Canopy] Daemon session resync requested${
@@ -752,6 +796,7 @@ export function useDaemonStream(
               }
               resyncCursorRef.current = resync.lastEventId;
               setInitError(null);
+              daemonHealthRef.current.activeClientId = resync.clientId;
               setActiveClientId(resync.clientId);
             } catch (resyncError) {
               if (disposed) return;
@@ -784,6 +829,9 @@ export function useDaemonStream(
               eventEpochRef.current = undefined;
               processedEventIdsRef.current.clear();
               setInitError(null);
+              daemonHealthRef.current.activeClientId = resumedClientId;
+              daemonHealthRef.current.eventEpoch = undefined;
+              daemonHealthRef.current.lastEventId = undefined;
               setActiveClientId(resumedClientId);
             })
             .catch((resumeError) => {
@@ -843,6 +891,9 @@ export function useDaemonStream(
             : '';
       if (!text) return;
       addItem({ type: 'user', text }, Date.now());
+      // Baseline the stall detector: the daemon may take a while to emit
+      // the first event of a turn, which must not read as a stall.
+      daemonHealthRef.current.lastFrameAtMs = Date.now();
       setStreamingState(StreamingState.Responding);
       try {
         const result = (await submitDaemonPrompt(
@@ -891,6 +942,7 @@ export function useDaemonStream(
       setPendingPermission((current) =>
         current?.requestId === requestId ? undefined : current,
       );
+      daemonHealthRef.current.lastFrameAtMs = Date.now();
       setStreamingState(StreamingState.Responding);
     },
     [activeClientId, baseUrl, sessionId],
@@ -981,5 +1033,6 @@ export function useDaemonStream(
     answerPermission,
     pendingPermission,
     sessionTitle: daemonSessionTitle,
+    daemonHealthRef,
   };
 }

@@ -466,4 +466,73 @@ describe('<LoadingIndicator />', () => {
       expect(output).not.toContain('↑');
     });
   });
+
+  describe('daemon health', () => {
+    const makeHealth = (
+      overrides: Partial<
+        import('../daemon-attach/use-daemon-stream.js').DaemonHealth
+      >,
+    ) => ({
+      current: {
+        isResyncing: false,
+        resyncAttempts: 0,
+        lastEventId: undefined,
+        eventEpoch: undefined,
+        lastFrameAtMs: 0,
+        activeClientId: 'client-1',
+        ...overrides,
+      },
+    });
+
+    it('overrides the phrase while resyncing', () => {
+      const { lastFrame } = renderWithContext(
+        <LoadingIndicator
+          {...defaultProps}
+          daemonHealthRef={makeHealth({ isResyncing: true, resyncAttempts: 1 })}
+        />,
+        StreamingState.Responding,
+      );
+      expect(lastFrame()).toContain('Catching up with daemon session…');
+    });
+
+    it('warns loudly when no daemon frames arrive during a turn', () => {
+      const { lastFrame } = renderWithContext(
+        <LoadingIndicator
+          {...defaultProps}
+          daemonHealthRef={makeHealth({
+            lastEventId: 21175,
+            eventEpoch: '9b698887-0fa5-4c8b-83fd-2a887b09f2ca',
+            lastFrameAtMs: Date.now() - 81000,
+          })}
+        />,
+        StreamingState.Responding,
+      );
+      const output = lastFrame() ?? '';
+      expect(output).toContain('Stalled');
+      expect(output).toContain('#21175');
+      expect(output).not.toContain('Loading...');
+    });
+
+    it('does not cry stalled while waiting for confirmation', () => {
+      const { lastFrame } = renderWithContext(
+        <LoadingIndicator
+          {...defaultProps}
+          daemonHealthRef={makeHealth({ lastFrameAtMs: Date.now() - 60000 })}
+        />,
+        StreamingState.WaitingForConfirmation,
+      );
+      expect(lastFrame() ?? '').not.toContain('Stalled');
+    });
+
+    it('shows catch-up status while idle during resync', () => {
+      const { lastFrame } = renderWithContext(
+        <LoadingIndicator
+          {...defaultProps}
+          daemonHealthRef={makeHealth({ isResyncing: true })}
+        />,
+        StreamingState.Idle,
+      );
+      expect(lastFrame()).toContain('Catching up with daemon session…');
+    });
+  });
 });

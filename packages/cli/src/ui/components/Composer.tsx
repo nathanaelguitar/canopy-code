@@ -95,6 +95,7 @@ export const Composer = ({ footerRef }: ComposerProps) => {
           streamingCharsRef={streamingResponseLengthRef}
           isStreaming={isStreaming}
           showResponseTokensPerSecond={config.getShowResponseTokensPerSecond()}
+          daemonHealthRef={uiState.daemonHealthRef}
           isReceivingContent={isReceivingContent}
         />
       )}

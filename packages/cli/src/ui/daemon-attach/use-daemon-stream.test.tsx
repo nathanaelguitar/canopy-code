@@ -250,4 +250,110 @@ describe('useDaemonStream permission rendering', () => {
       prompt: 'Command: npm test',
     });
   });
+
+  it('exposes pollable daemon connection health through daemonHealthRef', async () => {
+    daemonMocks.loadDaemonSession.mockResolvedValue({
+      clientId: 'client-after-resync',
+      lastEventId: 8,
+      eventEpoch: 'epoch-9',
+      liveJournal: [],
+    });
+    const addItem = vi.fn() as unknown as UseHistoryManagerReturn['addItem'];
+    const session = {
+      baseUrl: 'http://daemon.test',
+      sessionId: 'session-1',
+      clientId: 'client-1',
+    };
+    const { result } = renderHook(() => useDaemonStream(session, addItem));
+
+    await waitFor(() => expect(onEvent).toBeDefined());
+    expect(result.current.daemonHealthRef.current).toMatchObject({
+      isResyncing: false,
+      resyncAttempts: 0,
+      lastEventId: undefined,
+      eventEpoch: undefined,
+      lastFrameAtMs: 0,
+      activeClientId: 'client-1',
+    });
+
+    act(() => {
+      onEvent?.({
+        id: 7,
+        event: 'session_update',
+        data: {
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'hello' },
+          },
+        },
+      });
+    });
+    const afterEvent = result.current.daemonHealthRef.current;
+    expect(afterEvent.lastEventId).toBe(7);
+    expect(afterEvent.lastFrameAtMs).toBeGreaterThan(0);
+
+    vi.useFakeTimers();
+    try {
+      act(() => {
+        onResyncRequired?.('ring_evicted');
+      });
+      expect(result.current.daemonHealthRef.current).toMatchObject({
+        isResyncing: true,
+        resyncAttempts: 1,
+      });
+      await act(async () => {
+        await vi.runAllTimersAsync();
+      });
+      expect(result.current.daemonHealthRef.current).toMatchObject({
+        isResyncing: false,
+        eventEpoch: 'epoch-9',
+        activeClientId: 'client-after-resync',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('retries detaching the superseded client after resync', async () => {
+    daemonMocks.loadDaemonSession.mockResolvedValue({
+      clientId: 'client-after-resync',
+      lastEventId: 2,
+      liveJournal: [],
+    });
+    daemonMocks.detachDaemonSession
+      .mockRejectedValueOnce(new Error('boom-1'))
+      .mockRejectedValueOnce(new Error('boom-2'))
+      .mockResolvedValue(undefined);
+    const addItem = vi.fn() as unknown as UseHistoryManagerReturn['addItem'];
+    const session = {
+      baseUrl: 'http://daemon.test',
+      sessionId: 'session-1',
+      clientId: 'client-old',
+    };
+    renderHook(() => useDaemonStream(session, addItem));
+
+    await waitFor(() => expect(onEvent).toBeDefined());
+    vi.useFakeTimers();
+    try {
+      act(() => {
+        onResyncRequired?.('ring_evicted');
+      });
+      await act(async () => {
+        await vi.runAllTimersAsync();
+      });
+      // The stream-effect cleanup also detaches on client rotation, so assert
+      // on the superseded-client calls rather than an exact total.
+      const oldClientCalls = daemonMocks.detachDaemonSession.mock.calls.filter(
+        (call) => call[2] === 'client-old',
+      );
+      expect(oldClientCalls.length).toBeGreaterThanOrEqual(3);
+      expect(oldClientCalls[0]).toEqual([
+        'http://daemon.test',
+        'session-1',
+        'client-old',
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

@@ -116,6 +116,11 @@ const env = {
   // signals that distinguish a dev build.
   CLI_VERSION: pkg.version,
   NODE_ENV: 'development',
+  // The launcher may be invoked from outside the repository (for example,
+  // while reusing the user's workspace daemon). Pin tsx to this checkout so
+  // JSX and path settings come from the source tree rather than the caller's
+  // working directory.
+  TSX_TSCONFIG_PATH: join(root, 'tsconfig.json'),
   NODE_OPTIONS: `${existingNodeOptions} --expose-gc ${importFlag}`.trim(),
   // The entry a `qwen …` subprocess should call to reach THIS build — without
   // it, a skill that shells out to `qwen` gets whatever PATH resolves, which on

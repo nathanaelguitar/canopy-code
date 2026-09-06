@@ -42,7 +42,11 @@ import { type ArenaDialogType } from '../hooks/useArenaCommand.js';
 import type { StatusLinePresetConfig } from '../statusLinePresets.js';
 import type { StartupIdeConnectionStatus } from '../../utils/events.js';
 import type { AdvisorDialogOptions } from '../hooks/use-advisor-dialog.js';
-import type { PendingDaemonPermission } from '../daemon-attach/use-daemon-stream.js';
+import type {
+  PendingDaemonPermission,
+  DaemonHealth,
+} from '../daemon-attach/use-daemon-stream.js';
+import type { RefObject } from 'react';
 
 export interface PendingSkillView {
   name: string;
@@ -109,6 +113,11 @@ export interface UIState {
           | { outcome: 'cancelled' },
       ) => Promise<void>)
     | undefined;
+  /**
+   * Pollable daemon connection health, present only in daemon-attached mode.
+   * Powers the catching-up / stalled / degraded-cursor indicators.
+   */
+  daemonHealthRef: RefObject<DaemonHealth> | undefined;
   geminiMdFileCount: number;
   streamingState: StreamingState;
   initError: string | null;

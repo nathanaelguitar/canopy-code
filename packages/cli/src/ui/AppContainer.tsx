@@ -2244,6 +2244,11 @@ export const AppContainer = (props: AppContainerProps) => {
   const answerDaemonPermission = props.daemonSession
     ? daemonStream.answerPermission
     : undefined;
+  // Pollable daemon connection health for the catching-up / stalled
+  // indicators. Undefined in local mode; stable ref identity otherwise.
+  const daemonHealthRef = props.daemonSession
+    ? daemonStream.daemonHealthRef
+    : undefined;
   useEffect(() => {
     if (daemonSessionTitle) setSessionName(daemonSessionTitle);
   }, [daemonSessionTitle]);
@@ -4655,6 +4660,7 @@ export const AppContainer = (props: AppContainerProps) => {
       loopDetectionConfirmationRequest,
       pendingDaemonPermission,
       answerDaemonPermission,
+      daemonHealthRef,
       geminiMdFileCount,
       streamingState,
       initError,
@@ -4803,6 +4809,7 @@ export const AppContainer = (props: AppContainerProps) => {
       loopDetectionConfirmationRequest,
       pendingDaemonPermission,
       answerDaemonPermission,
+      daemonHealthRef,
       geminiMdFileCount,
       streamingState,
       initError,

@@ -260,10 +260,16 @@ function spawnDaemon(
     const logPath = path.join(logDir, 'daemon.log');
     const logFd = openSync(logPath, 'a');
 
+    // Source-mode launches (npm run dev) execute the CLI through scripts/dev.js.
+    // Reusing process.argv[1] here would respawn packages/cli/index.ts directly;
+    // its .js imports only resolve after a build. The launcher stamp points back
+    // through the same source-aware entry point, while built installs still fall
+    // back to their normal argv entry.
+    const cliEntry = process.env['QWEN_CODE_CLI'] || process.argv[1] || '';
     const child = spawn(
       process.execPath,
       [
-        process.argv[1] ?? '',
+        cliEntry,
         'serve',
         '--port',
         String(DEFAULT_DAEMON_PORT),
