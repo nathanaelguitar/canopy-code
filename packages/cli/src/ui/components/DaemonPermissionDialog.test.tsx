@@ -34,6 +34,7 @@ describe('DaemonPermissionDialog', () => {
           ],
         }}
         onAnswer={onAnswer}
+        availableWidth={80}
       />,
     );
 
@@ -57,6 +58,7 @@ describe('DaemonPermissionDialog', () => {
       <DaemonPermissionDialog
         request={{ requestId: 'request-1', toolCall: {}, options: [] }}
         onAnswer={onAnswer}
+        availableWidth={80}
       />,
     );
     const keyHandler = mockedUseKeypress.mock.calls[0]?.[0];
@@ -64,5 +66,38 @@ describe('DaemonPermissionDialog', () => {
     expect(onAnswer).toHaveBeenCalledWith('request-1', {
       outcome: 'cancelled',
     });
+  });
+
+  it('renders structured daemon questions', () => {
+    const onAnswer = vi.fn().mockResolvedValue(undefined);
+    const { lastFrame } = render(
+      <DaemonPermissionDialog
+        request={{
+          requestId: 'request-question',
+          toolCall: {
+            title: 'Choose a deployment target',
+            _meta: {
+              canopyQuestions: [
+                {
+                  header: 'Target',
+                  question: 'Where should this deploy?',
+                  options: [
+                    { label: 'Staging', description: 'Safe preview' },
+                    { label: 'Production', description: 'Live traffic' },
+                  ],
+                },
+              ],
+            },
+          },
+          options: [{ optionId: 'answer', kind: 'allow_once' }],
+        }}
+        onAnswer={onAnswer}
+        availableWidth={80}
+      />,
+    );
+
+    expect(lastFrame()).toContain('Where should this deploy?');
+    expect(lastFrame()).toContain('Staging');
+    expect(lastFrame()).toContain('Production');
   });
 });

@@ -153,6 +153,7 @@ export const DialogManager = ({
       <DaemonPermissionDialog
         request={uiState.pendingDaemonPermission}
         onAnswer={uiState.answerDaemonPermission}
+        availableWidth={mainAreaWidth}
       />
     );
   }

@@ -111,6 +111,7 @@ export interface UIState {
         outcome:
           | { outcome: 'selected'; optionId: string }
           | { outcome: 'cancelled' },
+        answers?: Record<string, string>,
       ) => Promise<void>)
     | undefined;
   /**

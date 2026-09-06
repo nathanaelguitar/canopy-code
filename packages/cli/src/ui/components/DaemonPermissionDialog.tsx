@@ -6,9 +6,13 @@
 
 import { Box, Text } from 'ink';
 import { useMemo, useState } from 'react';
-import type { PendingDaemonPermission } from '../daemon-attach/use-daemon-stream.js';
+import {
+  createDaemonConfirmation,
+  type PendingDaemonPermission,
+} from '../daemon-attach/use-daemon-stream.js';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { theme } from '../semantic-colors.js';
+import { AskUserQuestionDialog } from './messages/AskUserQuestionDialog.js';
 import {
   RadioButtonSelect,
   type RadioSelectItem,
@@ -20,7 +24,12 @@ type PermissionOutcome =
 
 interface DaemonPermissionDialogProps {
   request: PendingDaemonPermission;
-  onAnswer: (requestId: string, outcome: PermissionOutcome) => Promise<void>;
+  onAnswer: (
+    requestId: string,
+    outcome: PermissionOutcome,
+    answers?: Record<string, string>,
+  ) => Promise<void>;
+  availableWidth: number;
 }
 
 function toolLabel(toolCall: unknown): string {
@@ -36,6 +45,7 @@ function toolLabel(toolCall: unknown): string {
 export function DaemonPermissionDialog({
   request,
   onAnswer,
+  availableWidth,
 }: DaemonPermissionDialogProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
@@ -56,11 +66,18 @@ export function DaemonPermissionDialog({
     }
   };
 
+  const confirmation = createDaemonConfirmation(
+    request,
+    async (requestId, response) => {
+      await onAnswer(requestId, response.outcome, response.answers);
+    },
+  );
+
   useKeypress(
     (key) => {
       if (key.name === 'escape') void answer({ outcome: 'cancelled' });
     },
-    { isActive: !submitting },
+    { isActive: confirmation.type !== 'ask_user_question' && !submitting },
   );
 
   const options = useMemo<Array<RadioSelectItem<PermissionOutcome>>>(() => {
@@ -80,6 +97,19 @@ export function DaemonPermissionDialog({
     });
     return choices;
   }, [request.options]);
+
+  // DialogManager owns this area while a daemon permission is pending.
+  // Render structured questions here so the question payload is not hidden
+  // behind the generic allow/cancel permission list.
+  if (confirmation.type === 'ask_user_question') {
+    return (
+      <AskUserQuestionDialog
+        confirmationDetails={confirmation}
+        availableWidth={availableWidth}
+        onConfirm={confirmation.onConfirm}
+      />
+    );
+  }
 
   return (
     <Box
