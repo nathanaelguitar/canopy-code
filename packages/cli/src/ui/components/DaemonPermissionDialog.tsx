@@ -126,6 +126,9 @@ export function DaemonPermissionDialog({
       <Text color={theme.text.primary}>
         {toolLabel(request.toolCall)} is waiting for your approval.
       </Text>
+      <Text bold color={theme.text.primary}>
+        Do you want to allow this action to continue?
+      </Text>
       {error ? <Text color={theme.status.error}>{error}</Text> : null}
       {submitting ? (
         <Text color={theme.text.secondary}>Sending selection…</Text>

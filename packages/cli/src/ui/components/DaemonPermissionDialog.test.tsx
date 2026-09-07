@@ -39,6 +39,9 @@ describe('DaemonPermissionDialog', () => {
     );
 
     expect(lastFrame()).toContain('Run browser action');
+    expect(lastFrame()).toContain(
+      'Do you want to allow this action to continue?',
+    );
     const props = mockedRadioButtonSelect.mock.calls[0]?.[0];
     expect(props?.items.map((item) => item.label)).toEqual([
       'Allow once',
