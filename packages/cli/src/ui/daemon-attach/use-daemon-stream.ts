@@ -15,7 +15,7 @@ import {
   type ToolConfirmationPayload,
 } from '@canopy-code/canopy-code-core';
 import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
-import { StreamingState, ToolCallStatus } from '../types.js';
+import { StreamingState } from '../types.js';
 import type { HistoryItemToolGroup, HistoryItemWithoutId } from '../types.js';
 import type { useGeminiStream } from '../hooks/useGeminiStream.js';
 import {
@@ -981,32 +981,11 @@ export function useDaemonStream(
       : []),
   ];
 
-  if (pendingPermission) {
-    const confirmationDetails = createDaemonConfirmation(
-      pendingPermission,
-      async (requestId, response) => {
-        await answerPermission(requestId, response.outcome, response.answers);
-      },
-    );
-    const toolCall = isRecord(pendingPermission.toolCall)
-      ? pendingPermission.toolCall
-      : {};
-    const name =
-      stringField(toolCall, 'name', 'toolName', 'kind') ?? 'permission';
-    pendingHistoryItems.push({
-      type: 'tool_group',
-      tools: [
-        {
-          callId: pendingPermission.requestId,
-          name,
-          description: confirmationDetails.title,
-          resultDisplay: undefined,
-          status: ToolCallStatus.Confirming,
-          confirmationDetails,
-        },
-      ],
-    });
-  }
+  // Pending daemon permissions are rendered by DialogManager via
+  // DaemonPermissionDialog. Do not also inject a ToolConfirmationMessage into
+  // the pending transcript: that creates two competing approval prompts (the
+  // generic "Do you want to proceed?" plus the real daemon request) and makes
+  // the question/options ambiguous in the TUI.
 
   return {
     streamingState,

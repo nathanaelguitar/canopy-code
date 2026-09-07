@@ -21,7 +21,6 @@ vi.mock('./daemon-session-events.js', async () => {
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { ToolConfirmationOutcome } from '@canopy-code/canopy-code-core';
 import type { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
 import {
   createDaemonConfirmation,
@@ -150,7 +149,7 @@ describe('useDaemonStream permission rendering', () => {
     }
   });
 
-  it('renders daemon questions through the shared TUI confirmation dialog', async () => {
+  it('keeps daemon questions in the focused permission dialog only', async () => {
     const addItem = vi.fn() as unknown as UseHistoryManagerReturn['addItem'];
     const session = {
       baseUrl: 'http://daemon.test',
@@ -192,33 +191,17 @@ describe('useDaemonStream permission rendering', () => {
       });
     });
 
-    const [pendingItem] = result.current.pendingHistoryItems;
-    if (!pendingItem || pendingItem.type !== 'tool_group') {
-      throw new Error('Expected a pending daemon tool group');
-    }
-    const confirmationDetails = pendingItem.tools[0]?.confirmationDetails;
-    if (
-      !confirmationDetails ||
-      confirmationDetails.type !== 'ask_user_question'
-    ) {
-      throw new Error('Expected the shared ask-user-question confirmation');
-    }
-
-    expect(confirmationDetails.questions).toEqual([
-      {
-        header: 'Target',
-        question: 'Where should this deploy?',
-        options: [
-          { label: 'Staging', description: 'Safe preview' },
-          { label: 'Production', description: 'Live traffic' },
-        ],
-      },
-    ]);
+    expect(result.current.pendingPermission?.requestId).toBe('permission-1');
+    expect(result.current.pendingHistoryItems).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: 'tool_group' })]),
+    );
 
     await act(async () => {
-      await confirmationDetails.onConfirm(ToolConfirmationOutcome.ProceedOnce, {
-        answers: { '0': 'Staging' },
-      });
+      await result.current.answerPermission(
+        'permission-1',
+        { outcome: 'selected', optionId: 'answer' },
+        { '0': 'Staging' },
+      );
     });
 
     expect(daemonMocks.answerDaemonPermission).toHaveBeenCalledWith(
