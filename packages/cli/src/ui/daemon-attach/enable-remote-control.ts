@@ -6,18 +6,16 @@
 
 import { readFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
-import { HybridTokenStorage } from '@canopy-code/canopy-code-core';
 import type { DaemonAttachedSession } from './attach-daemon-session.js';
 import {
   streamDaemonSessionEvents,
   type DaemonSessionEvent,
 } from './daemon-session-events.js';
-
-// Deliberately fixed to the private beta Worker. This is not a user-configured
-// webhook and is not read from the shell environment.
-const REMOTE_CONTROL_API =
-  'https://founding-api.canopychat.app/v1/remote-control';
-const REMOTE_CONTROL_SECRET = 'private-remote-control-device';
+import {
+  apiRequest,
+  deviceStorage,
+  REMOTE_CONTROL_SECRET,
+} from './remote-control-shared.js';
 
 interface LocalControlEnableResponse {
   active?: boolean;
@@ -45,15 +43,6 @@ interface RemoteSession {
 }
 
 type PairingStartResult = { pairing: PairingStartResponse } | { error: string };
-
-const deviceStorage = new HybridTokenStorage('Canopy Code');
-
-async function apiRequest(path: string, init: RequestInit): Promise<Response> {
-  return fetch(new URL(path.replace(/^\/+/, ''), `${REMOTE_CONTROL_API}/`), {
-    ...init,
-    headers: { Accept: 'application/json', ...(init.headers ?? {}) },
-  });
-}
 
 type SessionDeliveryResult =
   | { status: 'sent' }

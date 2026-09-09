@@ -11,6 +11,11 @@ import {
 } from './types.js';
 import { MessageType } from '../types.js';
 import { enableRemoteControl } from '../daemon-attach/enable-remote-control.js';
+import {
+  disconnectRemoteControl,
+  finishRemoteControlPairing,
+  startRemoteControlPairing,
+} from '../daemon-attach/remote-control-pairing.js';
 
 function workspaceNameOf(context: CommandContext): string {
   return (
@@ -82,4 +87,55 @@ export const remoteControlCommand: SlashCommand = {
     );
     return;
   },
+  subCommands: [
+    {
+      name: 'connect',
+      description: 'Pair this computer with your signed-in CanopyChat app',
+      kind: CommandKind.BUILT_IN,
+      supportedModes: ['interactive'] as const,
+      action: async (context: CommandContext) => {
+        try {
+          const challenge = await startRemoteControlPairing();
+          context.ui.addItem(
+            {
+              type: MessageType.INFO,
+              text: `Open this on your signed-in phone to approve this computer:\n\n${challenge.pairingUrl}\n\nWaiting for approval…`,
+            },
+            Date.now(),
+          );
+          await finishRemoteControlPairing(challenge, context.abortSignal);
+          return {
+            type: 'message' as const,
+            messageType: 'info' as const,
+            content:
+              'This computer is connected. Future /remote-control sessions will notify your phone automatically.',
+          };
+        } catch (error) {
+          return {
+            type: 'message' as const,
+            messageType: 'error' as const,
+            content:
+              error instanceof Error
+                ? error.message
+                : 'CanopyChat pairing failed.',
+          };
+        }
+      },
+    },
+    {
+      name: 'disconnect',
+      description: 'Remove this computer’s CanopyChat remote-control access',
+      kind: CommandKind.BUILT_IN,
+      supportedModes: ['interactive'] as const,
+      action: async () => {
+        await disconnectRemoteControl();
+        return {
+          type: 'message' as const,
+          messageType: 'info' as const,
+          content:
+            'This computer is disconnected from CanopyChat Remote Control.',
+        };
+      },
+    },
+  ],
 };
