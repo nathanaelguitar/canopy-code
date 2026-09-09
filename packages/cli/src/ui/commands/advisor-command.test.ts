@@ -33,11 +33,23 @@ const mockBuildBtwCacheSafeParams = vi.hoisted(() =>
   }),
 );
 
-vi.mock('@canopy-code/canopy-code-core', () => ({
-  BTW_MAX_INPUT_LENGTH: 4096,
-  runForkedAgent: mockRunForkedAgent,
-  buildBtwCacheSafeParams: mockBuildBtwCacheSafeParams,
-}));
+const mockRegisterAdvisorHook = vi.hoisted(() => vi.fn());
+const mockUnregisterAdvisorHook = vi.hoisted(() => vi.fn());
+
+// Spread the real module: the command imports settings.js, which pulls much
+// more of core than the advisor path itself.
+vi.mock('@canopy-code/canopy-code-core', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@canopy-code/canopy-code-core')>();
+  return {
+    ...actual,
+    BTW_MAX_INPUT_LENGTH: 4096,
+    runForkedAgent: mockRunForkedAgent,
+    buildBtwCacheSafeParams: mockBuildBtwCacheSafeParams,
+    registerAdvisorHook: mockRegisterAdvisorHook,
+    unregisterAdvisorHook: mockUnregisterAdvisorHook,
+  };
+});
 
 const ADVISOR_REVIEW = {
   verdict: 'Sound.',
@@ -157,6 +169,96 @@ describe('advisorCommand', () => {
     expect(mockRunForkedAgent).not.toHaveBeenCalled();
   });
 
+  describe('advisor mode subcommands', () => {
+    const createModeContext = (enabled = false) =>
+      createMockCommandContext({
+        services: {
+          config: createConfig({
+            getHookSystem: () => ({}), // truthy: hook system available
+          }),
+          settings: {
+            merged: { advisorMode: { enabled }, advisorModel: '' },
+            setValue: vi.fn(),
+            isTrusted: true,
+          },
+        },
+      });
+
+    it('bare /advisor toggles mode on without calling the model', async () => {
+      const ctx = createModeContext(false);
+      const result = await advisorCommand.action!(ctx, '');
+
+      expect(result).toEqual({
+        type: 'message',
+        messageType: 'info',
+        content: expect.stringContaining('Advisor mode enabled'),
+      });
+      expect(ctx.services.settings.setValue).toHaveBeenCalledWith(
+        expect.anything(),
+        'advisorMode.enabled',
+        true,
+      );
+      expect(mockRegisterAdvisorHook).toHaveBeenCalledWith({
+        config: ctx.services.config,
+        sessionId: 'test-session-id',
+        advisorModel: undefined,
+      });
+      expect(mockRunForkedAgent).not.toHaveBeenCalled();
+    });
+
+    it('bare /advisor toggles mode off and unregisters the hook', async () => {
+      const ctx = createModeContext(true);
+      const result = await advisorCommand.action!(ctx, '');
+
+      expect(result).toEqual({
+        type: 'message',
+        messageType: 'info',
+        content: 'Advisor mode disabled.',
+      });
+      expect(ctx.services.settings.setValue).toHaveBeenCalledWith(
+        expect.anything(),
+        'advisorMode.enabled',
+        false,
+      );
+      expect(mockUnregisterAdvisorHook).toHaveBeenCalledWith(
+        ctx.services.config,
+        'test-session-id',
+      );
+      expect(mockRunForkedAgent).not.toHaveBeenCalled();
+    });
+
+    it('/advisor on is idempotent when already enabled', async () => {
+      const ctx = createModeContext(true);
+      await advisorCommand.action!(ctx, 'on');
+
+      expect(ctx.services.settings.setValue).not.toHaveBeenCalled();
+      expect(mockRegisterAdvisorHook).not.toHaveBeenCalled();
+    });
+
+    it('/advisor status reports state and resolved model', async () => {
+      const ctx = createModeContext(true);
+      const result = await advisorCommand.action!(ctx, 'status');
+
+      expect(result).toEqual({
+        type: 'message',
+        messageType: 'info',
+        content: expect.stringContaining('Advisor mode: enabled'),
+      });
+      expect((result as { content: string }).content).toContain('test-model');
+      expect(mockRunForkedAgent).not.toHaveBeenCalled();
+    });
+
+    it('/advisor <focus> still runs the one-shot review path', async () => {
+      mockRunForkedAgent.mockResolvedValue(advisorResult());
+      const ctx = createModeContext(true);
+      await advisorCommand.action!(ctx, 'check the plan');
+
+      expect(mockRunForkedAgent).toHaveBeenCalledTimes(1);
+      expect(ctx.services.settings.setValue).not.toHaveBeenCalled();
+      expect(mockRegisterAdvisorHook).not.toHaveBeenCalled();
+    });
+  });
+
   describe('interactive mode', () => {
     it('returns a model-and-effort picker for slash invocations', async () => {
       const pickerContext = createMockCommandContext({
@@ -195,7 +297,7 @@ describe('advisorCommand', () => {
     it('should show pending item, add an advisor review item, then clear pending', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult('resolved-model'));
 
-      const result = await advisorCommand.action!(mockContext, '');
+      const result = await advisorCommand.action!(mockContext, 'review');
 
       expect(mockContext.ui.setPendingItem).toHaveBeenNthCalledWith(1, {
         type: MessageType.INFO,
@@ -269,7 +371,7 @@ describe('advisorCommand', () => {
     it('should not pass model override when advisorModel is unset', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult());
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       const callArgs = mockRunForkedAgent.mock.calls[0][0];
       expect(callArgs).not.toHaveProperty('model');
@@ -287,7 +389,7 @@ describe('advisorCommand', () => {
         },
       });
 
-      await advisorCommand.action!(contextWithBlankModel, '');
+      await advisorCommand.action!(contextWithBlankModel, 'review');
 
       const callArgs = mockRunForkedAgent.mock.calls[0][0];
       expect(callArgs).not.toHaveProperty('model');
@@ -304,7 +406,7 @@ describe('advisorCommand', () => {
         },
       });
 
-      await advisorCommand.action!(contextWithModel, '');
+      await advisorCommand.action!(contextWithModel, 'review');
 
       expect(mockRunForkedAgent).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -317,7 +419,7 @@ describe('advisorCommand', () => {
     it('should strip tools (never preserve) on the default path, matching /btw', async () => {
       mockRunForkedAgent.mockResolvedValue(advisorResult());
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       const callArgs = mockRunForkedAgent.mock.calls[0][0];
       expect(callArgs).not.toHaveProperty('preserveTools');
@@ -334,7 +436,7 @@ describe('advisorCommand', () => {
         },
       });
 
-      await advisorCommand.action!(contextWithModel, '');
+      await advisorCommand.action!(contextWithModel, 'review');
 
       const callArgs = mockRunForkedAgent.mock.calls[0][0];
       expect(callArgs).not.toHaveProperty('preserveTools');
@@ -348,7 +450,7 @@ describe('advisorCommand', () => {
         abortSignal: abortController.signal,
       });
 
-      await advisorCommand.action!(contextWithSignal, '');
+      await advisorCommand.action!(contextWithSignal, 'review');
 
       expect(mockRunForkedAgent).toHaveBeenCalledWith(
         expect.objectContaining({ abortSignal: abortController.signal }),
@@ -358,7 +460,7 @@ describe('advisorCommand', () => {
     it('should error when no conversation context is available', async () => {
       mockBuildBtwCacheSafeParams.mockReturnValue(null);
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       expect(mockRunForkedAgent).not.toHaveBeenCalled();
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
@@ -382,7 +484,7 @@ describe('advisorCommand', () => {
         },
       });
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       expect(mockRunForkedAgent).not.toHaveBeenCalled();
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
@@ -436,7 +538,7 @@ describe('advisorCommand', () => {
     it('should add error item on failure and clear pending', async () => {
       mockRunForkedAgent.mockRejectedValue(new Error('API error'));
 
-      const result = await advisorCommand.action!(mockContext, '');
+      const result = await advisorCommand.action!(mockContext, 'review');
 
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
@@ -452,7 +554,7 @@ describe('advisorCommand', () => {
     it('should format non-Error rejections with a fallback', async () => {
       mockRunForkedAgent.mockRejectedValue(null);
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
@@ -466,7 +568,7 @@ describe('advisorCommand', () => {
     it('should preserve truthy non-Error rejection text', async () => {
       mockRunForkedAgent.mockRejectedValue('string error');
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
@@ -483,7 +585,7 @@ describe('advisorCommand', () => {
         ui: { pendingItem: { type: 'info' } },
       });
 
-      const result = await advisorCommand.action!(busyContext, '');
+      const result = await advisorCommand.action!(busyContext, 'review');
 
       expect(mockRunForkedAgent).not.toHaveBeenCalled();
       expect(busyContext.ui.addItem).not.toHaveBeenCalled();
@@ -501,7 +603,7 @@ describe('advisorCommand', () => {
         ui: { isIdleRef: { current: false }, pendingItem: null },
       });
 
-      const result = await advisorCommand.action!(busyContext, '');
+      const result = await advisorCommand.action!(busyContext, 'review');
 
       expect(mockRunForkedAgent).not.toHaveBeenCalled();
       expect(busyContext.ui.addItem).not.toHaveBeenCalled();
@@ -524,7 +626,7 @@ describe('advisorCommand', () => {
         abortSignal: abortController.signal,
       });
 
-      await advisorCommand.action!(abortableContext, '');
+      await advisorCommand.action!(abortableContext, 'review');
 
       expect(abortableContext.ui.addItem).not.toHaveBeenCalled();
       expect(abortableContext.ui.setPendingItem).toHaveBeenCalledWith({
@@ -547,7 +649,7 @@ describe('advisorCommand', () => {
         abortSignal: abortController.signal,
       });
 
-      await advisorCommand.action!(abortableContext, '');
+      await advisorCommand.action!(abortableContext, 'review');
 
       expect(abortableContext.ui.addItem).not.toHaveBeenCalled();
       expect(abortableContext.ui.setPendingItem).toHaveBeenCalledWith({
@@ -567,7 +669,7 @@ describe('advisorCommand', () => {
         usage: { inputTokens: 1, outputTokens: 0, cacheHitTokens: 0 },
       });
 
-      await advisorCommand.action!(mockContext, '');
+      await advisorCommand.action!(mockContext, 'review');
 
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
@@ -626,7 +728,7 @@ describe('advisorCommand', () => {
         services: { config: createConfig() },
       });
 
-      const result = await advisorCommand.action!(acpContext, '');
+      const result = await advisorCommand.action!(acpContext, 'review');
 
       expect(result).toMatchObject({
         type: 'submit_prompt',
@@ -643,7 +745,7 @@ describe('advisorCommand', () => {
         services: { config: createConfig() },
       });
 
-      const result = await advisorCommand.action!(acpContext, '');
+      const result = await advisorCommand.action!(acpContext, 'review');
 
       expect(result).toEqual({
         type: 'message',

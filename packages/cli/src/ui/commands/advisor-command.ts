@@ -19,7 +19,34 @@ import {
   buildBtwCacheSafeParams,
   runForkedAgent,
   type CacheSafeParams,
+  registerAdvisorHook,
+  unregisterAdvisorHook,
 } from '@canopy-code/canopy-code-core';
+import { SettingScope } from '../../config/settings.js';
+
+const ADVISOR_MODE_SETTING = 'advisorMode.enabled';
+
+function isAdvisorModeEnabled(context: CommandContext): boolean {
+  return context.services.settings.merged.advisorMode?.enabled === true;
+}
+
+function setAdvisorMode(
+  context: CommandContext,
+  enabled: boolean,
+): void {
+  const { settings, config } = context.services;
+  settings.setValue(SettingScope.User, ADVISOR_MODE_SETTING, enabled);
+  const hookSystem = config?.getHookSystem?.();
+  if (!config || !hookSystem) return;
+  const sessionId = config.getSessionId();
+  if (enabled) {
+    const advisorModel =
+      settings.merged.advisorModel?.trim() || undefined;
+    registerAdvisorHook({ config, sessionId, advisorModel });
+  } else {
+    unregisterAdvisorHook(config, sessionId);
+  }
+}
 
 const ADVISOR_SCHEMA = {
   type: 'object',
@@ -296,7 +323,7 @@ export const advisorCommand: SlashCommand = {
   name: 'advisor',
   get description() {
     return t(
-      'Get a second opinion on the current conversation from a reviewer model',
+      'Toggle advisor mode for guidance-only responses, or run a one-shot review: /advisor [on|off|status|<focus>]',
     );
   },
   kind: CommandKind.BUILT_IN,
@@ -306,6 +333,62 @@ export const advisorCommand: SlashCommand = {
     args: string,
   ): Promise<void | SlashCommandActionReturn> => {
     const focus = args.trim();
+    const sub = focus.toLowerCase();
+
+    // Advisor-mode subcommands: manage the persistent per-turn guidance mode
+    // (toggle semantics mirrored from the reference CLI). These never consult
+    // an LLM; any other argument is the one-shot review's focus text.
+    if (focus === '' || sub === 'on' || sub === 'off' || sub === 'status') {
+      const { config } = context.services;
+      if (!config) {
+        return {
+          type: 'message',
+          messageType: 'error',
+          content: t('Config not loaded.'),
+        };
+      }
+      if (sub !== 'status' && !config.getModel()) {
+        return {
+          type: 'message',
+          messageType: 'error',
+          content: t('No model configured.'),
+        };
+      }
+
+      const enabled = isAdvisorModeEnabled(context);
+      if (sub === 'status') {
+        const advisorModel =
+          context.services.settings.merged.advisorModel?.trim() ||
+          config.getModel();
+        return {
+          type: 'message',
+          messageType: 'info',
+          content: enabled
+            ? t(
+                'Advisor mode: enabled (model: {{model}}). One extra model call per turn injects advisor guidance. Toggle with /advisor, turn off with /advisor off.',
+                { model: advisorModel },
+              )
+            : t(
+                'Advisor mode: disabled. Enable with /advisor or /advisor on; run a one-shot review with /advisor <focus>.',
+              ),
+        };
+      }
+
+      // Bare `/advisor` toggles; `on`/`off` are idempotent.
+      const next = sub === 'on' ? true : sub === 'off' ? false : !enabled;
+      if (next !== enabled) {
+        setAdvisorMode(context, next);
+      }
+      return {
+        type: 'message',
+        messageType: 'info',
+        content: next
+          ? t(
+              'Advisor mode enabled — brief advisor guidance will be injected into each turn (one extra model call per turn). Turn off with /advisor off.',
+            )
+          : t('Advisor mode disabled.'),
+      };
+    }
 
     if (focus.length > BTW_MAX_INPUT_LENGTH) {
       return {

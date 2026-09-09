@@ -72,6 +72,7 @@ import {
   GitWorktreeService,
   readWorktreeSessionMarker,
   isSessionRuntimeActive,
+  registerAdvisorHook,
   type GoalTurnHost,
 } from '@canopy-code/canopy-code-core';
 import {
@@ -949,6 +950,22 @@ export const AppContainer = (props: AppContainerProps) => {
       );
       profileCheckpoint('config_initialize_end');
       setConfigInitialized(true);
+
+      // Restore persistent advisor mode: the setting survives restarts, so
+      // re-register the session UserPromptSubmit hook on interactive startup.
+      if (settings.merged.advisorMode?.enabled && config.getHookSystem()) {
+        try {
+          registerAdvisorHook({
+            config,
+            sessionId: config.getSessionId(),
+            advisorModel: settings.merged.advisorModel?.trim() || undefined,
+          });
+        } catch (err) {
+          debugLogger.warn(
+            `Failed to register advisor-mode hook: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
       profileCheckpoint('input_enabled');
       // Profile finalize is intentionally NOT here. With PR-A's background
       // MCP discovery, MCP-related events (`mcp_server_ready:*`,
