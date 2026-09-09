@@ -30,18 +30,14 @@ function isAdvisorModeEnabled(context: CommandContext): boolean {
   return context.services.settings.merged.advisorMode?.enabled === true;
 }
 
-function setAdvisorMode(
-  context: CommandContext,
-  enabled: boolean,
-): void {
+function setAdvisorMode(context: CommandContext, enabled: boolean): void {
   const { settings, config } = context.services;
   settings.setValue(SettingScope.User, ADVISOR_MODE_SETTING, enabled);
   const hookSystem = config?.getHookSystem?.();
   if (!config || !hookSystem) return;
   const sessionId = config.getSessionId();
   if (enabled) {
-    const advisorModel =
-      settings.merged.advisorModel?.trim() || undefined;
+    const advisorModel = settings.merged.advisorModel?.trim() || undefined;
     registerAdvisorHook({ config, sessionId, advisorModel });
   } else {
     unregisterAdvisorHook(config, sessionId);
@@ -335,10 +331,21 @@ export const advisorCommand: SlashCommand = {
     const focus = args.trim();
     const sub = focus.toLowerCase();
 
+    // Toggling is only meaningful where a hook system exists to register the
+    // guidance hook against; without one, bare `/advisor` falls through to
+    // the pre-existing immediate-review/picker behavior below instead of
+    // silently "enabling" a mode that can never actually inject anything.
+    const hasHookSystem = !!context.services.config?.getHookSystem?.();
+
     // Advisor-mode subcommands: manage the persistent per-turn guidance mode
     // (toggle semantics mirrored from the reference CLI). These never consult
     // an LLM; any other argument is the one-shot review's focus text.
-    if (focus === '' || sub === 'on' || sub === 'off' || sub === 'status') {
+    if (
+      (focus === '' && hasHookSystem) ||
+      sub === 'on' ||
+      sub === 'off' ||
+      sub === 'status'
+    ) {
       const { config } = context.services;
       if (!config) {
         return {
