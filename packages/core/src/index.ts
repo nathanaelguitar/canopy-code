@@ -688,6 +688,7 @@ export { wrapUserPromptSubmitContext } from './utils/transcript-records.js';
 // ============================================================================
 
 export * from './goals/index.js';
+export * from './advisor/index.js';
 
 // Export hook triggers for all hook events
 export {

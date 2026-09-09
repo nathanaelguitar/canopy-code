@@ -208,6 +208,12 @@ export const Footer: React.FC<FooterProps> = ({ containerRef }) => {
   if (cronTaskCount > 0) {
     rightItems.push({ key: 'cron', node: <CronPill count={cronTaskCount} /> });
   }
+  if (settings.merged.advisorMode?.enabled) {
+    rightItems.push({
+      key: 'advisor',
+      node: <Text color={theme.text.accent}>{t('advisor')}</Text>,
+    });
+  }
 
   // Layout matches upstream: left column has status line (top) + hints/mode
   // (bottom), right section has indicators. Status line and hints coexist.

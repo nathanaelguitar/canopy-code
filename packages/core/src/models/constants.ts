@@ -153,6 +153,12 @@ export const CHATGPT_OAUTH_MODELS: ModelConfig[] = [
     description: 'GPT-5.1 Codex — balanced coding model',
     capabilities: { vision: true },
   },
+  {
+    id: 'gpt-6-astra',
+    name: 'GPT-6-Astra',
+    description: 'Most capable model for complex, demanding work',
+    capabilities: { vision: true },
+  },
 ];
 
 /**

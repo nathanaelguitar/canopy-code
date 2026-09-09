@@ -1444,6 +1444,28 @@ const SETTINGS_SCHEMA = {
     showInDialog: true,
   },
 
+  advisorMode: {
+    type: 'object',
+    label: 'Advisor Mode',
+    category: 'Model',
+    requiresRestart: false,
+    default: {},
+    description: 'Persistent advisor-mode settings (toggle with /advisor).',
+    showInDialog: false,
+    properties: {
+      enabled: {
+        type: 'boolean',
+        label: 'Advisor Mode Enabled',
+        category: 'Model',
+        requiresRestart: false,
+        default: false,
+        description:
+          'When enabled, an advisor model injects brief guidance into every turn. This adds one extra model call per turn; set Advisor Model to pick a cheaper one.',
+        showInDialog: true,
+      },
+    },
+  },
+
   visionModel: {
     type: 'string',
     label: 'Vision Model',
