@@ -16,6 +16,7 @@ import {
   deviceStorage,
   REMOTE_CONTROL_SECRET,
 } from './remote-control-shared.js';
+import { pairingUrlForSession } from './remote-control-url.js';
 
 interface LocalControlEnableResponse {
   active?: boolean;
@@ -269,6 +270,7 @@ async function pairAndSend(
  */
 async function readPairingUrlFromLog(
   logPath: string,
+  sessionId: string,
 ): Promise<string | undefined> {
   const deadline = Date.now() + 3000;
   while (Date.now() < deadline) {
@@ -278,8 +280,8 @@ async function readPairingUrlFromLog(
     } catch {
       return undefined;
     }
-    const match = text.match(/canopy serve: Local Control pairing URL: (\S+)/);
-    if (match) return match[1];
+    const pairingUrl = pairingUrlForSession(text, sessionId);
+    if (pairingUrl) return pairingUrl;
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   return undefined;
@@ -354,7 +356,10 @@ export async function enableRemoteControl(
   let pairingUrl = response.url;
   if (!pairingUrl && response.urlRedacted) {
     pairingUrl = daemonSession.daemonLogPath
-      ? await readPairingUrlFromLog(daemonSession.daemonLogPath)
+      ? await readPairingUrlFromLog(
+          daemonSession.daemonLogPath,
+          daemonSession.sessionId,
+        )
       : undefined;
   }
   if (!pairingUrl) {
