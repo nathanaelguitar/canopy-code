@@ -72,6 +72,42 @@ describe('installTerminalResizeReflow', () => {
     }
   });
 
+  it('stops writing after the terminal reports write EIO', async () => {
+    const stdout = new FakeStdout();
+    const { restore } = installTerminalResizeReflow(
+      stdout as unknown as NodeJS.WriteStream,
+    );
+    try {
+      stdout.emit(
+        'error',
+        Object.assign(new Error('write EIO'), { code: 'EIO' }),
+      );
+
+      const completion = vi.fn();
+      expect(stdout.write('ignored', completion)).toBe(true);
+      await Promise.resolve();
+
+      expect(stdout.written).toEqual([]);
+      expect(completion).toHaveBeenCalledOnce();
+    } finally {
+      restore();
+    }
+  });
+
+  it('does not suppress other terminal output errors', () => {
+    const stdout = new FakeStdout();
+    const { restore } = installTerminalResizeReflow(
+      stdout as unknown as NodeJS.WriteStream,
+    );
+    try {
+      expect(() => stdout.emit('error', new Error('disk full'))).toThrow(
+        'disk full',
+      );
+    } finally {
+      restore();
+    }
+  });
+
   it('VP mode replaces the stale clear with a viewport clear', () => {
     const stdout = new FakeStdout();
     const { restore } = installTerminalResizeReflow(

@@ -184,6 +184,7 @@ export function installTerminalResizeReflow(
     trailingNewline: false,
   };
   let pendingAmplify = 0;
+  let outputUnavailable = false;
   // Ink's post-shrink redraw arrives bare (log.clear() resets its counter to
   // 0). A clear-only write arms the handoff; consecutive bare writes then
   // each re-model (last wins: the static append precedes the live frame),
@@ -242,6 +243,15 @@ export function installTerminalResizeReflow(
   };
   stdout.on('resize', onResize);
 
+  const onOutputError = (error: NodeJS.ErrnoException) => {
+    if (error.code !== 'EIO' && !error.message.includes('write EIO')) {
+      throw error;
+    }
+    outputUnavailable = true;
+    debugLogger.debug('stdout-unavailable', { code: error.code });
+  };
+  stdout.on('error', onOutputError);
+
   const originalWrite = stdout.write;
   const reflowWrite = function (
     this: NodeJS.WriteStream,
@@ -249,6 +259,14 @@ export function installTerminalResizeReflow(
     encodingOrCallback?: BufferEncoding | ((error?: Error | null) => void),
     callback?: (error?: Error | null) => void,
   ) {
+    if (outputUnavailable) {
+      const completion =
+        typeof encodingOrCallback === 'function'
+          ? encodingOrCallback
+          : callback;
+      if (completion) queueMicrotask(() => completion());
+      return true;
+    }
     if (typeof chunk === 'string') {
       const match = ERASE_LINES_PATTERN.exec(chunk);
       if (match) {
@@ -342,8 +360,10 @@ export function installTerminalResizeReflow(
         stdout.write = originalWrite;
       }
       stdout.off('resize', onResize);
+      stdout.off('error', onOutputError);
     },
     repaint: () => {
+      if (outputUnavailable) return;
       const columns = stdout.columns ?? lastWidth;
       originalWrite.call(
         stdout,
