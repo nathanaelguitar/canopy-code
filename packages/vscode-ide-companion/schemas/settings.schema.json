@@ -638,6 +638,17 @@
       "type": "string",
       "default": ""
     },
+    "advisorMode": {
+      "description": "Persistent advisor-mode settings (toggle with /advisor).",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "When enabled, an advisor model injects brief guidance into every turn. This adds one extra model call per turn; set Advisor Model to pick a cheaper one.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "visionModel": {
       "description": "Image-capable model used as the vision bridge: when a text-only main model receives an image, it is transcribed by this model first. Set with /model --vision. Leave empty to auto-pick a same-provider vision model.",
       "type": "string",
