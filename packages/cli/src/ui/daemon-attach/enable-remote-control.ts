@@ -40,6 +40,7 @@ interface RemoteSession {
   sessionId: string;
   workspaceName: string;
   sessionTitle?: string;
+  computerName: string;
   url: string;
 }
 
@@ -49,6 +50,31 @@ type SessionDeliveryResult =
   | { status: 'sent' }
   | { status: 'unauthorized' }
   | { status: 'unavailable'; detail?: string };
+
+export function resolveRemoteControlComputerName(
+  configuredName: string | undefined,
+  machineName: string,
+  platform: NodeJS.Platform,
+): string {
+  const configured = configuredName?.trim();
+  if (configured) return configured.slice(0, 80);
+
+  const normalizedMachineName = machineName.trim();
+  const normalized = normalizedMachineName.toLowerCase();
+  if (normalized.includes('spark') || normalized.includes('dgx')) {
+    return 'Spark';
+  }
+  if (platform === 'darwin') return 'Mac';
+  return normalizedMachineName.split('.')[0]?.slice(0, 80) || 'Computer';
+}
+
+function remoteControlComputerName(): string {
+  return resolveRemoteControlComputerName(
+    process.env['CANOPY_REMOTE_CONTROL_NAME'],
+    hostname(),
+    process.platform,
+  );
+}
 
 async function sendSession(
   accessToken: string,
@@ -72,6 +98,7 @@ async function sendSession(
           ...(session.sessionTitle
             ? { session_title: session.sessionTitle }
             : {}),
+          computer_name: session.computerName,
           url: session.url,
         }),
       });
@@ -105,6 +132,7 @@ async function sendAttention(
       session_id: session.sessionId,
       workspace_name: session.workspaceName,
       ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
+      computer_name: session.computerName,
       url: session.url,
       notification_type: attention.kind,
       notification_title: attention.title,
@@ -213,19 +241,19 @@ function startAttentionMonitor(
 }
 
 async function pairAndSend(
-  session: {
-    sessionId: string;
-    workspaceName: string;
-    sessionTitle?: string;
-    url: string;
-  },
+  session: RemoteSession,
   onAuthorized: (accessToken: string) => void,
 ): Promise<PairingStartResult> {
   const response = await apiRequest('/pairings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      device_name: hostname().slice(0, 120) || 'Canopy Code computer',
+      device_name: session.computerName,
+      session_id: session.sessionId,
+      workspace_name: session.workspaceName,
+      ...(session.sessionTitle ? { session_title: session.sessionTitle } : {}),
+      computer_name: session.computerName,
+      url: session.url,
     }),
   });
   if (!response.ok) {
@@ -376,6 +404,7 @@ export async function enableRemoteControl(
     sessionId: daemonSession.sessionId,
     workspaceName,
     ...(sessionTitle?.trim() ? { sessionTitle: sessionTitle.trim() } : {}),
+    computerName: remoteControlComputerName(),
     url: pairingUrl,
   };
   let pairingPending = false;
