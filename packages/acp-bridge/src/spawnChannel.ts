@@ -38,6 +38,7 @@ import { EXTERNAL_TOOL_GUARD_TOKEN_ENV } from './externalToolGuard.js';
 import { ProcessRegistry } from './process-registry.js';
 import type { ChildHeapPolicy } from './child-heap-policy.js';
 import { estimateJsonStringBytes } from './json-string-bytes.js';
+import { getFatalDiagnosticReportExecArgs } from './fatalDiagnosticReports.js';
 
 let cachedMemoryArgs: string[] | undefined;
 export const DAEMON_ACP_NDJSON_LIMITS: Readonly<NdJsonStreamLimits> =
@@ -469,11 +470,15 @@ export function createSpawnChannelFactory(
       // derived ceiling reaches the child and no spawn is refused.
       options.childHeapPolicy?.decide(processRegistry.committedProcessCount);
       const memoryArgs = getAcpMemoryArgs();
+      const fatalReportArgs = getFatalDiagnosticReportExecArgs({
+        env: childEnv,
+      });
       child = spawn(
         process.execPath,
         [
           ...execArgs,
           ...memoryArgs,
+          ...fatalReportArgs,
           cliEntry,
           '--acp',
           ...(options.extraArgs ?? []),

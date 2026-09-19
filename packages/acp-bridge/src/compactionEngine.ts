@@ -6,6 +6,7 @@
 
 import {
   EVENT_SCHEMA_VERSION,
+  type CompactionMemoryStats,
   logEventSizingFailed,
   serializedBridgeEventByteLength,
   type BridgeEvent,
@@ -303,6 +304,21 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
   /** Current journal caps — may have grown past the configured baseline. */
   journalLimits(): JournalLimits {
     return { maxEvents: this.maxJournalEvents, maxBytes: this.maxJournalBytes };
+  }
+
+  memoryStats(): CompactionMemoryStats {
+    let compactedReplayEvents = 0;
+    for (let i = this.replaySegmentStart; i < this.replaySegments.length; i++) {
+      compactedReplayEvents += this.replaySegments[i]!.events.length;
+    }
+    return {
+      compactedReplayBytes: this.replayBytes,
+      compactedReplayEvents,
+      fullJournalBytes: this.fullJournal.totalBytes,
+      fullJournalEvents: this.fullJournal.totalEvents,
+      summaryJournalBytes: this.summaryJournal.totalBytes,
+      summaryJournalEvents: this.summaryJournal.totalEvents,
+    };
   }
 
   ingest(event: BridgeEvent, byteLength?: number): void {

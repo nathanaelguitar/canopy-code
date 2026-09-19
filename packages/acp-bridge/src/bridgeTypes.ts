@@ -25,6 +25,7 @@ import type {
 } from '@agentclientprotocol/sdk';
 import type {
   BridgeEvent,
+  EventBusMemoryStats,
   EventBusReplayRingStats,
   LiveReplayMode,
   SessionReplaySnapshot,
@@ -1041,6 +1042,11 @@ export interface BridgeDaemonSessionDiagnostic {
    * compatibility with status fixtures and older bridge implementations.
    */
   replayRing?: EventBusReplayRingStats;
+  /**
+   * Retention-oriented wire-byte diagnostics for the session bus. These
+   * counters identify bounded owners; they are not an RSS total.
+   */
+  memory?: EventBusMemoryStats;
 }
 
 export interface BridgeDaemonStatusSnapshot {

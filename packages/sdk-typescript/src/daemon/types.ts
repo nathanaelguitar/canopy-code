@@ -505,6 +505,34 @@ export interface DaemonStatusReportSession {
     maxEvents: number;
     maxSerializedBytes: number;
   };
+  /**
+   * Retention-oriented wire-byte diagnostics for the session bus. These
+   * counters identify bounded owners; they are not an RSS total.
+   */
+  memory?: {
+    replayRing: {
+      eventCount: number;
+      serializedBytes: number;
+      maxEvents: number;
+      maxSerializedBytes: number;
+    };
+    queuedLiveBytes: number;
+    queuedLiveEvents: number;
+    subscriberCount: number;
+    maxEventBytes: number;
+    largestAdmittedEventBytes: number;
+    largestAdmittedEventType?: string;
+    rejectedEventCount: number;
+    oversizedEventCount: number;
+    compaction?: {
+      compactedReplayBytes: number;
+      compactedReplayEvents: number;
+      fullJournalBytes: number;
+      fullJournalEvents: number;
+      summaryJournalBytes: number;
+      summaryJournalEvents: number;
+    };
+  };
 }
 
 /**

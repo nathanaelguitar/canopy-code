@@ -74,6 +74,63 @@ describe('EventBus', () => {
           maxQueuedBytes: Number.MAX_SAFE_INTEGER + 1,
         }),
     ).toThrow(TypeError);
+    expect(
+      () =>
+        new EventBus(100, undefined, undefined, {
+          maxEventBytes: 0,
+        }),
+    ).toThrow(TypeError);
+  });
+
+  it('rejects oversized events before retaining them and tells subscribers to resync', async () => {
+    const bus = new EventBus(100, undefined, undefined, {
+      maxEventBytes: 64,
+    });
+    const abort = new AbortController();
+    const iterator = bus
+      .subscribe({ signal: abort.signal })
+      [Symbol.asyncIterator]();
+
+    expect(
+      bus.publish({ type: 'large', data: 'x'.repeat(256) }),
+    ).toBeUndefined();
+    expect(bus.lastEventId).toBe(0);
+    expect(bus.replayRingStats.eventCount).toBe(0);
+    expect(bus.memoryStats).toMatchObject({
+      rejectedEventCount: 1,
+      oversizedEventCount: 1,
+      queuedLiveBytes: 0,
+      maxEventBytes: 64,
+    });
+
+    const result = await iterator.next();
+    expect(result.done).toBe(false);
+    expect(result.value.type).toBe('state_resync_required');
+    expect(result.value.data).toMatchObject({
+      reason: 'event_too_large',
+      eventType: 'large',
+      maxEventBytes: 64,
+    });
+    await iterator.return?.();
+    abort.abort();
+  });
+
+  it('reports live subscriber queue bytes separately from ring bytes', () => {
+    const bus = new EventBus();
+    const abort = new AbortController();
+    bus.subscribe({ signal: abort.signal });
+    const event = bus.publish({ type: 'queued', data: 'x'.repeat(20) });
+    const eventBytes = serializedBridgeEventByteLength(event!);
+
+    expect(eventBytes).toBeDefined();
+    expect(bus.memoryStats).toMatchObject({
+      queuedLiveEvents: 1,
+      queuedLiveBytes: eventBytes,
+      subscriberCount: 1,
+      largestAdmittedEventBytes: eventBytes,
+      largestAdmittedEventType: 'queued',
+    });
+    abort.abort();
   });
 
   it('stamps published events with serverTimestamp metadata', () => {

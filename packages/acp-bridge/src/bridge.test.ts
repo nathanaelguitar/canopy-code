@@ -7119,6 +7119,19 @@ describe('createAcpSessionBridge', () => {
       ).toBeLessThanOrEqual(
         status.sessions[0]?.replayRing?.maxSerializedBytes ?? 0,
       );
+      expect(status.sessions[0]?.memory).toMatchObject({
+        replayRing: {
+          eventCount: expect.any(Number),
+          serializedBytes: expect.any(Number),
+        },
+        queuedLiveBytes: expect.any(Number),
+        queuedLiveEvents: expect.any(Number),
+        maxEventBytes: expect.any(Number),
+        compaction: {
+          fullJournalBytes: expect.any(Number),
+          summaryJournalBytes: expect.any(Number),
+        },
+      });
 
       gate.resolve();
       await prompt;

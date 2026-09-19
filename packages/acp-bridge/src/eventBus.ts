@@ -59,6 +59,21 @@ export interface CompactionEngine {
    * journal concept simply omit it.
    */
   journalLimits?(): { maxEvents: number; maxBytes: number };
+  /**
+   * Byte accounting for the engine's retained replay and live journals.
+   * These are wire-size estimates, not a complete JavaScript heap
+   * measurement, but they identify which bounded owner is growing.
+   */
+  memoryStats?(): CompactionMemoryStats;
+}
+
+export interface CompactionMemoryStats {
+  compactedReplayBytes: number;
+  compactedReplayEvents: number;
+  fullJournalBytes: number;
+  fullJournalEvents: number;
+  summaryJournalBytes: number;
+  summaryJournalEvents: number;
 }
 
 export const EVENT_SCHEMA_VERSION = 1 as const;
@@ -162,6 +177,13 @@ export type EventBusSubscriberDiagnostic =
 export interface EventBusOptions {
   maxQueuedBytes?: number;
   /**
+   * Maximum serialized size admitted into the live event bus. Events above
+   * this limit are rejected before they enter the reconnect ring, journals,
+   * or subscriber queues; subscribers receive an id-less resync notice.
+   * Defaults to 8 MiB. This is a wire-size guard, not a complete heap cap.
+   */
+  maxEventBytes?: number;
+  /**
    * Total serialized-byte budget for the per-session reconnect ring. The
    * ring is bounded by both event count and bytes; a single event larger than
    * this budget is retained so the latest cursor can still resume. Defaults
@@ -194,6 +216,8 @@ export interface EventBusOptions {
 const DEFAULT_MAX_QUEUED = 256;
 export const DEFAULT_MAX_QUEUED_BYTES = 2 * 1024 * 1024;
 export const DEFAULT_REPLAY_BUDGET_BYTES = 4 * DEFAULT_MAX_QUEUED_BYTES;
+/** Default admission guard for a single live event. */
+export const DEFAULT_MAX_EVENT_BYTES = 8 * 1024 * 1024;
 /**
  * Default serialized-byte budget for the reconnect ring. Event count alone
  * is not a meaningful memory bound when tool/browser frames vary by orders
@@ -254,6 +278,14 @@ function normalizeMaxQueuedBytes(value: number | undefined): number {
   return value;
 }
 
+function normalizeMaxEventBytes(value: number | undefined): number {
+  if (value === undefined) return DEFAULT_MAX_EVENT_BYTES;
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new TypeError('maxEventBytes must be a positive safe integer');
+  }
+  return value;
+}
+
 function normalizeReplayBudgetBytes(value: number | undefined): number {
   if (value === undefined) return DEFAULT_REPLAY_BUDGET_BYTES;
   if (!Number.isSafeInteger(value) || value < 1) {
@@ -293,6 +325,25 @@ export function logEventSizingFailed(type: string): void {
   try {
     process.stderr.write(
       `qwen serve: EventBus event sizing failed ${JSON.stringify({ type })}\n`,
+    );
+  } catch {
+    // Best-effort diagnostic; logging must not break publish()'s never-throws contract.
+  }
+}
+
+function logEventRejected(
+  type: string,
+  eventBytes: number,
+  maxEventBytes: number,
+): void {
+  try {
+    process.stderr.write(
+      `qwen serve: EventBus event rejected ${JSON.stringify({
+        type,
+        reason: 'event_too_large',
+        eventBytes,
+        maxEventBytes,
+      })}\n`,
     );
   } catch {
     // Best-effort diagnostic; logging must not break publish()'s never-throws contract.
@@ -399,6 +450,20 @@ export interface EventBusReplayRingStats {
   maxSerializedBytes: number;
 }
 
+export interface EventBusMemoryStats {
+  replayRing: EventBusReplayRingStats;
+  /** Sum of live (non-replay) queued wire bytes across subscribers. */
+  queuedLiveBytes: number;
+  queuedLiveEvents: number;
+  subscriberCount: number;
+  maxEventBytes: number;
+  largestAdmittedEventBytes: number;
+  largestAdmittedEventType?: string;
+  rejectedEventCount: number;
+  oversizedEventCount: number;
+  compaction?: CompactionMemoryStats;
+}
+
 // FIXME(stage-1.5):
 // `EventBus` is currently private to the SSE route handler. Stage 1.5
 // should lift it to a top-level building block (likely
@@ -424,8 +489,13 @@ export class EventBus {
   private ringBytes = 0;
   private readonly subs = new Set<InternalSub>();
   private readonly maxQueuedBytes: number;
+  private readonly maxEventBytes: number;
   private readonly replayRingBudgetBytes: number;
   private readonly replayBudgetBytes: number;
+  private rejectedEventCount = 0;
+  private oversizedEventCount = 0;
+  private largestAdmittedEventBytes = 0;
+  private largestAdmittedEventType: string | undefined;
   private closed = false;
 
   constructor(
@@ -435,6 +505,7 @@ export class EventBus {
     opts: EventBusOptions = {},
   ) {
     this.maxQueuedBytes = normalizeMaxQueuedBytes(opts.maxQueuedBytes);
+    this.maxEventBytes = normalizeMaxEventBytes(opts.maxEventBytes);
     this.replayRingBudgetBytes = normalizeReplayRingBudgetBytes(
       opts.replayRingBudgetBytes,
     );
@@ -507,6 +578,45 @@ export class EventBus {
       serializedBytes: this.ringBytes,
       maxEvents: this.ringSize,
       maxSerializedBytes: this.replayRingBudgetBytes,
+    };
+  }
+
+  /**
+   * Retention-oriented diagnostics for the daemon status endpoint. The byte
+   * counters intentionally describe each owner separately: a single event
+   * may be referenced by the ring and a subscriber queue without being
+   * duplicated as a string, so callers should not sum these values as RSS.
+   */
+  get memoryStats(): EventBusMemoryStats {
+    let queuedLiveBytes = 0;
+    let queuedLiveEvents = 0;
+    for (const sub of this.subs) {
+      if (sub.evicted) continue;
+      queuedLiveBytes += sub.queue.bytes;
+      queuedLiveEvents += sub.queue.size;
+    }
+
+    let compaction: CompactionMemoryStats | undefined;
+    try {
+      compaction = this.compactionEngine?.memoryStats?.();
+    } catch {
+      // Status must remain readable even if an injected/custom engine has a
+      // broken diagnostic implementation.
+    }
+
+    return {
+      replayRing: this.replayRingStats,
+      queuedLiveBytes,
+      queuedLiveEvents,
+      subscriberCount: this.subscriberCount,
+      maxEventBytes: this.maxEventBytes,
+      largestAdmittedEventBytes: this.largestAdmittedEventBytes,
+      ...(this.largestAdmittedEventType !== undefined
+        ? { largestAdmittedEventType: this.largestAdmittedEventType }
+        : {}),
+      rejectedEventCount: this.rejectedEventCount,
+      oversizedEventCount: this.oversizedEventCount,
+      ...(compaction ? { compaction } : {}),
     };
   }
 
@@ -599,8 +709,25 @@ export class EventBus {
     // subscribers).
     const eventBytes = serializedBridgeEventByteLength(event);
     if (eventBytes === undefined) {
+      this.rejectedEventCount += 1;
       logEventSizingFailed(event.type);
       return undefined;
+    }
+    if (eventBytes > this.maxEventBytes) {
+      this.rejectedEventCount += 1;
+      this.oversizedEventCount += 1;
+      logEventRejected(event.type, eventBytes, this.maxEventBytes);
+      this.notifyResyncRequired({
+        reason: 'event_too_large',
+        eventType: event.type,
+        eventBytes,
+        maxEventBytes: this.maxEventBytes,
+      });
+      return undefined;
+    }
+    if (eventBytes > this.largestAdmittedEventBytes) {
+      this.largestAdmittedEventBytes = eventBytes;
+      this.largestAdmittedEventType = event.type;
     }
     this.nextId += 1;
     this.ring.push(event);
@@ -768,6 +895,17 @@ export class EventBus {
       }
     }
     return event;
+  }
+
+  private notifyResyncRequired(data: Record<string, unknown>): void {
+    const frame: BridgeEvent = {
+      v: EVENT_SCHEMA_VERSION,
+      type: 'state_resync_required',
+      data,
+    };
+    for (const sub of Array.from(this.subs)) {
+      if (!sub.evicted) sub.queue.forcePush(frame);
+    }
   }
 
   /**

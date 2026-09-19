@@ -1,7 +1,7 @@
 # Canopy Code Node memory-pressure RCA
 
-**Date:** 2026-09-18
-**Status:** Investigation documented; remediation not yet enabled
+**Date:** 2026-09-19
+**Status:** V8 OOM confirmed; bounded diagnostics and admission guards implemented; reproduction still pending
 
 ## Incident
 
@@ -95,6 +95,53 @@ not identical, so it is not a controlled runtime benchmark.
 - Changing the Node heap cap alone is not a fix. It may turn paging into an
   earlier out-of-memory crash without reducing retained state.
 
+## Crash evidence collected on 2026-09-19
+
+The tail of the terminal backtrace was incomplete, but the corresponding macOS
+diagnostic reports identify the immediate failure as a V8 out-of-memory abort:
+
+```text
+node::OOMErrorHandler
+  -> v8::internal::V8::FatalProcessOutOfMemory
+  -> v8::internal::Heap::FatalProcessOutOfMemory
+  -> ... GC / sweeper ...
+  -> v8::internal::JSSegments::CreateSegmentDataObject
+```
+
+The reports correspond to Node PIDs 51467, 50669, and 75451. The first two
+match the roughly 4.38 GiB and 4.26 GiB Activity Monitor rows seen during the
+incident. This confirms that the process crossed a V8 fatal-allocation path;
+it does **not** identify whether the retained owner was the replay ring,
+history, a pending request, an external buffer, or a transient serialization
+spike. The report did not include a usable system-wide memory snapshot.
+
+No `memory-*.json` session dump was present under the home directory during
+the inspection. That means the existing pressure dumper either did not run in
+the failing process, did not reach its hard/critical threshold, or wrote to a
+different runtime directory. It is not evidence that cleanup was effective.
+
+## Instrumentation and guardrails now in the code
+
+- Every live EventBus publish has an 8 MiB serialized-event admission limit.
+  An oversized event is not assigned an event ID and is not retained by the
+  reconnect ring, compaction journals, or live queues. Connected clients get
+  an id-less `state_resync_required` frame with the measured size and reason.
+- Daemon session status now reports replay-ring bytes, live subscriber queue
+  bytes, largest admitted event, rejected/oversized counts, and separate
+  compacted-replay/full-journal/summary-journal byte counters. These are
+  wire-size retention signals, not an RSS total and must not be summed as if
+  every owner copied the payload.
+- The CLI enables Node fatal diagnostic reports in a private
+  `~/.canopy/fatal-reports` directory. ACP children receive startup flags for
+  fatal reports, environment/network exclusion, and the same directory. Set
+  `CANOPY_FATAL_REPORT_DIR` for a disposable reproduction or
+  `CANOPY_DISABLE_FATAL_REPORTS=1` to opt out.
+
+These changes intentionally do not claim to fix V8 or prove that Rust would
+perform better. They make the next reproduction distinguish retained bounded
+owners from a transient allocation or external/native-memory spike before a
+runtime migration is considered.
+
 ## Safe next investigation
 
 Do this on a reproducible test session, not the user's important live session:
@@ -141,10 +188,24 @@ browser/remote-control session and multiple Node/ACP buffering layers.
 memory-pressure state support this diagnosis. A heap snapshot is still required
 before labeling it a confirmed V8 memory leak.
 
-**Action taken during the incident:** documentation only. No Canopy process
-was killed, no swap was cleared, and no runtime limit was changed. The later
-follow-up added a byte-bounded reconnect ring; it does not retroactively prove
-that the incident was caused by that ring.
+**Action taken during the incident:** documentation and targeted diagnostics.
+No Canopy process was killed, no swap was cleared, and no runtime limit was
+changed. The byte-bounded reconnect ring and the new per-event guard do not
+retroactively prove that either was the sole cause of the crash.
+
+## Next reproduction gate
+
+Run a copy of the workload with the rebuilt CLI and capture:
+
+1. the fatal report from the actual session PID;
+2. periodic `process.memoryUsage()` / V8 heap samples;
+3. daemon status snapshots showing ring, queue, and journal bytes; and
+4. the same workload with direct CLI and daemon/ACP topology separately.
+
+Call the remediation successful only if the workload completes and retained
+state plateaus within the documented budgets. A Rust prototype can then be
+benchmarked against the bounded TypeScript implementation using the same
+recorded workload; it should not replace this measurement step.
 
 See the [Astra overlay review](./astra-review.md) for the follow-up retention
 fixes and the decision to benchmark bounded TypeScript before considering a

@@ -166,6 +166,27 @@ describe('createSpawnChannelFactory env policy', () => {
     expect(args?.slice(-2)).toEqual(['--acp', '--experimental-lsp']);
   });
 
+  it('passes private fatal-report flags to the ACP child', async () => {
+    mockSpawn.mockReturnValue(createFakeChildProcess());
+
+    const factory = createSpawnChannelFactory({
+      sourceEnv: { QWEN_CLI_ENTRY: '/runtime/qwen.js' },
+    });
+    await factory('/tmp/project');
+
+    const args = mockSpawn.mock.calls[0]?.[1] as string[] | undefined;
+    expect(args).toEqual(
+      expect.arrayContaining([
+        '--report-on-fatalerror',
+        '--report-exclude-env',
+        '--report-exclude-network',
+      ]),
+    );
+    expect(args?.indexOf('--report-on-fatalerror')).toBeLessThan(
+      args?.indexOf('/runtime/qwen.js') ?? -1,
+    );
+  });
+
   it('builds child env and cli entry from sourceEnv when provided', async () => {
     mockSpawn.mockReturnValue(createFakeChildProcess());
     process.env['QWEN_CLI_ENTRY'] = '/process/qwen.js';

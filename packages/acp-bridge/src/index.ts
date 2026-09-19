@@ -20,6 +20,7 @@ export * from './bridgeOptions.js';
 export * from './session-restore-timeout.js';
 export * from './replayWindowLimits.js';
 export * from './spawnChannel.js';
+export * from './fatalDiagnosticReports.js';
 export * from './process-registry.js';
 export * from './ndJsonStream.js';
 export * from './bridgeClient.js';

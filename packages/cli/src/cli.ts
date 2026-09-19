@@ -14,6 +14,7 @@ import {
 } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { ArgumentsCamelCase, Argv, Options } from 'yargs';
+import { configureFatalDiagnosticReports } from '@qwen-code/acp-bridge/fatalDiagnosticReports';
 import { normalizeServeFastPathArgv } from './utils/serve-fast-path-argv.js';
 import { initStartupProfiler } from './utils/startupProfiler.js';
 import { initCpuProfiler } from './utils/cpuProfiler.js';
@@ -522,6 +523,7 @@ export async function runCliEntryPoint(
   run: () => Promise<void> = runCliEntry,
   handleError: (error: unknown) => Promise<void> = handleCriticalError,
 ): Promise<void> {
+  configureFatalDiagnosticReports();
   stampCliEntryEnv();
 
   process.on('uncaughtException', handleUncaughtException);

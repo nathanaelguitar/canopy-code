@@ -7320,6 +7320,7 @@ export function createAcpSessionBridge(opts: BridgeOptions): AcpSessionBridge {
             maxJournalEvents: journalLimits?.maxEvents ?? maxJournalEvents,
             maxJournalBytes: journalLimits?.maxBytes ?? maxJournalBytes,
             replayRing,
+            memory: entry.events.memoryStats,
           };
         }),
       };
