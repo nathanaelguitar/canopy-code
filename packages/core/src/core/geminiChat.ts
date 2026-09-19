@@ -529,8 +529,22 @@ const ESTIMATE_CLAMP_OVERHEAD_PAD = 20_000;
  * it has not reached the normal auto-compaction threshold yet. This covers
  * providers whose prefill/first-token latency degrades before the API reports
  * a hard context error (notably OpenAI-compatible Qwen/GLM endpoints).
+ *
+ * The margin is also bounded relative to the normal auto threshold. A fixed
+ * 32K subtraction would make the early threshold zero on smaller context
+ * windows and turn every silent timeout into a forced compaction.
  */
 const SILENT_STREAM_COMPACTION_MARGIN = 32_000;
+const SILENT_STREAM_COMPACTION_MARGIN_FRACTION = 0.25;
+
+function getSilentStreamCompactionThreshold(
+  autoCompactionThreshold: number,
+): number {
+  const relativeMargin =
+    autoCompactionThreshold * SILENT_STREAM_COMPACTION_MARGIN_FRACTION;
+  const margin = Math.min(SILENT_STREAM_COMPACTION_MARGIN, relativeMargin);
+  return Math.max(0, autoCompactionThreshold - margin);
+}
 
 /**
  * Max recovery attempts when the escalated response is also truncated.
@@ -2975,10 +2989,8 @@ export class GeminiChat {
               !exactRoute &&
               !reactiveCompressionAttempted &&
               promptTokensForClamp >=
-                Math.max(
-                  0,
-                  autoCompactionThresholdForClamp -
-                    SILENT_STREAM_COMPACTION_MARGIN,
+                getSilentStreamCompactionThreshold(
+                  autoCompactionThresholdForClamp,
                 );
             if (
               isRetryableStreamTransportError &&
@@ -3222,6 +3234,41 @@ export class GeminiChat {
                     'Reactive compression failed.',
                     compressionError,
                   );
+                }
+
+                // This heuristic is for a plain transport timeout, not a
+                // confirmed context overflow. If compression cannot produce
+                // a smaller history, retain the ordinary bounded replay
+                // fallback instead of failing solely because the side query
+                // returned NOOP or failed.
+                if (
+                  shouldCompactAfterSilentTransportFailure &&
+                  !contextOverflow.isExceeded &&
+                  transportStreamRetryCount <
+                    TRANSPORT_STREAM_RETRY_CONFIG.maxRetries
+                ) {
+                  self.popPendingPartialAssistantTurn();
+                  transportStreamRetryCount++;
+                  const delayMs =
+                    TRANSPORT_STREAM_RETRY_CONFIG.initialDelayMs *
+                    transportStreamRetryCount;
+                  debugLogger.warn(
+                    'Falling back to transport stream retry after silent-timeout compression did not recover.',
+                    {
+                      retryPath: 'stream',
+                      retryDecision: 'retry_after_compression_failure',
+                      attempt: transportStreamRetryCount,
+                      maxRetries: TRANSPORT_STREAM_RETRY_CONFIG.maxRetries,
+                      retryDelayMs: delayMs,
+                      errorKind: classification.kind,
+                      transportCode: classification.transportCode,
+                    },
+                  );
+                  yield { type: StreamEventType.RETRY };
+                  resetTransportContinuation();
+                  suppressNextRetryEvent = true;
+                  await delay(delayMs, params.config?.abortSignal).promise;
+                  continue;
                 }
               } else {
                 debugLogger.warn(

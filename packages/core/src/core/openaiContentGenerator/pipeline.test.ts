@@ -724,24 +724,58 @@ describe('ContentGenerationPipeline', () => {
         name: 'disable GLM thinking with its nested wire switch',
         baseUrl: 'https://api.z.ai/api/paas/v4',
         model: 'glm-5.2',
-        extraBody: { thinking: { enabled: true } },
+        extraBody: {
+          thinking: { enabled: true, type: 'enabled', clear_thinking: false },
+        },
         thinkingMandatory: undefined,
         reasoning: undefined,
         includeThoughts: false,
-        expectedThinking: undefined,
-        expectedGlmThinking: { enabled: false },
+        expectedNestedThinking: { type: 'disabled', clear_thinking: false },
         expectedToolChoice: 'required',
       },
       {
         name: 'preserve GLM thinking when the provider marks it mandatory',
         baseUrl: 'https://api.z.ai/api/paas/v4',
         model: 'glm-5.2',
-        extraBody: { thinking: { enabled: true } },
+        extraBody: { thinking: { enabled: true, type: 'enabled' } },
         thinkingMandatory: true,
         reasoning: undefined,
         includeThoughts: false,
+        expectedNestedThinking: { enabled: true, type: 'enabled' },
+        expectedToolChoice: 'required',
+      },
+      {
+        name: 'disable GLM thinking through Ollama reasoning_effort',
+        baseUrl: 'https://ollama.com/v1',
+        model: 'glm-5.3-flash:cloud',
+        extraBody: { thinking: { type: 'enabled' } },
+        thinkingMandatory: undefined,
+        reasoning: undefined,
+        includeThoughts: false,
         expectedThinking: undefined,
-        expectedGlmThinking: { enabled: true },
+        expectedReasoningEffort: 'none',
+        expectedToolChoice: 'required',
+      },
+      {
+        name: 'do not infer a GLM wire shape for an unknown endpoint',
+        baseUrl: 'https://my-vllm.example.com/v1',
+        model: 'glm-5.2',
+        extraBody: { thinking: { type: 'enabled' } },
+        thinkingMandatory: undefined,
+        reasoning: undefined,
+        includeThoughts: false,
+        expectedNestedThinking: { type: 'enabled' },
+        expectedToolChoice: 'required',
+      },
+      {
+        name: 'keep Z.AI GLM-5.3 thinking enabled when the model requires it',
+        baseUrl: 'https://api.z.ai/api/paas/v4',
+        model: 'glm-5.3',
+        extraBody: { thinking: { type: 'enabled' } },
+        thinkingMandatory: undefined,
+        reasoning: undefined,
+        includeThoughts: false,
+        expectedNestedThinking: { type: 'enabled' },
         expectedToolChoice: 'required',
       },
       {
@@ -1017,8 +1051,8 @@ describe('ContentGenerationPipeline', () => {
         .calls[0][0];
       expect(apiCall.enable_thinking).toBe(testCase.expectedThinking);
       expect(apiCall.tool_choice).toBe(testCase.expectedToolChoice);
-      if ('expectedGlmThinking' in testCase) {
-        expect(apiCall.thinking).toEqual(testCase.expectedGlmThinking);
+      if ('expectedNestedThinking' in testCase) {
+        expect(apiCall.thinking).toEqual(testCase.expectedNestedThinking);
       }
       if ('expectedReasoningEffort' in testCase) {
         expect(apiCall.reasoning_effort).toBe(testCase.expectedReasoningEffort);

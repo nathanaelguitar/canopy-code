@@ -30,7 +30,7 @@ let runDir = ''; // Make runDir accessible in teardown
 let sdkE2eRunDir = ''; // SDK E2E test run directory
 
 const memoryFilePath = join(
-  Storage.getGlobalQwenDir(),
+  Storage.getGlobalCanopyDir(),
   DEFAULT_CONTEXT_FILENAME,
 );
 let originalMemoryContent: string | null = null;

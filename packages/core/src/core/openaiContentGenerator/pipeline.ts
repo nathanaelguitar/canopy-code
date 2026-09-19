@@ -20,6 +20,7 @@ import {
   isOfficialOpenAIEndpoint,
 } from './prefix-caching.js';
 import { isDeepSeekHostname } from './provider/deepseek.js';
+import { isZaiHostname } from './provider/zai.js';
 import { openaiRequestCaptureContext } from './requestCaptureContext.js';
 import { StreamingToolCallParser } from './streamingToolCallParser.js';
 import { TaggedThinkingParser } from './taggedThinkingParser.js';
@@ -161,6 +162,29 @@ function isRequiredThinkingError(error: unknown): boolean {
     message.includes('enable_thinking') &&
     /(?:restricted to|must be) true\b/i.test(message)
   );
+}
+
+function isOllamaOpenAIEndpoint(
+  contentGeneratorConfig: ContentGeneratorConfig,
+): boolean {
+  const baseUrl = contentGeneratorConfig.baseUrl;
+  if (!baseUrl) return false;
+  try {
+    const url = new URL(baseUrl);
+    const hostname = url.hostname.toLowerCase();
+    return (
+      hostname === 'ollama.com' ||
+      hostname.endsWith('.ollama.com') ||
+      url.port === '11434'
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isZaiThinkingMandatoryModel(model: string): boolean {
+  const normalizedModel = model.toLowerCase();
+  return normalizedModel === 'glm-5.3' || normalizedModel === 'glm-5.3-flash';
 }
 
 /**
@@ -1140,7 +1164,10 @@ export class ContentGenerationPipeline {
     const isDashScope = DashScopeOpenAICompatibleProvider.isDashScopeProvider(
       this.contentGeneratorConfig,
     );
-    const thinkingMandatory = this.requiresThinking(model);
+    const isZaiEndpoint = isZaiHostname(this.contentGeneratorConfig);
+    const thinkingMandatory =
+      this.requiresThinking(model) ||
+      (isZaiEndpoint && isZaiThinkingMandatoryModel(model));
     const reasoningDisabled =
       request.config?.thinkingConfig?.includeThoughts === false ||
       this.contentGeneratorConfig.reasoning === false;
@@ -1162,20 +1189,26 @@ export class ContentGenerationPipeline {
       // would leak the field, and a non-canopy config with a canopy request
       // model would miss the disable signal (the regression).
       if (!thinkingMandatory && isGlmWireModel(model)) {
-        // GLM's OpenAI-compatible API reads the nested `thinking.enabled`
-        // escape hatch. `extra_body` is flattened by the provider before this
-        // point, so this is the actual wire field rather than a literal
-        // `extra_body` wrapper. Preserve any provider-specific siblings while
-        // making the compression/side-query opt-out authoritative.
-        const existingThinking = typed['thinking'];
-        typed['thinking'] = {
-          ...(existingThinking &&
-          typeof existingThinking === 'object' &&
-          !Array.isArray(existingThinking)
-            ? (existingThinking as Record<string, unknown>)
-            : {}),
-          enabled: false,
-        };
+        if (isZaiEndpoint) {
+          // Z.AI's GLM API uses `thinking.type`, not `thinking.enabled`.
+          // Preserve supported siblings such as `clear_thinking`, but remove
+          // the old boolean spelling so two competing controls never ship.
+          const existingThinking = typed['thinking'];
+          const existing =
+            existingThinking &&
+            typeof existingThinking === 'object' &&
+            !Array.isArray(existingThinking)
+              ? (existingThinking as Record<string, unknown>)
+              : {};
+          const { enabled: _dropEnabled, ...zaiThinking } = existing;
+          typed['thinking'] = { ...zaiThinking, type: 'disabled' };
+        } else if (isOllamaOpenAIEndpoint(this.contentGeneratorConfig)) {
+          // Ollama's OpenAI-compatible endpoint disables thinking with the
+          // standard reasoning_effort value. Drop any provider-specific
+          // `thinking` object so it cannot contradict the canonical switch.
+          delete typed['thinking'];
+          typed['reasoning_effort'] = 'none';
+        }
       }
       if (!thinkingMandatory && isCanopyFamilyWireModel(model)) {
         if (isDashScope) {
@@ -1275,7 +1308,8 @@ export class ContentGenerationPipeline {
     // the disable path above: `enable_thinking` and `reasoning_effort` are
     // canopy thinking switches, but on non-canopy models sharing the endpoint
     // they are opaque parameters that do not put the request in thinking
-    // mode (GLM reads `thinking.enabled`, DeepSeek `thinking.type`), and
+    // mode (Z.AI GLM reads `thinking.type`, Ollama GLM reads
+    // `reasoning_effort`, DeepSeek `thinking.type`), and
     // dropping `required` there only degrades their forced-tool side
     // queries. `thinkingMandatory` stays ungated: it is explicit
     // "thinking is on" knowledge, model-agnostic by design.

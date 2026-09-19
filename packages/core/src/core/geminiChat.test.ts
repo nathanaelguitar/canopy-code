@@ -9214,11 +9214,209 @@ describe('GeminiChat', async () => {
       expect(mockContentGenerator.generateContentStream).toHaveBeenCalledTimes(
         2,
       );
+      const retriedRequest = vi.mocked(
+        mockContentGenerator.generateContentStream,
+      ).mock.calls[1][0] as { contents?: Content[] };
+      expect(retriedRequest.contents).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            role: 'user',
+            parts: expect.arrayContaining([
+              expect.objectContaining({ text: 'summary' }),
+            ]),
+          }),
+          expect.objectContaining({
+            role: 'model',
+            parts: expect.arrayContaining([
+              expect.objectContaining({ text: 'ack' }),
+            ]),
+          }),
+        ]),
+      );
       expect(events.map((event) => event.type)).toEqual([
         StreamEventType.COMPRESSED,
         StreamEventType.RETRY,
         StreamEventType.CHUNK,
       ]);
+    });
+
+    it.each([
+      { contextWindowSize: 16_000 },
+      { contextWindowSize: 32_000 },
+      { contextWindowSize: 64_000 },
+    ])(
+      'does not force compaction for a small silent timeout on a $contextWindowSize-token window',
+      async ({ contextWindowSize }) => {
+        vi.useFakeTimers();
+        try {
+          vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
+            authType: AuthType.USE_GEMINI,
+            model: 'test-model',
+            contextWindowSize,
+          });
+          const compressSpy = vi
+            .spyOn(ChatCompressionService.prototype, 'compress')
+            .mockResolvedValue({
+              newHistory: null,
+              info: {
+                originalTokenCount: 1_000,
+                newTokenCount: 1_000,
+                compressionStatus: CompressionStatus.NOOP,
+              },
+            });
+          const timeoutError = Object.assign(new Error('stream timed out'), {
+            code: 'ETIMEDOUT',
+          });
+          vi.mocked(mockContentGenerator.generateContentStream)
+            .mockResolvedValueOnce(
+              (async function* () {
+                throw timeoutError;
+                yield {} as GenerateContentResponse;
+              })(),
+            )
+            .mockResolvedValueOnce(
+              streamResponse(stopResponse([{ text: 'ordinary retry' }])),
+            );
+
+          chat.setLastPromptTokenCount(1_000);
+          const stream = await chat.sendMessageStream(
+            'test-model',
+            { message: 'latest' },
+            `prompt-small-silent-timeout-${contextWindowSize}`,
+          );
+          const events = await collectStreamWithFakeTimers(stream, 5_000);
+
+          expect(
+            mockContentGenerator.generateContentStream,
+          ).toHaveBeenCalledTimes(2);
+          expect(compressSpy).toHaveBeenCalledTimes(1);
+          expect(compressSpy.mock.calls[0][1].force).toBe(false);
+          expect(events.map((event) => event.type)).toEqual([
+            StreamEventType.RETRY,
+            StreamEventType.CHUNK,
+          ]);
+        } finally {
+          vi.useRealTimers();
+        }
+      },
+    );
+
+    it('falls back to the bounded transport retry when silent-timeout compression fails', async () => {
+      vi.useFakeTimers();
+      try {
+        vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
+          authType: AuthType.USE_GEMINI,
+          model: 'test-model',
+          contextWindowSize: 200_000,
+        });
+        const compressSpy = vi
+          .spyOn(ChatCompressionService.prototype, 'compress')
+          .mockResolvedValueOnce({
+            newHistory: null,
+            info: {
+              originalTokenCount: 150_000,
+              newTokenCount: 150_000,
+              compressionStatus: CompressionStatus.NOOP,
+            },
+          })
+          .mockResolvedValueOnce({
+            newHistory: null,
+            info: {
+              originalTokenCount: 150_000,
+              newTokenCount: 150_000,
+              compressionStatus:
+                CompressionStatus.COMPRESSION_FAILED_EMPTY_SUMMARY,
+            },
+          });
+        const timeoutError = Object.assign(new Error('stream timed out'), {
+          code: 'ETIMEDOUT',
+        });
+        vi.mocked(mockContentGenerator.generateContentStream)
+          .mockResolvedValueOnce(
+            (async function* () {
+              throw timeoutError;
+              yield {} as GenerateContentResponse;
+            })(),
+          )
+          .mockResolvedValueOnce(
+            streamResponse(stopResponse([{ text: 'fallback retry' }])),
+          );
+
+        chat.setLastPromptTokenCount(150_000);
+        const stream = await chat.sendMessageStream(
+          'test-model',
+          { message: 'latest' },
+          'prompt-silent-timeout-compression-fallback',
+        );
+        const events = await collectStreamWithFakeTimers(stream, 5_000);
+
+        expect(compressSpy).toHaveBeenCalledTimes(2);
+        expect(compressSpy.mock.calls[1][1].force).toBe(true);
+        expect(
+          mockContentGenerator.generateContentStream,
+        ).toHaveBeenCalledTimes(2);
+        expect(events.map((event) => event.type)).toEqual([
+          StreamEventType.RETRY,
+          StreamEventType.CHUNK,
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('falls back to the bounded transport retry when silent-timeout compression throws', async () => {
+      vi.useFakeTimers();
+      try {
+        vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
+          authType: AuthType.USE_GEMINI,
+          model: 'test-model',
+          contextWindowSize: 200_000,
+        });
+        const compressSpy = vi
+          .spyOn(ChatCompressionService.prototype, 'compress')
+          .mockResolvedValueOnce({
+            newHistory: null,
+            info: {
+              originalTokenCount: 150_000,
+              newTokenCount: 150_000,
+              compressionStatus: CompressionStatus.NOOP,
+            },
+          })
+          .mockRejectedValueOnce(new Error('compression provider unavailable'));
+        const timeoutError = Object.assign(new Error('stream timed out'), {
+          code: 'ETIMEDOUT',
+        });
+        vi.mocked(mockContentGenerator.generateContentStream)
+          .mockResolvedValueOnce(
+            (async function* () {
+              throw timeoutError;
+              yield {} as GenerateContentResponse;
+            })(),
+          )
+          .mockResolvedValueOnce(
+            streamResponse(stopResponse([{ text: 'fallback after throw' }])),
+          );
+
+        chat.setLastPromptTokenCount(150_000);
+        const stream = await chat.sendMessageStream(
+          'test-model',
+          { message: 'latest' },
+          'prompt-silent-timeout-compression-throw-fallback',
+        );
+        const events = await collectStreamWithFakeTimers(stream, 5_000);
+
+        expect(compressSpy).toHaveBeenCalledTimes(2);
+        expect(compressSpy.mock.calls[1][1].force).toBe(true);
+        expect(
+          mockContentGenerator.generateContentStream,
+        ).toHaveBeenCalledTimes(2);
+        expect(events.map((event) => event.type)).toEqual([
+          StreamEventType.RETRY,
+          StreamEventType.CHUNK,
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('retries an enhanced timeout before the first content chunk', async () => {

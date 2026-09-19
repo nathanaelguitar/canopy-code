@@ -283,18 +283,48 @@ then raised `StreamInactivityTimeoutError`. The two IRS fetches returning 404
 were noisy tool errors, but they were not themselves the stream failure.
 
 Canopy now handles a pre-first-chunk `ETIMEDOUT` specially when the estimated
-prompt is within 32,000 tokens of the normal auto-compaction threshold:
+prompt is within a bounded margin of the normal auto-compaction threshold. The
+margin is the smaller of 32,000 tokens and 25% of that threshold, so it cannot
+collapse the early-compaction gate to zero on 16K–64K context windows:
 
 1. It skips replaying the unchanged large request.
 2. It invokes the existing forced reactive-compression path.
 3. On successful compression it rebuilds the request history, emits the normal
    `COMPRESSED` and `RETRY` events, and sends the smaller request once.
-4. Ordinary transport errors, small prompts, mid-stream output, exact-route
+4. If the compression side-query returns `NOOP`, a failure status, or a
+   non-cancellation error, the request falls back to the existing bounded
+   transport retry. A confirmed context-overflow error does not replay the
+   unchanged oversized request.
+5. Ordinary transport errors, small prompts, mid-stream output, exact-route
    requests, and the existing watchdog behavior are unchanged.
 
-The regression test is
-`GeminiChat > compacts a large prompt after a silent ETIMEDOUT before replaying
-it` in `packages/core/src/core/geminiChat.test.ts`. The full GeminiChat suite
-passes 319/319, the core typecheck passes, and the core plus CLI artifacts were
-rebuilt. The already-running CLI process loaded the previous JavaScript at
-startup, so restart that Canopy session before testing the new behavior.
+The regression coverage is in `packages/core/src/core/geminiChat.test.ts` and
+includes successful compaction, compressed-history request capture, small
+16K/32K/64K windows, and compression `NOOP`/failure/throw fallbacks. The full
+GeminiChat suite passes 324/324; the provider-pipeline suite passes 176/176;
+core and CLI typechecks/builds pass; and the integration `globalSetup` smoke
+test passes after switching to `Storage.getGlobalCanopyDir()`.
+
+The full core suite ran 20,457 tests and had one unrelated pre-existing failure
+in `src/core/client.test.ts` (the always-on consecutive tool-loop test emitted
+a fifth tool call instead of `LoopDetected`). That path is outside this change
+set and the focused changed-path suites pass. The already-running CLI process
+loaded the previous JavaScript at startup, so restart that Canopy session
+before testing the new behavior.
+
+### Provider-specific GLM thinking controls
+
+The earlier implementation note that described a generic
+`thinking.enabled=false` field is superseded. The final pipeline is
+provider/endpoint aware:
+
+- Z.AI uses `thinking: { type: 'disabled' }` for GLM models that permit
+  disabling thinking, while known mandatory GLM-5.3 and GLM-5.3-FLASH routes
+  preserve thinking.
+- Ollama OpenAI-compatible endpoints use `reasoning_effort: 'none'` and do
+  not receive a contradictory nested `thinking` object.
+- Unknown OpenAI-compatible endpoints are not given a guessed GLM wire shape.
+
+The integration setup now uses the current `Storage.getGlobalCanopyDir()` API;
+the old `getGlobalQwenDir()` call was the cause of the E2E global-setup
+failure, not the replay-memory changes.
