@@ -524,6 +524,15 @@ const TRANSPORT_STREAM_RETRY_CONFIG = {
 const ESTIMATE_CLAMP_OVERHEAD_PAD = 20_000;
 
 /**
+ * A silent first attempt is a stronger signal than an ordinary slow request.
+ * Give a large prompt one compaction opportunity before replaying it, even if
+ * it has not reached the normal auto-compaction threshold yet. This covers
+ * providers whose prefill/first-token latency degrades before the API reports
+ * a hard context error (notably OpenAI-compatible Qwen/GLM endpoints).
+ */
+const SILENT_STREAM_COMPACTION_MARGIN = 32_000;
+
+/**
  * Max recovery attempts when the escalated response is also truncated.
  * Each attempt keeps the partial response in history and injects a recovery
  * message so the model can continue from where it left off.
@@ -2268,6 +2277,10 @@ export class GeminiChat {
     // estimate.
     const contextWindowForClamp =
       cgConfigForThresholds?.contextWindowSize ?? DEFAULT_TOKEN_LIMIT;
+    // Assigned inside the setup try so a throwing config getter still follows
+    // the existing lock-release path. The stream closure reads this value
+    // after setup completes.
+    let autoCompactionThresholdForClamp = 0;
     let promptTokensForClamp = 0;
 
     let currentUserContent: Content | undefined;
@@ -2324,10 +2337,12 @@ export class GeminiChat {
       // failures fall through to reactive overflow after a few strikes.
       // Thresholds gate on the full window: the output clamp guarantees the
       // response fits, so nothing needs to be pre-reserved for it.
-      const { hard } = computeThresholds(
+      const compactionThresholdsForClamp = computeThresholds(
         contextWindowForClamp,
         this.config.getAutoCompactThreshold(),
       );
+      autoCompactionThresholdForClamp = compactionThresholdsForClamp.auto;
+      const { hard } = compactionThresholdsForClamp;
       const imageTokenEstimate = resolveSlimmingConfig(
         this.config.getChatCompression(),
       ).imageTokenEstimate;
@@ -2945,8 +2960,29 @@ export class GeminiChat {
               RETRYABLE_STREAM_TRANSPORT_CODES.has(
                 classification.transportCode,
               );
+
+            // A silent timeout near the compaction window is usually a
+            // provider prefill/first-token failure, not a transient socket
+            // failure worth replaying verbatim. Replaying the same large
+            // request can spend another several minutes producing zero
+            // chunks (the failure seen with Canopy's browser-use turns).
+            // Route it through the existing reactive compression recovery so
+            // the next attempt has a materially smaller prompt.
+            const shouldCompactAfterSilentTransportFailure =
+              isRetryableStreamTransportError &&
+              classification.transportCode === 'ETIMEDOUT' &&
+              !streamYieldedAnyChunk &&
+              !exactRoute &&
+              !reactiveCompressionAttempted &&
+              promptTokensForClamp >=
+                Math.max(
+                  0,
+                  autoCompactionThresholdForClamp -
+                    SILENT_STREAM_COMPACTION_MARGIN,
+                );
             if (
               isRetryableStreamTransportError &&
+              !shouldCompactAfterSilentTransportFailure &&
               !streamYieldedContentChunk &&
               // `streamYieldedContentChunk` is per-attempt, so on its own it
               // cannot tell "nothing has been delivered" from "this attempt
@@ -3066,16 +3102,22 @@ export class GeminiChat {
             }
 
             const contextOverflow = getContextLengthExceededInfo(error);
-            if (contextOverflow.isExceeded) {
+            if (
+              contextOverflow.isExceeded ||
+              shouldCompactAfterSilentTransportFailure
+            ) {
               if (!exactRoute && !reactiveCompressionAttempted) {
                 reactiveCompressionAttempted = true;
                 const reactiveOriginalTokenCount =
                   contextOverflow.actualTokens ??
                   contextOverflow.limitTokens ??
-                  cgConfig?.contextWindowSize ??
-                  DEFAULT_TOKEN_LIMIT;
+                  (shouldCompactAfterSilentTransportFailure
+                    ? promptTokensForClamp
+                    : (cgConfig?.contextWindowSize ?? DEFAULT_TOKEN_LIMIT));
                 debugLogger.warn(
-                  'Context length exceeded; attempting reactive compression.',
+                  shouldCompactAfterSilentTransportFailure
+                    ? 'Silent stream timeout near compaction threshold; attempting reactive compression.'
+                    : 'Context length exceeded; attempting reactive compression.',
                 );
                 try {
                   const reactiveInfo = await self.tryCompress(

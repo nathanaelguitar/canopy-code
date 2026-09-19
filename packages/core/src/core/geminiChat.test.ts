@@ -9155,6 +9155,72 @@ describe('GeminiChat', async () => {
       },
     );
 
+    it('compacts a large prompt after a silent ETIMEDOUT before replaying it', async () => {
+      vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
+        authType: AuthType.USE_GEMINI,
+        model: 'test-model',
+        contextWindowSize: 200_000,
+      });
+
+      const compressedHistory: Content[] = [
+        { role: 'user', parts: [{ text: 'summary' }] },
+        { role: 'model', parts: [{ text: 'ack' }] },
+      ];
+      const compressSpy = vi
+        .spyOn(ChatCompressionService.prototype, 'compress')
+        .mockResolvedValueOnce({
+          newHistory: null,
+          info: {
+            originalTokenCount: 0,
+            newTokenCount: 0,
+            compressionStatus: CompressionStatus.NOOP,
+          },
+        })
+        .mockResolvedValueOnce({
+          newHistory: compressedHistory,
+          info: {
+            originalTokenCount: 150_000,
+            newTokenCount: 40_000,
+            compressionStatus: CompressionStatus.COMPRESSED,
+          },
+        });
+      const timeoutError = Object.assign(new Error('stream timed out'), {
+        code: 'ETIMEDOUT',
+      });
+      vi.mocked(mockContentGenerator.generateContentStream)
+        .mockResolvedValueOnce(
+          (async function* () {
+            throw timeoutError;
+            yield {} as GenerateContentResponse;
+          })(),
+        )
+        .mockResolvedValueOnce(
+          streamResponse(stopResponse([{ text: 'after compaction' }])),
+        );
+
+      // Stay below the normal auto-compaction threshold. The silent-timeout
+      // recovery should still compact before it retries the same request.
+      chat.setLastPromptTokenCount(150_000);
+      const stream = await chat.sendMessageStream(
+        'test-model',
+        { message: 'latest' },
+        'prompt-silent-timeout-compaction',
+      );
+      const events: StreamEvent[] = [];
+      for await (const event of stream) events.push(event);
+
+      expect(compressSpy).toHaveBeenCalledTimes(2);
+      expect(compressSpy.mock.calls[1][1].force).toBe(true);
+      expect(mockContentGenerator.generateContentStream).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(events.map((event) => event.type)).toEqual([
+        StreamEventType.COMPRESSED,
+        StreamEventType.RETRY,
+        StreamEventType.CHUNK,
+      ]);
+    });
+
     it('retries an enhanced timeout before the first content chunk', async () => {
       vi.useFakeTimers();
       try {
