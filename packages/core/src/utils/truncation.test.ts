@@ -12,6 +12,8 @@ import {
   truncateLlmContent,
   TOOL_OUTPUT_TRUNCATED_PREFIX,
   persistAndTruncateToolResult,
+  sliceEndPreservingUnicode,
+  sliceStartPreservingUnicode,
 } from './truncation.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -800,4 +802,16 @@ describe('truncateAndSaveToFile preview budget', () => {
       expect(preview).toContain('line ');
     },
   );
+});
+
+describe('Unicode-safe producer preview slices', () => {
+  it('does not split a surrogate pair at the start boundary', () => {
+    expect(sliceStartPreservingUnicode('a😀b', 2)).toBe('a');
+    expect(sliceStartPreservingUnicode('a😀b', 3)).toBe('a😀');
+  });
+
+  it('does not split a surrogate pair at the end boundary', () => {
+    expect(sliceEndPreservingUnicode('a😀b', 2)).toBe('b');
+    expect(sliceEndPreservingUnicode('a😀b', 3)).toBe('😀b');
+  });
 });

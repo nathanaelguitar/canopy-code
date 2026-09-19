@@ -10,6 +10,7 @@ import {
   DEFAULT_MAX_QUEUED_BYTES,
   EventBus,
   EVENT_SCHEMA_VERSION,
+  serializedBridgeEventByteLength,
   type BridgeEvent,
   type EventBusSubscriberDiagnostic,
 } from './eventBus.js';
@@ -48,6 +49,18 @@ describe('EventBus', () => {
   it('rejects invalid maxQueuedBytes options', () => {
     expect(
       () => new EventBus(100, undefined, undefined, { maxQueuedBytes: 0 }),
+    ).toThrow(TypeError);
+    expect(
+      () =>
+        new EventBus(100, undefined, undefined, {
+          replayRingBudgetBytes: 0,
+        }),
+    ).toThrow(TypeError);
+    expect(
+      () =>
+        new EventBus(100, undefined, undefined, {
+          replayRingBudgetBytes: Number.POSITIVE_INFINITY,
+        }),
     ).toThrow(TypeError);
     expect(
       () =>
@@ -1110,6 +1123,62 @@ describe('EventBus', () => {
     expect(out[4]?.id).toBeUndefined();
     expect(out[4]?.data).toMatchObject({ replayedCount: 3 });
     abort.abort();
+  });
+
+  it('bounds the reconnect ring by serialized bytes as well as event count', async () => {
+    const payload = 'x'.repeat(100);
+    const probe: BridgeEvent = {
+      id: 1,
+      v: EVENT_SCHEMA_VERSION,
+      type: 'foo',
+      data: payload,
+      _meta: { serverTimestamp: 1 },
+    };
+    const frameBytes = serializedBridgeEventByteLength(probe);
+    expect(frameBytes).toBeDefined();
+
+    const bus = new EventBus(100, undefined, undefined, {
+      replayRingBudgetBytes: frameBytes! * 2,
+    });
+    for (let i = 1; i <= 4; i++) {
+      bus.publish({
+        type: 'foo',
+        data: payload,
+        _meta: { serverTimestamp: 1 },
+      });
+    }
+
+    expect(bus.replayRingStats).toMatchObject({
+      eventCount: 2,
+      serializedBytes: frameBytes! * 2,
+      maxEvents: 100,
+      maxSerializedBytes: frameBytes! * 2,
+    });
+
+    const abort = new AbortController();
+    const out: BridgeEvent[] = [];
+    for await (const event of bus.subscribe({
+      lastEventId: 0,
+      signal: abort.signal,
+    })) {
+      out.push(event);
+      if (event.type === 'replay_complete') break;
+    }
+    expect(out[0]?.type).toBe('state_resync_required');
+    expect(out.slice(1, 3).map((event) => event.id)).toEqual([3, 4]);
+    expect(out[3]?.type).toBe('replay_complete');
+    abort.abort();
+  });
+
+  it('retains one oversized newest event instead of making the ring empty', () => {
+    const bus = new EventBus(100, undefined, undefined, {
+      replayRingBudgetBytes: 1,
+    });
+    const event = bus.publish({ type: 'large', data: 'x'.repeat(100) });
+
+    expect(event).toBeDefined();
+    expect(bus.replayRingStats.eventCount).toBe(1);
+    expect(bus.replayRingStats.serializedBytes).toBeGreaterThan(1);
   });
 
   describe('state_resync_required (#4175 F4 prereq, Ilya0527 issue #15)', () => {

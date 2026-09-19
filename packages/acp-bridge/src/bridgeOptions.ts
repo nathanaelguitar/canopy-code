@@ -247,10 +247,11 @@ export interface BridgeOptions {
    * config typo is worse than failing to start).
    *
    * Operators tune via `qwen serve --event-ring-size <n>`. Cost
-   * scales linearly with `ringSize`; each retained `BridgeEvent` is
-   * an object reference plus its serialized payload (text chunks /
-   * tool-call args / etc.), so the per-session memory ceiling is
-   * `ringSize × average-event-size` held until the session ends.
+   * scales with `ringSize` until the EventBus's serialized-byte retention
+   * guard is reached. The default byte cap is 32 MiB; a single event larger
+   * than that cap is retained so the newest cursor can still resume. The
+   * byte count is a wire-size accounting signal, not a complete heap-size
+   * measurement.
    */
   eventRingSize?: number;
   /**

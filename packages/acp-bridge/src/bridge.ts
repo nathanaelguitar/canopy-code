@@ -7295,6 +7295,7 @@ export function createAcpSessionBridge(opts: BridgeOptions): AcpSessionBridge {
         permissionPolicy: permissionMediator.policy,
         sessions: [...byId.values()].map((entry) => {
           const journalLimits = entry.events.journalLimits();
+          const replayRing = entry.events.replayRingStats;
           return {
             sessionId: entry.sessionId,
             workspaceCwd: entry.workspaceCwd,
@@ -7318,6 +7319,7 @@ export function createAcpSessionBridge(opts: BridgeOptions): AcpSessionBridge {
               : {}),
             maxJournalEvents: journalLimits?.maxEvents ?? maxJournalEvents,
             maxJournalBytes: journalLimits?.maxBytes ?? maxJournalBytes,
+            replayRing,
           };
         }),
       };

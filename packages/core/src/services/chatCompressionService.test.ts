@@ -2200,6 +2200,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
     history?: Content[];
     authType?: AuthType;
     baseUrl?: string;
+    model?: string;
     compactionModel?: string;
     enableCacheControl?: boolean;
     contextWindowSize?: number | null;
@@ -2212,6 +2213,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
     generateText: ReturnType<typeof vi.fn>;
   } {
     const history = options?.history ?? makeHistory();
+    const model = options?.model ?? 'test-model';
     const getHistory = vi.fn().mockReturnValue(history);
     const generateText = vi.fn().mockResolvedValue({
       text: '<state_snapshot>shared summary</state_snapshot>',
@@ -2247,7 +2249,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
       getAutoCompactThreshold: vi.fn(),
       getBaseLlmClient: vi.fn().mockReturnValue(baseLlmClient),
       getContentGeneratorConfig: vi.fn().mockReturnValue({
-        model: 'test-model',
+        model,
         authType: options?.authType ?? AuthType.USE_ANTHROPIC,
         baseUrl: options?.baseUrl,
         ...(options?.contextWindowSize === null
@@ -2259,7 +2261,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
         firePreCompactEvent: vi.fn().mockResolvedValue(undefined),
         firePostCompactEvent: vi.fn().mockResolvedValue(undefined),
       }),
-      getModel: () => 'test-model',
+      getModel: () => model,
       getCompactionModel: vi.fn().mockReturnValue(options?.compactionModel),
       getAllConfiguredModels: vi.fn().mockReturnValue([]),
       getApprovalMode: () => 'default',
@@ -2374,9 +2376,41 @@ describe('ChatCompressionService.compress cache sharing', () => {
       });
 
       expect(generateText).toHaveBeenCalledTimes(1);
+      const request = generateText.mock.calls[0]![0] as GenerateTextOptions;
+      expect(request.config?.thinkingConfig?.includeThoughts).toBe(false);
       expect(coldSpy).not.toHaveBeenCalled();
     },
   );
+
+  it('compresses with a GLM main model without spending the shared output on thinking', async () => {
+    const { chat, config, generateText } = makeFixture({
+      authType: AuthType.USE_OPENAI,
+      baseUrl: 'https://api.z.ai/api/paas/v4',
+      model: 'glm-5.3-flash:cloud',
+      history: [
+        { role: 'user', parts: [{ text: 'x'.repeat(40_000) }] },
+        { role: 'model', parts: [{ text: 'y'.repeat(40_000) }] },
+      ],
+    });
+
+    const result = await new ChatCompressionService().compress(chat, {
+      promptId: 'p',
+      force: true,
+      config,
+      consecutiveFailures: 0,
+      originalTokenCount: 180_000,
+    });
+
+    expect(result.info.compressionStatus).toBe(CompressionStatus.COMPRESSED);
+    expect(result.info.newTokenCount).toBeLessThan(
+      result.info.originalTokenCount,
+    );
+    expect(result.newHistory).not.toBeNull();
+    expect(JSON.stringify(result.newHistory)).toContain('shared summary');
+    expect(generateText).toHaveBeenCalledTimes(1);
+    const request = generateText.mock.calls[0]![0] as GenerateTextOptions;
+    expect(request.config?.thinkingConfig?.includeThoughts).toBe(false);
+  });
 
   it.each([AuthType.USE_GEMINI, AuthType.USE_VERTEX_AI])(
     'uses cache sharing for Google GenAI through %s',
@@ -2443,6 +2477,7 @@ describe('ChatCompressionService.compress cache sharing', () => {
 
       expect(generateText).toHaveBeenCalledTimes(1);
       const request = generateText.mock.calls[0]![0] as GenerateTextOptions;
+      expect(request.config?.thinkingConfig?.includeThoughts).toBe(false);
       expect(request.promptCacheSharing).toBe(true);
       expect(coldSpy).not.toHaveBeenCalled();
     },

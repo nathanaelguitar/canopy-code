@@ -145,7 +145,9 @@ export const ToolNamesMigration = {
  * use this so an aliased call is treated identically everywhere.
  */
 export function canonicalToolName(toolName: string): string {
-  return (ToolNamesMigration as Record<string, string>)[toolName] ?? toolName;
+  return Object.hasOwn(ToolNamesMigration, toolName)
+    ? ToolNamesMigration[toolName as keyof typeof ToolNamesMigration]
+    : toolName;
 }
 
 // Migration from old tool display names to new tool display names

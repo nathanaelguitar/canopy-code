@@ -30,6 +30,7 @@ import { createChildAbortController } from '../../utils/abortController.js';
 import { reconcileMaxTokens } from '../tokenLimits.js';
 import {
   isCanopyFamilyWireModel,
+  isGlmWireModel,
   isTieredEffortWireModel,
 } from '../modalityDefaults.js';
 import {
@@ -1160,6 +1161,22 @@ export class ContentGenerationPipeline {
       // what actually ships: a canopy config with a non-canopy request model
       // would leak the field, and a non-canopy config with a canopy request
       // model would miss the disable signal (the regression).
+      if (!thinkingMandatory && isGlmWireModel(model)) {
+        // GLM's OpenAI-compatible API reads the nested `thinking.enabled`
+        // escape hatch. `extra_body` is flattened by the provider before this
+        // point, so this is the actual wire field rather than a literal
+        // `extra_body` wrapper. Preserve any provider-specific siblings while
+        // making the compression/side-query opt-out authoritative.
+        const existingThinking = typed['thinking'];
+        typed['thinking'] = {
+          ...(existingThinking &&
+          typeof existingThinking === 'object' &&
+          !Array.isArray(existingThinking)
+            ? (existingThinking as Record<string, unknown>)
+            : {}),
+          enabled: false,
+        };
+      }
       if (!thinkingMandatory && isCanopyFamilyWireModel(model)) {
         if (isDashScope) {
           if (isTieredEffortWireModel(model)) {
@@ -1445,7 +1462,8 @@ export class ContentGenerationPipeline {
     // For example, across common providers and models:
     //
     //   - deepseek-reasoner — thinking is enabled by default and cannot be disabled
-    //   - glm-4.7 — thinking is enabled by default; can be disabled via `extra_body.thinking.enabled`
+    //   - glm-4.7 — thinking is enabled by default; can be disabled via the
+    //                wire-level `thinking.enabled` field
     //   - kimi-k2-thinking — thinking is enabled by default and cannot be disabled
     //   - gpt-5.x series — thinking is enabled by default; can be disabled via `reasoning.effort`
     //   - canopy3 series — model-dependent; emitted as `enable_thinking: false`

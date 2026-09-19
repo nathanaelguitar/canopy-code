@@ -1078,15 +1078,17 @@ export class ChatCompressionService {
                     thinkingBudget: COMPACT_MAX_OUTPUT_TOKENS - 1,
                   },
                 }
-              : authType === AuthType.USE_GEMINI ||
-                  authType === AuthType.USE_VERTEX_AI
-                ? {
-                    thinkingConfig: {
-                      ...generationConfig.thinkingConfig,
-                      includeThoughts: false,
-                    },
-                  }
-                : {}),
+              : {
+                  // Compression has a fixed output reserve. Do not let a
+                  // provider consume that reserve with hidden reasoning;
+                  // this is especially important for GLM, whose thinking
+                  // switch is model-specific and can otherwise remain on
+                  // during OpenAI-compatible cache-sharing requests.
+                  thinkingConfig: {
+                    ...generationConfig.thinkingConfig,
+                    includeThoughts: false,
+                  },
+                }),
             maxOutputTokens: COMPACT_MAX_OUTPUT_TOKENS,
           },
           abortSignal,

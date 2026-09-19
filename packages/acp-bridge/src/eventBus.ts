@@ -162,6 +162,13 @@ export type EventBusSubscriberDiagnostic =
 export interface EventBusOptions {
   maxQueuedBytes?: number;
   /**
+   * Total serialized-byte budget for the per-session reconnect ring. The
+   * ring is bounded by both event count and bytes; a single event larger than
+   * this budget is retained so the latest cursor can still resume. Defaults
+   * to 32 MiB.
+   */
+  replayRingBudgetBytes?: number;
+  /**
    * Total serialized-byte budget for the `Last-Event-ID` replay burst a
    * single `subscribe()` may force-push (DAEMON-011). Replay frames bypass
    * the per-subscriber live caps by design (dropping them would break the
@@ -188,6 +195,14 @@ const DEFAULT_MAX_QUEUED = 256;
 export const DEFAULT_MAX_QUEUED_BYTES = 2 * 1024 * 1024;
 export const DEFAULT_REPLAY_BUDGET_BYTES = 4 * DEFAULT_MAX_QUEUED_BYTES;
 /**
+ * Default serialized-byte budget for the reconnect ring. Event count alone
+ * is not a meaningful memory bound when tool/browser frames vary by orders
+ * of magnitude. This is intentionally larger than the per-reconnect replay
+ * burst so a normal reconnect can still use that burst without making the
+ * ring itself unbounded.
+ */
+export const DEFAULT_REPLAY_RING_BUDGET_BYTES = 32 * 1024 * 1024;
+/**
  * Default replay-ring depth per session. Sized for a 5-second
  * reconnect window over a chatty turn — a single long-running prompt
  * can emit hundreds of frames (test plan reports 13 for a short
@@ -196,8 +211,10 @@ export const DEFAULT_REPLAY_BUDGET_BYTES = 4 * DEFAULT_MAX_QUEUED_BYTES;
  * be exhausted by a moderate turn before the client reconnected;
  * 8000 matches the target set for chatty Stage 1
  * sessions, with ~30–60× headroom over a typical-but-busy turn at
- * the cost of a few hundred KB of RAM per session. Operators can
- * override per-daemon via `qwen serve --event-ring-size <n>`.
+ * the cost of a few hundred KB of RAM per session. The serialized-byte
+ * budget below is the hard retention guard when frames are unusually large.
+ * Operators can override the count per daemon via
+ * `qwen serve --event-ring-size <n>`.
  */
 export const DEFAULT_RING_SIZE = 8000;
 /**
@@ -241,6 +258,16 @@ function normalizeReplayBudgetBytes(value: number | undefined): number {
   if (value === undefined) return DEFAULT_REPLAY_BUDGET_BYTES;
   if (!Number.isSafeInteger(value) || value < 1) {
     throw new TypeError('replayBudgetBytes must be a positive safe integer');
+  }
+  return value;
+}
+
+function normalizeReplayRingBudgetBytes(value: number | undefined): number {
+  if (value === undefined) return DEFAULT_REPLAY_RING_BUDGET_BYTES;
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new TypeError(
+      'replayRingBudgetBytes must be a positive safe integer',
+    );
   }
   return value;
 }
@@ -365,6 +392,13 @@ export class SubscriberLimitExceededError extends Error {
   }
 }
 
+export interface EventBusReplayRingStats {
+  eventCount: number;
+  serializedBytes: number;
+  maxEvents: number;
+  maxSerializedBytes: number;
+}
+
 // FIXME(stage-1.5):
 // `EventBus` is currently private to the SSE route handler. Stage 1.5
 // should lift it to a top-level building block (likely
@@ -386,8 +420,11 @@ export class EventBus {
   private compactionDegraded = false;
   private readonly onCompactionError?: (err: unknown) => void;
   private readonly ring: BridgeEvent[] = [];
+  private readonly ringEventBytes = new WeakMap<BridgeEvent, number>();
+  private ringBytes = 0;
   private readonly subs = new Set<InternalSub>();
   private readonly maxQueuedBytes: number;
+  private readonly replayRingBudgetBytes: number;
   private readonly replayBudgetBytes: number;
   private closed = false;
 
@@ -398,6 +435,9 @@ export class EventBus {
     opts: EventBusOptions = {},
   ) {
     this.maxQueuedBytes = normalizeMaxQueuedBytes(opts.maxQueuedBytes);
+    this.replayRingBudgetBytes = normalizeReplayRingBudgetBytes(
+      opts.replayRingBudgetBytes,
+    );
     this.replayBudgetBytes = normalizeReplayBudgetBytes(opts.replayBudgetBytes);
     this.onCompactionError = opts.onCompactionError;
   }
@@ -460,6 +500,16 @@ export class EventBus {
     return this.subs.size;
   }
 
+  /** Serialized size of the retained reconnect suffix, for diagnostics. */
+  get replayRingStats(): EventBusReplayRingStats {
+    return {
+      eventCount: this.ring.length,
+      serializedBytes: this.ringBytes,
+      maxEvents: this.ringSize,
+      maxSerializedBytes: this.replayRingBudgetBytes,
+    };
+  }
+
   seedReplayEvents(
     inputs: Array<Omit<BridgeEvent, 'id' | 'v'>>,
   ): BridgeEvent[] {
@@ -494,6 +544,7 @@ export class EventBus {
     // this bus produced, so clear it and let subscribe() surface resync for
     // stale cursors.
     this.ring.length = 0;
+    this.ringBytes = 0;
     return events;
   }
 
@@ -553,6 +604,8 @@ export class EventBus {
     }
     this.nextId += 1;
     this.ring.push(event);
+    this.ringEventBytes.set(event, eventBytes);
+    this.ringBytes += eventBytes;
     try {
       this.compactionEngine?.ingest(event, eventBytes);
     } catch (err) {
@@ -561,14 +614,21 @@ export class EventBus {
       // degraded so consumers stop trusting it silently (DAEMON-008).
       this.markCompactionDegraded(err);
     }
-    // Eviction-by-shift is O(n) once the ring is full. At the current
-    // default `ringSize=8000` (the target) the per-publish shift work
-    // measures in low milliseconds on chatty sessions — still well
-    // below per-frame latency budgets. A circular-buffer refactor
-    // would push it to O(1) but adds index bookkeeping; deferred until
-    // profiling actually flags it, or the operator bumps
-    // `--event-ring-size` to an order of magnitude larger.
-    if (this.ring.length > this.ringSize) this.ring.shift();
+    // Keep both limits honest. A large browser/tool frame can make an
+    // event-count-only ring retain hundreds of megabytes, so count eviction
+    // is not enough. Keep one oversized newest event so a reconnect can still
+    // receive the latest frame and let the existing resync protocol report
+    // any older gap.
+    while (
+      this.ring.length > 1 &&
+      (this.ring.length > this.ringSize ||
+        this.ringBytes > this.replayRingBudgetBytes)
+    ) {
+      const evicted = this.ring.shift();
+      if (!evicted) break;
+      this.ringBytes -= this.ringEventBytes.get(evicted) ?? 0;
+      this.ringEventBytes.delete(evicted);
+    }
     const getEventBytes = () => eventBytes;
     // Snapshot the subscribers so an in-loop `this.subs.delete(sub)`
     // (the new immediate-eviction cleanup below) doesn't mutate the
@@ -888,7 +948,10 @@ export class EventBus {
           // cannot fail here; `?? 0` keeps the accounting total-ordered
           // if it ever does. Sized lazily per frame — replay is a
           // low-frequency path.
-          replayBytes += serializedBridgeEventByteLength(e) ?? 0;
+          replayBytes +=
+            this.ringEventBytes.get(e) ??
+            serializedBridgeEventByteLength(e) ??
+            0;
           if (replayBytes > this.replayBudgetBytes && replayedCount > 0) {
             budgetExceededAtId = e.id;
             continue;
@@ -1025,6 +1088,8 @@ export class EventBus {
       sub.dispose();
     }
     this.subs.clear();
+    this.ring.length = 0;
+    this.ringBytes = 0;
     this.compactionEngine?.close();
   }
 }

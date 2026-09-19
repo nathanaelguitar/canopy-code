@@ -140,6 +140,15 @@ export function isCanopyFamilyWireModel(model: string | undefined): boolean {
 }
 
 /**
+ * True for GLM wire model ids. GLM exposes its API-thinking switch as the
+ * nested `thinking.enabled` field, unlike the Qwen/Canopy `enable_thinking`
+ * family and the DeepSeek `thinking.type` shape.
+ */
+export function isGlmWireModel(model: string | undefined): boolean {
+  return !!model && model.toLowerCase().startsWith('glm-');
+}
+
+/**
  * True for the qwen3.8-max wire model family — the only family that
  * reads the tiered `reasoning_effort` field directly. Prefix-matched so
  * dated snapshots and `-latest` aliases are covered, consistent with the

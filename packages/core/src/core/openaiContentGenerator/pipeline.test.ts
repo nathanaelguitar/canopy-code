@@ -721,6 +721,30 @@ describe('ContentGenerationPipeline', () => {
         expectedToolChoice: undefined,
       },
       {
+        name: 'disable GLM thinking with its nested wire switch',
+        baseUrl: 'https://api.z.ai/api/paas/v4',
+        model: 'glm-5.2',
+        extraBody: { thinking: { enabled: true } },
+        thinkingMandatory: undefined,
+        reasoning: undefined,
+        includeThoughts: false,
+        expectedThinking: undefined,
+        expectedGlmThinking: { enabled: false },
+        expectedToolChoice: 'required',
+      },
+      {
+        name: 'preserve GLM thinking when the provider marks it mandatory',
+        baseUrl: 'https://api.z.ai/api/paas/v4',
+        model: 'glm-5.2',
+        extraBody: { thinking: { enabled: true } },
+        thinkingMandatory: true,
+        reasoning: undefined,
+        includeThoughts: false,
+        expectedThinking: undefined,
+        expectedGlmThinking: { enabled: true },
+        expectedToolChoice: 'required',
+      },
+      {
         name: 'apply thinkingMandatory to any canopy model on any DashScope endpoint',
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         model: 'qwen3.9-turbo',
@@ -993,6 +1017,9 @@ describe('ContentGenerationPipeline', () => {
         .calls[0][0];
       expect(apiCall.enable_thinking).toBe(testCase.expectedThinking);
       expect(apiCall.tool_choice).toBe(testCase.expectedToolChoice);
+      if ('expectedGlmThinking' in testCase) {
+        expect(apiCall.thinking).toEqual(testCase.expectedGlmThinking);
+      }
       if ('expectedReasoningEffort' in testCase) {
         expect(apiCall.reasoning_effort).toBe(testCase.expectedReasoningEffort);
       }

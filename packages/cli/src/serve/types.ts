@@ -114,8 +114,8 @@ export interface ServeOptions {
    * `BridgeOptions.eventRingSize` and used at every `new EventBus(...)`
    * construction site. Defaults to 8000. Must be a positive
    * finite integer — `0` / `NaN` / negative fail at boot. Larger
-   * rings let clients with longer reconnect gaps replay more history
-   * at the cost of a few hundred KB extra RAM per session.
+   * rings let clients with longer reconnect gaps replay more history until
+   * the EventBus's default 32 MiB serialized-byte cap is reached.
    */
   eventRingSize?: number;
   /**

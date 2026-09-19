@@ -495,6 +495,16 @@ export interface DaemonStatusReportSession {
    */
   maxJournalEvents?: number;
   maxJournalBytes?: number;
+  /**
+   * Current serialized-byte accounting for the reconnect ring. Additive;
+   * absent on daemons that predate ring byte diagnostics.
+   */
+  replayRing?: {
+    eventCount: number;
+    serializedBytes: number;
+    maxEvents: number;
+    maxSerializedBytes: number;
+  };
 }
 
 /**

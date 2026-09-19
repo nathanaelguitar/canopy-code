@@ -22,6 +22,51 @@ const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
 export const MAX_SESSION_BYTES = 500 * 1024 * 1024; // 500MB
 
 /**
+ * Slice a preview from the start without leaving a lone UTF-16 surrogate at
+ * the boundary. JavaScript's string length and slice indexes are UTF-16 code
+ * units, while tool output is sent as Unicode text; splitting an astral
+ * character here would make the next request contain malformed text.
+ */
+export function sliceStartPreservingUnicode(
+  text: string,
+  length: number,
+): string {
+  const normalizedLength = Number.isNaN(length) ? 0 : Math.trunc(length);
+  const end = Math.min(text.length, Math.max(0, normalizedLength));
+  if (
+    end > 0 &&
+    end < text.length &&
+    text.charCodeAt(end - 1) >= 0xd800 &&
+    text.charCodeAt(end - 1) <= 0xdbff &&
+    text.charCodeAt(end) >= 0xdc00 &&
+    text.charCodeAt(end) <= 0xdfff
+  ) {
+    return text.slice(0, end - 1);
+  }
+  return text.slice(0, end);
+}
+
+/** See {@link sliceStartPreservingUnicode}. */
+export function sliceEndPreservingUnicode(
+  text: string,
+  length: number,
+): string {
+  const normalizedLength = Number.isNaN(length) ? 0 : Math.trunc(length);
+  let start = Math.max(0, text.length - Math.max(0, normalizedLength));
+  if (
+    start > 0 &&
+    start < text.length &&
+    text.charCodeAt(start) >= 0xdc00 &&
+    text.charCodeAt(start) <= 0xdfff &&
+    text.charCodeAt(start - 1) >= 0xd800 &&
+    text.charCodeAt(start - 1) <= 0xdbff
+  ) {
+    start += 1;
+  }
+  return text.slice(start);
+}
+
+/**
  * Stable prefix every truncated tool output starts with. Used as an
  * idempotency sentinel so content that was already truncated (by a tool's own
  * path — e.g. MCP `truncateTextParts` — or by a prior pass) is not truncated
@@ -133,7 +178,9 @@ export async function truncateAndSaveToFile(
       // the difference, on top of the separator overrun above.
       if (remaining >= ellipsis.length) {
         const sliceLen = remaining - ellipsis.length;
-        beginning.push(lines[i].slice(0, sliceLen) + ellipsis);
+        beginning.push(
+          sliceStartPreservingUnicode(lines[i], sliceLen) + ellipsis,
+        );
       }
       headChars = headBudget;
       break;
@@ -160,7 +207,10 @@ export async function truncateAndSaveToFile(
         // slice(-0) === slice(0) returns the WHOLE line, so guard the zero
         // case explicitly: sliceLen === 0 means no budget for any tail chars
         // (the head branch's slice(0, 0) already yields '' correctly).
-        end.unshift(ellipsis + (sliceLen > 0 ? lines[i].slice(-sliceLen) : ''));
+        end.unshift(
+          ellipsis +
+            (sliceLen > 0 ? sliceEndPreservingUnicode(lines[i], sliceLen) : ''),
+        );
       }
       tailChars = tailBudget;
       break;

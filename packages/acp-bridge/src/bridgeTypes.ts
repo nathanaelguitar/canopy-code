@@ -25,6 +25,7 @@ import type {
 } from '@agentclientprotocol/sdk';
 import type {
   BridgeEvent,
+  EventBusReplayRingStats,
   LiveReplayMode,
   SessionReplaySnapshot,
   SubscribeOptions,
@@ -1035,6 +1036,11 @@ export interface BridgeDaemonSessionDiagnostic {
    */
   maxJournalEvents: number;
   maxJournalBytes: number;
+  /**
+   * Current serialized-byte accounting for the reconnect ring. Optional for
+   * compatibility with status fixtures and older bridge implementations.
+   */
+  replayRing?: EventBusReplayRingStats;
 }
 
 export interface BridgeDaemonStatusSnapshot {

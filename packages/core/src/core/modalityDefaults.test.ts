@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest';
 import {
   defaultModalities,
   isCanopyFamilyWireModel,
+  isGlmWireModel,
   isTieredEffortWireModel,
 } from './modalityDefaults.js';
 
@@ -341,5 +342,20 @@ describe('isTieredEffortWireModel', () => {
     expect(isTieredEffortWireModel('coder-model')).toBe(false);
     expect(isTieredEffortWireModel('glm-5.2')).toBe(false);
     expect(isTieredEffortWireModel(undefined)).toBe(false);
+  });
+});
+
+describe('isGlmWireModel', () => {
+  it('matches GLM model ids case-insensitively', () => {
+    expect(isGlmWireModel('glm-5.2')).toBe(true);
+    expect(isGlmWireModel('GLM-4.7')).toBe(true);
+    expect(isGlmWireModel('glm-4.5v:cloud')).toBe(true);
+  });
+
+  it('rejects non-GLM ids and empty input', () => {
+    expect(isGlmWireModel('qwen3.8-max')).toBe(false);
+    expect(isGlmWireModel('kimi-k3')).toBe(false);
+    expect(isGlmWireModel('')).toBe(false);
+    expect(isGlmWireModel(undefined)).toBe(false);
   });
 });

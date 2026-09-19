@@ -95,6 +95,7 @@ import {
 } from './bridgeTypes.js';
 import {
   ApprovalMode,
+  INVOCATION_CONTEXT_META_KEY,
   SESSION_ARTIFACT_PERSISTENCE_VERSION,
   ShellExecutionService,
   stableSessionArtifactId,
@@ -7107,6 +7108,17 @@ describe('createAcpSessionBridge', () => {
         JOURNAL_GROWTH_HARD_CAP_BYTES,
       );
       expect(status.sessions[0]?.maxJournalEvents).toBe(64);
+      expect(status.sessions[0]?.replayRing).toMatchObject({
+        eventCount: expect.any(Number),
+        serializedBytes: expect.any(Number),
+        maxEvents: expect.any(Number),
+        maxSerializedBytes: expect.any(Number),
+      });
+      expect(
+        status.sessions[0]?.replayRing?.serializedBytes,
+      ).toBeLessThanOrEqual(
+        status.sessions[0]?.replayRing?.maxSerializedBytes ?? 0,
+      );
 
       gate.resolve();
       await prompt;
@@ -12211,7 +12223,7 @@ describe('createAcpSessionBridge', () => {
           {
             sessionId: session.sessionId,
             prompt: [{ type: 'text', text: 'rejected' }],
-            _meta: { 'qwen-code/invocation': forgedInvocation },
+            _meta: { [INVOCATION_CONTEXT_META_KEY]: forgedInvocation },
           },
           undefined,
           { clientId: 'invalid-client', promptId: 'rejected-prompt' },
@@ -12239,7 +12251,7 @@ describe('createAcpSessionBridge', () => {
           prompt: [{ type: 'text', text: 'accepted' }],
           _meta: {
             keep: true,
-            'qwen-code/invocation': forgedInvocation,
+            [INVOCATION_CONTEXT_META_KEY]: forgedInvocation,
             'qwen-code/private-parent-capability': 'forged-capability',
             [DAEMON_MODEL_PROMPT_META_KEY]: forgedModelPrompt,
           },
@@ -12254,7 +12266,7 @@ describe('createAcpSessionBridge', () => {
 
       expect(handle.agent.promptCalls[0]?._meta).toMatchObject({
         keep: true,
-        'qwen-code/invocation': {
+        [INVOCATION_CONTEXT_META_KEY]: {
           version: 1,
           sessionId: session.sessionId,
           promptId: 'server-prompt',

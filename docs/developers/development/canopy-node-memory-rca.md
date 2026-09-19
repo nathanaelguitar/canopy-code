@@ -141,5 +141,11 @@ browser/remote-control session and multiple Node/ACP buffering layers.
 memory-pressure state support this diagnosis. A heap snapshot is still required
 before labeling it a confirmed V8 memory leak.
 
-**Action taken in this RCA:** documentation only. No Canopy process was killed,
-no swap was cleared, and no runtime limit was changed.
+**Action taken during the incident:** documentation only. No Canopy process
+was killed, no swap was cleared, and no runtime limit was changed. The later
+follow-up added a byte-bounded reconnect ring; it does not retroactively prove
+that the incident was caused by that ring.
+
+See the [Astra overlay review](./astra-review.md) for the follow-up retention
+fixes and the decision to benchmark bounded TypeScript before considering a
+Rust session engine.
