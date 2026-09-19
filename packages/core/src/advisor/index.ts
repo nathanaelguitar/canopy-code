@@ -7,6 +7,7 @@
 export {
   ADVISOR_HOOK_TIMEOUT_MS,
   ADVISOR_HOOK_ID,
+  parseAdvisorModelSetting,
   buildAdvisorGuidancePrompt,
   registerAdvisorHook,
   unregisterAdvisorHook,

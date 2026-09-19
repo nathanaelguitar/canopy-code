@@ -26,7 +26,7 @@ interface AdvisorDialogProps {
   onCancel: () => void;
 }
 
-interface AdvisorModelOption {
+export interface AdvisorModelOption {
   value: string;
   label: string;
   description: string;
@@ -45,7 +45,9 @@ function modelSelectorValue(model: { authType: string; id: string }): string {
   return `${model.authType}:${model.id}`;
 }
 
-function configuredModels(config: Config | null): AdvisorModelOption[] {
+export function getConfiguredAdvisorModels(
+  config: Config | null,
+): AdvisorModelOption[] {
   const models = config?.getAllConfiguredModels?.() ?? [];
   const seen = new Set<string>();
   const options: AdvisorModelOption[] = [];
@@ -91,7 +93,7 @@ export function AdvisorDialog({
   const config = useConfig();
   const [step, setStep] = useState<'model' | 'effort'>('model');
   const modelOptions = useMemo(() => {
-    const options = configuredModels(config);
+    const options = getConfiguredAdvisorModels(config);
     if (options.length > 0) return options;
     const fallback = initialModel?.trim();
     return fallback

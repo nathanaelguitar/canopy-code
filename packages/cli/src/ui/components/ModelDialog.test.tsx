@@ -484,6 +484,47 @@ describe('<ModelDialog />', () => {
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('selects a ChatGPT OAuth GPT model with its qualified provider', async () => {
+    const switchModel = vi.fn().mockResolvedValue(undefined);
+    const { props, mockSettings } = renderComponent({}, {
+      getModel: vi.fn(() => 'gpt-5.6-luna'),
+      getAuthType: vi.fn(() => AuthType.CHATGPT_OAUTH),
+      switchModel,
+      getAllConfiguredModels: vi.fn(() => [
+        {
+          id: 'gpt-5.6-luna',
+          label: 'GPT-5.6 Luna',
+          description: 'ChatGPT OAuth model',
+          authType: AuthType.CHATGPT_OAUTH,
+        },
+      ]),
+      getContentGeneratorConfig: vi.fn(() => ({
+        authType: AuthType.CHATGPT_OAUTH,
+        model: 'gpt-5.6-luna',
+      })),
+    } as unknown as Partial<Config>);
+
+    const childOnSelect = mockedSelect.mock.calls[0][0].onSelect;
+    await childOnSelect(`${AuthType.CHATGPT_OAUTH}::gpt-5.6-luna`);
+
+    expect(switchModel).toHaveBeenCalledWith(
+      AuthType.CHATGPT_OAUTH,
+      'gpt-5.6-luna',
+      { baseUrl: undefined },
+    );
+    expect(mockSettings.setValue).toHaveBeenCalledWith(
+      SettingScope.User,
+      'model.name',
+      'gpt-5.6-luna',
+    );
+    expect(mockSettings.setValue).toHaveBeenCalledWith(
+      SettingScope.User,
+      'security.auth.selectedType',
+      AuthType.CHATGPT_OAUTH,
+    );
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('persists model.baseUrl alongside model.name when the selected provider has a baseUrl', async () => {
     const switchModel = vi.fn().mockResolvedValue(undefined);
     const { props, mockSettings } = renderComponent({}, {

@@ -8,6 +8,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import {
   ADVISOR_HOOK_TIMEOUT_MS,
   buildAdvisorGuidancePrompt,
+  parseAdvisorModelSetting,
   registerAdvisorHook,
   unregisterAdvisorHook,
   isAdvisorHookRegistered,
@@ -44,8 +45,9 @@ function createConfig(withHistory = true) {
         return id;
       },
     ),
-    removeFunctionHook: vi.fn((_sessionId: string, _event: HookEventName, hookId: string) =>
-      hooks.delete(hookId),
+    removeFunctionHook: vi.fn(
+      (_sessionId: string, _event: HookEventName, hookId: string) =>
+        hooks.delete(hookId),
     ),
     hooks,
   };
@@ -70,12 +72,28 @@ beforeEach(() => {
   SESSION = `session-${++sessionCounter}`;
 });
 
-
 describe('buildAdvisorGuidancePrompt', () => {
   it('includes the user prompt and no-tools constraint', () => {
     const prompt = buildAdvisorGuidancePrompt('ship it?');
     expect(prompt).toContain('ship it?');
     expect(prompt).toContain('NO tools');
+  });
+});
+
+describe('parseAdvisorModelSetting', () => {
+  it('splits OAuth model selectors from the persisted reasoning effort', () => {
+    expect(parseAdvisorModelSetting('chatgpt-oauth:gpt-5.6-luna high')).toEqual(
+      {
+        model: 'chatgpt-oauth:gpt-5.6-luna',
+        reasoningEffort: 'high',
+      },
+    );
+  });
+
+  it('migrates the legacy GPT-5.6 alias', () => {
+    expect(parseAdvisorModelSetting('chatgpt-oauth:gpt-5.6')).toEqual({
+      model: 'chatgpt-oauth:gpt-5.6-sol',
+    });
   });
 });
 
@@ -152,6 +170,18 @@ describe('advisor callback', () => {
     await runCallback({ advisorModel: 'big-model' });
     expect(mockRunForkedAgent).toHaveBeenCalledWith(
       expect.objectContaining({ model: 'big-model' }),
+    );
+  });
+
+  it('passes persisted OAuth effort separately from the model selector', async () => {
+    await runCallback({
+      advisorModel: 'chatgpt-oauth:gpt-5.6-luna high',
+    });
+    expect(mockRunForkedAgent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'chatgpt-oauth:gpt-5.6-luna',
+        reasoningEffort: 'high',
+      }),
     );
   });
 

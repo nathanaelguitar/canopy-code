@@ -21,6 +21,7 @@ import {
   type CacheSafeParams,
   registerAdvisorHook,
   unregisterAdvisorHook,
+  parseAdvisorModelSetting,
 } from '@canopy-code/canopy-code-core';
 import { SettingScope } from '../../config/settings.js';
 
@@ -61,40 +62,6 @@ interface AdvisorReview {
   risks: string;
   missingEvidence: string;
   recommendation: string;
-}
-
-const ADVISOR_REASONING_EFFORTS = new Set([
-  'none',
-  'low',
-  'medium',
-  'high',
-  'xhigh',
-  'max',
-]);
-
-/**
- * Parse the compact advisor setting form `<model> <effort>` and migrate the
- * old ChatGPT family alias. The model ID and reasoning effort are independent
- * wire fields; keeping them separate prevents `gpt-5.6-luna high` from being
- * sent as an invalid model name.
- */
-function parseAdvisorModelSetting(raw: string): {
-  model: string;
-  reasoningEffort?: string;
-} {
-  const tokens = raw.trim().split(/\s+/);
-  const last = tokens.at(-1)?.toLowerCase();
-  const reasoningEffort =
-    last && ADVISOR_REASONING_EFFORTS.has(last) ? last : undefined;
-  const model = (reasoningEffort ? tokens.slice(0, -1) : tokens).join(' ');
-  const migratedModel = model.replace(
-    /^(chatgpt-oauth:)?gpt-5\.6$/,
-    '$1gpt-5.6-sol',
-  );
-  return {
-    model: migratedModel,
-    ...(reasoningEffort ? { reasoningEffort } : {}),
-  };
 }
 
 function buildAdvisorPrompt(focus: string): string {

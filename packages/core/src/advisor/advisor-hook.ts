@@ -21,6 +21,45 @@ export const ADVISOR_HOOK_ID = 'advisor-mode-hook';
 /** Advisor calls are one forked model call; 60s guarantees a hang never blocks the turn. */
 export const ADVISOR_HOOK_TIMEOUT_MS = 60_000;
 
+const ADVISOR_REASONING_EFFORTS = new Set([
+  'none',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+  'max',
+]);
+
+export interface AdvisorModelSelection {
+  model?: string;
+  reasoningEffort?: string;
+}
+
+/**
+ * Parse the persisted `<model> <effort>` advisor setting. Model selectors may
+ * contain a provider prefix (for example `chatgpt-oauth:`), so the two wire
+ * values must be split before a forked request is built.
+ */
+export function parseAdvisorModelSetting(raw?: string): AdvisorModelSelection {
+  const trimmed = raw?.trim();
+  if (!trimmed) return {};
+
+  const tokens = trimmed.split(/\s+/);
+  const last = tokens.at(-1)?.toLowerCase();
+  const reasoningEffort =
+    last && ADVISOR_REASONING_EFFORTS.has(last) ? last : undefined;
+  const model = (reasoningEffort ? tokens.slice(0, -1) : tokens).join(' ');
+  const migratedModel = model.replace(
+    /^(chatgpt-oauth:)?gpt-5\.6$/,
+    '$1gpt-5.6-sol',
+  );
+
+  return {
+    ...(migratedModel ? { model: migratedModel } : {}),
+    ...(reasoningEffort ? { reasoningEffort } : {}),
+  };
+}
+
 // Session -> hookId so unregister can find it without a scan.
 const registeredHooks = new Map<string, string>();
 
@@ -35,7 +74,7 @@ export function buildAdvisorGuidancePrompt(userPrompt: string): string {
     '',
     userPrompt,
     '',
-    'Give brief guidance for the main agent\'s next response (2-4 sentences): what to prioritize, likely pitfalls, missing considerations. Be direct; do not answer the user yourself. You have NO tools — base guidance only on what is visible in the conversation.',
+    "Give brief guidance for the main agent's next response (2-4 sentences): what to prioritize, likely pitfalls, missing considerations. Be direct; do not answer the user yourself. You have NO tools — base guidance only on what is visible in the conversation.",
   ].join('\n');
 }
 
@@ -43,6 +82,8 @@ function createAdvisorCallback(
   config: Config,
   advisorModel?: string,
 ): (input: HookInput, context?: FunctionHookContext) => Promise<object> {
+  const advisorSelection = parseAdvisorModelSetting(advisorModel);
+
   return async (input, context) => {
     try {
       const cacheSafeParams = buildBtwCacheSafeParams(config);
@@ -62,7 +103,10 @@ function createAdvisorCallback(
         config,
         userMessage: buildAdvisorGuidancePrompt(prompt),
         cacheSafeParams,
-        ...(advisorModel ? { model: advisorModel } : {}),
+        ...(advisorSelection.model ? { model: advisorSelection.model } : {}),
+        ...(advisorSelection.reasoningEffort
+          ? { reasoningEffort: advisorSelection.reasoningEffort }
+          : {}),
         abortSignal: context?.signal,
         disableModelFallbacks: true,
       });
@@ -102,7 +146,9 @@ export function registerAdvisorHook(args: {
   const { config, sessionId, advisorModel } = args;
   const system = config.getHookSystem();
   if (!system) {
-    throw new Error('Hook system is not initialized; cannot register advisor mode');
+    throw new Error(
+      'Hook system is not initialized; cannot register advisor mode',
+    );
   }
 
   unregisterAdvisorHook(config, sessionId);
@@ -125,7 +171,10 @@ export function registerAdvisorHook(args: {
 }
 
 /** Removes the advisor-mode hook for the session (idempotent). */
-export function unregisterAdvisorHook(config: Config, sessionId: string): boolean {
+export function unregisterAdvisorHook(
+  config: Config,
+  sessionId: string,
+): boolean {
   const hookId = registeredHooks.get(sessionId);
   registeredHooks.delete(sessionId);
   if (!hookId) return false;
@@ -138,6 +187,9 @@ export function unregisterAdvisorHook(config: Config, sessionId: string): boolea
   );
 }
 
-export function isAdvisorHookRegistered(config: Config, sessionId: string): boolean {
+export function isAdvisorHookRegistered(
+  config: Config,
+  sessionId: string,
+): boolean {
   return registeredHooks.has(sessionId) && !!config.getHookSystem();
 }
