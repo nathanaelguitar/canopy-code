@@ -26,3 +26,7 @@ different tool unless the task requires it.
 
 Canopy Code prefixes these MCP tools as `mcp__browser-control__...` in model
 tool calls. Keep browser-only runs focused and report only verified results.
+
+See the [browser-control developer guide](docs/developers/tools/browser-control.md)
+for the fork source-of-truth, wrapper behavior, upstream review policy, and
+tested maintenance baseline.

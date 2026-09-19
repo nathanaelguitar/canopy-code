@@ -10,5 +10,6 @@ export default {
   'web-fetch': 'Web Fetch',
   'web-search': 'Web Search',
   'mcp-server': 'MCP Servers',
+  'browser-control': 'Browser-control MCP',
   sandbox: 'Sandboxing',
 };
