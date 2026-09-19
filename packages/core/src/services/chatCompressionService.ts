@@ -76,6 +76,209 @@ export const DEFAULT_PCT = 0.85;
 export const SUMMARY_RESERVE = COMPACT_MAX_OUTPUT_TOKENS; // 20_000
 
 /**
+ * Leave one token of slack when sizing a compaction request. Providers enforce
+ * `input_tokens + max_tokens <= context_window`; without the slack, an exact
+ * boundary estimate can still be rejected because of tokenizer rounding.
+ */
+export const COMPRESSION_CONTEXT_MARGIN_TOKENS = 1;
+
+/**
+ * Extra room kept between the estimated compression prompt and the provider
+ * context ceiling. The char/4 estimator is intentionally cheap and can
+ * under-count code- and CJK-heavy transcripts, so an emergency compaction
+ * must not target the exact boundary.
+ */
+export const COMPRESSION_INPUT_SAFETY_MARGIN_TOKENS = 2_048;
+
+/**
+ * A resumed self-hosted session can have a tokenizer count that is much more
+ * conservative than the cheap local estimate. Near a 256K boundary, reserve
+ * a small, still-useful summary budget instead of inheriting an 8K provider
+ * ceiling that can fail by a single token.
+ */
+export const COMPRESSION_EDGE_OUTPUT_TOKENS = 2_048;
+
+/**
+ * The emergency fitter needs a wider margin when a provider-reported count is
+ * already beyond the window. This is only used for a large-context rescue;
+ * ordinary compaction keeps the smaller margin above.
+ */
+export const COMPRESSION_LARGE_CONTEXT_HISTORY_MARGIN_TOKENS = 131_072;
+
+/**
+ * Hard local-estimate cap for an emergency 256K rescue. The provider's
+ * tokenizer can be materially denser than the cheap estimator, so a merely
+ * proportional trim can still leave a huge prefill at the boundary.
+ */
+export const COMPRESSION_LARGE_CONTEXT_HISTORY_TOKEN_BUDGET = 64_000;
+
+const COMPRESSION_HISTORY_TRUNCATION_MARKER =
+  '[Earlier conversation omitted from this emergency compression pass because the context window was full.]';
+
+/**
+ * Fit the compaction response budget to the remaining context window. The
+ * normal path keeps the 20K cap, while an already-full session gets the
+ * largest valid budget instead of sending a request that is one token too
+ * large. The OpenAI-compatible pipeline may apply a lower provider ceiling
+ * afterwards (for example a model's configured `max_tokens`).
+ */
+export function computeCompressionOutputTokens(
+  contextWindow: number,
+  inputTokenEstimate: number,
+): number {
+  const available = contextWindow - Math.max(0, Math.ceil(inputTokenEstimate));
+  // Preserve the normal 20K cap when it fits. Once the remaining room is
+  // smaller than that cap, leave a real buffer for provider/tokenizer
+  // rounding at the boundary; one token is not enough for a cheap estimate
+  // that is off by only a couple of tokens.
+  const safeAvailable =
+    available >= COMPACT_MAX_OUTPUT_TOKENS
+      ? available
+      : available - COMPRESSION_INPUT_SAFETY_MARGIN_TOKENS;
+  return Math.max(1, Math.min(COMPACT_MAX_OUTPUT_TOKENS, safeAvailable));
+}
+
+export interface FittedCompressionHistory {
+  history: Content[];
+  estimatedInputTokens: number;
+  omittedTokenEstimate: number;
+  wasTrimmed: boolean;
+}
+
+/**
+ * Make a cold compression request fit before it is sent to the provider.
+ *
+ * Normally auto-compaction fires well before this path is needed. A resumed
+ * session can nevertheless arrive already at (or beyond) the model window;
+ * in that state even requesting one output token is invalid. Preserve the
+ * newest complete user turn suffix and explicitly mark the omitted prefix so
+ * the summarizer knows this is an emergency, bounded view of the transcript.
+ */
+export function fitCompressionHistoryToContext(
+  history: Content[],
+  contextWindow: number,
+  systemInstruction: string,
+  imageTokenEstimate: number,
+  authoritativeInputTokenEstimate?: number,
+  outputReserveTokens: number = COMPACT_MAX_OUTPUT_TOKENS,
+): FittedCompressionHistory {
+  const directive = {
+    role: 'user' as const,
+    parts: [{ text: COMPRESSION_REQUEST_DIRECTIVE }],
+  };
+  const fixedTokens =
+    estimateContentTokens([directive], imageTokenEstimate) +
+    Math.ceil(systemInstruction.length / CHARS_PER_TOKEN);
+  const markerTokens = Math.ceil(
+    COMPRESSION_HISTORY_TRUNCATION_MARKER.length / CHARS_PER_TOKEN,
+  );
+  const originalHistoryTokens = estimateContentTokens(
+    history,
+    imageTokenEstimate,
+  );
+  const fullInputTokens = originalHistoryTokens + fixedTokens;
+  const unbufferedInputBudget =
+    contextWindow - outputReserveTokens - COMPRESSION_CONTEXT_MARGIN_TOKENS;
+
+  // If the provider already reported a prompt count for the main turn, use it
+  // as a calibration signal for the cheap char/4 estimate. This matters for
+  // large code/tool transcripts where the estimator can be materially low.
+  const calibratedFullInputTokens = Math.max(
+    fullInputTokens,
+    authoritativeInputTokenEstimate ?? 0,
+  );
+  const isLargeContextEmergency =
+    contextWindow >= 250_000 &&
+    (authoritativeInputTokenEstimate ?? 0) > contextWindow;
+  const emergencyInputMargin = isLargeContextEmergency
+    ? COMPRESSION_LARGE_CONTEXT_HISTORY_MARGIN_TOKENS
+    : COMPRESSION_INPUT_SAFETY_MARGIN_TOKENS;
+  // Only trim the transcript when the calibrated estimate is materially over
+  // the budget. Near-boundary requests are handled by the smaller output
+  // budget above; trimming there would discard useful history merely because
+  // a conservative provider count is a token or two ahead of the cheap
+  // estimator.
+  const needsEmergencyTrim = isLargeContextEmergency
+    ? calibratedFullInputTokens > unbufferedInputBudget
+    : calibratedFullInputTokens > unbufferedInputBudget + emergencyInputMargin;
+  const fullInputBudget = needsEmergencyTrim
+    ? unbufferedInputBudget - emergencyInputMargin
+    : unbufferedInputBudget;
+  const calibrationRatio =
+    fullInputTokens > 0 ? calibratedFullInputTokens / fullInputTokens : 1;
+  const proportionalHistoryBudget = Math.max(
+    0,
+    Math.floor(fullInputBudget / calibrationRatio) - fixedTokens - markerTokens,
+  );
+  const calibratedHistoryBudget = isLargeContextEmergency
+    ? Math.min(
+        proportionalHistoryBudget,
+        COMPRESSION_LARGE_CONTEXT_HISTORY_TOKEN_BUDGET,
+      )
+    : proportionalHistoryBudget;
+
+  if (!needsEmergencyTrim) {
+    return {
+      history,
+      estimatedInputTokens: fullInputTokens,
+      omittedTokenEstimate: 0,
+      wasTrimmed: false,
+    };
+  }
+
+  const contentCosts = history.map((content) =>
+    estimateContentTokens([content], imageTokenEstimate),
+  );
+  const prefixCosts = [0];
+  for (const cost of contentCosts) {
+    prefixCosts.push(prefixCosts[prefixCosts.length - 1] + cost);
+  }
+
+  // Only cut at user turns. This keeps the surviving suffix from starting in
+  // the middle of a model/tool exchange and avoids creating an orphaned
+  // function response in the compression prompt.
+  let start = history.findIndex((content) => content.role === 'user');
+  if (start < 0) start = Math.max(0, history.length - 1);
+  for (let index = start; index < history.length; index++) {
+    if (history[index].role !== 'user') continue;
+    const suffixTokens = originalHistoryTokens - prefixCosts[index];
+    if (suffixTokens <= calibratedHistoryBudget) {
+      start = index;
+      break;
+    }
+    start = index;
+  }
+
+  let fittedHistory = history.slice(start);
+  if (fittedHistory.length > 0 && fittedHistory[0].role === 'user') {
+    fittedHistory = [
+      {
+        ...fittedHistory[0],
+        parts: [
+          { text: COMPRESSION_HISTORY_TRUNCATION_MARKER },
+          ...(fittedHistory[0].parts ?? []),
+        ],
+      },
+      ...fittedHistory.slice(1),
+    ];
+  }
+
+  const fittedHistoryTokens = estimateContentTokens(
+    fittedHistory,
+    imageTokenEstimate,
+  );
+  return {
+    history: fittedHistory,
+    estimatedInputTokens: fittedHistoryTokens + fixedTokens,
+    omittedTokenEstimate: Math.max(
+      0,
+      originalHistoryTokens - fittedHistoryTokens,
+    ),
+    wasTrimmed: start > 0,
+  };
+}
+
+/**
  * Distance between auto threshold and effectiveWindow. Matches claude-code's
  * AUTOCOMPACT_BUFFER_TOKENS (autoCompact.ts:62) — empirically chosen to leave
  * headroom for the compaction sideQuery round-trip plus a few user-message
@@ -374,6 +577,17 @@ export class ChatCompressionService {
     const contentGeneratorConfig = config.getContentGeneratorConfig();
     const contextLimit =
       contentGeneratorConfig.contextWindowSize ?? DEFAULT_TOKEN_LIMIT;
+    const configuredCompressionOutputTokens =
+      contentGeneratorConfig.samplingParams?.max_tokens;
+    const compressionOutputReserveTokens =
+      typeof configuredCompressionOutputTokens === 'number' &&
+      Number.isFinite(configuredCompressionOutputTokens) &&
+      configuredCompressionOutputTokens > 0
+        ? Math.min(
+            COMPACT_MAX_OUTPUT_TOKENS,
+            Math.ceil(configuredCompressionOutputTokens),
+          )
+        : COMPACT_MAX_OUTPUT_TOKENS;
 
     // Cheap gates first — these don't need the curated history. Forward
     // originalTokenCount on NOOP (matching the threshold-gate branch below)
@@ -540,22 +754,88 @@ export class ChatCompressionService {
           slimmingConfig.imageTokenEstimate,
         )
       : 0;
-
-    // Lazy: the cold fallback input is slimmed on demand. The original
-    // history keeps its media: the shared request needs it for cache-prefix
-    // identity, and the post-compact image restoration block reads it
-    // afterwards.
-    let coldInput: ReturnType<typeof slimCompactionInput> | undefined;
-    const getColdInput = () => {
-      coldInput ??= slimCompactionInput(sideQueryHistory);
-      return coldInput;
-    };
+    const providerPromptTokenCount = chat.getLastPromptTokenCount?.() ?? 0;
+    const authoritativeCompressionInputTokenEstimate = Math.max(
+      originalTokenCount + pendingToolResultTokenCount,
+      providerPromptTokenCount,
+    );
 
     // Hoist the system prompt so the guard can include it in the estimate.
     const systemInstruction = buildCompressionSystemPrompt(
       opts.customInstructions,
       hookExtraInstructions,
     );
+
+    // Lazy: the cold fallback input is slimmed on demand. The original
+    // history keeps its media: the shared request needs it for cache-prefix
+    // identity, and the post-compact image restoration block reads it
+    // afterwards. If this resumed session is already at the context ceiling,
+    // fit the dedicated summarizer's input before asking the provider for even
+    // one output token.
+    let coldInput: ReturnType<typeof slimCompactionInput> | undefined;
+    const getColdInput = () => {
+      if (!coldInput) {
+        const slimmed = slimCompactionInput(sideQueryHistory);
+        const fitted = fitCompressionHistoryToContext(
+          slimmed.slimmedHistory,
+          contextLimit,
+          systemInstruction,
+          slimmingConfig.imageTokenEstimate,
+          authoritativeCompressionInputTokenEstimate,
+          compressionOutputReserveTokens,
+        );
+        coldInput = {
+          ...slimmed,
+          slimmedHistory: fitted.history,
+        };
+        if (fitted.wasTrimmed) {
+          config
+            .getDebugLogger()
+            .warn(
+              `[chat-compression] emergency-trimmed approximately ` +
+                `${fitted.omittedTokenEstimate.toLocaleString()} tokens ` +
+                `from the oldest compression input to fit the ` +
+                `${contextLimit.toLocaleString()}-token context window`,
+            );
+        }
+      }
+      return coldInput;
+    };
+
+    const compressionInputTokenEstimate = () => {
+      const slim = getColdInput();
+      const coldContents = [
+        ...slim.slimmedHistory,
+        {
+          role: 'user' as const,
+          parts: [{ text: COMPRESSION_REQUEST_DIRECTIVE }],
+        },
+      ];
+      const coldEstimate =
+        estimateContentTokens(coldContents, slimmingConfig.imageTokenEstimate) +
+        Math.ceil(systemInstruction.length / CHARS_PER_TOKEN);
+
+      const configuredBaseUrl = contentGeneratorConfig.baseUrl
+        ?.trim()
+        .toLowerCase();
+      const isLargeSelfHostedCompression =
+        contextLimit >= 250_000 && configuredBaseUrl?.startsWith('http://');
+      const edgeSafeInputFloor = isLargeSelfHostedCompression
+        ? contextLimit -
+          COMPRESSION_INPUT_SAFETY_MARGIN_TOKENS -
+          COMPRESSION_EDGE_OUTPUT_TOKENS
+        : 0;
+
+      // Keep the provider-reported main-turn count as a conservative floor for
+      // the output-budget clamp. It calibrates the cheap estimator without
+      // letting an already-trimmed cold payload request an invalid fixed
+      // 20K+ response.
+      return Math.max(
+        originalTokenCount + pendingToolResultTokenCount,
+        coldEstimate,
+        edgeSafeInputFloor,
+      );
+    };
 
     // Guard: if the compaction model's context window is too small for the
     // slimmed payload, fall back to the main model for this compression only.
@@ -602,6 +882,17 @@ export class ChatCompressionService {
     abortSignal.throwIfAborted();
     const runColdCompression = () => {
       const slim = getColdInput();
+      const inputEstimate = compressionInputTokenEstimate();
+      const maxOutputTokens = computeCompressionOutputTokens(
+        contextLimit,
+        inputEstimate,
+      );
+      if (maxOutputTokens < COMPACT_MAX_OUTPUT_TOKENS) {
+        debugLogger.debug(
+          `[chat-compression] reduced output budget to ${maxOutputTokens} ` +
+            `tokens to fit the ${contextLimit}-token context window`,
+        );
+      }
       if (slim.stats.imagesStripped > 0 || slim.stats.documentsStripped > 0) {
         config
           .getDebugLogger()
@@ -645,7 +936,7 @@ export class ChatCompressionService {
         // inconsistent (Anthropic/OpenAI count it separately, Gemini varies by model).
         config: {
           thinkingConfig: { includeThoughts: false },
-          maxOutputTokens: COMPACT_MAX_OUTPUT_TOKENS,
+          maxOutputTokens,
         },
         abortSignal,
         promptId,
@@ -658,15 +949,55 @@ export class ChatCompressionService {
       `${systemInstruction}\n\n` +
       'Do not call tools; tool execution is disabled for this request. ' +
       COMPRESSION_REQUEST_DIRECTIVE;
-    const sharedPromptTokenCount =
-      opts.precomputedEffectiveTokens ??
-      originalTokenCount + (chat.getLastOutputTokenCount?.() ?? 0);
+    // A provider prompt count is the authoritative anchor only when the
+    // caller does not already have an all-inclusive count. In normal turns
+    // `originalTokenCount` already represents the compression payload; the
+    // last provider prompt count can be from the preceding turn and is not
+    // interchangeable with it (especially in the previous-output tests and
+    // on resumed sessions). When the caller has no count at all, however, the
+    // provider anchor is the best signal we have for avoiding a shared
+    // request at the context ceiling.
+    const providerPromptTokenCountForSharing =
+      originalTokenCount <= 0 &&
+      !(
+        typeof opts.precomputedEffectiveTokens === 'number' &&
+        opts.precomputedEffectiveTokens > 0
+      )
+        ? providerPromptTokenCount
+        : 0;
+    const allInclusivePromptTokenCount =
+      typeof opts.precomputedEffectiveTokens === 'number' &&
+      opts.precomputedEffectiveTokens > 0
+        ? opts.precomputedEffectiveTokens
+        : originalTokenCount + (chat.getLastOutputTokenCount?.() ?? 0);
+    const sharedPromptTokenCount = Math.max(
+      allInclusivePromptTokenCount,
+      providerPromptTokenCountForSharing,
+      estimateContentTokens(
+        sideQueryHistory,
+        slimmingConfig.imageTokenEstimate,
+      ) + Math.ceil(systemInstruction.length / CHARS_PER_TOKEN),
+    );
     const sharedDirectiveTokenCount = Math.ceil(
       sharedRequestText.length / CHARS_PER_TOKEN,
     );
     const usesMainModel = effectiveCompactionModel === config.getModel();
     const providerSupportsCacheSharing =
       supportsCompressionCacheSharing(config);
+    const configuredBaseUrl = config
+      .getContentGeneratorConfig()
+      .baseUrl?.trim()
+      .toLowerCase();
+    const useColdPathForSelfHostedEndpoint =
+      configuredBaseUrl?.startsWith('http://') === true;
+    // Cache-sharing is useful for ordinary-sized prompts, but it is not a
+    // safe fallback for a self-hosted 256K model at the edge of its window:
+    // the shared request retains the full un-slimmed transcript and the
+    // provider may apply its own output ceiling after this layer has decided
+    // that the request fits. Use the bounded cold path for these very-large
+    // windows so media slimming, emergency history trimming, and the final
+    // output clamp all happen before the request reaches the provider.
+    const useColdPathForVeryLargeWindow = contextLimit >= 250_000;
     // The anchor must be provider-reported, not merely non-zero: an
     // estimate-derived count misses the ~15-20K system/tools overhead the
     // shared request actually carries, so `sharedRequestFits` could approve
@@ -682,19 +1013,33 @@ export class ChatCompressionService {
       contextLimit;
     const canShareCache =
       usesMainModel &&
+      // Cache sharing always uses the fixed 20K request shape. Providers with
+      // a smaller configured output ceiling need the dynamically clamped cold
+      // path instead; otherwise their samplingParams can re-expand the shared
+      // request at the exact context boundary we are trying to avoid.
+      compressionOutputReserveTokens === COMPACT_MAX_OUTPUT_TOKENS &&
+      !useColdPathForSelfHostedEndpoint &&
+      !useColdPathForVeryLargeWindow &&
       providerSupportsCacheSharing &&
       hasProviderTokenCount &&
       sharedRequestFits;
     if (!canShareCache) {
       const reason = !usesMainModel
         ? 'distinct compaction model'
-        : !providerSupportsCacheSharing
-          ? 'provider does not support cache sharing'
-          : !hasProviderTokenCount
-            ? 'no provider-reported token-count anchor'
-            : `shared request exceeds context window: prompt=${sharedPromptTokenCount}, ` +
-              `directive=${sharedDirectiveTokenCount}, reserve=${COMPACT_MAX_OUTPUT_TOKENS}, ` +
-              `window=${contextLimit}`;
+        : useColdPathForVeryLargeWindow
+          ? 'very-large context window uses bounded cold compression'
+          : useColdPathForSelfHostedEndpoint
+            ? 'self-hosted HTTP endpoint uses bounded cold compression'
+            : !providerSupportsCacheSharing
+              ? 'provider does not support cache sharing'
+              : !hasProviderTokenCount
+                ? 'no provider-reported token-count anchor'
+                : compressionOutputReserveTokens !== COMPACT_MAX_OUTPUT_TOKENS
+                  ? `provider output ceiling is ${compressionOutputReserveTokens}, ` +
+                    `so the dynamically clamped cold path is required`
+                  : `shared request exceeds context window: prompt=${sharedPromptTokenCount}, ` +
+                    `directive=${sharedDirectiveTokenCount}, reserve=${COMPACT_MAX_OUTPUT_TOKENS}, ` +
+                    `window=${contextLimit}`;
       debugLogger.debug(`[compaction] skipping cache sharing: ${reason}`);
     }
     if (canShareCache) {

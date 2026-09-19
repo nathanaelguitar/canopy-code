@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   ChatCompressionService,
   COMPACT_MAX_OUTPUT_TOKENS,
+  computeCompressionOutputTokens,
   computeThresholds,
   MAX_CONSECUTIVE_FAILURES,
   MAX_HOOK_INSTRUCTIONS_CHARS,
@@ -3192,6 +3193,22 @@ describe('computeThresholds', () => {
         computeThresholds(32_000), // no pct arg = DEFAULT_PCT
       );
     });
+  });
+});
+
+describe('computeCompressionOutputTokens', () => {
+  it('shrinks the budget at the context boundary', () => {
+    expect(computeCompressionOutputTokens(262_144, 253_953)).toBe(6_143);
+  });
+
+  it('keeps the normal compression cap when the window has room', () => {
+    expect(computeCompressionOutputTokens(262_144, 100_000)).toBe(
+      COMPACT_MAX_OUTPUT_TOKENS,
+    );
+  });
+
+  it('always leaves a minimally valid request budget', () => {
+    expect(computeCompressionOutputTokens(262_144, 262_144)).toBe(1);
   });
 });
 

@@ -286,6 +286,13 @@ export class NonSSEResponseError extends Error {
  */
 const PROVIDER_OUTPUT_BUDGET_KEYS = ['max_completion_tokens', 'max_new_tokens'];
 
+function isCompressionPromptId(userPromptId: string): boolean {
+  return (
+    userPromptId.startsWith('compress-') ||
+    userPromptId === 'side-query:chat-compression'
+  );
+}
+
 function hasProviderOutputBudgetKey(samplingParams: {
   [key: string]: unknown;
 }): boolean {
@@ -1270,6 +1277,25 @@ export class ContentGenerationPipeline {
         { model, reasoningEffort, thinkingBudget, thinkingMandatory },
       );
       delete typed['tool_choice'];
+    }
+
+    // Compression computes a request-specific output budget from the actual
+    // remaining context. Keep that bound on the wire even when a provider's
+    // global samplingParams also supplies max_tokens; the global ceiling must
+    // never expand an internal compaction request back over the context limit.
+    const requestMaxTokens = request.config?.maxOutputTokens;
+    if (
+      isCompressionPromptId(userPromptId) &&
+      typeof requestMaxTokens === 'number' &&
+      Number.isFinite(requestMaxTokens) &&
+      requestMaxTokens > 0
+    ) {
+      const currentMaxTokens = typed['max_tokens'];
+      typed['max_tokens'] =
+        typeof currentMaxTokens === 'number'
+          ? Math.min(currentMaxTokens, requestMaxTokens)
+          : requestMaxTokens;
+      clampProviderOutputBudgetKeys(typed, requestMaxTokens);
     }
 
     return providerRequest;
