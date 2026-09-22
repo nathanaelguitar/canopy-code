@@ -30,6 +30,10 @@ image = { workspace = true }
 # crate versions in the workspace graph. No TLS features: the endpoint
 # contract is loopback ws:// only.
 tokio-tungstenite = "0.24"
+# Used by `browser::captcha`'s opt-in multimodal solver round-trip.
+# Same crate + version the parent `cua-driver` crate already uses for
+# telemetry, so no duplicate versions enter the workspace graph.
+ureq = { version = "3", features = ["json"] }
 futures-util = "0.3"
 uuid = { workspace = true }
 base64 = { workspace = true }

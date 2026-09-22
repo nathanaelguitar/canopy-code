@@ -38,6 +38,7 @@ pub fn register_browser_tools(engine: &Arc<BrowserEngine>, registry: &mut ToolRe
     registry.register(Box::new(BrowserDialogTool::new(engine.clone())));
     registry.register(Box::new(BrowserSetInputFilesTool::new(engine.clone())));
     registry.register(Box::new(BrowserDownloadTool::new(engine.clone())));
+    registry.register(Box::new(super::captcha::BrowserCaptchaSolverTool::new(engine.clone())));
     registry.register(Box::new(BrowserPointerTool::new(engine.clone())));
 }
 
@@ -52,7 +53,7 @@ fn session_of(args: &Value) -> String {
 
 /// Target/ref minting requires an explicit (non-default) session so the
 /// capability namespace has a real owner whose end event cleans it up.
-fn require_explicit_session(args: &Value) -> Result<String, ToolResult> {
+pub(crate) fn require_explicit_session(args: &Value) -> Result<String, ToolResult> {
     let sid = session_of(args);
     if sid.is_empty() || sid == "default" {
         return Err(ToolResult::error(
@@ -63,7 +64,7 @@ fn require_explicit_session(args: &Value) -> Result<String, ToolResult> {
     Ok(sid)
 }
 
-fn schema_target_id() -> Value {
+pub(crate) fn schema_target_id() -> Value {
     json!({
         "type": "string",
         "description": "Opaque browser target id minted by get_browser_state \
@@ -71,7 +72,7 @@ fn schema_target_id() -> Value {
     })
 }
 
-fn schema_tab_id() -> Value {
+pub(crate) fn schema_tab_id() -> Value {
     json!({
         "type": "string",
         "description": "Opaque tab id from get_browser_state (session-scoped)."
@@ -87,7 +88,7 @@ fn schema_ref() -> Value {
     })
 }
 
-fn schema_session() -> Value {
+pub(crate) fn schema_session() -> Value {
     json!({
         "type": "string",
         "description": "Stable caller-declared session id. Browser targets, tabs, and refs are scoped to this session."

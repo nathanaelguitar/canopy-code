@@ -36,6 +36,9 @@
 //! capability cannot be proven are omitted or refused, never guessed.
 
 pub mod approval;
+// Agentic captcha-solving loop; registered from `register_browser_tools`
+// alongside the rest of the browser surface.
+pub mod captcha;
 pub mod binding;
 pub mod cdp_ws;
 pub mod download;
