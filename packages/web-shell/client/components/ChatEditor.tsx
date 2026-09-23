@@ -2961,7 +2961,9 @@ export const ChatEditor = memo(
                   {showModelAction && (
                     <div
                       className={`${styles.dropdownWrapper} ${
-                        showModelLabel ? '' : styles.dropdownWrapperCompact
+                        showModelLabel
+                          ? ''
+                          : `${styles.dropdownWrapperCompact} ${styles.modelDropdownWrapperCompact}`
                       }`}
                     >
                       <ToolbarPopover
@@ -3002,7 +3004,9 @@ export const ChatEditor = memo(
                         trigger={
                           <button
                             className={`${styles.toolBtn} ${styles.modelToolBtn} ${
-                              showModelLabel ? '' : styles.toolBtnCompact
+                              showModelLabel
+                                ? ''
+                                : `${styles.toolBtnCompact} ${styles.modelToolBtnCompact}`
                             }`}
                             data-web-shell-model-button
                             data-web-shell-toolbar-popover-trigger
@@ -3018,9 +3022,13 @@ export const ChatEditor = memo(
                             <span className={styles.toolBtnModelIcon}>
                               <ModelIcon />
                             </span>
-                            {showModelLabel && (
+                            {showModelLabel ? (
                               <span className={styles.toolBtnText}>
                                 {normalizedModelChipLabel}
+                              </span>
+                            ) : (
+                              <span className={styles.modelCompactLabel}>
+                                {t('model.section')}
                               </span>
                             )}
                             <span className={styles.toolBtnArrow}>
@@ -3340,13 +3348,13 @@ export const ChatEditor = memo(
               </span>
               <span
                 data-toolbar-measure="model:collapsed"
-                className={`${styles.toolBtn} ${styles.modelToolBtn} ${styles.toolBtnCompact}`}
+                className={`${styles.toolBtn} ${styles.modelToolBtn} ${styles.toolBtnCompact} ${styles.modelToolBtnCompact}`}
               >
                 <span className={styles.toolBtnModelIcon}>
                   <ModelIcon />
                 </span>
-                <span className={styles.toolBtnText}>
-                  {normalizedModelChipLabel}
+                <span className={styles.modelCompactLabel}>
+                  {t('model.section')}
                 </span>
                 <span className={styles.toolBtnArrow}>
                   <ChevronDownIcon />
