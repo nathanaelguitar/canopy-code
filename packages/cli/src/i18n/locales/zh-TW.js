@@ -174,6 +174,7 @@ export default {
   'toolDisplayName.ZoomImage': '縮放圖像',
   'toolDisplayName.Grep': 'Grep',
   'toolDisplayName.Glob': 'Glob',
+  'toolDisplayName.SuperSearch': '超級搜尋',
   'toolDisplayName.Shell': '運行命令',
   'toolDisplayName.Shell Command': 'Shell 命令',
   'toolDisplayName.TodoList': '任務清單',

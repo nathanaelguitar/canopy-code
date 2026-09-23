@@ -557,6 +557,21 @@ describe('serve fast path argument parsing', () => {
     });
   });
 
+  it('parses a daemon-scoped model override', () => {
+    expect(
+      parseServeFastPathArgs(['serve', '--model', 'canopy-lite']),
+    ).toMatchObject({
+      kind: 'serve',
+      options: { model: 'canopy-lite' },
+    });
+    expect(
+      parseServeFastPathArgs(['serve', '--model=canopy-lite']),
+    ).toMatchObject({
+      kind: 'serve',
+      options: { model: 'canopy-lite' },
+    });
+  });
+
   it('parses --tls-cert and --tls-key on the fast path', () => {
     const parsed = parseServeFastPathArgs([
       'serve',
@@ -676,6 +691,7 @@ describe('serve fast path argument parsing', () => {
     const sampleArgvByOption = new Map<string, string[]>([
       ['port', ['--port', '0']],
       ['hostname', ['--hostname', '127.0.0.1']],
+      ['model', ['--model', 'canopy-lite']],
       ['token', ['--token', 'token']],
       ['max-sessions', ['--max-sessions', '10']],
       ['max-total-sessions', ['--max-total-sessions', '20']],
@@ -701,6 +717,8 @@ describe('serve fast path argument parsing', () => {
       ['open', ['--open']],
       ['local-control', ['--local-control']],
       ['local-control-address', ['--local-control-address', '192.168.1.2']],
+      ['remote-control', ['--remote-control']],
+      ['remote-control-address', ['--remote-control-address', '100.64.0.1']],
       ['http-bridge', ['--no-http-bridge']],
       ['memory-budget-mb', ['--memory-budget-mb', '8192']],
       ['memory-pressure-mode', ['--memory-pressure-mode', 'observe']],
@@ -747,6 +765,8 @@ describe('serve fast path argument parsing', () => {
       'help',
       'local-control',
       'local-control-address',
+      'remote-control',
+      'remote-control-address',
       'version',
     ]);
 

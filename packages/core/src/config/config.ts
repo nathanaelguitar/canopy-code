@@ -8552,6 +8552,10 @@ export class Config {
       const { GlobTool } = await import('../tools/glob.js');
       return new GlobTool(this);
     });
+    await registerLazy(ToolNames.SUPER_SEARCH, async () => {
+      const { SuperSearchTool } = await import('../tools/super-search.js');
+      return new SuperSearchTool(this);
+    });
     await registerLazy(ToolNames.EDIT, async () => {
       const { EditTool } = await import('../tools/edit.js');
       return new EditTool(this);

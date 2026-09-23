@@ -58,6 +58,11 @@ export interface ServeOptions {
   hostname: string;
   port: number;
   /**
+   * Model id to use for ACP children spawned by this daemon. This is an
+   * invocation-scoped override and does not rewrite persisted settings.
+   */
+  model?: string;
+  /**
    * Bearer token required on every request. Optional when bound to loopback
    * (developer convenience); required when bound beyond loopback (boot fails
    * without one — see runCanopyServe).

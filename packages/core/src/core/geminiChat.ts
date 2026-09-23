@@ -2380,10 +2380,11 @@ export class GeminiChat {
         imageTokenEstimate,
       );
       const isHardTier = effectiveTokens >= hard;
+      // Exact routing pins which generator handles the turn; it must not
+      // disable history compaction. The route override is retained when the
+      // compacted request is sent, while compression keeps the prompt bounded.
       const shouldForceFromHard =
-        !exactRoute &&
-        isHardTier &&
-        this.hardRescueFailureCount < MAX_CONSECUTIVE_FAILURES;
+        isHardTier && this.hardRescueFailureCount < MAX_CONSECUTIVE_FAILURES;
       const historyBeforeHardRescue = shouldForceFromHard
         ? this.getHistoryShallow()
         : undefined;
@@ -2396,13 +2397,13 @@ export class GeminiChat {
         debugLogger.warn(
           `[compaction] hard-tier rescue triggered: prompt_id=${prompt_id}, effectiveTokens=${effectiveTokens}, hard=${hard}, hardRescueAttempt=${this.hardRescueFailureCount + 1}, consecutiveFailures=${this.consecutiveFailures}.`,
         );
-      } else if (isHardTier && !exactRoute) {
+      } else if (isHardTier) {
         debugLogger.warn(
           `[compaction] hard-tier rescue skipped after ${this.hardRescueFailureCount} failed attempts; relying on reactive overflow recovery. prompt_id=${prompt_id}, effectiveTokens=${effectiveTokens}, hard=${hard}.`,
         );
       }
 
-      if (exactRoute || (isHardTier && !shouldForceFromHard)) {
+      if (isHardTier && !shouldForceFromHard) {
         compressionInfo = {
           originalTokenCount: effectiveTokens,
           newTokenCount: effectiveTokens,
@@ -2986,7 +2987,6 @@ export class GeminiChat {
               isRetryableStreamTransportError &&
               classification.transportCode === 'ETIMEDOUT' &&
               !streamYieldedAnyChunk &&
-              !exactRoute &&
               !reactiveCompressionAttempted &&
               promptTokensForClamp >=
                 getSilentStreamCompactionThreshold(
@@ -3118,7 +3118,7 @@ export class GeminiChat {
               contextOverflow.isExceeded ||
               shouldCompactAfterSilentTransportFailure
             ) {
-              if (!exactRoute && !reactiveCompressionAttempted) {
+              if (!reactiveCompressionAttempted) {
                 reactiveCompressionAttempted = true;
                 const reactiveOriginalTokenCount =
                   contextOverflow.actualTokens ??

@@ -229,6 +229,9 @@ const PATTERNS: Array<[RegExp, TokenCount]> = [
   // Commercial API models (1,000,000 context)
   [/^qwen3-coder-plus/, LIMITS['1m']],
   [/^qwen3-coder-flash/, LIMITS['1m']],
+  // The deployed qwen3.8-flash-next endpoint advertises a 256K input cap,
+  // unlike the commercial qwen3.8 API models below.
+  [/^qwen3\.8-flash-next/, LIMITS['256k']],
   [/^qwen3\.\d/, LIMITS['1m']],
   [/^qwen-plus-latest$/, LIMITS['1m']],
   [/^qwen-flash-latest$/, LIMITS['1m']],

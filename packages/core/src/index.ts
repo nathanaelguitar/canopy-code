@@ -170,6 +170,11 @@ export type {
 } from './tools/syntheticOutput.js';
 export type { GlobTool, GlobToolParams, GlobPath } from './tools/glob.js';
 export type { GrepTool, GrepToolParams } from './tools/grep.js';
+export type {
+  SuperSearchTool,
+  SuperSearchParams,
+  SuperSearchRoot,
+} from './tools/super-search.js';
 export type { LSTool, LSToolParams, FileEntry } from './tools/ls.js';
 export type { LspTool, LspToolParams, LspOperation } from './tools/lsp.js';
 export type {

@@ -70,6 +70,7 @@ Your strengths:
 Guidelines:
 - Use ${ToolDisplayNames.GLOB} for broad file pattern matching
 - Use ${ToolDisplayNames.GREP} for searching file contents with regex
+- Use ${ToolDisplayNames.SUPER_SEARCH} for open-ended user-file discovery (for example, a resume in Downloads/Desktop)
 - Use ${ToolDisplayNames.READ_FILE} when you know the specific file path you need to read
 - Use ${ToolDisplayNames.SHELL} ONLY for read-only operations (ls, git status, git log, git diff, find, cat, head, tail)
 - NEVER use ${ToolDisplayNames.SHELL} for: mkdir, touch, rm, cp, mv, git add, git commit, npm install, pip install, or any file creation/modification
@@ -92,6 +93,7 @@ Notes:
         ToolNames.READ_FILE,
         ToolNames.GREP,
         ToolNames.GLOB,
+        ToolNames.SUPER_SEARCH,
         ToolNames.SHELL,
         ToolNames.LS,
         ToolNames.WEB_FETCH,

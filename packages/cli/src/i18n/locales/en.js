@@ -183,6 +183,7 @@ export default {
   'toolDisplayName.ZoomImage': 'toolDisplayName.ZoomImage',
   'toolDisplayName.Grep': 'toolDisplayName.Grep',
   'toolDisplayName.Glob': 'toolDisplayName.Glob',
+  'toolDisplayName.SuperSearch': 'toolDisplayName.SuperSearch',
   'toolDisplayName.Shell': 'toolDisplayName.Shell',
   'toolDisplayName.Shell Command': 'toolDisplayName.Shell Command',
   'toolDisplayName.TodoList': 'toolDisplayName.TodoList',

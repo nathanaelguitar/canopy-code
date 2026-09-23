@@ -370,7 +370,8 @@ Final responses should be concise by default, but their shape and depth must mat
   - To read files use '${ToolNames.READ_FILE}' instead of cat, head, tail, or sed
   - To edit files use '${ToolNames.EDIT}' instead of sed or awk
   - To create files use '${ToolNames.WRITE_FILE}' instead of cat with heredoc or echo redirection
-  - To search for files use '${ToolNames.GLOB}' instead of find or ls
+  - For open-ended user-file discovery (for example, "find my resume" or "look in Downloads"), use '${ToolNames.SUPER_SEARCH}' first. It searches bounded, user-facing roots and returns ranked candidates.
+  - For directed codebase file patterns use '${ToolNames.GLOB}' instead of find or ls
   - To search the content of files, use '${ToolNames.GREP}' instead of grep or rg
   - Reserve using the '${ToolNames.SHELL}' exclusively for system commands and terminal operations that require shell execution. If you are unsure and there is a relevant dedicated tool, default to using the dedicated tool and only fallback on using the '${ToolNames.SHELL}' tool for these if it is absolutely necessary.
 - **Tool Fallback:** If a tool returns empty, unhelpful, or unexpected results, try an alternative tool that can accomplish the same goal before telling the user it cannot be done. Never give up after a single tool failure.

@@ -8307,6 +8307,7 @@ describe('runCanopyServe Web Shell signals on RunHandle', () => {
   async function bootHandle(extra: {
     serveWebShell?: boolean;
     token?: string;
+    model?: string;
     experimentalLsp?: boolean;
   }) {
     tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qws-ws-')));
@@ -8366,6 +8367,20 @@ describe('runCanopyServe Web Shell signals on RunHandle', () => {
     await lspHandle.close();
     expect(mockCreateSpawnChannelFactoryOptions.at(-1)).toMatchObject({
       extraArgs: ['--experimental-lsp'],
+    });
+  });
+
+  it('passes a daemon-scoped model to spawned ACP children', async () => {
+    mockCreateSpawnChannelFactoryOptions.length = 0;
+
+    const handle = await bootHandle({
+      serveWebShell: false,
+      model: 'canopy-lite',
+    });
+    await handle.close();
+
+    expect(mockCreateSpawnChannelFactoryOptions.at(-1)).toMatchObject({
+      extraArgs: ['--model', 'canopy-lite'],
     });
   });
 

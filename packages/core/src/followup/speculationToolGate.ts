@@ -34,6 +34,7 @@ const SAFE_READ_ONLY_TOOLS = new Set<string>([
   ToolNames.READ_FILE,
   ToolNames.GREP,
   ToolNames.GLOB,
+  ToolNames.SUPER_SEARCH,
   ToolNames.LS,
   ToolNames.LSP,
   // web_fetch and web_search excluded — they require user confirmation

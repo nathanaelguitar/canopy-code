@@ -2303,6 +2303,13 @@ async function runCanopyServeImpl(
       (!envFlagDisabled(cdpTunnelOverWsEnv) &&
         (cdpTunnelOverWsEnv !== undefined || chromeExtensionOriginAllowed)),
   };
+  const serveModel = opts.model?.trim() || undefined;
+  const acpChildExtraArgs = [
+    ...(serveModel ? ['--model', serveModel] : []),
+    ...(opts.experimentalLsp === true ? ['--experimental-lsp'] : []),
+  ];
+  const acpChildExtraArgsOption =
+    acpChildExtraArgs.length > 0 ? { extraArgs: acpChildExtraArgs } : {};
   let channelRuntime = opts.channelSelection
     ? await loadChannelWorkerRuntime()
     : undefined;
@@ -3972,9 +3979,7 @@ async function runCanopyServeImpl(
             message,
           }),
       },
-      ...(opts.experimentalLsp === true
-        ? { extraArgs: ['--experimental-lsp'] }
-        : {}),
+      ...acpChildExtraArgsOption,
     });
     const statusProvider = runtime.createDaemonStatusProvider({
       env: runtimeEffectiveEnv,
@@ -3983,6 +3988,7 @@ async function runCanopyServeImpl(
       runtime.createWorkspaceProvidersStatusProvider({
         env: runtimeEffectiveEnv,
         workspaceTrusted: trustedWorkspace,
+        ...(serveModel ? { argv: { model: serveModel } } : {}),
       });
     const workspaceSkillsStatusProvider =
       runtime.createWorkspaceSkillsStatusProvider({
@@ -4684,9 +4690,7 @@ async function runCanopyServeImpl(
               message,
             }),
         },
-        ...(opts.experimentalLsp === true
-          ? { extraArgs: ['--experimental-lsp'] }
-          : {}),
+        ...acpChildExtraArgsOption,
       });
       const secondaryClientMcpSenderRegistry = new ClientMcpSenderRegistry();
       // Wire sub-session support for the secondary workspace too — without
@@ -4813,6 +4817,7 @@ async function runCanopyServeImpl(
           runtime.createWorkspaceProvidersStatusProvider({
             env: secondaryEnv.effectiveEnv,
             workspaceTrusted: secondaryTrusted,
+            ...(serveModel ? { argv: { model: serveModel } } : {}),
           }),
         workspaceSkillsStatusProvider:
           runtime.createWorkspaceSkillsStatusProvider({
@@ -5231,9 +5236,7 @@ async function runCanopyServeImpl(
               message,
             }),
         },
-        ...(opts.experimentalLsp === true
-          ? { extraArgs: ['--experimental-lsp'] }
-          : {}),
+        ...acpChildExtraArgsOption,
       });
       const wsClientMcpRegistry = new ClientMcpSenderRegistry();
       // eslint-disable-next-line prefer-const
@@ -5379,6 +5382,7 @@ async function runCanopyServeImpl(
             runtime.createWorkspaceProvidersStatusProvider({
               env: wsEnv.effectiveEnv,
               workspaceTrusted: trusted,
+              ...(serveModel ? { argv: { model: serveModel } } : {}),
             }),
           workspaceSkillsStatusProvider:
             runtime.createWorkspaceSkillsStatusProvider({

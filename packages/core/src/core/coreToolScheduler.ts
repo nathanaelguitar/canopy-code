@@ -542,6 +542,7 @@ const FS_PATH_TOOL_NAMES: ReadonlySet<string> = new Set<string>([
   ToolNames.WRITE_FILE,
   ToolNames.GREP,
   ToolNames.GLOB,
+  ToolNames.SUPER_SEARCH,
   ToolNames.LS,
   ToolNames.LSP,
   ToolNames.NOTEBOOK_EDIT,
@@ -723,6 +724,10 @@ export function extractToolFilePaths(
       }
       return out;
     }
+
+    case ToolNames.SUPER_SEARCH:
+      push(obj['path']);
+      return out;
 
     case ToolNames.LS:
       push(obj['path']);

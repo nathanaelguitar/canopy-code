@@ -67,6 +67,7 @@ const NUMBER_OPTION_BY_FLAG = invertOptionMap(NUMBER_OPTIONS);
 
 const STRING_OPTION_BY_FLAG = new Map<string, keyof ServeOptions>([
   ['hostname', 'hostname'],
+  ['model', 'model'],
   ['token', 'token'],
   ['workspace', 'workspace'],
   ['memory-project-scope', 'memoryProjectScope'],
@@ -396,6 +397,9 @@ export function parseServeFastPathArgs(
       const read = readOptionValue(argv, i, inlineValue);
       if (!read) return { kind: 'fallback' };
       i = read.nextIndex;
+      if (stringTarget === 'model' && read.value.trim() === '') {
+        return { kind: 'fallback' };
+      }
       if (
         stringTarget === 'workspace' &&
         (options.workspace !== undefined || read.value === '')

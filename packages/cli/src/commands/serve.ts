@@ -241,6 +241,7 @@ export async function maybeOpenWebShellBrowser(
 interface ServeArgs {
   port: number;
   hostname: string;
+  model?: string;
   token?: string;
   'max-sessions': number;
   'max-total-sessions'?: number;
@@ -316,6 +317,11 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
         default: DEFAULT_SERVE_HOSTNAME,
         description:
           'Interface to bind. Loopback (127.0.0.1, localhost, ::1, [::1]) is auth-free; anything else requires a token.',
+      })
+      .option('model', {
+        type: 'string',
+        description:
+          'Model id for ACP children spawned by this daemon. Overrides the persisted model for this daemon only.',
       })
       .option('token', {
         type: 'string',
@@ -914,6 +920,7 @@ export const serveCommand: CommandModule<unknown, ServeArgs> = {
       const handle = await runCanopyServe({
         port: argv.port,
         hostname: argv.hostname,
+        ...(argv.model !== undefined ? { model: argv.model } : {}),
         token: argv.token,
         mode: 'http-bridge',
         maxSessions: argv['max-sessions'],

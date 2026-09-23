@@ -182,6 +182,25 @@ describe('microcompactHistory', () => {
     ).toBe('recent file content');
   });
 
+  it('clears old super_search results so discovery output does not accumulate', () => {
+    const history: Content[] = [
+      makeToolCall('super_search'),
+      makeToolResult('super_search', 'old ranked candidate list'),
+      makeToolCall('super_search'),
+      makeToolResult('super_search', 'recent ranked candidate list'),
+    ];
+
+    const result = microcompactHistory(history, twoHoursAgo, DEFAULT_SETTINGS);
+
+    expect(result.meta!.toolsCleared).toBe(1);
+    expect(
+      result.history[1]!.parts![0]!.functionResponse!.response!['output'],
+    ).toBe(MICROCOMPACT_CLEARED_MESSAGE);
+    expect(
+      result.history[3]!.parts![0]!.functionResponse!.response!['output'],
+    ).toBe('recent ranked candidate list');
+  });
+
   it('preserves managed-memory reads while clearing ordinary reads', () => {
     const memoryPath = '/memory/feedback/testing.md';
     const ordinaryPath = '/project/src/example.ts';

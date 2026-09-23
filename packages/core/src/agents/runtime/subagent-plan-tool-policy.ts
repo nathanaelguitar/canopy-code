@@ -20,6 +20,7 @@ export const READ_ONLY_INSPECTION_TOOLS: readonly string[] = [
   ToolNames.READ_FILE,
   ToolNames.GREP,
   ToolNames.GLOB,
+  ToolNames.SUPER_SEARCH,
   ToolNames.LS,
   ToolNames.LSP,
   ToolNames.TOOL_SEARCH,

@@ -65,6 +65,7 @@ export const SAFE_TOOL_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   ToolNames.ZOOM_IMAGE,
   ToolNames.GREP,
   ToolNames.GLOB,
+  ToolNames.SUPER_SEARCH,
   ToolNames.LS,
   ToolNames.LSP,
   // Tool introspection

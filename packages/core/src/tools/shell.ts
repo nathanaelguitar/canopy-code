@@ -4986,7 +4986,8 @@ IMPORTANT: This tool is for terminal operations like git, npm, docker, etc. DO N
 - It is very helpful if you write a clear, concise description of what this command does in 5-10 words.
 
 - Avoid using run_shell_command with the \`find\`, \`grep\`, \`cat\`, \`head\`, \`tail\`, \`sed\`, \`awk\`, or \`echo\` commands, unless explicitly instructed or when these commands are truly necessary for the task. Instead, always prefer using the dedicated tools for these commands:
-  - File search: Use ${ToolNames.GLOB} (NOT find or ls)
+  - Open-ended user-file search: Use ${ToolNames.SUPER_SEARCH} (NOT find or ls)
+  - Directed codebase file search: Use ${ToolNames.GLOB} (NOT find or ls)
   - Content search: Use ${ToolNames.GREP} (NOT grep or rg)
   - Read files: Use ${ToolNames.READ_FILE} (NOT cat/head/tail)
   - Edit files: Use ${ToolNames.EDIT} (NOT sed/awk)
