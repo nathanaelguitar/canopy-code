@@ -133,6 +133,8 @@ test('keeps voice controls reachable on an extra-narrow touch viewport', async (
   const voice = page.getByRole('button', { name: 'Start voice dictation' });
   const send = page.locator('[data-web-shell-composer-submit]');
   await expect(model).toBeVisible();
+  await expect(model).toContainText('Model');
+  await expect(model).toHaveCSS('height', '44px');
   await expect(more).toBeVisible();
   await expect(voice).toBeVisible();
   await expect(send).toBeVisible();
