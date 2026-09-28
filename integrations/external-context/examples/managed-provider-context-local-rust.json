@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "provider-context-local-example": {
+      "command": "/administrator/path/to/qwen-code/integrations/external-context/rust/target/release/provider-context-local-example",
+      "args": [],
+      "cwd": "/administrator/path/to/qwen-code/integrations/external-context/examples/provider-extension-local",
+      "timeout": 8000,
+      "includeTools": ["context_search"]
+    }
+  }
+}

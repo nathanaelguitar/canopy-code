@@ -33,7 +33,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Mutex, OnceLock};
 
 use wayland_client::{
-    event_created_child,
+    Connection, Dispatch, Proxy, QueueHandle, WEnum, event_created_child,
     protocol::{
         wl_buffer::WlBuffer,
         wl_output::{self, WlOutput},
@@ -43,12 +43,11 @@ use wayland_client::{
         wl_shm::{self, WlShm},
         wl_shm_pool::WlShmPool,
     },
-    Connection, Dispatch, Proxy, QueueHandle, WEnum,
 };
 use wayland_protocols_wlr::foreign_toplevel::v1::client::{
     zwlr_foreign_toplevel_handle_v1::{self as ftl_handle, ZwlrForeignToplevelHandleV1},
     zwlr_foreign_toplevel_manager_v1::{
-        self as ftl_manager, ZwlrForeignToplevelManagerV1, EVT_TOPLEVEL_OPCODE,
+        self as ftl_manager, EVT_TOPLEVEL_OPCODE, ZwlrForeignToplevelManagerV1,
     },
 };
 use wayland_protocols_wlr::screencopy::v1::client::{
@@ -650,26 +649,23 @@ pub fn list_windows() -> anyhow::Result<Vec<WindowInfo>> {
 /// screencopy manager or `wl_shm` is unavailable so users on lighter wlroots
 /// builds stay supported.
 pub fn screenshot_bytes() -> anyhow::Result<Vec<u8>> {
-    match capture_via_screencopy() {
-        Ok(bytes) => return Ok(bytes),
-        Err(e) => tracing::warn!("native screencopy failed, falling back to grim: {e}"),
-    }
-    capture_via_grim()
+    let png = match capture_via_screencopy() {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            tracing::warn!("native screencopy failed, falling back to grim: {e}");
+            capture_via_grim()?
+        }
+    };
+    cua_driver_core::image_utils::validate_captured_png(&png)?;
+    Ok(png)
 }
 
 /// Shell out to `grim -t png -` — the wlroots reference screenshot tool. Kept
 /// as the last-resort fallback for compositors that hide screencopy.
 fn capture_via_grim() -> anyhow::Result<Vec<u8>> {
-    let out = std::process::Command::new("grim")
-        .args(["-t", "png", "-"])
-        .output()?;
-    if !out.status.success() {
-        anyhow::bail!("grim failed: {}", String::from_utf8_lossy(&out.stderr));
-    }
-    if out.stdout.is_empty() {
-        anyhow::bail!("grim produced no output");
-    }
-    Ok(out.stdout)
+    let mut command = std::process::Command::new("grim");
+    command.args(["-t", "png", "-"]);
+    crate::capture::run_bounded_png_command(&mut command, "grim")
 }
 
 /// Native screencopy path: bind manager + shm, allocate an anon mmap buffer,
@@ -721,16 +717,40 @@ fn capture_via_screencopy() -> anyhow::Result<Vec<u8>> {
             && state.capture.stride > 0
             && state.capture.height > 0
         {
+            cua_driver_core::image_utils::validate_native_capture_dimensions(
+                state.capture.width,
+                state.capture.height,
+            )?;
+            let min_stride = state
+                .capture
+                .width
+                .checked_mul(4)
+                .ok_or_else(|| anyhow::anyhow!("screencopy width overflows RGBA stride"))?;
+            if state.capture.stride < min_stride {
+                anyhow::bail!(
+                    "screencopy stride {} is smaller than width*4 {}; refusing allocation",
+                    state.capture.stride,
+                    min_stride
+                );
+            }
             let size = (state.capture.stride as usize)
                 .checked_mul(state.capture.height as usize)
                 .ok_or_else(|| anyhow::anyhow!("screencopy buffer size overflow"))?;
+            if size as u64 > cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES {
+                anyhow::bail!(
+                    "screencopy buffer requires {size} bytes, above the CUA capture limit of {} bytes",
+                    cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES
+                );
+            }
             let (anon_fd, p) = anon_shm(size)?;
             fd = anon_fd;
             mmap_ptr = p;
             mmap_len = size;
             use std::os::fd::AsFd as _;
             let pool_fd = unsafe { borrowed_fd(fd) };
-            let p = shm.create_pool(pool_fd.as_fd(), size as i32, &qh, ());
+            let pool_size = i32::try_from(size)
+                .map_err(|_| anyhow::anyhow!("screencopy buffer exceeds wl_shm limits"))?;
+            let p = shm.create_pool(pool_fd.as_fd(), pool_size, &qh, ());
             let fmt_raw = state.capture.format.unwrap();
             let fmt: wl_shm::Format = match wl_shm::Format::try_from(fmt_raw) {
                 Ok(f) => f,
@@ -767,7 +787,8 @@ fn capture_via_screencopy() -> anyhow::Result<Vec<u8>> {
             anyhow::bail!("screencopy ready without a backing buffer");
         }
         let raw = unsafe { std::slice::from_raw_parts(mmap_ptr as *const u8, mmap_len) };
-        let mut rgba = Vec::with_capacity((w as usize) * (h as usize) * 4);
+        let rgba_len = cua_driver_core::image_utils::validate_native_capture_dimensions(w, h)?;
+        let mut rgba = Vec::with_capacity(rgba_len);
         for row in 0..(h as usize) {
             let src_row = if state.capture.y_invert {
                 (h as usize) - 1 - row
@@ -788,7 +809,7 @@ fn capture_via_screencopy() -> anyhow::Result<Vec<u8>> {
                 rgba.extend_from_slice(&[r, g, b, a]);
             }
         }
-        cua_driver_core::image_utils::encode_rgba_to_png(&rgba, w, h)
+        cua_driver_core::image_utils::encode_rgba_to_png_owned(rgba, w, h)
     })();
 
     // Always tear down regardless of result.
@@ -903,7 +924,7 @@ fn crop_png_to_rect(
     rect_height: u32,
     label: &str,
 ) -> anyhow::Result<Vec<u8>> {
-    let image = image::load_from_memory(output_png)?;
+    let image = cua_driver_core::image_utils::decode_png_bounded(output_png)?;
     let image_width = image.width();
     let image_height = image.height();
     let x = rect_x.max(0) as u32;
@@ -921,7 +942,9 @@ fn crop_png_to_rect(
     let cropped = image.crop_imm(x, y, width, height);
     let mut cursor = std::io::Cursor::new(Vec::new());
     cropped.write_to(&mut cursor, image::ImageFormat::Png)?;
-    Ok(cursor.into_inner())
+    let png = cursor.into_inner();
+    cua_driver_core::image_utils::validate_captured_png(&png)?;
+    Ok(png)
 }
 
 /// Display-level capture dispatcher. Cascade:

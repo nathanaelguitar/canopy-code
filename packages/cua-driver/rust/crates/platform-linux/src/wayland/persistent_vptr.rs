@@ -31,8 +31,8 @@ use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 use std::thread;
 
-use crossbeam_channel::{bounded, Receiver, Sender};
-use wayland_client::{protocol::wl_pointer::ButtonState, Connection};
+use crossbeam_channel::{Receiver, Sender, bounded};
+use wayland_client::{Connection, protocol::wl_pointer::ButtonState};
 use wayland_protocols_wlr::virtual_pointer::v1::client::zwlr_virtual_pointer_v1::ZwlrVirtualPointerV1;
 
 use super::{evdev_pointer_button, open_vptr_session};

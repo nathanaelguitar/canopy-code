@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { TurnBoundaryCompactionEngine } from './compactionEngine.js';
-import { EventBus } from './eventBus.js';
+import { EventBus, serializedBridgeEventByteLength } from './eventBus.js';
 import type { BridgeEvent } from './eventBus.js';
 
 function makeTextChunk(id: number, text: string): BridgeEvent {
@@ -393,6 +393,127 @@ describe('TurnBoundaryCompactionEngine', () => {
       expect(data.update.sessionUpdate).toBe('user_message_chunk');
       expect(data.update.content.text).toBe('How are you?');
       expect(snap.compactedTurns[0]!.id).toBe(1);
+    });
+  });
+
+  describe('bounded turn accumulator', () => {
+    it('trims old text chunks by serialized byte budget and marks replay', () => {
+      const chunks = [
+        makeTextChunk(1, 'a'.repeat(64)),
+        makeTextChunk(2, 'b'.repeat(64)),
+        makeTextChunk(3, 'c'.repeat(64)),
+      ];
+      const chunkBytes = serializedBridgeEventByteLength(chunks[0]!);
+      expect(chunkBytes).toBeDefined();
+
+      const maxBytes = 2 * chunkBytes! - 1;
+      const engine = new TurnBoundaryCompactionEngine({
+        maxTurnAccumulatorEvents: 10,
+        maxTurnAccumulatorBytes: maxBytes,
+      });
+      for (const chunk of chunks) engine.ingest(chunk);
+      engine.ingest(makeTurnComplete(4));
+
+      const replay = engine.snapshot().compactedTurns;
+      expect(replay[0]).toMatchObject({
+        type: 'history_truncated',
+        data: {
+          reason: 'replay_window_exceeded',
+          scope: 'turn_compaction',
+          truncatedEvents: 2,
+          retainedEvents: 1,
+          maxBytes,
+          maxEvents: 10,
+          fullTranscriptAvailable: true,
+        },
+      });
+      expect(replay[1]?.id).toBe(3);
+      expect(extractTexts(replay)).toEqual(['c'.repeat(64)]);
+      expect(replay.at(-1)).toMatchObject({ type: 'turn_complete', id: 4 });
+    });
+
+    it('trims oldest discrete events by event budget and marks replay', () => {
+      const engine = new TurnBoundaryCompactionEngine({
+        maxTurnAccumulatorEvents: 2,
+        maxTurnAccumulatorBytes: 1024 * 1024,
+      });
+      engine.ingest(makeUserMessage(1, 'one'));
+      engine.ingest(makeUserMessage(2, 'two'));
+      engine.ingest(makeUserMessage(3, 'three'));
+      engine.ingest(makeUserMessage(4, 'four'));
+      engine.ingest(makeTurnComplete(5));
+
+      const replay = engine.snapshot().compactedTurns;
+      expect(replay[0]).toMatchObject({
+        type: 'history_truncated',
+        data: {
+          reason: 'replay_window_exceeded',
+          scope: 'turn_compaction',
+          truncatedEvents: 2,
+          retainedEvents: 2,
+          maxBytes: 1024 * 1024,
+          maxEvents: 2,
+          fullTranscriptAvailable: true,
+        },
+      });
+      expect(replay.slice(1).map((event) => event.id)).toEqual([3, 4, 5]);
+    });
+
+    it('keeps all live stream frames when turn replay is capped', async () => {
+      const engine = new TurnBoundaryCompactionEngine({
+        maxTurnAccumulatorEvents: 2,
+        maxTurnAccumulatorBytes: 1024 * 1024,
+      });
+      const bus = new EventBus(16, undefined, engine);
+      const iterator = bus.subscribe()[Symbol.asyncIterator]();
+
+      bus.publish({
+        type: 'session_update',
+        data: {
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'first' },
+          },
+        },
+      });
+      bus.publish({
+        type: 'session_update',
+        data: {
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'second' },
+          },
+        },
+      });
+      bus.publish({
+        type: 'session_update',
+        data: {
+          update: {
+            sessionUpdate: 'agent_message_chunk',
+            content: { type: 'text', text: 'third' },
+          },
+        },
+      });
+      bus.publish({ type: 'turn_complete', data: { stopReason: 'end_turn' } });
+
+      const live: BridgeEvent[] = [];
+      for (let index = 0; index < 4; index++) {
+        const next = await iterator.next();
+        expect(next.done).toBe(false);
+        live.push(next.value!);
+      }
+      await iterator.return?.();
+
+      expect(live.map((event) => event.id)).toEqual([1, 2, 3, 4]);
+      expect(extractTexts(live)).toEqual(['first', 'second', 'third']);
+      expect(bus.snapshotReplay()?.compactedTurns[0]).toMatchObject({
+        type: 'history_truncated',
+        data: {
+          scope: 'turn_compaction',
+          truncatedEvents: 1,
+          retainedEvents: 2,
+        },
+      });
     });
   });
 
@@ -1133,6 +1254,10 @@ describe('TurnBoundaryCompactionEngine', () => {
       const engine = new TurnBoundaryCompactionEngine({
         maxJournalEvents: 2,
         maxJournalBytes: 512,
+        // This case covers journal isolation. Keep the separate completed-
+        // turn accumulator roomy enough for all synthetic nested frames.
+        maxTurnAccumulatorEvents: 200,
+        maxTurnAccumulatorBytes: 128 * 1024 * 1024,
       });
       engine.ingest(makeToolCall(1, 'agent-1', 'running'));
       for (let i = 2; i <= 100; i++) {
@@ -1320,6 +1445,7 @@ describe('TurnBoundaryCompactionEngine', () => {
     it('does not let journal truncation corrupt the compacted turn', () => {
       const engine = new TurnBoundaryCompactionEngine({
         maxJournalEvents: 1,
+        maxTurnAccumulatorEvents: 10,
       });
       engine.ingest(makeTextChunk(1, 'Hello'));
       engine.ingest(makeTextChunk(2, ' world'));

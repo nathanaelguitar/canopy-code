@@ -735,7 +735,7 @@ impl Tool for ClickTool {
                         let dbg_path_c = dbg_path.clone();
                         let dbg_result = tokio::task::spawn_blocking(move || {
                             let png = crate::capture::screenshot_window_bytes(wid)?;
-                            let png = crate::capture::resize_png_if_needed(&png, max_dim)?;
+                            let png = crate::capture::resize_png_if_needed_owned(png, max_dim)?;
                             crate::capture::write_crosshair_png(&png, cx, cy, &dbg_path_c)
                         })
                         .await;

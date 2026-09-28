@@ -36,6 +36,9 @@ const DBUS_PATH: &str = "/org/freedesktop/DBus";
 const DBUS_IFACE: &str = "org.freedesktop.DBus";
 const BROWSER_HELPER_API_VERSION: u32 = 4;
 const SEMANTIC_CURSOR_API_VERSION: u32 = 8;
+const MAX_GDBUS_OUTPUT_BYTES: usize = 16 * 1024 * 1024;
+const MAX_GDBUS_CAPTURE_OUTPUT_BYTES: usize =
+    (cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES.div_ceil(3) * 4) + 1024;
 
 #[derive(Debug, Clone)]
 struct ShellWindow {
@@ -104,11 +107,19 @@ fn gdbus_call_to(
         .stderr(std::process::Stdio::null())
         .spawn()
         .ok()?;
-    let out = wait_timeout(child, timeout)?;
+    let max_stdout_bytes = if method.ends_with(".Capture") {
+        MAX_GDBUS_CAPTURE_OUTPUT_BYTES
+    } else {
+        MAX_GDBUS_OUTPUT_BYTES
+    };
+    let out = wait_timeout(child, timeout, max_stdout_bytes)?;
     if !out.status.success() {
         return None;
     }
-    Some(String::from_utf8_lossy(&out.stdout).into_owned())
+    Some(match String::from_utf8(out.stdout) {
+        Ok(stdout) => stdout,
+        Err(error) => String::from_utf8_lossy(error.as_bytes()).into_owned(),
+    })
 }
 
 /// Resolve the helper's immutable unique bus name and prove that it is hosted
@@ -237,18 +248,28 @@ pub fn trusted_screenshot_display() -> Option<Vec<u8>> {
 }
 
 fn decode_capture(raw: &str) -> Option<Vec<u8>> {
-    use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
+    use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
 
     let start = raw.find('\'')? + 1;
     let end = raw.rfind('\'')?;
     if end <= start {
         return None;
     }
-    B64.decode(&raw[start..end]).ok()
+    let encoded = &raw[start..end];
+    if encoded.len() > MAX_GDBUS_CAPTURE_OUTPUT_BYTES {
+        return None;
+    }
+    let png = B64.decode(encoded).ok()?;
+    cua_driver_core::image_utils::validate_captured_png(&png).ok()?;
+    Some(png)
 }
 
 /// `Child::wait` with a deadline (no extra crates). Kills + reaps on timeout.
-fn wait_timeout(mut child: std::process::Child, dur: Duration) -> Option<std::process::Output> {
+fn wait_timeout(
+    mut child: std::process::Child,
+    dur: Duration,
+    max_stdout_bytes: usize,
+) -> Option<std::process::Output> {
     use std::io::Read;
 
     // Drain stdout while the child is running. Capture() returns a base64 PNG
@@ -256,14 +277,26 @@ fn wait_timeout(mut child: std::process::Child, dur: Duration) -> Option<std::pr
     // reading deadlocks the child on a full pipe and turns a healthy Shell
     // response into a false timeout.
     let stdout = child.stdout.take()?;
+    let (oversized_tx, oversized_rx) = std::sync::mpsc::sync_channel(1);
     let reader = std::thread::spawn(move || {
         let mut stdout = stdout;
         let mut bytes = Vec::new();
-        stdout.read_to_end(&mut bytes).ok()?;
+        stdout
+            .by_ref()
+            .take(max_stdout_bytes as u64 + 1)
+            .read_to_end(&mut bytes)
+            .ok()?;
+        let _ = oversized_tx.send(bytes.len() > max_stdout_bytes);
         Some(bytes)
     });
     let deadline = std::time::Instant::now() + dur;
     let status = loop {
+        if oversized_rx.try_recv().unwrap_or(false) {
+            let _ = child.kill();
+            let _ = child.wait();
+            let _ = reader.join();
+            return None;
+        }
         match child.try_wait() {
             Ok(Some(status)) => break status,
             Ok(None) => {
@@ -287,6 +320,9 @@ fn wait_timeout(mut child: std::process::Child, dur: Duration) -> Option<std::pr
         }
     };
     let stdout = reader.join().ok().flatten()?;
+    if stdout.len() > max_stdout_bytes {
+        return None;
+    }
     Some(std::process::Output {
         status,
         stdout,

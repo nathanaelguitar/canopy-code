@@ -21,6 +21,10 @@ implementations, testkit, and helper crates.
 Platform crates are selected with `cfg(target_os)` from the main driver crate.
 Keep platform-specific behavior inside the matching `platform-<os>` crate.
 
+PNG transforms enforce decoded-image bounds while native capture retains its
+source dimensions. See [image decode limits](IMAGE_DECODE_LIMITS.md) for the
+limits and their scope.
+
 ## Build
 
 ```bash

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "external-context": {
+      "command": "/administrator/path/to/qwen-code/integrations/external-context/rust/target/release/canopy-external-context",
+      "args": [],
+      "cwd": "/administrator/path/to/repository",
+      "includeTools": ["context_search"]
+    }
+  }
+}

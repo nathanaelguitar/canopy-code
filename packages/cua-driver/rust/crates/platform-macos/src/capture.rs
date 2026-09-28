@@ -9,7 +9,7 @@
 //! would give lower overhead (no subprocess + temp file), but the subprocess
 //! approach is simpler to implement correctly and is reliable across OS versions.
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use std::process::Command;
 
 struct SecureCapturePath {
@@ -69,7 +69,7 @@ pub fn screenshot_window_bytes(window_id: u32) -> anyhow::Result<Vec<u8>> {
         );
     }
 
-    let bytes = std::fs::read(&capture.file)?;
+    let bytes = read_captured_png(&capture.file)?;
 
     if bytes.is_empty() {
         anyhow::bail!("screencapture produced empty output for window {window_id}");
@@ -110,11 +110,24 @@ pub fn screenshot_display_bytes() -> anyhow::Result<Vec<u8>> {
         );
     }
 
-    let bytes = std::fs::read(&capture.file)?;
+    let bytes = read_captured_png(&capture.file)?;
 
     if bytes.is_empty() {
         anyhow::bail!("screencapture produced empty output for main display");
     }
+    Ok(bytes)
+}
+
+fn read_captured_png(path: &std::path::Path) -> anyhow::Result<Vec<u8>> {
+    let size = std::fs::metadata(path)?.len();
+    if size > cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES as u64 {
+        anyhow::bail!(
+            "native screenshot PNG is {size} bytes, above the CUA capture limit of {} bytes",
+            cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES
+        );
+    }
+    let bytes = std::fs::read(path)?;
+    cua_driver_core::image_utils::validate_captured_png(&bytes)?;
     Ok(bytes)
 }
 
@@ -142,6 +155,11 @@ pub fn png_bytes_to_jpeg(png_bytes: &[u8], quality: u8) -> anyhow::Result<Vec<u8
 /// bytes unchanged.
 pub fn resize_png_if_needed(png_bytes: &[u8], max_dim: u32) -> anyhow::Result<Vec<u8>> {
     cua_driver_core::image_utils::resize_png_if_needed(png_bytes, max_dim)
+}
+
+/// Owned-input variant that reuses the capture buffer when no resize is needed.
+pub fn resize_png_if_needed_owned(png_bytes: Vec<u8>, max_dim: u32) -> anyhow::Result<Vec<u8>> {
+    cua_driver_core::image_utils::resize_png_if_needed_owned(png_bytes, max_dim)
 }
 
 /// Draw a red crosshair at pixel (cx, cy) on a PNG image and write to

@@ -25,6 +25,7 @@
 use std::time::Duration;
 
 use wayland_client::{
+    Connection, Dispatch, Proxy, QueueHandle,
     protocol::{
         wl_buffer::WlBuffer,
         wl_output::WlOutput,
@@ -32,7 +33,6 @@ use wayland_client::{
         wl_shm::{self, WlShm},
         wl_shm_pool::WlShmPool,
     },
-    Connection, Dispatch, Proxy, QueueHandle,
 };
 use wayland_protocols::ext::image_capture_source::v1::client::{
     ext_image_capture_source_v1::ExtImageCaptureSourceV1,
@@ -120,6 +120,7 @@ pub fn screenshot_via_ext_copy() -> anyhow::Result<Vec<u8>> {
             state.fmt
         );
     }
+    cua_driver_core::image_utils::validate_native_capture_dimensions(state.width, state.height)?;
 
     // Checked arithmetic on compositor-provided sizes. A malicious or
     // buggy compositor could announce dimensions that overflow `usize` on
@@ -138,8 +139,12 @@ pub fn screenshot_via_ext_copy() -> anyhow::Result<Vec<u8>> {
     if stride < state.width.saturating_mul(4) {
         anyhow::bail!(
             "compositor stride {} is smaller than width*4 {}; refusing to allocate (would alias rows)",
-            stride, state.width.saturating_mul(4)
+            stride,
+            state.width.saturating_mul(4)
         );
+    }
+    if stride > cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES as u32 {
+        anyhow::bail!("compositor stride exceeds the CUA capture byte limit");
     }
     let size = (stride as usize)
         .checked_mul(state.height as usize)
@@ -150,12 +155,20 @@ pub fn screenshot_via_ext_copy() -> anyhow::Result<Vec<u8>> {
                 state.height
             )
         })?;
+    if size as u64 > cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES {
+        anyhow::bail!(
+            "compositor buffer requires {size} bytes, above the CUA capture limit of {} bytes",
+            cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES
+        );
+    }
 
+    let pool_size = i32::try_from(size)
+        .map_err(|_| anyhow::anyhow!("compositor buffer exceeds wl_shm limits"))?;
     // Allocate the wl_shm buffer.
     let (fd, ptr) = super::anon_shm(size)?;
     use std::os::fd::AsFd as _;
     let pool_fd = unsafe { super::borrowed_fd(fd) };
-    let pool: WlShmPool = shm.create_pool(pool_fd.as_fd(), size as i32, &qh, ());
+    let pool: WlShmPool = shm.create_pool(pool_fd.as_fd(), pool_size, &qh, ());
     let fmt: wl_shm::Format = wl_shm::Format::try_from(state.fmt.unwrap()).map_err(|_| {
         anyhow::anyhow!(
             "compositor advertised unsupported wl_shm format {:#x}",
@@ -218,7 +231,8 @@ fn encode_buffer_to_png(
     // The image crate expects RGBA8888 row-packed. wl_shm gives us Argb8888
     // / Xrgb8888 which in little-endian memory layout is BGRA / BGRX. Swap
     // channels into RGBA and pack rows.
-    let mut rgba: Vec<u8> = Vec::with_capacity((width as usize) * (height as usize) * 4);
+    let rgba_len = cua_driver_core::image_utils::validate_native_capture_dimensions(width, height)?;
+    let mut rgba: Vec<u8> = Vec::with_capacity(rgba_len);
     for y in 0..(height as usize) {
         let row_start = y * (stride as usize);
         for x in 0..(width as usize) {
@@ -234,7 +248,7 @@ fn encode_buffer_to_png(
         }
     }
 
-    use image::{codecs::png::PngEncoder, ImageBuffer, Rgba};
+    use image::{ImageBuffer, Rgba, codecs::png::PngEncoder};
     let img: ImageBuffer<Rgba<u8>, _> = ImageBuffer::from_raw(width, height, rgba)
         .ok_or_else(|| anyhow::anyhow!("internal: buffer dims mismatch ({}x{})", width, height))?;
     let mut out: Vec<u8> = Vec::new();
@@ -245,6 +259,7 @@ fn encode_buffer_to_png(
         height,
         image::ExtendedColorType::Rgba8,
     )?;
+    cua_driver_core::image_utils::validate_captured_png(&out)?;
     Ok(out)
 }
 

@@ -64,6 +64,23 @@ qwen extensions link "$PWD"
 contract and security tests pass. Installing a released Extension must not need
 to run `npm install` or an install script on the user's machine.
 
+## Build the Rust variant
+
+From the repository root, run:
+
+```bash
+npm run build:rust:provider-context-extension --workspace @qwen-code/external-context
+```
+
+The command creates a target-specific extension directory at
+`integrations/external-context/dist/rust-provider-context-<target>/`. Link that
+directory with `qwen extensions link <path>`. It uses the same
+`provider-context-local-example` server identity, environment-variable names,
+timeout, and `context_search` tool. The generated manifest runs the Rust binary
+directly, removes the TypeScript-only `dist/main.js` argument, preserves any
+other manifest arguments, and leaves this TypeScript entrypoint and manifest
+unchanged. Build one package for each platform target you plan to distribute.
+
 Keep the MCP call timeout longer than the adapter's Provider timeout. This
 example gives the Provider request 5000ms and Qwen's MCP call 8000ms so the
 adapter can return a stable, redacted error after aborting the request.

@@ -38,7 +38,9 @@ pub fn register_browser_tools(engine: &Arc<BrowserEngine>, registry: &mut ToolRe
     registry.register(Box::new(BrowserDialogTool::new(engine.clone())));
     registry.register(Box::new(BrowserSetInputFilesTool::new(engine.clone())));
     registry.register(Box::new(BrowserDownloadTool::new(engine.clone())));
-    registry.register(Box::new(super::captcha::BrowserCaptchaSolverTool::new(engine.clone())));
+    registry.register(Box::new(super::captcha::BrowserCaptchaSolverTool::new(
+        engine.clone(),
+    )));
     registry.register(Box::new(BrowserPointerTool::new(engine.clone())));
 }
 

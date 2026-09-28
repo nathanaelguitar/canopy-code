@@ -1,0 +1,16 @@
+[package]
+name = "canopy-external-context"
+version = "0.21.11"
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+futures-util = "0.3"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream", "gzip", "brotli", "deflate", "socks"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+tokio = { version = "1", features = ["io-std", "io-util", "macros", "rt", "sync", "time"] }
+url = "2.5"

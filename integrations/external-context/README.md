@@ -17,6 +17,48 @@ Search V1 contract for existing knowledge or RAG services. Only Mem0 has an
 optional write path. There is no generic ingestion protocol, personal memory,
 trusted user identity, per-document ACL, or tamper-resistant audit.
 
+A Rust implementation is available under rust/. Build it with
+npm run build:rust and use the Rust managed MCP examples when launching the
+server binary. To produce a linkable native Rust extension package for the
+current Rust target, run:
+
+```bash
+npm run build:rust:extension --workspace @qwen-code/external-context
+```
+
+The command prints a target-specific directory under
+`integrations/external-context/dist/`. Link that directory with
+`qwen extensions link <printed-directory>`. Set
+`QWEN_EXTERNAL_CONTEXT_CONFIG` and the provider credential in Qwen's
+environment first. The generated package has a `canopy-extension.json` and
+the compiled MCP binary; it exposes the same `external-context` server and
+search-only tool as the existing TypeScript extension. The source
+`qwen-extension.json` and its TypeScript `dist/main.js` entrypoint are left
+unchanged.
+
+The extension manifest launches one fixed command and has no target selector,
+while Rust emits target-specific binaries (including `.exe` naming on Windows).
+Build one package per target triple. Cross-compilation is available through
+Cargo when the target toolchain is installed:
+
+```bash
+npm run build:rust:extension --workspace @qwen-code/external-context -- --target aarch64-apple-darwin
+```
+
+The copyable local REST provider example also has a Rust extension package
+builder. Run `npm run build:rust:provider-context-extension --workspace
+@qwen-code/external-context`; it writes a separate
+`dist/rust-provider-context-<target>/` directory. Link that directory to use
+the Rust server with the same `provider-context-local-example` identity,
+`PROVIDER_CONTEXT_BASE_URL`/`PROVIDER_CONTEXT_TOKEN` environment schema,
+timeout, and `context_search` tool. The native manifest removes the TypeScript
+`dist/main.js` launcher argument and retains any other source-manifest args.
+The TypeScript example manifest and entrypoint remain unchanged.
+
+For the administrator-managed deployment profiles below, continue to use the
+Rust managed MCP examples; they pin an absolute executable and configuration
+path instead of relying on extension enablement.
+
 Provider teams that need a separately owned and released integration should
 implement the
 [External Context Provider Extension Profile v1](../../docs/design/external-context-provider-extensions.md).
@@ -110,6 +152,12 @@ confirmation; use the governed profile when that is required.
    Phase 1 is a private monorepo workspace. Copying the directory or its npm
    tarball without packaging its runtime dependencies is not a supported
    deployment.
+
+   To build the Rust MCP server instead, run
+   npm run build:rust --workspace @qwen-code/external-context and base the
+   managed server config on examples/managed-mcp-rust.json. The binary still
+   reads the same absolute QWEN_EXTERNAL_CONTEXT_CONFIG path and provider
+   credential variables.
 
 5. Copy `examples/managed-mcp.json` to an administrator-owned location and
    replace every placeholder with an absolute path. The `command`, `args`, and
@@ -250,19 +298,24 @@ shapes are removed from the submitted text, but this is not DLP.
    administrator-owned location. Set `repositoryRoot` to the one absolute
    repository bound to the Provider credential. The directory must exist and
    must not be a filesystem root.
-2. Build this workspace so `dist/auto-recall.js` exists.
-3. Put the applicable
-   `examples/managed-auto-recall-user-settings-posix.json` or
-   `examples/managed-auto-recall-user-settings-windows.json` content in the
-   `settings.json` of a dedicated administrator-controlled `QWEN_HOME`.
-   Replace all placeholders with fixed absolute Node and Hook paths.
+2. Build the selected Hook implementation. For TypeScript, run `npm run build`
+   so `dist/auto-recall.js` exists. For Rust, run
+   `npm run build:rust:auto-recall --workspace @qwen-code/external-context`;
+   this creates `rust/target/release/auto-recall` (`auto-recall.exe` on
+   Windows).
+3. Put the matching POSIX or Windows settings example in the `settings.json`
+   of a dedicated administrator-controlled `QWEN_HOME`:
+   `managed-auto-recall-user-settings-*` for TypeScript, or
+   `managed-auto-recall-rust-user-settings-*` for Rust. Replace all
+   placeholders with fixed absolute executable and Hook paths. The Rust Hook
+   is a standalone binary and does not need Node at Hook invocation time.
 4. Point `QWEN_CODE_SYSTEM_SETTINGS_PATH` at an administrator-controlled copy
    of `examples/managed-auto-recall-system-settings.json`. Its system-level
    `disableAllHooks: false` prevents lower-precedence workspace settings from
    suppressing the required Hook.
 5. Use a launcher that accepts no arguments, verifies stdin and stdout are
    TTYs, starts in `repositoryRoot`, supplies only an administrator-approved
-   environment, and fixes all Qwen, Node, Hook, configuration, settings, and
+   environment, and fixes all Qwen, runtime, Hook, configuration, settings, and
    credential paths. It must set
    `QWEN_CODE_MEMORY_TEAM=0`, `QWEN_CODE_MEMORY_TEAM_SYNC=0`,
    `QWEN_TELEMETRY_ENABLED=0`, `QWEN_TELEMETRY_LOG_PROMPTS=0`,
@@ -293,13 +346,13 @@ recall; only ordinary submitted turns are eligible.
 
 The Hook reads at most 1 MiB from stdin, emits at most 4000 code units of
 structured `untrusted_external_context`, performs no retries or caching, and
-fails open as `{}` after the Node entry point starts. Failure to spawn the
-pinned Node process and a Qwen outer command timeout retain Qwen's blocking
-command-Hook semantics. The Provider timeout defaults to 1500ms and is capped
-at 5000ms; the internal Hook wall-clock budget is 6500ms and the managed Qwen
-command timeout is 8000ms. Each Hook invocation destroys its own proxy
-dispatcher after the attempted retrieval so stalled proxy connections cannot
-retain the child process; the long-running MCP process keeps its dispatcher.
+fails open as `{}` after its process starts. Failure to spawn the pinned Hook
+process and a Qwen outer command timeout retain Qwen's blocking command-Hook
+semantics. The Provider timeout defaults to 1500ms and is capped at 5000ms; the
+internal Hook wall-clock budget is 6500ms and the managed Qwen command timeout
+is 8000ms. The TypeScript Hook destroys its Undici proxy dispatcher after the
+attempted retrieval. The Rust Hook cancels the request future at its provider
+timeout or wall-clock deadline and exits after dropping its HTTP client.
 
 Retrieved results are sent to the model provider as user-layer additional
 context. The managed profile disables Qwen chat recording, native memory,

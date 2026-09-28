@@ -1,4 +1,12 @@
-# Codex handoff: finish Stage A (daemon-attached TUI)
+# Historical handoff: daemon-attached TUI on ACP
+
+> **Superseded on 2026-09-27.** The Canopy direction is now to build on Codex
+> as the agent runtime while retaining Canopy's daemon and CanopyChat remote
+> control. Do not continue the Stage A plan below as written: it assumes a
+> daemon-spawned `canopy --acp` child is the execution engine. Use
+> [`docs/design/codex-canopy-integration.md`](docs/design/codex-canopy-integration.md)
+> for the Codex adapter plan. The live-tested daemon co-driving, event stream,
+> and permission APIs recorded below remain useful integration evidence.
 
 Branch: `remote-attach` (based on `canopy-rebrand`, in the `qwen-code`/
 `canopy-code` repo). Full design doc, read it first:

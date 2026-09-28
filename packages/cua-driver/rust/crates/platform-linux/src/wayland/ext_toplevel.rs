@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 
 use wayland_client::{
-    event_created_child, protocol::wl_registry, Connection, Dispatch, Proxy, QueueHandle,
+    Connection, Dispatch, Proxy, QueueHandle, event_created_child, protocol::wl_registry,
 };
 use wayland_protocols::ext::foreign_toplevel_list::v1::client::{
     ext_foreign_toplevel_handle_v1::{self as ext_handle, ExtForeignToplevelHandleV1},
     ext_foreign_toplevel_list_v1::{
-        self as ext_list, ExtForeignToplevelListV1, EVT_TOPLEVEL_OPCODE,
+        self as ext_list, EVT_TOPLEVEL_OPCODE, ExtForeignToplevelListV1,
     },
 };
 

@@ -702,7 +702,7 @@ impl Tool for GetWindowStateTool {
                         let orig_w = crate::capture::png_dimensions_pub(&raw)
                             .map(|(w, _)| w)
                             .unwrap_or(0);
-                        let png = crate::capture::resize_png_if_needed(&raw, max_dim)?;
+                        let png = crate::capture::resize_png_if_needed_owned(raw, max_dim)?;
                         let (w, h) = crate::capture::png_dimensions_pub(&png)?;
                         let original_w = if w < orig_w { Some(orig_w) } else { None };
                         if let Some(ref path) = screenshot_out_file {

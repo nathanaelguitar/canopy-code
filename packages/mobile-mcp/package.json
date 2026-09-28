@@ -12,16 +12,20 @@
   },
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc && chmod +x lib/index.js",
+    "build": "tsc && node scripts/make-ts-entry-executable.cjs",
+    "build:native": "node scripts/build-native.cjs",
     "lint": "eslint .",
     "fixlint": "eslint . --fix",
     "test": "c8 playwright test",
     "watch": "tsc --watch",
     "clean": "rm -rf lib",
-    "prepare": ""
+    "prepare": "",
+    "prepack": "npm run build && npm run build:native"
   },
   "files": [
-    "lib"
+    "bin",
+    "lib",
+    "native"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.26.0",
@@ -55,7 +59,7 @@
   },
   "main": "lib/index.js",
   "bin": {
-    "mcp-server-mobile": "lib/index.js"
+    "mcp-server-mobile": "bin/mcp-server-mobile.cjs"
   },
   "directories": {
     "lib": "lib"

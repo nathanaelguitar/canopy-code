@@ -1,0 +1,16 @@
+# Extension settings command port status
+
+## Implemented
+
+`extensions_settings_command.rs` implements `canopy extensions settings list <name>` and `canopy extensions settings set <name> <setting> [--scope user|workspace]`. It selects the requested enabled extension, reads its manifest settings, reads user and workspace `.env` values, loads sensitive values through the selected secret backend or the default keychain/encrypted-file backend, and applies workspace-over-user precedence with the matching scope labels. Sensitive values are always replaced with the TypeScript command's `[value stored in keychain]` label. Manifest and settings files are bounded regular-file reads; symlink files are rejected, and the opened file is checked against the initial metadata.
+
+The `set` operation accepts a setting's declared name or environment-variable name, defaults to user scope, and prompts once. It reuses the install command's hidden-input prompt for sensitive values, the shared extension setting validation and `.env` formatter, the core secret-storage backends, and core atomic no-follow writes. Workspace settings use a workspace-specific secret service. User settings with an existing selector write a scoped override and best-effort synchronize the legacy secret key, matching TypeScript behavior. Setting values are not included in success output, warnings, or errors. The module also strips terminal control sequences from displayed values and metadata. The main dispatcher already routes settings arguments to this module.
+
+The `.env` reader follows the installed and lockfile-resolved `dotenv` 17.4.2 `LINE` grammar: keys may contain ASCII letters, digits, `_`, `.`, and `-`; assignments accept `=` or a colon directly after the key and followed by whitespace; `export` is optional when followed by whitespace; and `#` starts comments outside quoted values. Single-, double-, and backtick-quoted values may span physical lines. Escaped matching quotes are accepted when locating the closing delimiter and remain in the value; only double-quoted `\\n` and `\\r` are expanded. Duplicate keys take the last value while retaining the first insertion position.
+
+## Remaining gaps
+
+- Deliberate parser differences: input CRLF and bare CR are normalized to LF; Rust's multiline regex anchors treat LF as the line boundary, while JavaScript also treats U+2028/U+2029 as line boundaries. The bounded Rust reader rejects invalid UTF-8, whereas Node's UTF-8 file decoding replaces malformed byte sequences. `IndexMap` preserves source order for integer-like keys, while JavaScript object enumeration orders integer-index keys numerically; Rust also stores `__proto__` as an ordinary map key, unlike assignment into dotenv's plain JavaScript object. None of these differences affect secret storage or display handling.
+- The core has no combined extension-settings transaction API. As in TypeScript, selector override and legacy-key synchronization are separate writes; synchronization failure leaves the scoped override active and emits a generic warning.
+- The command does not refresh settings already held by a running extension manager; the TypeScript command also writes the setting without an explicit manager refresh.
+- The top-level static CLI help and settings command help list both operations.

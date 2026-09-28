@@ -6,9 +6,10 @@
 //! 3. `scrot -u <file>` (focused window fallback)
 //! 4. XGetImage via x11rb (pure Rust, no subprocess)
 
-use anyhow::{bail, Result};
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
-use std::process::Command;
+use anyhow::{Result, bail};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use std::io::Read;
+use std::process::{Command, Stdio};
 
 /// Capture a window by X11 XID. Returns raw PNG bytes.
 pub fn screenshot_window_bytes(xid: u64) -> Result<Vec<u8>> {
@@ -20,6 +21,7 @@ pub fn screenshot_window_bytes(xid: u64) -> Result<Vec<u8>> {
     let (b64, _, _) = capture_via_xgetimage(xid)?;
     use base64::Engine as _;
     let bytes = base64::engine::general_purpose::STANDARD.decode(&b64)?;
+    cua_driver_core::image_utils::validate_captured_png(&bytes)?;
     Ok(bytes)
 }
 
@@ -36,13 +38,46 @@ pub fn screenshot_window(xid: u64) -> Result<(String, u32, u32)> {
 }
 
 fn capture_via_import(xid: u64) -> Result<Vec<u8>> {
-    let out = Command::new("import")
-        .args(["-window", &xid.to_string(), "png:-"])
-        .output()?;
-    if !out.status.success() || out.stdout.is_empty() {
-        bail!("import failed");
+    let mut command = Command::new("import");
+    command.args(["-window", &xid.to_string(), "png:-"]);
+    run_bounded_png_command(&mut command, "import")
+}
+
+/// Capture a PNG from a subprocess without retaining unbounded stdout.
+pub(crate) fn run_bounded_png_command(command: &mut Command, label: &str) -> Result<Vec<u8>> {
+    let mut child = command
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()?;
+    let mut stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| anyhow::anyhow!("{label} did not expose stdout"))?;
+    let mut bytes = Vec::new();
+    if let Err(error) = stdout
+        .by_ref()
+        .take(cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)
+    {
+        let _ = child.kill();
+        let _ = child.wait();
+        return Err(error.into());
     }
-    Ok(out.stdout)
+    drop(stdout);
+    if bytes.len() > cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES {
+        let _ = child.kill();
+        let _ = child.wait();
+        bail!(
+            "{label} screenshot exceeds the CUA {}-byte capture limit",
+            cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES
+        );
+    }
+    let status = child.wait()?;
+    if !status.success() || bytes.is_empty() {
+        bail!("{label} failed to produce a screenshot (status {status})");
+    }
+    cua_driver_core::image_utils::validate_captured_png(&bytes)?;
+    Ok(bytes)
 }
 
 fn capture_via_xgetimage(xid: u64) -> Result<(String, u32, u32)> {
@@ -55,6 +90,7 @@ fn capture_via_xgetimage(xid: u64) -> Result<(String, u32, u32)> {
     let geom = conn.get_geometry(window)?.reply()?;
     let w = geom.width as u32;
     let h = geom.height as u32;
+    let rgba_len = cua_driver_core::image_utils::validate_native_capture_dimensions(w, h)?;
 
     let img = conn
         .get_image(
@@ -78,14 +114,15 @@ fn capture_via_xgetimage(xid: u64) -> Result<(String, u32, u32)> {
     };
 
     // Convert to RGBA.
-    let mut rgba = Vec::with_capacity((w * h * 4) as usize);
+    let mut rgba = Vec::with_capacity(rgba_len);
     for chunk in bytes.chunks_exact(bpp) {
         let (b, g, r) = (chunk[0], chunk[1], chunk[2]);
         let a = if has_alpha { chunk[3] } else { 255 };
         rgba.extend_from_slice(&[r, g, b, a]);
     }
 
-    let png = cua_driver_core::image_utils::encode_rgba_to_png(&rgba, w, h)?;
+    drop(bytes);
+    let png = cua_driver_core::image_utils::encode_rgba_to_png_owned(rgba, w, h)?;
     Ok((BASE64.encode(&png), w, h))
 }
 
@@ -123,11 +160,13 @@ fn screenshot_display_bytes_with_dispatch(
     wayland_capture: impl FnOnce() -> Result<Vec<u8>>,
     x11_capture: impl FnOnce() -> Result<Vec<u8>>,
 ) -> Result<Vec<u8>> {
-    if wayland_enabled {
+    let bytes = if wayland_enabled {
         wayland_capture()
     } else {
         x11_capture()
-    }
+    }?;
+    cua_driver_core::image_utils::validate_captured_png(&bytes)?;
+    Ok(bytes)
 }
 
 /// X11-only display capture path — extracted so the wayland cascade in
@@ -136,13 +175,10 @@ fn screenshot_display_bytes_with_dispatch(
 /// loop forever once we're on Wayland).
 pub(crate) fn screenshot_display_bytes_x11() -> Result<Vec<u8>> {
     // Try `import -window root png:-` (ImageMagick).
-    let out = Command::new("import")
-        .args(["-window", "root", "png:-"])
-        .output();
-    if let Ok(o) = out {
-        if o.status.success() && !o.stdout.is_empty() {
-            return Ok(o.stdout);
-        }
+    let mut command = Command::new("import");
+    command.args(["-window", "root", "png:-"]);
+    if let Ok(bytes) = run_bounded_png_command(&mut command, "import") {
+        return Ok(bytes);
     }
     // Fallback: x11rb XGetImage on the root window.
     use x11rb::connection::Connection;
@@ -166,6 +202,7 @@ pub(crate) fn screenshot_display_bytes_x11() -> Result<Vec<u8>> {
             crate::no_display_hint()
         );
     }
+    let rgba_len = cua_driver_core::image_utils::validate_native_capture_dimensions(w, h)?;
     let img = conn
         .get_image(ImageFormat::Z_PIXMAP, root, 0, 0, w as u16, h as u16, !0u32)?
         .reply()?;
@@ -174,18 +211,19 @@ pub(crate) fn screenshot_display_bytes_x11() -> Result<Vec<u8>> {
         32 | 24 => 4usize,
         _ => anyhow::bail!("Unsupported depth"),
     };
-    let mut rgba = Vec::with_capacity((w * h * 4) as usize);
+    let mut rgba = Vec::with_capacity(rgba_len);
     for chunk in bytes.chunks_exact(bpp) {
         let (b, g, r) = (chunk[0], chunk[1], chunk[2]);
         rgba.extend_from_slice(&[r, g, b, 255]);
     }
-    cua_driver_core::image_utils::encode_rgba_to_png(&rgba, w, h)
+    drop(bytes);
+    cua_driver_core::image_utils::encode_rgba_to_png_owned(rgba, w, h)
 }
 
 /// Capture the primary display, returning (base64_png, width, height).
 pub fn screenshot_display() -> Result<(String, u32, u32)> {
     let png_bytes = screenshot_display_bytes()?;
-    let (w, h) = cua_driver_core::image_utils::png_dimensions(&png_bytes)?;
+    let (w, h) = cua_driver_core::image_utils::validate_captured_png(&png_bytes)?;
     Ok((BASE64.encode(&png_bytes), w, h))
 }
 
@@ -204,6 +242,11 @@ pub fn png_bytes_to_jpeg(png_bytes: &[u8], quality: u8) -> Result<Vec<u8>> {
 /// original bytes unchanged.
 pub fn resize_png_if_needed(png_bytes: &[u8], max_dim: u32) -> Result<Vec<u8>> {
     cua_driver_core::image_utils::resize_png_if_needed(png_bytes, max_dim)
+}
+
+/// Owned-input variant that reuses the capture buffer when no resize is needed.
+pub fn resize_png_if_needed_owned(png_bytes: Vec<u8>, max_dim: u32) -> Result<Vec<u8>> {
+    cua_driver_core::image_utils::resize_png_if_needed_owned(png_bytes, max_dim)
 }
 
 /// Draw a red crosshair at pixel (cx, cy) on a PNG image and return

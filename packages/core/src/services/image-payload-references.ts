@@ -11,6 +11,9 @@ import { approxBase64Bytes } from '../core/inlineMediaLimit.js';
 import { getFunctionResponseParts } from './compactionInputSlimming.js';
 
 const IMAGE_ID_LENGTH = 12;
+export const DEFAULT_IMAGE_PAYLOAD_CACHE_MAX_BYTES = 8 * 1024 * 1024;
+export const IMAGE_PAYLOAD_CACHE_MAX_ENTRIES = 64;
+const IMAGE_PAYLOAD_CACHE_ENTRY_OVERHEAD_BYTES = 256;
 const IMAGE_REFERENCE_PATTERN = new RegExp(
   `Image #([a-f0-9]{${IMAGE_ID_LENGTH}})`,
   'gi',
@@ -29,22 +32,92 @@ export interface ImagePayloadStore {
   get(id: string): StoredImagePayload | undefined;
 }
 
+export interface InMemoryImagePayloadStoreOptions {
+  /** Maximum retained payload and metadata size. Defaults to 8 MiB. */
+  maxBytes?: number;
+  /** Maximum retained payload count. Defaults to 64. */
+  maxEntries?: number;
+}
+
 interface CollectedImage {
   stored: StoredImagePayload;
 }
 
 export class InMemoryImagePayloadStore implements ImagePayloadStore {
   private readonly images = new Map<string, StoredImagePayload>();
+  private retainedBytes = 0;
+
+  private readonly maxBytes: number;
+  private readonly maxEntries: number;
+
+  constructor(options: InMemoryImagePayloadStoreOptions = {}) {
+    this.maxBytes = normalizeNonNegativeLimit(
+      options.maxBytes,
+      DEFAULT_IMAGE_PAYLOAD_CACHE_MAX_BYTES,
+    );
+    this.maxEntries = normalizeNonNegativeLimit(
+      options.maxEntries,
+      IMAGE_PAYLOAD_CACHE_MAX_ENTRIES,
+    );
+  }
 
   put(part: Part): StoredImagePayload {
     const stored = imagePartToStoredPayload(part);
+    const prior = this.images.get(stored.id);
+    if (prior) {
+      this.images.delete(stored.id);
+      this.retainedBytes -= imagePayloadCacheCost(prior);
+    }
+
+    const cost = imagePayloadCacheCost(stored);
+    if (cost > this.maxBytes || this.maxEntries === 0) {
+      return stored;
+    }
+
+    // Map insertion order is the LRU order. Re-inserting a duplicate image
+    // marks it as most recently used without retaining a second copy.
     this.images.set(stored.id, stored);
+    this.retainedBytes += cost;
+    while (
+      this.images.size > this.maxEntries ||
+      this.retainedBytes > this.maxBytes
+    ) {
+      const oldestId = this.images.keys().next().value;
+      if (oldestId === undefined) break;
+      const oldest = this.images.get(oldestId);
+      this.images.delete(oldestId);
+      if (oldest) this.retainedBytes -= imagePayloadCacheCost(oldest);
+    }
     return stored;
   }
 
   get(id: string): StoredImagePayload | undefined {
-    return this.images.get(id);
+    const stored = this.images.get(id);
+    if (!stored) return undefined;
+    this.images.delete(id);
+    this.images.set(id, stored);
+    return stored;
   }
+}
+
+function normalizeNonNegativeLimit(
+  value: number | undefined,
+  fallback: number,
+) {
+  return value !== undefined && Number.isSafeInteger(value) && value >= 0
+    ? value
+    : fallback;
+}
+
+function imagePayloadCacheCost(stored: StoredImagePayload): number {
+  const displayNameBytes = stored.displayName?.length ?? 0;
+  return (
+    stored.id.length +
+    stored.mimeType.length +
+    stored.data.length +
+    displayNameBytes +
+    IMAGE_PAYLOAD_CACHE_ENTRY_OVERHEAD_BYTES
+  );
 }
 
 export function countAllInlineImages(contents: Content[]): number {
@@ -148,6 +221,14 @@ export function prepareImagePayloadsForRequest(
   },
 ): Content[] {
   const referencedIds = collectReferencedImageIds(contents.at(-1));
+  // Hold explicit references for this request before inserting new images can
+  // evict them from a bounded store. This temporary set dies with the request;
+  // the long-lived cache remains under its byte and entry limits.
+  const referencedImages = new Map<string, StoredImagePayload>();
+  for (const id of referencedIds) {
+    const stored = options.store.get(id);
+    if (stored) referencedImages.set(stored.id, stored);
+  }
   const collected: CollectedImage[] = [];
   const transformed = contents.map((content, index) => {
     if (index === options.preserveImagePartsForContentIndex) {
@@ -186,11 +267,8 @@ export function prepareImagePayloadsForRequest(
       reattachById.set(image.stored.id, image.stored);
     }
   }
-  for (const id of referencedIds) {
-    const stored = options.store.get(id);
-    if (stored) {
-      reattachById.set(stored.id, stored);
-    }
+  for (const [id, stored] of referencedImages) {
+    reattachById.set(id, stored);
   }
 
   if (reattachById.size === 0) {

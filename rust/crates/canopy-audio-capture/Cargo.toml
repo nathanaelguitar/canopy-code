@@ -1,0 +1,25 @@
+[package]
+name = "canopy-audio-capture"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.85"
+description = "Native microphone capture API for Canopy"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[features]
+default = []
+node-addon = ["dep:napi", "dep:napi-derive"]
+
+[dependencies]
+napi = { version = "2.16.17", default-features = false, features = ["napi8"], optional = true }
+napi-derive = { version = "2.16.13", optional = true }
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-av-foundation = { version = "0.3.2", default-features = false, features = ["std", "AVCaptureDevice", "AVMediaFormat"] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSProcessInfo"] }
+
+[build-dependencies]
+cc = "1"
+napi-build = "2.1.3"

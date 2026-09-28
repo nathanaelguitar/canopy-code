@@ -772,7 +772,7 @@ fn exact_pixel_setup_checkbox(
             ),
         )
     })?;
-    let screenshot = image::load_from_memory(&png)
+    let screenshot = cua_driver_core::image_utils::decode_png_bounded(&png)
         .map_err(|error| {
             refusal(
                 BrowserRefusalCode::BrowserRouteUnavailable,
@@ -782,7 +782,7 @@ fn exact_pixel_setup_checkbox(
                 ),
             )
         })?
-        .to_rgba8();
+        .into_rgba8();
     let geometry = setup_geometry(
         capture_frame,
         *omnibox_frame,

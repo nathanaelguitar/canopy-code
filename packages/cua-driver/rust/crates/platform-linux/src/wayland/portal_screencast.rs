@@ -193,97 +193,145 @@ fn capture_one_frame(pipewire_fd: i32, node_id: u32) -> anyhow::Result<Vec<u8>> 
     let frame_for_process = frame.clone();
     let neg_format_for_process = neg_format.clone();
 
-    let _listener = stream
-        .add_local_listener::<()>()
-        .param_changed(move |_stream, _user, id, param| {
-            // The compositor confirms the negotiated VideoInfoRaw via the
-            // Format param event right after stream.connect — capture it
-            // so the process callback knows the width/height/format.
-            let Some(param) = param else { return };
-            if id != spa::param::ParamType::Format.as_raw() {
-                return;
-            }
-            let (media_type, media_subtype) = match spa::param::format_utils::parse_format(param) {
-                Ok(v) => v,
-                Err(_) => return,
-            };
-            if media_type != spa::param::format::MediaType::Video
-                || media_subtype != spa::param::format::MediaSubtype::Raw
-            {
-                return;
-            }
-            let mut info = spa::param::video::VideoInfoRaw::default();
-            if info.parse(param).is_ok() {
-                if let Ok(mut g) = neg_format_for_param.lock() {
-                    *g = info;
+    let _listener =
+        stream
+            .add_local_listener::<()>()
+            .param_changed(move |_stream, _user, id, param| {
+                // The compositor confirms the negotiated VideoInfoRaw via the
+                // Format param event right after stream.connect — capture it
+                // so the process callback knows the width/height/format.
+                let Some(param) = param else { return };
+                if id != spa::param::ParamType::Format.as_raw() {
+                    return;
                 }
-            }
-        })
-        .process(move |stream, _user| {
-            // Already captured? Drop further buffers (they'll be queued
-            // back via Buffer::Drop) so the run loop can finish.
-            if frame_for_process
-                .lock()
-                .ok()
-                .map(|g| g.is_some())
-                .unwrap_or(false)
-            {
-                let _ = stream.dequeue_buffer();
-                return;
-            }
-            let mut buffer = match stream.dequeue_buffer() {
-                Some(b) => b,
-                None => return,
-            };
-            let datas = buffer.datas_mut();
-            if datas.is_empty() {
-                return;
-            }
-            let info = match neg_format_for_process.lock() {
-                Ok(g) => *g,
-                Err(_) => return,
-            };
-            let size_struct = info.size();
-            let width = size_struct.width;
-            let height = size_struct.height;
-            if width == 0 || height == 0 {
-                return;
-            }
-            let chunk_stride = datas[0].chunk().stride();
-            let chunk_size = datas[0].chunk().size();
-            // PipeWire sometimes leaves stride at 0 (when the producer
-            // doesn't fill it in); fall back to width*4 for the packed
-            // BGRx/BGRA/RGBx/RGBA formats we negotiate.
-            let stride = if chunk_stride > 0 {
-                chunk_stride as u32
-            } else if chunk_size > 0 && height > 0 {
-                chunk_size / height
-            } else {
-                width * 4
-            };
-            let payload = match datas[0].data() {
-                Some(p) => p,
-                None => return,
-            };
-            let payload_len = (stride as usize) * (height as usize);
-            if payload.len() < payload_len {
-                return;
-            }
-            let bytes = payload[..payload_len].to_vec();
-            if let Ok(mut g) = frame_for_process.lock() {
-                *g = Some(FrameBuf {
-                    bytes,
-                    width,
-                    height,
-                    stride,
-                    format: info.format(),
-                });
-            }
-            // Quit the main loop so the caller can encode + return.
-            mainloop_for_process.quit();
-        })
-        .register()
-        .map_err(|e| anyhow::anyhow!("pipewire stream listener register failed: {e}"))?;
+                let (media_type, media_subtype) =
+                    match spa::param::format_utils::parse_format(param) {
+                        Ok(v) => v,
+                        Err(_) => return,
+                    };
+                if media_type != spa::param::format::MediaType::Video
+                    || media_subtype != spa::param::format::MediaSubtype::Raw
+                {
+                    return;
+                }
+                let mut info = spa::param::video::VideoInfoRaw::default();
+                if info.parse(param).is_ok() {
+                    if let Ok(mut g) = neg_format_for_param.lock() {
+                        *g = info;
+                    }
+                }
+            })
+            .process(move |stream, _user| {
+                // Already captured? Drop further buffers (they'll be queued
+                // back via Buffer::Drop) so the run loop can finish.
+                if frame_for_process
+                    .lock()
+                    .ok()
+                    .map(|g| g.is_some())
+                    .unwrap_or(false)
+                {
+                    let _ = stream.dequeue_buffer();
+                    return;
+                }
+                let mut buffer = match stream.dequeue_buffer() {
+                    Some(b) => b,
+                    None => return,
+                };
+                let datas = buffer.datas_mut();
+                if datas.is_empty() {
+                    return;
+                }
+                let info = match neg_format_for_process.lock() {
+                    Ok(g) => *g,
+                    Err(_) => return,
+                };
+                let size_struct = info.size();
+                let width = size_struct.width;
+                let height = size_struct.height;
+                if width == 0 || height == 0 {
+                    return;
+                }
+                let pixel_bytes =
+                    match cua_driver_core::image_utils::validate_native_capture_dimensions(
+                        width, height,
+                    ) {
+                        Ok(bytes) => bytes,
+                        Err(error) => {
+                            tracing::warn!(
+                                "portal ScreenCast frame exceeded CUA capture limits: {error}"
+                            );
+                            let _ = stream.dequeue_buffer();
+                            mainloop_for_process.quit();
+                            return;
+                        }
+                    };
+                let chunk_stride = datas[0].chunk().stride();
+                let chunk_size = datas[0].chunk().size();
+                // PipeWire sometimes leaves stride at 0 (when the producer
+                // doesn't fill it in); fall back to width*4 for the packed
+                // BGRx/BGRA/RGBx/RGBA formats we negotiate.
+                let stride = if chunk_stride > 0 {
+                    chunk_stride as u32
+                } else if chunk_size > 0 && height > 0 {
+                    chunk_size / height
+                } else {
+                    width * 4
+                };
+                let min_stride = match width.checked_mul(4) {
+                    Some(stride) => stride,
+                    None => {
+                        let _ = stream.dequeue_buffer();
+                        mainloop_for_process.quit();
+                        return;
+                    }
+                };
+                let payload_len = match (stride as usize).checked_mul(height as usize) {
+                    Some(size)
+                        if stride >= min_stride
+                            && size as u64
+                                <= cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES =>
+                    {
+                        size
+                    }
+                    _ => {
+                        tracing::warn!(
+                            "portal ScreenCast frame stride exceeded CUA capture limits"
+                        );
+                        let _ = stream.dequeue_buffer();
+                        mainloop_for_process.quit();
+                        return;
+                    }
+                };
+                let payload = match datas[0].data() {
+                    Some(p) => p,
+                    None => return,
+                };
+                if payload.len() < payload_len {
+                    return;
+                }
+                if pixel_bytes > payload_len {
+                    tracing::warn!(
+                        "portal ScreenCast frame is smaller than its declared dimensions"
+                    );
+                    let _ = stream.dequeue_buffer();
+                    mainloop_for_process.quit();
+                    return;
+                }
+                let bytes = payload[..payload_len].to_vec();
+                if let Ok(mut g) = frame_for_process.lock() {
+                    *g = Some(FrameBuf {
+                        bytes,
+                        width,
+                        height,
+                        stride,
+                        format: info.format(),
+                    });
+                }
+                // Quit the main loop so the caller can encode + return.
+                mainloop_for_process.quit();
+            })
+            .register()
+            .map_err(|e| anyhow::anyhow!("pipewire stream listener register failed: {e}"))?;
 
     // Build an EnumFormat SPA pod listing the formats + sizes we accept.
     // Compositors typically pick BGRx/BGRA on Linux desktops; we list a
@@ -409,7 +457,23 @@ fn encode_frame_to_png(
     fmt: libspa::param::video::VideoFormat,
 ) -> anyhow::Result<Vec<u8>> {
     use libspa::param::video::VideoFormat;
-    let mut rgba: Vec<u8> = Vec::with_capacity((width as usize) * (height as usize) * 4);
+    let rgba_len = cua_driver_core::image_utils::validate_native_capture_dimensions(width, height)?;
+    let min_stride = width
+        .checked_mul(4)
+        .ok_or_else(|| anyhow::anyhow!("PipeWire frame width overflows its RGBA stride"))?;
+    if stride < min_stride {
+        anyhow::bail!("PipeWire frame stride is smaller than width*4");
+    }
+    let payload_len = (stride as usize)
+        .checked_mul(height as usize)
+        .ok_or_else(|| anyhow::anyhow!("PipeWire frame byte length overflow"))?;
+    if payload_len as u64 > cua_driver_core::image_utils::MAX_CAPTURE_RGBA_BYTES
+        || pixels.len() < payload_len
+        || rgba_len > payload_len
+    {
+        anyhow::bail!("PipeWire frame exceeds or does not match CUA capture limits");
+    }
+    let mut rgba: Vec<u8> = Vec::with_capacity(rgba_len);
     for y in 0..(height as usize) {
         let row_start = y * (stride as usize);
         for x in 0..(width as usize) {
@@ -426,7 +490,7 @@ fn encode_frame_to_png(
             rgba.extend_from_slice(&[r, g, b, a]);
         }
     }
-    use image::{codecs::png::PngEncoder, ImageBuffer, ImageEncoder, Rgba};
+    use image::{ImageBuffer, ImageEncoder, Rgba, codecs::png::PngEncoder};
     let img: ImageBuffer<Rgba<u8>, _> = ImageBuffer::from_raw(width, height, rgba)
         .ok_or_else(|| anyhow::anyhow!("internal: buffer dims mismatch ({}x{})", width, height))?;
     let mut out: Vec<u8> = Vec::new();
@@ -436,6 +500,7 @@ fn encode_frame_to_png(
         height,
         image::ExtendedColorType::Rgba8,
     )?;
+    cua_driver_core::image_utils::validate_captured_png(&out)?;
     Ok(out)
 }
 

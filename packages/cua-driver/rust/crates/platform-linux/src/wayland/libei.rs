@@ -35,7 +35,7 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::thread;
 
-use crossbeam_channel::{bounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, bounded};
 use xkbcommon::xkb;
 
 /// Buttons the public API exposes. Mapped to evdev codes in the worker
@@ -462,10 +462,10 @@ fn open_eis_context() -> anyhow::Result<(reis::ei::Context, PortalKeepAlive)> {
 
     // Portal RemoteDesktop fallback.
     use ashpd::desktop::{
+        CreateSessionOptions, PersistMode,
         remote_desktop::{
             ConnectToEISOptions, DeviceType, RemoteDesktop, SelectDevicesOptions, StartOptions,
         },
-        CreateSessionOptions, PersistMode,
     };
     use ashpd::enumflags2::BitFlags;
     use std::os::unix::net::UnixStream;
@@ -553,7 +553,7 @@ fn open_eis_context() -> anyhow::Result<(reis::ei::Context, PortalKeepAlive)> {
 // Region selection picks the first announced ei_device::Region.
 
 fn run_calloop(context: reis::ei::Context, rx: Receiver<Cmd>) -> anyhow::Result<()> {
-    use calloop::{generic::Generic, EventLoop, Interest, Mode};
+    use calloop::{EventLoop, Interest, Mode, generic::Generic};
 
     let mut event_loop: EventLoop<EisState> = EventLoop::try_new()
         .map_err(|e| anyhow::anyhow!("calloop EventLoop::try_new failed: {e}"))?;

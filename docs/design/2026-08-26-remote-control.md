@@ -1,5 +1,13 @@
 # Remote Control (Tailscale-based daemon attach)
 
+> **Architecture update (2026-09-27):** This document records the earlier
+> daemon-attached ACP design. The plan to use `canopy --acp` as the execution
+> engine is superseded by the Codex runtime decision in
+> [`codex-canopy-integration.md`](./codex-canopy-integration.md). Keep the
+> validated Canopy daemon, co-driving, event, permission, pairing, and
+> CanopyChat requirements below as product constraints; do not follow the old
+> ACP wiring stages without adapting them to Codex.
+
 ## Summary
 
 Give the interactive TUI a "just like Claude Code" remote-control

@@ -66,6 +66,10 @@ type CompactedSlot =
       kind: 'text' | 'thought';
       parentToolCallId?: string;
       chunks: string[];
+      /** Serialized source-frame sizes, parallel to `chunks`. */
+      chunkBytes: number[];
+      /** Source metadata, parallel to `chunks`, so eviction can release it. */
+      chunkMetas: unknown[];
       sourceRecordIds?: readonly string[];
       lastEventId: number;
       lastMeta: unknown;
@@ -194,13 +198,23 @@ export interface TurnBoundaryCompactionEngineOptions {
    * retained tail can be much smaller than the byte cap, and `snapshot()`
    * prepends a `history_truncated` marker
    * (`reason: 'replay_window_exceeded'`, `scope: 'live_journal'`). Turn
-   * compaction is unaffected: it folds from the `slots` working set, not
-   * the journal. The caps are shared by the session's `full` and
-   * `summary` journals, so one in-flight turn can retain up to twice the
-   * cap across both journals (see JOURNAL_GROWTH_HARD_CAP_BYTES).
+   * compaction uses a separate bounded accumulator, controlled by
+   * `maxTurnAccumulatorEvents` and `maxTurnAccumulatorBytes` below. The caps
+   * here are shared by the session's `full` and `summary` journals, so one
+   * in-flight turn can retain up to twice the cap across both journals (see
+   * JOURNAL_GROWTH_HARD_CAP_BYTES).
    */
   maxJournalEvents?: number;
   maxJournalBytes?: number;
+  /**
+   * Independent bounds for the turn-boundary replay accumulator. They default
+   * to the initial live-journal caps but do not grow with adaptive journal
+   * grants. Live subscribers always receive every published event; overflow
+   * trims only the reconnect snapshot suffix and adds a `turn_compaction`
+   * `history_truncated` marker when the turn completes.
+   */
+  maxTurnAccumulatorEvents?: number;
+  maxTurnAccumulatorBytes?: number;
   /**
    * Adaptive growth hook: consulted before evicting when a turn outgrows
    * the caps above. Absent → behavior is exactly the fixed-cap eviction.
@@ -243,6 +257,13 @@ const JOURNAL_GROWTH_MAX_GRANTS_PER_BREACH = 64;
  */
 export class TurnBoundaryCompactionEngine implements CompactionEngine {
   private readonly maxReplayBytes: number;
+  /** Fixed per-turn accumulator bounds, separate from adaptive live journals. */
+  private readonly maxTurnAccumulatorEvents: number;
+  private readonly maxTurnAccumulatorBytes: number;
+  private turnAccumulatorEvents = 0;
+  private turnAccumulatorBytes = 0;
+  private truncatedTurnEvents = 0;
+  private readonly slotBytes = new WeakMap<CompactedSlot, number>();
   // Mutable: adaptive growth (see `maybeGrowJournalLimits`) raises these
   // in place when the advisor grants headroom.
   private maxJournalEvents: number;
@@ -296,6 +317,18 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     this.maxReplayBytes = normalizeCompactedReplayMaxBytes(opts.maxReplayBytes);
     this.maxJournalEvents = normalizeMaxJournalEvents(opts.maxJournalEvents);
     this.maxJournalBytes = normalizeMaxJournalBytes(opts.maxJournalBytes);
+    // `slots` retain a second representation of the in-flight turn for
+    // turn-boundary compaction. Before this cap, the live journals were
+    // bounded but the text chunks and miscellaneous slots here could grow
+    // for the full duration of a long turn. Keep the accumulator at the
+    // configured baseline; adaptive journal grants do not silently grant
+    // additional memory to this second owner.
+    this.maxTurnAccumulatorEvents = normalizeMaxJournalEvents(
+      opts.maxTurnAccumulatorEvents ?? opts.maxJournalEvents,
+    );
+    this.maxTurnAccumulatorBytes = normalizeMaxJournalBytes(
+      opts.maxTurnAccumulatorBytes ?? opts.maxJournalBytes,
+    );
     this.onJournalGrowth = opts.onJournalGrowth;
     this.now = opts.now ?? (() => performance.now());
     this.onReplayWindowEviction = opts.onReplayWindowEviction;
@@ -353,11 +386,18 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     }
 
     if (event.type === 'session_update') {
-      this.classifySessionUpdate(event);
+      this.classifySessionUpdate(
+        event,
+        byteLength ?? serializedBridgeEventByteLength(event) ?? 0,
+      );
       return;
     }
 
-    this.slots.push({ kind: 'misc', event });
+    this.appendTurnSlot(
+      { kind: 'misc', event },
+      byteLength ?? serializedBridgeEventByteLength(event) ?? 0,
+    );
+    this.enforceTurnAccumulatorLimits();
   }
 
   snapshot(liveReplayMode: LiveReplayMode = 'full'): SessionReplaySnapshot {
@@ -441,9 +481,7 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
       this.addReplaySegment([event], 0);
     }
     this.resetJournal();
-    this.slots = [];
-    this.toolSlotIndex.clear();
-    this.clearTextSlotIndex();
+    this.resetTurnAccumulator();
   }
 
   seedReplayEvents(events: BridgeEvent[]): void {
@@ -483,9 +521,7 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     }
     flushRecord();
     this.resetJournal();
-    this.slots = [];
-    this.toolSlotIndex.clear();
-    this.clearTextSlotIndex();
+    this.resetTurnAccumulator();
   }
 
   close(): void {
@@ -495,9 +531,7 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     this.resetJournal();
     this.activeRecordId = undefined;
     this.summaryRecordId = undefined;
-    this.slots = [];
-    this.toolSlotIndex.clear();
-    this.clearTextSlotIndex();
+    this.resetTurnAccumulator();
   }
 
   private appendLiveJournal(
@@ -675,37 +709,38 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     return count;
   }
 
-  private classifySessionUpdate(event: BridgeEvent): void {
+  private classifySessionUpdate(event: BridgeEvent, eventBytes: number): void {
     const data = event.data as SessionUpdateData | undefined;
     const updateType = data?.update?.sessionUpdate;
 
     if (!updateType) {
-      this.slots.push({ kind: 'misc', event });
+      this.appendTurnSlot({ kind: 'misc', event }, eventBytes);
+      this.enforceTurnAccumulatorLimits();
       return;
     }
 
     switch (updateType) {
       case 'agent_message_chunk': {
         if (hasDiscreteMessageMeta(data?.update?._meta)) {
-          this.slots.push({ kind: 'misc', event });
+          this.appendTurnSlot({ kind: 'misc', event }, eventBytes);
           break;
         }
-        this.mergeTextSlot('text', event, data);
+        this.mergeTextSlot('text', event, data, eventBytes);
         break;
       }
       case 'agent_thought_chunk': {
         if (hasDiscreteMessageMeta(data?.update?._meta)) {
-          this.slots.push({ kind: 'misc', event });
+          this.appendTurnSlot({ kind: 'misc', event }, eventBytes);
           break;
         }
-        this.mergeTextSlot('thought', event, data);
+        this.mergeTextSlot('thought', event, data, eventBytes);
         break;
       }
       case 'tool_call':
       case 'tool_call_update': {
         const toolCallId = data?.update?.toolCallId;
         if (!toolCallId) {
-          this.slots.push({ kind: 'misc', event });
+          this.appendTurnSlot({ kind: 'misc', event }, eventBytes);
           break;
         }
         const existingIdx = this.toolSlotIndex.get(toolCallId);
@@ -715,14 +750,27 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
             { kind: 'tool' }
           >;
           slot.event = mergeToolCallEvent(slot.event, event);
+          let mergedBytes =
+            serializedBridgeEventByteLength(slot.event) ?? eventBytes;
+          if (mergedBytes > this.maxTurnAccumulatorBytes) {
+            // A tool slot is latest-wins. If merged metadata has itself grown
+            // beyond the turn budget, retain only the newest wire event and
+            // let the truncation marker direct reconnecting clients to the
+            // full transcript.
+            slot.event = normalizeToolCallType(event);
+            mergedBytes = eventBytes;
+            this.truncatedTurnEvents += 1;
+          }
+          this.replaceTurnSlotBytes(slot, mergedBytes);
         } else {
           const normalizedEvent = normalizeToolCallType(event);
-          this.toolSlotIndex.set(toolCallId, this.slots.length);
-          this.slots.push({
+          const slot: CompactedSlot = {
             kind: 'tool',
             toolCallId,
             event: normalizedEvent,
-          });
+          };
+          this.toolSlotIndex.set(toolCallId, this.slots.length);
+          this.appendTurnSlot(slot, eventBytes);
           // Evict text/thought index entries for this tool's parent so
           // subsequent chunks from the same subagent create new slots,
           // preserving text segmentation around tool-call boundaries.
@@ -742,27 +790,32 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
             (s) => s.kind === 'latestWins' && s.key === updateType,
           );
           if (existingIdx !== -1) {
-            (
-              this.slots[existingIdx] as Extract<
-                CompactedSlot,
-                { kind: 'latestWins' }
-              >
-            ).event = event;
+            const slot = this.slots[existingIdx] as Extract<
+              CompactedSlot,
+              { kind: 'latestWins' }
+            >;
+            slot.event = event;
+            this.replaceTurnSlotBytes(slot, eventBytes);
           } else {
-            this.slots.push({ kind: 'latestWins', key: updateType, event });
+            this.appendTurnSlot(
+              { kind: 'latestWins', key: updateType, event },
+              eventBytes,
+            );
           }
         } else {
-          this.slots.push({ kind: 'misc', event });
+          this.appendTurnSlot({ kind: 'misc', event }, eventBytes);
         }
         break;
       }
     }
+    this.enforceTurnAccumulatorLimits();
   }
 
   private mergeTextSlot(
     kind: 'text' | 'thought',
     event: BridgeEvent,
     data: SessionUpdateData | undefined,
+    eventBytes: number,
   ): void {
     const text = data?.update?.content?.text ?? '';
     const meta = data?.update?._meta;
@@ -782,7 +835,7 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
           CompactedSlot,
           { kind: 'text' | 'thought' }
         >;
-        slot.chunks.push(text);
+        this.appendTextChunk(slot, text, meta, eventBytes);
         if (event.id !== undefined) slot.lastEventId = event.id;
         slot.lastMeta = mergeTranscriptUpdateMeta(slot.lastMeta, meta);
         slot.lastEnvelopeMeta = event._meta ?? slot.lastEnvelopeMeta;
@@ -791,17 +844,22 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
       } else {
         entries.push({ sourceRecordIds, index: this.slots.length });
         this.textSlotIndex[kind].set(parentToolCallId, entries);
-        this.slots.push({
-          kind,
-          parentToolCallId,
-          chunks: [text],
-          sourceRecordIds,
-          lastEventId: event.id ?? 0,
-          lastMeta: meta,
-          lastEnvelopeMeta: event._meta,
-          lastTurn: captureTurnFields(event),
-          lastSessionId: captureSessionId(event),
-        });
+        this.appendTurnSlot(
+          {
+            kind,
+            parentToolCallId,
+            chunks: [text],
+            chunkBytes: [eventBytes],
+            chunkMetas: [meta],
+            sourceRecordIds,
+            lastEventId: event.id ?? 0,
+            lastMeta: meta,
+            lastEnvelopeMeta: event._meta,
+            lastTurn: captureTurnFields(event),
+            lastSessionId: captureSessionId(event),
+          },
+          eventBytes,
+        );
       }
     } else {
       // Top-level path: merge only consecutive same-kind chunks that
@@ -814,7 +872,11 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
         lastSlot.parentToolCallId == null &&
         stringArraysEqual(lastSlot.sourceRecordIds, sourceRecordIds)
       ) {
-        lastSlot.chunks.push(text);
+        const slot = lastSlot as Extract<
+          CompactedSlot,
+          { kind: 'text' | 'thought' }
+        >;
+        this.appendTextChunk(slot, text, meta, eventBytes);
         if (event.id !== undefined) lastSlot.lastEventId = event.id;
         lastSlot.lastMeta = mergeTranscriptUpdateMeta(lastSlot.lastMeta, meta);
         lastSlot.lastEnvelopeMeta = event._meta ?? lastSlot.lastEnvelopeMeta;
@@ -822,23 +884,45 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
         lastSlot.lastSessionId =
           captureSessionId(event) ?? lastSlot.lastSessionId;
       } else {
-        this.slots.push({
-          kind,
-          parentToolCallId: undefined,
-          chunks: [text],
-          sourceRecordIds,
-          lastEventId: event.id ?? 0,
-          lastMeta: meta,
-          lastEnvelopeMeta: event._meta,
-          lastTurn: captureTurnFields(event),
-          lastSessionId: captureSessionId(event),
-        });
+        this.appendTurnSlot(
+          {
+            kind,
+            parentToolCallId: undefined,
+            chunks: [text],
+            chunkBytes: [eventBytes],
+            chunkMetas: [meta],
+            sourceRecordIds,
+            lastEventId: event.id ?? 0,
+            lastMeta: meta,
+            lastEnvelopeMeta: event._meta,
+            lastTurn: captureTurnFields(event),
+            lastSessionId: captureSessionId(event),
+          },
+          eventBytes,
+        );
       }
     }
+    this.enforceTurnAccumulatorLimits();
   }
 
   private compactCurrentTurn(boundaryEvent: BridgeEvent): void {
     const compacted: BridgeEvent[] = [];
+
+    if (this.truncatedTurnEvents > 0) {
+      compacted.push({
+        v: EVENT_SCHEMA_VERSION,
+        type: 'history_truncated',
+        data: {
+          reason: 'replay_window_exceeded',
+          scope: 'turn_compaction',
+          truncatedEvents: this.truncatedTurnEvents,
+          retainedEvents: this.turnAccumulatorEvents,
+          maxBytes: this.maxTurnAccumulatorBytes,
+          maxEvents: this.maxTurnAccumulatorEvents,
+          fullTranscriptAvailable: true,
+        },
+      });
+    }
 
     for (const slot of this.slots) {
       switch (slot.kind) {
@@ -871,9 +955,149 @@ export class TurnBoundaryCompactionEngine implements CompactionEngine {
     compacted.push(boundaryEvent);
     this.addReplaySegment(compacted, 1);
     this.resetJournal();
+    this.resetTurnAccumulator();
+  }
+
+  private appendTurnSlot(slot: CompactedSlot, bytes: number): void {
+    this.slots.push(slot);
+    this.slotBytes.set(slot, bytes);
+    this.turnAccumulatorBytes += bytes;
+    this.turnAccumulatorEvents += this.turnSlotEventCount(slot);
+  }
+
+  private appendTextChunk(
+    slot: Extract<CompactedSlot, { kind: 'text' | 'thought' }>,
+    text: string,
+    meta: unknown,
+    bytes: number,
+  ): void {
+    slot.chunks.push(text);
+    slot.chunkBytes.push(bytes);
+    slot.chunkMetas.push(meta);
+    this.slotBytes.set(slot, (this.slotBytes.get(slot) ?? 0) + bytes);
+    this.turnAccumulatorBytes += bytes;
+    this.turnAccumulatorEvents += 1;
+  }
+
+  private replaceTurnSlotBytes(slot: CompactedSlot, bytes: number): void {
+    const previousBytes = this.slotBytes.get(slot) ?? 0;
+    this.slotBytes.set(slot, bytes);
+    this.turnAccumulatorBytes += bytes - previousBytes;
+  }
+
+  private turnSlotEventCount(slot: CompactedSlot): number {
+    return slot.kind === 'text' || slot.kind === 'thought'
+      ? slot.chunks.length
+      : 1;
+  }
+
+  /**
+   * Bound the second, turn-compaction representation independently of the
+   * live journals. Live SSE delivery is unaffected; when this suffix loses
+   * events, the completed replay segment carries a `history_truncated`
+   * marker and the transcript endpoint remains authoritative.
+   */
+  private enforceTurnAccumulatorLimits(): void {
+    let evictedSlots = false;
+    while (
+      this.slots.length > 1 &&
+      (this.turnAccumulatorEvents > this.maxTurnAccumulatorEvents ||
+        this.turnAccumulatorBytes > this.maxTurnAccumulatorBytes)
+    ) {
+      const dropped = this.slots.shift();
+      if (!dropped) break;
+      const bytes = this.slotBytes.get(dropped) ?? 0;
+      const events = this.turnSlotEventCount(dropped);
+      this.slotBytes.delete(dropped);
+      this.turnAccumulatorBytes = Math.max(
+        0,
+        this.turnAccumulatorBytes - bytes,
+      );
+      this.turnAccumulatorEvents = Math.max(
+        0,
+        this.turnAccumulatorEvents - events,
+      );
+      this.truncatedTurnEvents += events;
+      evictedSlots = true;
+    }
+
+    const onlySlot = this.slots[0];
+    if (
+      this.slots.length === 1 &&
+      onlySlot &&
+      (onlySlot.kind === 'text' || onlySlot.kind === 'thought')
+    ) {
+      // A long answer may be represented by one logical text slot. Trim its
+      // oldest source chunks until it fits, retaining at least one complete
+      // wire chunk (as the bounded journals do for an oversized single
+      // event). Keep metadata aligned so discarded chunks release their
+      // associated objects too.
+      while (
+        onlySlot.chunks.length > 1 &&
+        (this.turnAccumulatorEvents > this.maxTurnAccumulatorEvents ||
+          this.turnAccumulatorBytes > this.maxTurnAccumulatorBytes)
+      ) {
+        onlySlot.chunks.shift();
+        const bytes = onlySlot.chunkBytes.shift() ?? 0;
+        onlySlot.chunkMetas.shift();
+        this.slotBytes.set(
+          onlySlot,
+          Math.max(0, (this.slotBytes.get(onlySlot) ?? 0) - bytes),
+        );
+        this.turnAccumulatorBytes = Math.max(
+          0,
+          this.turnAccumulatorBytes - bytes,
+        );
+        this.turnAccumulatorEvents = Math.max(
+          0,
+          this.turnAccumulatorEvents - 1,
+        );
+        this.truncatedTurnEvents += 1;
+      }
+      onlySlot.lastMeta = onlySlot.chunkMetas.reduce(
+        mergeTranscriptUpdateMeta,
+        undefined,
+      );
+    }
+
+    if (evictedSlots) this.rebuildTurnSlotIndexes();
+  }
+
+  private rebuildTurnSlotIndexes(): void {
+    this.toolSlotIndex.clear();
+    this.clearTextSlotIndex();
+    for (let index = 0; index < this.slots.length; index++) {
+      const slot = this.slots[index]!;
+      if (slot.kind === 'tool') {
+        this.toolSlotIndex.set(slot.toolCallId, index);
+        const data = slot.event.data as SessionUpdateData | undefined;
+        const toolParent = extractParentToolCallIdFromMeta(data?.update?._meta);
+        if (toolParent) {
+          // A tool call is a segmentation boundary for later chunks from the
+          // same subagent. Rebuild the index with the same reset the normal
+          // ingest path performs.
+          this.textSlotIndex.text.delete(toolParent);
+          this.textSlotIndex.thought.delete(toolParent);
+        }
+      } else if (
+        (slot.kind === 'text' || slot.kind === 'thought') &&
+        slot.parentToolCallId != null
+      ) {
+        const entries =
+          this.textSlotIndex[slot.kind].get(slot.parentToolCallId) ?? [];
+        entries.push({ sourceRecordIds: slot.sourceRecordIds, index });
+        this.textSlotIndex[slot.kind].set(slot.parentToolCallId, entries);
+      }
+    }
+  }
+
+  private resetTurnAccumulator(): void {
     this.slots = [];
     this.toolSlotIndex.clear();
     this.clearTextSlotIndex();
+    this.turnAccumulatorEvents = 0;
+    this.turnAccumulatorBytes = 0;
+    this.truncatedTurnEvents = 0;
   }
 
   private recordLastEventId(event: BridgeEvent): void {

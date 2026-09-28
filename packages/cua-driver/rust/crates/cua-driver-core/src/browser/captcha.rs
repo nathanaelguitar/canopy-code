@@ -32,7 +32,9 @@ use crate::tool_args::ArgsExt;
 
 use super::cdp_ws::CdpConnection;
 use super::engine::BrowserEngine;
-use super::tools::{browser_protected_resource_scope, browser_resource_ownership, require_explicit_session};
+use super::tools::{
+    browser_protected_resource_scope, browser_resource_ownership, require_explicit_session,
+};
 
 // ── Tunables ─────────────────────────────────────────────────────────────────
 
@@ -144,16 +146,18 @@ impl Tool for BrowserCaptchaSolverTool {
     }
 
     async fn invoke(&self, args: Value) -> ToolResult {
-        let (target_id, tab_id) =
-            match (args.require_str("target_id"), args.require_str("tab_id")) {
-                (Ok(t), Ok(tab)) => (t, tab),
-                (Err(e), _) | (_, Err(e)) => return e,
-            };
+        let (target_id, tab_id) = match (args.require_str("target_id"), args.require_str("tab_id"))
+        {
+            (Ok(t), Ok(tab)) => (t, tab),
+            (Err(e), _) | (_, Err(e)) => return e,
+        };
         let session = match require_explicit_session(&args) {
             Ok(s) => s,
             Err(e) => return e,
         };
-        let max_attempts = args.u64_or("max_attempts", MAX_ATTEMPTS_DEFAULT).clamp(1, 12);
+        let max_attempts = args
+            .u64_or("max_attempts", MAX_ATTEMPTS_DEFAULT)
+            .clamp(1, 12);
         let prompt_hint = args.opt_str("prompt_hint").unwrap_or_default();
         let click_answer = args.bool_or("click_answer", false);
         let submit_selector_hint = args.opt_str("submit_selector_hint");
@@ -342,13 +346,17 @@ impl SolverEndpoint {
             .trim_end_matches('/')
             .to_owned();
         let key = std::env::var("QWEN_VISION_KEY").map_err(|_| missing("QWEN_VISION_KEY"))?;
-        let model =
-            std::env::var("QWEN_VISION_MODEL").map_err(|_| missing("QWEN_VISION_MODEL"))?;
+        let model = std::env::var("QWEN_VISION_MODEL").map_err(|_| missing("QWEN_VISION_MODEL"))?;
         let agent = ureq::Agent::config_builder()
             .timeout_global(Some(SOLVER_TIMEOUT))
             .build()
             .new_agent();
-        Ok(Self { url, key, model, agent })
+        Ok(Self {
+            url,
+            key,
+            model,
+            agent,
+        })
     }
 
     async fn ask(&self, png_base64: &str, instruction: &str) -> Result<SolverAnswer, String> {
@@ -443,10 +451,7 @@ fn build_instruction(
 
 // ── CDP primitives (same route as browser_click / browser_type) ─────────────
 
-async fn capture_viewport(
-    conn: &Arc<CdpConnection>,
-    cdp: &str,
-) -> Result<String, String> {
+async fn capture_viewport(conn: &Arc<CdpConnection>, cdp: &str) -> Result<String, String> {
     let metrics = conn
         .call(Some(cdp), "Page.getLayoutMetrics", json!({}))
         .await
@@ -495,21 +500,14 @@ async fn capture_viewport(
         .ok_or_else(|| "Page.captureScreenshot returned no data".to_owned())
 }
 
-async fn type_text(
-    conn: &Arc<CdpConnection>,
-    cdp: &str,
-    text: &str,
-) -> Result<(), String> {
+async fn type_text(conn: &Arc<CdpConnection>, cdp: &str, text: &str) -> Result<(), String> {
     conn.call(Some(cdp), "Input.insertText", json!({ "text": text }))
         .await
         .map_err(|error| format!("Input.insertText failed: {error}"))?;
     Ok(())
 }
 
-async fn press_enter(
-    conn: &Arc<CdpConnection>,
-    cdp: &str,
-) -> Result<(), String> {
+async fn press_enter(conn: &Arc<CdpConnection>, cdp: &str) -> Result<(), String> {
     for phase in ["keyDown", "keyUp"] {
         conn.call(
             Some(cdp),
@@ -535,10 +533,7 @@ async fn click_selector(
     selector: &str,
 ) -> Result<(), String> {
     let quad_center = |box_model: &Value| -> Option<(f64, f64)> {
-        let quad = box_model
-            .get("model")?
-            .get("quad")?
-            .as_array()?;
+        let quad = box_model.get("model")?.get("quad")?.as_array()?;
         if quad.len() < 4 {
             return None;
         }

@@ -23,9 +23,10 @@ use std::sync::OnceLock;
 use std::thread;
 use std::time::Instant;
 
-use crossbeam_channel::{bounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, bounded};
 use cursor_overlay::{CursorConfig, OverlayCommand, OverlayMsg, RenderStateCore};
 use wayland_client::{
+    Connection, Dispatch, Proxy, QueueHandle,
     protocol::{
         wl_buffer::WlBuffer,
         wl_compositor::WlCompositor,
@@ -36,7 +37,6 @@ use wayland_client::{
         wl_shm_pool::WlShmPool,
         wl_surface::WlSurface,
     },
-    Connection, Dispatch, Proxy, QueueHandle,
 };
 use wayland_protocols_wlr::layer_shell::v1::client::{
     zwlr_layer_shell_v1::{Layer, ZwlrLayerShellV1},

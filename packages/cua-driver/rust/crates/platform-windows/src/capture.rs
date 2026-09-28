@@ -26,15 +26,15 @@
 //! CUA-542; the screen-region fallback covers the same common
 //! ground at a fraction of the implementation cost.
 
-use anyhow::{bail, Result};
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use anyhow::{Result, bail};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Gdi::{
-    BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
-    SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, RGBQUAD, SRCCOPY,
+    BI_RGB, BITMAPINFO, BITMAPINFOHEADER, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC,
+    DIB_RGB_COLORS, DeleteDC, DeleteObject, GetDC, GetDIBits, RGBQUAD, SRCCOPY, SelectObject,
 };
 use windows::Win32::Graphics::Gdi::{GetWindowDC, ReleaseDC};
-use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS};
+use windows::Win32::Storage::Xps::{PRINT_WINDOW_FLAGS, PrintWindow};
 const PW_RENDERFULLCONTENT: PRINT_WINDOW_FLAGS = PRINT_WINDOW_FLAGS(2u32);
 
 /// After GetDIBits we have BGRA bytes from PrintWindow. If essentially every
@@ -84,7 +84,7 @@ fn is_mostly_black_bgra(bgra: &[u8]) -> bool {
 unsafe fn target_is_obscured(target: HWND) -> bool {
     use windows::Win32::Foundation::{POINT, RECT};
     use windows::Win32::UI::WindowsAndMessaging::{
-        GetAncestor, GetWindowRect, WindowFromPoint, GA_ROOT,
+        GA_ROOT, GetAncestor, GetWindowRect, WindowFromPoint,
     };
 
     if target.0.is_null() {
@@ -151,6 +151,8 @@ unsafe fn screenshot_via_screen_region(hwnd: HWND) -> Result<(Vec<u8>, i32, i32)
     if w <= 0 || h <= 0 {
         bail!("screen-region fallback: window has zero/negative bounds: {w}x{h}");
     }
+    let pixel_bytes =
+        cua_driver_core::image_utils::validate_native_capture_dimensions(w as u32, h as u32)?;
 
     let screen_dc = GetDC(HWND(std::ptr::null_mut())); // NULL HWND → desktop DC
     let mem_dc = CreateCompatibleDC(screen_dc);
@@ -178,13 +180,12 @@ unsafe fn screenshot_via_screen_region(hwnd: HWND) -> Result<(Vec<u8>, i32, i32)
             biPlanes: 1,
             biBitCount: 32,
             biCompression: BI_RGB.0,
-            biSizeImage: (w * h * 4) as u32,
+            biSizeImage: pixel_bytes as u32,
             ..Default::default()
         },
         bmiColors: [RGBQUAD::default(); 1],
     };
-    let pixel_count = (w * h) as usize;
-    let mut pixels = vec![0u8; pixel_count * 4];
+    let mut pixels = vec![0u8; pixel_bytes];
     let ok = GetDIBits(
         mem_dc,
         bitmap,
@@ -234,7 +235,7 @@ pub fn screenshot_window_bytes_with_occlusion(hwnd: u64) -> Result<(Vec<u8>, boo
             // first fallback for this class of capture failure.
             match crate::wgc::screenshot_window_via_wgc(hwnd) {
                 Ok((pixels, width, height)) => Ok((
-                    cua_driver_core::image_utils::encode_bgra_to_png(&pixels, width, height)?,
+                    cua_driver_core::image_utils::encode_bgra_to_png_owned(pixels, width, height)?,
                     false,
                 )),
                 Err(wgc_error) => {
@@ -246,8 +247,8 @@ pub fn screenshot_window_bytes_with_occlusion(hwnd: u64) -> Result<(Vec<u8>, boo
                     let occluded = unsafe { target_is_obscured(target) };
                     match unsafe { screenshot_via_screen_region(target) } {
                         Ok((pixels, width, height)) => Ok((
-                            cua_driver_core::image_utils::encode_bgra_to_png(
-                                &pixels,
+                            cua_driver_core::image_utils::encode_bgra_to_png_owned(
+                                pixels,
                                 width as u32,
                                 height as u32,
                             )?,
@@ -322,7 +323,7 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
         match crate::wgc::screenshot_window_via_wgc(hwnd_raw) {
             Ok((pixels, w, h)) => {
                 return Ok((
-                    cua_driver_core::image_utils::encode_bgra_to_png(&pixels, w, h)?,
+                    cua_driver_core::image_utils::encode_bgra_to_png_owned(pixels, w, h)?,
                     false, // WGC reads target's own pixels — never occluded by definition
                 ));
             }
@@ -338,7 +339,9 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
         match screenshot_via_screen_region(hwnd) {
             Ok((pixels, w, h)) => {
                 return Ok((
-                    cua_driver_core::image_utils::encode_bgra_to_png(&pixels, w as u32, h as u32)?,
+                    cua_driver_core::image_utils::encode_bgra_to_png_owned(
+                        pixels, w as u32, h as u32,
+                    )?,
                     occluded,
                 ));
             }
@@ -379,6 +382,8 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
     if w <= 0 || h <= 0 {
         bail!("Window has zero/negative size: {}x{}", w, h);
     }
+    let pixel_bytes =
+        cua_driver_core::image_utils::validate_native_capture_dimensions(w as u32, h as u32)?;
 
     let screen_dc = GetWindowDC(hwnd);
     let mem_dc = CreateCompatibleDC(screen_dc);
@@ -403,7 +408,7 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
     // by some shell extension), we keep the full-window bitmap as-is —
     // user sees a small dark border but no clipping.
     let dwm_rect: Option<RECT> = {
-        use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_EXTENDED_FRAME_BOUNDS};
+        use windows::Win32::Graphics::Dwm::{DWMWA_EXTENDED_FRAME_BOUNDS, DwmGetWindowAttribute};
         let mut r = RECT::default();
         let hr = DwmGetWindowAttribute(
             hwnd,
@@ -422,14 +427,13 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
             biPlanes: 1,
             biBitCount: 32,
             biCompression: BI_RGB.0,
-            biSizeImage: (w * h * 4) as u32,
+            biSizeImage: pixel_bytes as u32,
             ..Default::default()
         },
         bmiColors: [RGBQUAD::default(); 1],
     };
 
-    let pixel_count = (w * h) as usize;
-    let mut pixels = vec![0u8; pixel_count * 4];
+    let mut pixels = vec![0u8; pixel_bytes];
     let ok = GetDIBits(
         mem_dc,
         bitmap,
@@ -503,7 +507,7 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
         match crate::wgc::screenshot_window_via_wgc(hwnd_raw) {
             Ok((alt_pixels, w, h)) => {
                 return Ok((
-                    cua_driver_core::image_utils::encode_bgra_to_png(&alt_pixels, w, h)?,
+                    cua_driver_core::image_utils::encode_bgra_to_png_owned(alt_pixels, w, h)?,
                     false,
                 ));
             }
@@ -519,8 +523,8 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
         match screenshot_via_screen_region(hwnd) {
             Ok((alt_pixels, alt_w, alt_h)) => {
                 return Ok((
-                    cua_driver_core::image_utils::encode_bgra_to_png(
-                        &alt_pixels,
+                    cua_driver_core::image_utils::encode_bgra_to_png_owned(
+                        alt_pixels,
                         alt_w as u32,
                         alt_h as u32,
                     )?,
@@ -550,7 +554,7 @@ unsafe fn screenshot_window_bytes_with_occlusion_unsafe(hwnd: u64) -> Result<(Ve
     // we return here is the target's pixels even when occluded — no
     // occluded warning needed on this path.
     Ok((
-        cua_driver_core::image_utils::encode_bgra_to_png(&pixels, w as u32, h as u32)?,
+        cua_driver_core::image_utils::encode_bgra_to_png_owned(pixels, w as u32, h as u32)?,
         false,
     ))
 }
@@ -582,6 +586,8 @@ pub fn screenshot_display_bytes() -> Result<Vec<u8>> {
         if w <= 0 || h <= 0 {
             bail!("Could not get screen metrics");
         }
+        let pixel_bytes =
+            cua_driver_core::image_utils::validate_native_capture_dimensions(w as u32, h as u32)?;
         let screen_dc = GetDC(HWND::default());
         let mem_dc = CreateCompatibleDC(screen_dc);
         let bitmap = CreateCompatibleBitmap(screen_dc, w, h);
@@ -595,12 +601,12 @@ pub fn screenshot_display_bytes() -> Result<Vec<u8>> {
                 biPlanes: 1,
                 biBitCount: 32,
                 biCompression: BI_RGB.0,
-                biSizeImage: (w * h * 4) as u32,
+                biSizeImage: pixel_bytes as u32,
                 ..Default::default()
             },
             bmiColors: [RGBQUAD::default(); 1],
         };
-        let mut pixels = vec![0u8; (w * h * 4) as usize];
+        let mut pixels = vec![0u8; pixel_bytes];
         let ok = GetDIBits(
             mem_dc,
             bitmap,
@@ -617,7 +623,7 @@ pub fn screenshot_display_bytes() -> Result<Vec<u8>> {
         if ok == 0 {
             bail!("GetDIBits returned 0");
         }
-        cua_driver_core::image_utils::encode_bgra_to_png(&pixels, w as u32, h as u32)
+        cua_driver_core::image_utils::encode_bgra_to_png_owned(pixels, w as u32, h as u32)
     }
 }
 
@@ -643,6 +649,11 @@ pub fn png_bytes_to_jpeg(png_bytes: &[u8], quality: u8) -> Result<Vec<u8>> {
 /// original bytes unchanged.
 pub fn resize_png_if_needed(png_bytes: &[u8], max_dim: u32) -> Result<Vec<u8>> {
     cua_driver_core::image_utils::resize_png_if_needed(png_bytes, max_dim)
+}
+
+/// Owned-input variant that reuses the capture buffer when no resize is needed.
+pub fn resize_png_if_needed_owned(png_bytes: Vec<u8>, max_dim: u32) -> Result<Vec<u8>> {
+    cua_driver_core::image_utils::resize_png_if_needed_owned(png_bytes, max_dim)
 }
 
 /// Draw a red crosshair at pixel (cx, cy) on a PNG image and return

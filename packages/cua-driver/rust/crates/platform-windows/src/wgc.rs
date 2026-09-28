@@ -18,11 +18,10 @@
 //!   device — could be optimized later, but a single-shot screenshot
 //!   tool isn't the place to fight that.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::time::Duration;
 
 use windows::{
-    core::Interface,
     Graphics::{
         Capture::{Direct3D11CaptureFramePool, GraphicsCaptureItem},
         DirectX::{Direct3D11::IDirect3DDevice, DirectXPixelFormat},
@@ -32,9 +31,10 @@ use windows::{
         Graphics::{
             Direct3D::{D3D_DRIVER_TYPE_HARDWARE, D3D_FEATURE_LEVEL_11_0},
             Direct3D11::{
-                D3D11CreateDevice, ID3D11Device, ID3D11DeviceContext, ID3D11Texture2D,
-                D3D11_CPU_ACCESS_READ, D3D11_CREATE_DEVICE_BGRA_SUPPORT, D3D11_MAPPED_SUBRESOURCE,
-                D3D11_MAP_READ, D3D11_SDK_VERSION, D3D11_TEXTURE2D_DESC, D3D11_USAGE_STAGING,
+                D3D11_CPU_ACCESS_READ, D3D11_CREATE_DEVICE_BGRA_SUPPORT, D3D11_MAP_READ,
+                D3D11_MAPPED_SUBRESOURCE, D3D11_SDK_VERSION, D3D11_TEXTURE2D_DESC,
+                D3D11_USAGE_STAGING, D3D11CreateDevice, ID3D11Device, ID3D11DeviceContext,
+                ID3D11Texture2D,
             },
             Dxgi::IDXGIDevice,
         },
@@ -44,6 +44,7 @@ use windows::{
         },
         UI::WindowsAndMessaging::IsIconic,
     },
+    core::Interface,
 };
 
 /// Capture a window via WGC, returning BGRA pixels + (width, height).
@@ -110,6 +111,10 @@ unsafe fn wgc_capture_impl(hwnd: HWND) -> Result<(Vec<u8>, u32, u32)> {
             item_size.Height
         );
     }
+    cua_driver_core::image_utils::validate_native_capture_dimensions(
+        item_size.Width as u32,
+        item_size.Height as u32,
+    )?;
 
     // 4. Frame pool + capture session.
     //    `CreateFreeThreaded` (not `Create`) — `Create` requires the
@@ -192,6 +197,8 @@ unsafe fn wgc_capture_impl(hwnd: HWND) -> Result<(Vec<u8>, u32, u32)> {
     // 9. Create a staging texture we can map for CPU read, copy frame in.
     let mut desc = D3D11_TEXTURE2D_DESC::default();
     frame_texture.GetDesc(&mut desc);
+    let pixel_bytes =
+        cua_driver_core::image_utils::validate_native_capture_dimensions(desc.Width, desc.Height)?;
     desc.Usage = D3D11_USAGE_STAGING;
     desc.BindFlags = 0;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ.0 as u32;
@@ -212,7 +219,7 @@ unsafe fn wgc_capture_impl(hwnd: HWND) -> Result<(Vec<u8>, u32, u32)> {
     let width = desc.Width as usize;
     let height = desc.Height as usize;
     let stride = mapped.RowPitch as usize;
-    let mut bgra = vec![0u8; width * height * 4];
+    let mut bgra = vec![0u8; pixel_bytes];
     let src_base = mapped.pData as *const u8;
     for row in 0..height {
         std::ptr::copy_nonoverlapping(

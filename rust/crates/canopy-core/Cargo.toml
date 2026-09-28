@@ -1,0 +1,58 @@
+[package]
+name = "canopy-core"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aes.workspace = true
+aes-gcm.workspace = true
+base64.workspace = true
+bytes.workspace = true
+chardetng.workspace = true
+chrono.workspace = true
+encoding_rs.workspace = true
+flate2.workspace = true
+futures-util.workspace = true
+reqwest.workspace = true
+regex.workspace = true
+tree-sitter.workspace = true
+tree-sitter-bash.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+url.workspace = true
+sha2.workspace = true
+scrypt.workspace = true
+sha1.workspace = true
+hmac.workspace = true
+image.workspace = true
+jpeg-encoder.workspace = true
+thiserror.workspace = true
+tar.workspace = true
+tokio.workspace = true
+tokio-tungstenite.workspace = true
+uuid.workspace = true
+libc.workspace = true
+mime_guess.workspace = true
+md-5.workspace = true
+jsonrepair-rs.workspace = true
+ignore.workspace = true
+indexmap.workspace = true
+globset.workspace = true
+walkdir.workspace = true
+similar.workspace = true
+unicode-normalization.workspace = true
+yaml_serde.workspace = true
+toml.workspace = true
+zip.workspace = true
+html2md-rs = "=0.12.2"
+
+[target.'cfg(unix)'.dependencies]
+nix.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["io-util", "macros", "net", "rt-multi-thread"] }

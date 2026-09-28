@@ -58,14 +58,26 @@ fn screenshot_via_portal_blocking() -> anyhow::Result<Vec<u8>> {
     // /tmp or $XDG_RUNTIME_DIR/doc/...). Decode it via the `url` crate.
     let path = uri_to_path(&uri.to_string())
         .ok_or_else(|| anyhow::anyhow!("portal returned a non-file URI: {uri}"))?;
-    let bytes = std::fs::read(&path)
-        .map_err(|e| anyhow::anyhow!("portal screenshot at {} unreadable: {e}", path.display()))?;
+    let size = std::fs::metadata(&path)
+        .map_err(|e| anyhow::anyhow!("portal screenshot at {} unreadable: {e}", path.display()))?
+        .len();
+    if size > cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES as u64 {
+        let _ = std::fs::remove_file(&path);
+        anyhow::bail!(
+            "portal screenshot is {size} bytes, above the CUA capture limit of {} bytes",
+            cua_driver_core::image_utils::MAX_CAPTURE_PNG_BYTES
+        );
+    }
+    let read_result = std::fs::read(&path)
+        .map_err(|e| anyhow::anyhow!("portal screenshot at {} unreadable: {e}", path.display()));
     // Best-effort cleanup: the portal places the file in a process-readable
     // location that can outlive our process. Removing avoids the disk
     // accumulating one PNG per call. If removal fails (permissions, file
     // already gone) we silently drop the error — the bytes are already
     // captured.
     let _ = std::fs::remove_file(&path);
+    let bytes = read_result?;
+    cua_driver_core::image_utils::validate_captured_png(&bytes)?;
     Ok(bytes)
 }
 
@@ -86,7 +98,9 @@ fn map_ashpd_err<E: std::fmt::Display>(e: E) -> anyhow::Error {
     // Pattern-match common failure modes to produce a typed-ish error
     // the caller can pivot on.
     if msg.contains("ServiceUnknown") || msg.contains("NotFound") {
-        anyhow::anyhow!("xdg-desktop-portal is not running on this session ({msg}). Install xdg-desktop-portal-gnome / xdg-desktop-portal-kde / xdg-desktop-portal-wlr for your compositor.")
+        anyhow::anyhow!(
+            "xdg-desktop-portal is not running on this session ({msg}). Install xdg-desktop-portal-gnome / xdg-desktop-portal-kde / xdg-desktop-portal-wlr for your compositor."
+        )
     } else if msg.contains("Cancelled") || msg.contains("denied") {
         anyhow::anyhow!(
             "xdg-desktop-portal Screenshot consent dialog was cancelled or denied: {msg}"

@@ -5,7 +5,8 @@
  */
 
 import { createRequire } from 'node:module';
-import { dirname } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPlatformBackendName } from './platform.js';
 
@@ -53,13 +54,13 @@ function loadBinding(): NativeBinding {
   try {
     // Throws on unsupported platforms before touching the native layer.
     getPlatformBackendName();
-    // node-gyp-build picks the matching prebuild from prebuilds/<platform>-<arch>,
-    // falling back to a local build/Release compile — no compiler needed when a
-    // prebuilt binary ships for the host.
-    const loadPrebuild = nativeRequire('node-gyp-build') as (
-      dir: string,
-    ) => NativeBinding;
-    return loadPrebuild(packageRoot);
+    const rustBinding = loadRustBinding();
+    if (rustBinding) {
+      return rustBinding;
+    }
+    throw new Error(
+      'No compatible Rust N-API addon was found for this platform and architecture.',
+    );
   } catch (error) {
     throw new Error(
       'Native audio capture addon could not be loaded. Reinstall ' +
@@ -67,6 +68,41 @@ function loadBinding(): NativeBinding {
         `(${error instanceof Error ? error.message : String(error)})`,
     );
   }
+}
+
+function loadRustBinding(): NativeBinding | undefined {
+  const prebuildDirectory = join(
+    packageRoot,
+    'prebuilds',
+    `${process.platform}-${process.arch}`,
+  );
+  const candidates = [
+    join(packageRoot, 'build', 'Release', 'audio_capture_rust.node'),
+    join(prebuildDirectory, 'audio_capture_rust.node'),
+    // Linux distributions using musl have their own N-API prebuild directory.
+    join(
+      packageRoot,
+      'prebuilds',
+      `${process.platform}-${process.arch}-musl`,
+      'audio_capture_rust.node',
+    ),
+  ];
+
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) {
+      continue;
+    }
+    try {
+      const addon = nativeRequire(candidate) as {
+        NativeAudioCaptureBackend: new () => NativeBinding;
+      };
+      return new addon.NativeAudioCaptureBackend();
+    } catch {
+      // Keep the package's optional voice fallback available when a prebuild
+      // does not match the current Node ABI or host runtime.
+    }
+  }
+  return undefined;
 }
 
 export function createNativeAudioCaptureBackend(

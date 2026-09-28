@@ -15,27 +15,20 @@
     "dist",
     "!dist/**/*.test.*",
     "prebuilds",
-    "native/audio_capture.cc",
-    "native/mac_permission.mm",
-    "native/miniaudio.h",
-    "binding.gyp",
+    "scripts/*.js",
     "install.js"
   ],
   "scripts": {
     "install": "node install.js",
-    "prebuildify": "prebuildify --napi --strip",
-    "build": "node-gyp rebuild && tsc --build",
+    "prebuildify": "npm run build:native && node scripts/package-rust-prebuild.js",
+    "build:native": "node scripts/build-rust-addon.js",
+    "build": "npm run build:native && tsc --build",
     "build:ts": "tsc --build",
     "test": "vitest run",
     "test:ci": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "node-gyp-build": "^4.8.4"
-  },
   "devDependencies": {
-    "node-gyp": "^11.2.0",
-    "prebuildify": "^6.0.1",
     "typescript": "^5.3.3",
     "vitest": "^3.1.1"
   },

@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "& 'C:\\administrator\\qwen-code\\integrations\\external-context\\rust\\target\\release\\auto-recall.exe'",
+            "shell": "powershell",
+            "timeout": 8000,
+            "name": "external-context-auto-recall",
+            "statusMessage": "Retrieving external context"
+          }
+        ]
+      }
+    ]
+  },
+  "$version": 4
+}

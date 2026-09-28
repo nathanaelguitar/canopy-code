@@ -8,8 +8,12 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "clean": "node -e \"const fs=require('node:fs'); fs.rmSync('dist',{recursive:true,force:true}); fs.rmSync('tsconfig.tsbuildinfo',{force:true})\"",
+    "clean": "node scripts/clean.mjs",
     "build": "npm run clean && tsc --build && npm --prefix examples/provider-extension-local run build",
+    "build:rust": "cargo build --manifest-path rust/Cargo.toml --release --locked",
+    "build:rust:auto-recall": "cargo build --manifest-path rust/Cargo.toml --release --locked --bin auto-recall",
+    "build:rust:extension": "node scripts/package-rust-extension.mjs",
+    "build:rust:provider-context-extension": "node scripts/package-rust-extension.mjs --provider-context",
     "test": "vitest run --config vitest.config.ts",
     "test:ci": "vitest run --config vitest.config.ts",
     "typecheck": "tsc --noEmit && npm --prefix examples/provider-extension-local run typecheck",

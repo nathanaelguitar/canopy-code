@@ -272,6 +272,82 @@ describe('replaceImagePayloadsInPlace', () => {
   });
 });
 
+describe('InMemoryImagePayloadStore retention limits', () => {
+  function image(data: string): Part {
+    return { inlineData: { mimeType: 'image/png', data } };
+  }
+
+  it('evicts least-recently-used entries to stay under its byte and entry limits', () => {
+    const store = new InMemoryImagePayloadStore({
+      maxBytes: 2000,
+      maxEntries: 2,
+    });
+    const first = store.put(image('a'.repeat(400)));
+    const second = store.put(image('b'.repeat(400)));
+
+    // Touch the first entry, making the second the least recently used.
+    expect(store.get(first.id)?.data).toBe('a'.repeat(400));
+    const third = store.put(image('c'.repeat(400)));
+
+    expect(store.get(first.id)?.data).toBe('a'.repeat(400));
+    expect(store.get(second.id)).toBeUndefined();
+    expect(store.get(third.id)?.data).toBe('c'.repeat(400));
+  });
+
+  it('evicts old payloads when retained image bytes exceed the cache limit', () => {
+    const store = new InMemoryImagePayloadStore({ maxBytes: 1200 });
+    const first = store.put(image('a'.repeat(400)));
+    const second = store.put(image('b'.repeat(400)));
+
+    expect(store.get(first.id)).toBeUndefined();
+    expect(store.get(second.id)?.data).toBe('b'.repeat(400));
+  });
+
+  it('returns an oversized payload for the current request without caching it', () => {
+    const store = new InMemoryImagePayloadStore({ maxBytes: 500 });
+    const payload = store.put(image('x'.repeat(300)));
+
+    expect(payload.data).toBe('x'.repeat(300));
+    expect(store.get(payload.id)).toBeUndefined();
+  });
+
+  it('does not retain a replacement copy when the same payload is inserted again', () => {
+    const store = new InMemoryImagePayloadStore({
+      maxBytes: 1000,
+      maxEntries: 1,
+    });
+    const first = store.put(image('same-image'));
+    const repeated = store.put(image('same-image'));
+
+    expect(repeated.id).toBe(first.id);
+    expect(store.get(first.id)?.data).toBe('same-image');
+  });
+
+  it('keeps an explicit old-image reference usable for the current request during eviction', () => {
+    const store = new InMemoryImagePayloadStore({ maxBytes: 1200 });
+    const oldImage = toolImageTurn('old-shot');
+    const firstPass = prepareImagePayloadsForRequest(
+      [oldImage, { role: 'model', parts: [{ text: 'ok' }] }],
+      { maxRecentImages: 0, store },
+    );
+    const id = JSON.stringify(firstPass).match(/Image #([a-f0-9]{12})/)?.[1];
+    expect(id).toBeDefined();
+
+    const prepared = prepareImagePayloadsForRequest(
+      [
+        oldImage,
+        toolImageTurn('new-shot'.repeat(90)),
+        { role: 'user', parts: [{ text: `inspect Image #${id}` }] },
+      ],
+      { maxRecentImages: 0, store },
+    );
+
+    expect(imageParts(prepared).map((part) => part.inlineData?.data)).toEqual([
+      'old-shot',
+    ]);
+  });
+});
+
 describe('buildReattachParts', () => {
   it('picks the most recent unique images', () => {
     const store = new InMemoryImagePayloadStore();

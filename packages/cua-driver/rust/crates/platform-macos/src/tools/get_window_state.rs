@@ -336,7 +336,7 @@ impl Tool for GetWindowStateTool {
                 })?;
                 let scale =
                     super::px_frame::validate_capture_frame(window_id, &bounds, orig_w, orig_h)?;
-                let png = crate::capture::resize_png_if_needed(&raw, max_dim).map_err(|e| {
+                let png = crate::capture::resize_png_if_needed_owned(raw, max_dim).map_err(|e| {
                     super::px_frame::PxFrameError::CaptureUnavailable {
                         window_id,
                         reason: e.to_string(),
