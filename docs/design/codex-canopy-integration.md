@@ -1,25 +1,24 @@
 # Codex runtime for Canopy
 
-Status: direction decision, 2026-09-27. This replaces the repo-wide Rust
-rewrite as the primary migration goal. It does not claim that the Codex adapter
-or CanopyChat integration is implemented.
+Status: opt-in runtime slice implemented, 2026-09-28. This replaces the repo-wide
+Rust rewrite as the primary migration goal. The Codex CLI path is experimental;
+it has not been verified against a live CanopyChat session and makes no memory
+reduction claim.
 
 ## Decision
 
-Build Canopy's agent runtime on Codex and keep Canopy as the product layer:
+Build Canopy's agent runtime on the open source Codex CLI and keep Canopy as the product layer:
 Canopy owns its CLI, workspace daemon, CanopyChat connection, session metadata,
 and Canopy-specific tools and workflows. Codex owns the agent turn loop and
 its thread execution. Stop adding Rust ports solely to reach line-count parity.
 
-For a product UI that must display events and handle approvals, use Codex App
-Server as the runtime boundary. First validate the official TypeScript SDK as
-the shortest local integration path; use the documented app-server JSON-RPC
-protocol where the Canopy daemon needs explicit control of event streaming,
-approval routing, cancellation, or thread lifecycle. Do not expose the Codex
-app-server transport to CanopyChat. Keep it local to the Canopy daemon and
-translate between it and Canopy's existing authenticated/pairing-aware session
-API. The current app-server docs describe stdio as the default transport and
-WebSocket as experimental and unsupported for production.
+For Canopy's product UI, use the `codex app-server` subcommand from the Codex
+CLI repository as the local runtime boundary. Do not depend on the Codex
+desktop app. Do not expose the app-server transport to CanopyChat. Keep it
+private behind the existing ACP daemon channel, and translate between it and
+Canopy's authenticated, pairing-aware session API. The app-server docs describe
+stdio as the default transport and WebSocket as experimental and unsupported
+for production.
 
 References: [Codex as a platform](https://developers.openai.com/blog/codex-as-a-platform),
 [Codex App Server](https://developers.openai.com/codex/app-server), and
@@ -48,9 +47,28 @@ The intended ownership boundary is:
 - Codex's local process transport stays private to the daemon. Remote access
   continues through Canopy's own auth, pairing, and network controls.
 
-This is a target architecture, not a claim that current Canopy daemon routes
-are already Codex-backed. The current remote-control design and its live-tested
-co-driving behavior are documented in
+The opt-in slice uses `CANOPY_AGENT_RUNTIME=codex canopy serve`. Canopy remains
+the daemon and HTTP/CanopyChat boundary. The daemon starts its existing ACP
+adapter child, which starts `codex app-server` over private stdio. The Canopy
+session ID stays public; a small sidecar under `$QWEN_HOME/codex-sessions/`
+maps it to Codex's thread ID and preserves Canopy's selected mode, model, and
+reasoning effort across restart and resume. Set
+`CANOPY_CODEX_CLI_PATH` if the `codex` executable is not on `PATH`. The default
+runtime remains Canopy; `CANOPY_AGENT_RUNTIME=canopy` selects it explicitly.
+
+This first slice streams assistant text and basic shell, file-change, MCP, and
+web-search tool updates; maps create, load, resume, model, mode, prompt, cancel,
+and command/file-change approval operations; and keeps the app-server transport
+private. Other Codex server requests, including extra permission grants and MCP
+elicitation, currently fail closed and still need Canopy mappings. It does not
+yet port Canopy-owned skills, memory, extension tools, CUA, audio, or workspace
+MCP configuration into Codex. The daemon-level remote-control routes remain in
+place, but terminal/phone co-driving needs live verification with the Codex
+runtime. Approval mode `auto` currently maps to Codex's untrusted-command
+policy, not Canopy's classifier. Codex runs with its own CLI authentication and
+configuration.
+
+The current remote-control design and its live-tested co-driving behavior are documented in
 [`2026-08-26-remote-control.md`](./2026-08-26-remote-control.md). Its Stage A
 plan to run a `canopy --acp` child as the execution engine is superseded; retain
 the validated daemon and CanopyChat contracts, but redo runtime wiring for
@@ -95,25 +113,21 @@ direction update does not claim fresh test results or hardware validation.
 
 ## Migration sequence
 
-1. **Prove the runtime boundary locally.** Start a Codex session from Canopy;
-   stream assistant and tool events; approve and reject a tool request; cancel
-   a turn; resume the same Codex thread after closing the adapter; and exercise
-   text, image, and voice inputs that Canopy supports. Record the exact
-   app-server/SDK version and protocol behavior.
-2. **Build the daemon adapter behind an opt-in.** Map Canopy create/resume,
-   prompt, event replay, cancellation, and permission-answer operations to
-   Codex. Keep Codex process output bounded and private. Make thread ownership
-   and failure recovery explicit before enabling concurrent access.
-3. **Retain remote-control behavior.** Verify terminal and CanopyChat can
+1. **Validate the opt-in adapter.** Start a Codex session from Canopy; stream
+   assistant and tool events; approve and reject a tool request; cancel a turn;
+   resume the same Codex thread after restarting the daemon; and exercise the
+   input types CanopyChat sends. Record the exact Codex CLI version and
+   app-server protocol behavior.
+2. **Retain remote-control behavior.** Verify terminal and CanopyChat can
    co-drive one session, receive the same ordered events, and answer a
    permission request from either client. Preserve Tailscale pairing and
    notification behavior. CanopyChat's app-side work is outside this
    repository and needs its own handoff once the daemon event contract is
    stable.
-4. **Move Canopy-only capabilities.** Register the required features as
+3. **Move Canopy-only capabilities.** Register the required features as
    MCP-backed tools or supported extensions. Port a feature only when its
    behavior, permissions, and persistence requirements are clear.
-5. **Measure before changing defaults.** Compare startup, idle RSS, peak RSS,
+4. **Measure before changing defaults.** Compare startup, idle RSS, peak RSS,
    and long-session growth against the current CLI using representative CUA,
    image, audio, and remote-control workloads. Keep the Codex path opt-in until
    persistence, approvals, remote co-driving, and memory behavior meet the

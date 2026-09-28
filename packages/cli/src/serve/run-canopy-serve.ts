@@ -2304,9 +2304,25 @@ async function runCanopyServeImpl(
         (cdpTunnelOverWsEnv !== undefined || chromeExtensionOriginAllowed)),
   };
   const serveModel = opts.model?.trim() || undefined;
+  const requestedAgentRuntime = daemonRuntimeBaseEnv['CANOPY_AGENT_RUNTIME']
+    ?.trim()
+    .toLowerCase();
+  if (
+    requestedAgentRuntime &&
+    requestedAgentRuntime !== 'canopy' &&
+    requestedAgentRuntime !== 'codex'
+  ) {
+    throw new TypeError(
+      `Invalid CANOPY_AGENT_RUNTIME: ${requestedAgentRuntime}. Use "canopy" or "codex".`,
+    );
+  }
+  const useCodexRuntime = requestedAgentRuntime === 'codex';
   const acpChildExtraArgs = [
+    ...(useCodexRuntime ? ['--codex-acp'] : []),
     ...(serveModel ? ['--model', serveModel] : []),
-    ...(opts.experimentalLsp === true ? ['--experimental-lsp'] : []),
+    ...(!useCodexRuntime && opts.experimentalLsp === true
+      ? ['--experimental-lsp']
+      : []),
   ];
   const acpChildExtraArgsOption =
     acpChildExtraArgs.length > 0 ? { extraArgs: acpChildExtraArgs } : {};

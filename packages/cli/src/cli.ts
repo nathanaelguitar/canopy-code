@@ -364,6 +364,19 @@ export async function runCliEntry(
     return;
   }
 
+  if (rawArgv.includes('--codex-acp')) {
+    const inlineModel = rawArgv.find((arg) => arg.startsWith('--model='));
+    const modelIndex = rawArgv.indexOf('--model');
+    const model = inlineModel
+      ? inlineModel.slice('--model='.length)
+      : modelIndex >= 0
+        ? rawArgv[modelIndex + 1]
+        : undefined;
+    const { runCodexAcpAgent } = await import('./codex-runtime/acp-agent.js');
+    await runCodexAcpAgent(model);
+    return;
+  }
+
   const argv = normalizeServeFastPathArgv(rawArgv);
   const route = resolveBootstrapRoute(argv);
   if (route !== 'serve') {
