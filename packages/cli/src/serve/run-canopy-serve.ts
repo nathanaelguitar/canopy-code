@@ -3093,6 +3093,11 @@ async function runCanopyServeImpl(
   }
   let externalToolGuardHandler: ExternalToolGuardHandler | undefined;
   if (opts.externalToolGuard?.mode === 'required') {
+    if (useCodexRuntime) {
+      throw new Error(
+        'Required external tool guarding is not supported with CANOPY_AGENT_RUNTIME=codex.',
+      );
+    }
     if (deps.bridge) {
       throw new Error(
         'Required external tool guarding cannot be combined with an injected bridge.',
@@ -3118,9 +3123,11 @@ async function runCanopyServeImpl(
   const { createDaemonToolGuard } = await import(
     './daemon-git-worktree-guard.js'
   );
-  const daemonToolGuardHandler = createDaemonToolGuard(
-    externalToolGuardHandler,
-  );
+  // Codex executes commands inside its own sandbox, so the Codex ACP child
+  // cannot route them through the daemon's pre-execution guard.
+  const daemonToolGuardHandler = useCodexRuntime
+    ? undefined
+    : createDaemonToolGuard(externalToolGuardHandler);
   const childEnvOverrides: Record<string, string | undefined> = {
     CANOPY_SERVE_MCP_CLIENT_BUDGET:
       opts.mcpClientBudget !== undefined

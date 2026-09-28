@@ -52,17 +52,17 @@ const MODE_OPTIONS = [
   {
     id: 'default',
     name: 'Default',
-    description: 'Ask for approval when Codex needs it.',
+    description: 'Ask before edits and commands that are not known safe.',
   },
   {
     id: 'auto-edit',
     name: 'Auto Edit',
-    description: 'Allow workspace edits and review untrusted commands.',
+    description: 'Allow sandboxed workspace edits; ask to leave the sandbox.',
   },
   {
     id: 'auto',
     name: 'Auto',
-    description: 'Use Codex untrusted-command approval policy.',
+    description: 'Run sandboxed; ask only when Codex requests escalation.',
   },
   {
     id: 'yolo',
@@ -458,9 +458,9 @@ function approvalPolicy(mode: CanopyCodexSession['mode']): string {
       return 'never';
     case 'auto-edit':
     case 'auto':
-      return 'untrusted';
-    default:
       return 'on-request';
+    default:
+      return 'untrusted';
   }
 }
 
@@ -709,11 +709,6 @@ class CodexAcpAgent implements Agent {
       throw new Error(`Unsupported Canopy approval mode: ${params.modeId}`);
     }
     const mode = params.modeId as CanopyCodexSession['mode'];
-    await this.appServer.request('thread/settings/update', {
-      threadId: session.threadId,
-      approvalPolicy: approvalPolicy(mode),
-      sandboxPolicy: sandboxPolicy(mode, session.cwd),
-    });
     session.mode = mode;
     await writeSessionMapping(session);
     await this.sendUpdate(session.sessionId, {
@@ -736,10 +731,6 @@ class CodexAcpAgent implements Agent {
     } else if (params.configId === 'model') {
       await this.setModel(session, params.value, models);
     } else if (params.configId === 'reasoning_effort') {
-      await this.appServer.request('thread/settings/update', {
-        threadId: session.threadId,
-        effort: params.value,
-      });
       session.reasoningEffort = params.value;
       await writeSessionMapping(session);
     } else {
@@ -775,6 +766,8 @@ class CodexAcpAgent implements Agent {
         threadId: session.threadId,
         cwd: session.cwd,
         input: toCodexInput(params),
+        approvalPolicy: approvalPolicy(session.mode),
+        sandboxPolicy: sandboxPolicy(session.mode, session.cwd),
         ...(session.model ? { model: session.model } : {}),
         ...(session.reasoningEffort ? { effort: session.reasoningEffort } : {}),
       });
@@ -851,12 +844,7 @@ class CodexAcpAgent implements Agent {
     const model = models.find(
       (candidate) => candidate.id === modelId || candidate.model === modelId,
     );
-    const codexModel = model?.model ?? modelId;
-    await this.appServer.request('thread/settings/update', {
-      threadId: session.threadId,
-      model: codexModel,
-    });
-    session.model = codexModel;
+    session.model = model?.model ?? modelId;
     await writeSessionMapping(session);
   }
 
@@ -1190,13 +1178,17 @@ class CodexAcpAgent implements Agent {
       (decision): RequestPermissionRequest['options'] => {
         if (decision === 'accept') {
           return [
-            { optionId: 'accept', name: 'Allow once', kind: 'allow_once' },
+            {
+              optionId: 'proceed_once',
+              name: 'Allow once',
+              kind: 'allow_once',
+            },
           ];
         }
         if (decision === 'acceptForSession') {
           return [
             {
-              optionId: 'acceptForSession',
+              optionId: 'proceed_always',
               name: 'Allow for this session',
               kind: 'allow_always',
             },
@@ -1234,9 +1226,9 @@ class CodexAcpAgent implements Agent {
       });
     if (response.outcome.outcome === 'cancelled') return { decision: 'cancel' };
     switch (response.outcome.optionId) {
-      case 'accept':
+      case 'proceed_once':
         return { decision: 'accept' };
-      case 'acceptForSession':
+      case 'proceed_always':
         return { decision: 'acceptForSession' };
       case 'decline':
       case 'cancel':
