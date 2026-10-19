@@ -331,6 +331,20 @@ import {
 import type { CommandDisplayCategoryOrder } from './utils/commandDisplay';
 import { WebShellPortalRootContext } from './portalRoot';
 import styles from './App.module.css';
+import {
+  agentComposerPlaceholder,
+  agentStatusLine,
+  currentAgentActivity,
+  currentToolSubject,
+  type AgentStatusLine,
+  type WebShellAgentPersona,
+} from './persona/agentPersona';
+import {
+  AgentPersonaContext,
+  AgentPresenceBubble,
+} from './persona/AgentPresence';
+
+const hideLoadingPhrases = (): readonly string[] => [];
 
 export const CompactModeContext = createContext(false);
 
@@ -838,6 +852,10 @@ export interface WebShellApi {
 }
 
 export type WebShellComposerPlaceholderState = ComposerPlaceholderState;
+export type {
+  WebShellAgentPersona,
+  AgentStatusLine as WebShellAgentStatusLine,
+} from './persona/agentPersona';
 
 export type WebShellComposerPlaceholders = Readonly<
   Partial<Record<WebShellComposerPlaceholderState, string>>
@@ -917,6 +935,14 @@ export interface WebShellProps {
    * WebShell localized default; shell-mode and follow-up copy still wins.
    */
   composerPlaceholders?: WebShellComposerPlaceholders;
+  /**
+   * A host agent persona (name, language, avatar loops). Off by default. When
+   * set, replies carry the agent's name and avatar, the composer says
+   * "Message <name>…", and a status bubble shows what the agent is doing.
+   */
+  agentPersona?: WebShellAgentPersona;
+  /** Called when the persona's status line changes; null when at rest. */
+  onAgentStatusChange?: (line: AgentStatusLine | null) => void;
   /** Called when connection status changes (idle/connecting/connected/disconnected/error). */
   onConnectionChange?: (status: string) => void;
   /** Called when prompt status changes (idle/waiting/responding). */
@@ -1847,6 +1873,8 @@ export function App({
   shellRef,
   composerToolbarActions,
   composerPlaceholders,
+  agentPersona,
+  onAgentStatusChange,
   compactThinking = false,
   collapseCompletedTurns = true,
   markdownTableMode = 'basic',
@@ -2073,7 +2101,10 @@ export function App({
       collapseCompletedTurns,
       markdownTableMode,
       markdown,
-      loadingPhrases,
+      // With a persona, its status bubble says what is happening; the witty
+      // rotating phrase would say it twice. An empty list hides the phrase.
+      loadingPhrases:
+        loadingPhrases ?? (agentPersona ? hideLoadingPhrases : undefined),
       fileUploadEnabled,
     }),
     [
@@ -2100,6 +2131,7 @@ export function App({
       markdownTableMode,
       markdown,
       loadingPhrases,
+      agentPersona,
       fileUploadEnabled,
     ],
   );
@@ -4134,6 +4166,31 @@ export function App({
     }
     return localStreamingStartedAtRef.current;
   }, [displayMessages, streamingState]);
+  const agentStatus = useMemo(() => {
+    if (!agentPersona) return null;
+    const activity = currentAgentActivity(blocks, {
+      isWorking: streamingState !== 'idle',
+      needsApproval: Boolean(pendingApproval),
+    });
+    return activity
+      ? agentStatusLine(agentPersona.name, activity, agentPersona.language)
+      : null;
+  }, [agentPersona, blocks, streamingState, pendingApproval]);
+  const agentStatusSubject = useMemo(
+    () =>
+      agentPersona && agentStatus?.mood === 'working'
+        ? currentToolSubject(blocks)
+        : undefined,
+    [agentPersona, agentStatus?.mood, blocks],
+  );
+  const agentStatusSentence = agentStatus?.sentence;
+  const onAgentStatusChangeRef = useRef(onAgentStatusChange);
+  onAgentStatusChangeRef.current = onAgentStatusChange;
+  useEffect(() => {
+    onAgentStatusChangeRef.current?.(agentStatus);
+    // Only a new line is news; a new object for the same line is not.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentStatusSentence, agentStatus?.mood]);
   const lastSubmittedPromptRef = useRef<string>('');
   const lastSubmittedImagesRef = useRef<PromptImage[] | undefined>(undefined);
   const lastSubmittedFilesRef = useRef<PromptFile[] | undefined>(undefined);
@@ -10353,7 +10410,9 @@ export function App({
     composerPlaceholders?.[composerPlaceholderState];
   const composerPlaceholderText = customComposerPlaceholder?.trim()
     ? customComposerPlaceholder
-    : t(getComposerPlaceholderKey(composerPlaceholderInputState));
+    : agentPersona && composerPlaceholderState === 'idle'
+      ? agentComposerPlaceholder(agentPersona)
+      : t(getComposerPlaceholderKey(composerPlaceholderInputState));
 
   const handleModelSelect = useCallback(
     (modelId: string) => {
@@ -12190,8 +12249,21 @@ export function App({
                                 centerWelcomeHeader={
                                   showMobileWelcomeFooterMiddle || undefined
                                 }
-                                tailContent={undefined}
-                                tailKey={undefined}
+                                tailContent={
+                                  agentPersona && agentStatus ? (
+                                    <AgentPresenceBubble
+                                      persona={agentPersona}
+                                      line={agentStatus}
+                                      subject={agentStatusSubject}
+                                      startedAt={activeTurnStartedAt}
+                                    />
+                                  ) : undefined
+                                }
+                                tailKey={
+                                  agentPersona && agentStatus
+                                    ? 'agent-presence'
+                                    : undefined
+                                }
                                 onCanScrollToBottomChange={
                                   handleCanScrollToBottomChange
                                 }
@@ -12230,7 +12302,11 @@ export function App({
                               <SubagentDetailsProvider
                                 onOpen={openSubagentPanel}
                               >
-                                {messageListContent}
+                                <AgentPersonaContext.Provider
+                                  value={agentPersona ?? null}
+                                >
+                                  {messageListContent}
+                                </AgentPersonaContext.Provider>
                               </SubagentDetailsProvider>
                             );
                             const messageList = monitorDetailsSupported ? (
