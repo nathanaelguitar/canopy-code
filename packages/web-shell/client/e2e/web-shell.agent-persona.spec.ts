@@ -112,6 +112,28 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
+test('agent persona: a loop that cannot play as WebM falls back to WebP', async ({
+  page,
+}, testInfo) => {
+  test.skip(!ASSETS, 'needs AGENT_PERSONA_ASSETS');
+  const scenario = createWebShellDaemonScenario();
+  const daemon = await install(page, scenario, testInfo);
+  // A server without byte ranges breaks WebM in WebKitGTK; simulate the
+  // failure. Registered after install() so this route wins.
+  await page.route('**/assets/persona/*.webm', (route) =>
+    route.fulfill({ status: 404 }),
+  );
+  await gotoSession(page, scenario, daemon, '?agent=Flame&agentLang=en');
+  const editor = page.locator('[data-web-shell-composer-editor]');
+  await editor.locator('.cm-content').click();
+  await page.keyboard.type('Look around.');
+  await page.locator('[data-web-shell-composer-submit]').click();
+  await expect.poll(() => daemon.promptRequests().length).toBe(1);
+  await daemon.sse.split(readToolEvent('in_progress'));
+  const loop = page.locator('[data-testid="agent-presence"] [data-agent-loop]');
+  await expect(loop).toHaveAttribute('data-agent-loop', 'webp');
+});
+
 test('agent persona: Spanish status lines', async ({ page }, testInfo) => {
   const scenario = createWebShellDaemonScenario();
   const daemon = await install(page, scenario, testInfo);

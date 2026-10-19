@@ -43,6 +43,10 @@ function usePrefersReducedMotion(): boolean {
  * The agent's face in a round bubble. At rest (or under reduced motion) it
  * shows the mood's poster; with `animates` the loop plays over it, and a new
  * mood fades in over ~150 ms. Without an avatar URL it shows a monogram.
+ *
+ * The loop is WebM (VP9 with alpha). A browser that can't play it from this
+ * server (WebKitGTK asks for byte ranges, which the gateway doesn't serve)
+ * gets the same loop as animated WebP (`<mood>.webp`) instead.
  */
 export function AgentAvatar({
   persona,
@@ -59,6 +63,7 @@ export function AgentAvatar({
 }): ReactElement {
   const reducedMotion = usePrefersReducedMotion();
   const [posterFailed, setPosterFailed] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const base = persona.avatarBaseUrl;
   const showArt = Boolean(base) && !posterFailed;
   return (
@@ -78,7 +83,17 @@ export function AgentAvatar({
             draggable={false}
             onError={() => setPosterFailed(true)}
           />
-          {animates && !reducedMotion && (
+          {animates && !reducedMotion && videoFailed && (
+            <img
+              key={`loop-image-${mood}`}
+              className={`${styles.avatarArt} ${styles.avatarLoop}`}
+              src={`${base}/${mood}.webp`}
+              alt=""
+              draggable={false}
+              data-agent-loop="webp"
+            />
+          )}
+          {animates && !reducedMotion && !videoFailed && (
             <video
               key={`loop-${mood}`}
               className={`${styles.avatarArt} ${styles.avatarLoop}`}
@@ -90,6 +105,8 @@ export function AgentAvatar({
               playsInline
               disablePictureInPicture
               preload="auto"
+              data-agent-loop="webm"
+              onError={() => setVideoFailed(true)}
             />
           )}
         </>
