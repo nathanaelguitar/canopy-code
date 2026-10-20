@@ -320,6 +320,10 @@ function isTouchLikeDevice(): boolean {
   );
 }
 
+/** File types the "+" picker offers when files attach inline. */
+const ATTACH_PICKER_ACCEPT =
+  'image/*,text/*,application/json,application/xml,.md,.markdown,.log,.csv,.tsv,.yaml,.yml,.toml,.ini,.diff,.patch';
+
 function formatAttachmentSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -1499,6 +1503,9 @@ export const ChatEditor = memo(
     const uploadPickerTargetRef = useRef('.');
     const uploadPickerTargetKeyRef = useRef('');
     const uploadPickerRestoreRef = useRef<(() => void) | undefined>(undefined);
+    // The "+" button's picker when the daemon cannot take workspace uploads:
+    // pictures and text files are attached inline, like a paste.
+    const attachInputRef = useRef<HTMLInputElement | null>(null);
 
     // Resolve the upload target BEFORE useComposerCore so the @ panel's upload
     // item can be capability-gated (hidden on daemons without the feature).
@@ -1781,6 +1788,15 @@ export const ChatEditor = memo(
         }
       },
       [uploadFiles, insertUploadReference, uploadTargetKey],
+    );
+    const attachFiles = core.attachFiles;
+    const handleAttachPickerChange = useCallback(
+      (event: ReactChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(event.target.files ?? []);
+        event.target.value = '';
+        if (files.length > 0) attachFiles(files);
+      },
+      [attachFiles],
     );
     useEffect(() => {
       // React only wires `cancel` on <dialog>; the file input needs a native
@@ -2527,7 +2543,7 @@ export const ChatEditor = memo(
           }}
         >
           <SpecularComposerEffect targetRef={containerRef} />
-          {uploadEnabled && (
+          {uploadEnabled ? (
             <input
               ref={fileInputRef}
               type="file"
@@ -2535,6 +2551,18 @@ export const ChatEditor = memo(
               className={styles.hiddenUploadInput}
               data-web-shell-upload-input
               onChange={handleUploadPickerChange}
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+          ) : (
+            <input
+              ref={attachInputRef}
+              type="file"
+              multiple
+              accept={ATTACH_PICKER_ACCEPT}
+              className={styles.hiddenUploadInput}
+              data-web-shell-attach-input
+              onChange={handleAttachPickerChange}
               tabIndex={-1}
               aria-hidden="true"
             />
@@ -2841,24 +2869,29 @@ export const ChatEditor = memo(
                   </div>
                 )}
                 <div className={styles.toolbarLeft}>
-                  {uploadEnabled && (
-                    <button
-                      type="button"
-                      className={`${styles.toolBtn} ${styles.attachmentBtn}`}
-                      data-web-shell-attachment-button
-                      data-hide-during-mobile-voice
-                      aria-label={t('composer.upload.attach')}
-                      title={t('composer.upload.attach')}
-                      data-tooltip={t('composer.upload.attach')}
-                      disabled={disabled || fileUpload.isBusy}
-                      onClick={(event) => {
-                        event.stopPropagation();
+                  {/* Always offered: with workspace upload the picker uploads
+                      into the workspace, without it pictures and text files
+                      attach inline to the message. */}
+                  <button
+                    type="button"
+                    className={`${styles.toolBtn} ${styles.attachmentBtn}`}
+                    data-web-shell-attachment-button
+                    data-hide-during-mobile-voice
+                    aria-label={t('composer.upload.attach')}
+                    title={t('composer.upload.attach')}
+                    data-tooltip={t('composer.upload.attach')}
+                    disabled={disabled || fileUpload.isBusy}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (uploadEnabled) {
                         triggerFilePicker('.');
-                      }}
-                    >
-                      <PlusIcon aria-hidden="true" />
-                    </button>
-                  )}
+                      } else {
+                        attachInputRef.current?.click();
+                      }
+                    }}
+                  >
+                    <PlusIcon aria-hidden="true" />
+                  </button>
                   {workspaceSelectVisible &&
                     workspaces &&
                     onSelectWorkspace && (

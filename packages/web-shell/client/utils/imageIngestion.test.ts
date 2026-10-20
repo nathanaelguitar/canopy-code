@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   dedupeAttachmentName,
+  extractFileListTransfer,
   extractFileTransfer,
   normalizeImageMediaType,
   normalizeTextMediaType,
@@ -334,5 +335,28 @@ describe('attachment naming', () => {
     const taken = new Set(['app.log', 'app.log-2']);
     expect(dedupeAttachmentName('app.log', taken)).toBe('app.log-3');
     expect(dedupeAttachmentName('other.log', taken)).toBe('other.log');
+  });
+});
+
+describe('picker file lists', () => {
+  it('classifies pictures and text, and rejects the rest', () => {
+    const photo = new File(['p'], 'photo.heic.png', { type: 'image/png' });
+    const bare = new File(['j'], 'IMG_1.JPG', { type: '' });
+    const notes = new File(['t'], 'notes.md', { type: '' });
+    const archive = new File(['z'], 'a.zip', { type: 'application/zip' });
+    const result = extractFileListTransfer([photo, bare, notes, archive]);
+    expect(result.claimed).toBe(true);
+    expect(result.imageCandidates).toEqual([
+      { file: photo, mediaType: 'image/png' },
+      { file: bare, mediaType: 'image/jpeg' },
+    ]);
+    expect(result.textCandidates).toEqual([
+      { file: notes, mediaType: 'text/plain' },
+    ]);
+    expect(result.rejected).toEqual([{ name: 'a.zip', reason: 'unsupported' }]);
+  });
+
+  it('does not claim an empty selection', () => {
+    expect(extractFileListTransfer([]).claimed).toBe(false);
   });
 });

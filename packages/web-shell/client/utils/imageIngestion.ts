@@ -212,6 +212,47 @@ export function hasFileTransferPayload(dataTransfer: DataTransfer): boolean {
   return Array.from(dataTransfer.items).some((item) => item.kind === 'file');
 }
 
+function classifyFileCandidate(
+  file: File,
+  typeHint: string,
+  out: Pick<
+    ExtractedFileTransfer,
+    'imageCandidates' | 'textCandidates' | 'rejected'
+  >,
+): void {
+  const imageMediaType = normalizeImageMediaType(typeHint, file.name);
+  if (imageMediaType) {
+    out.imageCandidates.push({ file, mediaType: imageMediaType });
+    return;
+  }
+  const textMediaType = normalizeTextMediaType(typeHint, file.name);
+  if (textMediaType) {
+    out.textCandidates.push({ file, mediaType: textMediaType });
+    return;
+  }
+  out.rejected.push({ name: file.name, reason: 'unsupported' });
+}
+
+/**
+ * Classifies files chosen with a file picker (the composer's "+" button).
+ * Pictures and text files become inline attachments, the same as a paste or a
+ * drop; anything else is reported as unsupported.
+ */
+export function extractFileListTransfer(
+  files: readonly File[],
+): ExtractedFileTransfer {
+  const transfer: ExtractedFileTransfer = {
+    claimed: files.length > 0,
+    imageCandidates: [],
+    textCandidates: [],
+    rejected: [],
+  };
+  for (const file of files) {
+    classifyFileCandidate(file, file.type, transfer);
+  }
+  return transfer;
+}
+
 export function extractFileTransfer(
   dataTransfer: DataTransfer,
   source: 'paste' | 'drop',
@@ -220,24 +261,11 @@ export function extractFileTransfer(
   const textCandidates: TextFileCandidate[] = [];
   const rejected: ImageIngestionRejection[] = [];
   let hasSupportedUnavailableItem = false;
-
-  const classify = (file: File, typeHint: string) => {
-    const imageMediaType = normalizeImageMediaType(typeHint, file.name);
-    if (imageMediaType) {
-      imageCandidates.push({ file, mediaType: imageMediaType });
-      return;
-    }
-    const textMediaType = normalizeTextMediaType(typeHint, file.name);
-    if (textMediaType) {
-      textCandidates.push({ file, mediaType: textMediaType });
-      return;
-    }
-    rejected.push({ name: file.name, reason: 'unsupported' });
-  };
+  const out = { imageCandidates, textCandidates, rejected };
 
   if (dataTransfer.files.length > 0) {
     for (const file of Array.from(dataTransfer.files)) {
-      classify(file, file.type);
+      classifyFileCandidate(file, file.type, out);
     }
   } else {
     for (const item of Array.from(dataTransfer.items)) {
@@ -255,7 +283,7 @@ export function extractFileTransfer(
         }
         continue;
       }
-      classify(file, file.type || item.type);
+      classifyFileCandidate(file, file.type || item.type, out);
     }
   }
 

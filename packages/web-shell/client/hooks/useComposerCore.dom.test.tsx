@@ -859,6 +859,52 @@ describe('useComposerCore paste', () => {
     );
   });
 
+  it('attaches files chosen with the "+" picker like a drop', async () => {
+    const onSubmit = vi.fn();
+    await mount({ onSubmit });
+
+    act(() => {
+      latest!.attachFiles([
+        new File(['png'], 'photo.png', { type: 'image/png' }),
+        // iOS hands the picker a photo with an empty type: the extension decides.
+        new File(['jpg'], 'IMG_0042.jpg', { type: '' }),
+        new File(['a,b'], 'rows.csv', { type: 'text/csv' }),
+        new File(['zip'], 'archive.zip', { type: 'application/zip' }),
+      ]);
+    });
+    expect(latest!.pendingImageBatchCount).toBe(1);
+    await waitForImageIngestion();
+
+    expect(latest!.pendingImageBatchCount).toBe(0);
+    expect(latest!.pastedImages.map((image) => image.media_type)).toEqual([
+      'image/png',
+      'image/jpeg',
+    ]);
+    expect(latest!.pastedFiles).toMatchObject([
+      { name: 'rows.csv', text: 'a,b' },
+    ]);
+    expect(latest!.hasAttachments).toBe(true);
+
+    act(() => latest!.submitText());
+    expect(onSubmit).toHaveBeenCalledWith(
+      '',
+      [
+        expect.objectContaining({ media_type: 'image/png' }),
+        expect.objectContaining({ media_type: 'image/jpeg' }),
+      ],
+      [expect.objectContaining({ name: 'rows.csv' })],
+      expect.any(Function),
+      undefined,
+    );
+  });
+
+  it('ignores an empty "+" picker selection', async () => {
+    await mount();
+    act(() => latest!.attachFiles([]));
+    expect(latest!.pendingImageBatchCount).toBe(0);
+    expect(latest!.hasAttachments).toBe(false);
+  });
+
   it('ingests dropped text files, sanitizes names, and submits them', async () => {
     const onSubmit = vi.fn();
     await mount({ onSubmit });
