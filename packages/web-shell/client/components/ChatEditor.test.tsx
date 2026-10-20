@@ -111,6 +111,7 @@ const composerCoreState = vi.hoisted(() => ({
   imageDropCapture: vi.fn(),
   clearImageDragState: vi.fn(),
   addTags: vi.fn(),
+  attachFiles: vi.fn(),
   shellMode: false,
   imageDragActive: false,
   onFileUploadRequest: undefined as
@@ -200,6 +201,7 @@ vi.mock('../hooks/useComposerCore', async (importOriginal) => {
         imageTransferHandlers: {
           onDropCapture: composerCoreState.imageDropCapture,
         },
+        attachFiles: composerCoreState.attachFiles,
         handle: {
           focus: vi.fn(),
           insertText: vi.fn(),
@@ -1543,6 +1545,111 @@ describe('ChatEditor at mention context fallback', () => {
     expect(latestComposerCoreOptions.current?.builtinAtProviders).toEqual({
       exclude: ['files'],
     });
+  });
+});
+
+describe('ChatEditor "+" attach button', () => {
+  let clickSpy: { mockRestore: () => void } | undefined;
+  afterEach(() => {
+    uploadWorkspaceState.current = undefined;
+    composerCoreState.attachFiles.mockClear();
+    clickSpy?.mockRestore();
+    clickSpy = undefined;
+  });
+
+  const plusButton = (container: HTMLElement) =>
+    container.querySelector<HTMLButtonElement>(
+      '[data-web-shell-attachment-button]',
+    );
+
+  it('is offered when the daemon has no workspace upload, and attaches inline', () => {
+    // A gateway that does not advertise `workspace_file_upload` (or has no
+    // workspace provider at all): the button must still be there.
+    for (const workspace of [
+      undefined,
+      {
+        client: { uploadWorkspaceFile: vi.fn() },
+        capabilities: { features: [] as string[], workspaces: [] },
+      },
+    ]) {
+      uploadWorkspaceState.current = workspace;
+      const container = renderChatEditor({});
+      const button = plusButton(container);
+      expect(button).not.toBeNull();
+      expect(button!.disabled).toBe(false);
+      // No workspace upload input; the inline attach input takes its place.
+      expect(
+        container.querySelector('[data-web-shell-upload-input]'),
+      ).toBeNull();
+      const input = container.querySelector<HTMLInputElement>(
+        '[data-web-shell-attach-input]',
+      );
+      expect(input).not.toBeNull();
+      expect(input!.accept).toContain('image/*');
+      expect(input!.multiple).toBe(true);
+
+      const click = vi
+        .spyOn(HTMLInputElement.prototype, 'click')
+        .mockImplementation(() => {});
+      clickSpy = click;
+      act(() => button!.click());
+      expect(click).toHaveBeenCalledTimes(1);
+      expect(click.mock.instances[0]).toBe(input);
+      click.mockRestore();
+      clickSpy = undefined;
+
+      const photo = new File(['png'], 'photo.png', { type: 'image/png' });
+      Object.defineProperty(input, 'files', {
+        value: [photo],
+        configurable: true,
+      });
+      act(() => {
+        input!.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(composerCoreState.attachFiles).toHaveBeenCalledWith([photo]);
+      composerCoreState.attachFiles.mockClear();
+    }
+  });
+
+  it('opens the workspace upload picker instead when the daemon offers it', () => {
+    uploadWorkspaceState.current = {
+      client: { uploadWorkspaceFile: vi.fn() },
+      capabilities: {
+        features: ['workspace_file_upload'],
+        workspaces: [{ cwd: '/workspace', primary: true, trusted: true }],
+      },
+    };
+    const container = renderChatEditor({});
+    expect(container.querySelector('[data-web-shell-attach-input]')).toBeNull();
+    const input = container.querySelector<HTMLInputElement>(
+      '[data-web-shell-upload-input]',
+    )!;
+    const click = vi
+      .spyOn(HTMLInputElement.prototype, 'click')
+      .mockImplementation(() => {});
+    clickSpy = click;
+    act(() => plusButton(container)!.click());
+    expect(click.mock.instances[0]).toBe(input);
+    expect(composerCoreState.attachFiles).not.toHaveBeenCalled();
+  });
+
+  it('stays offered when the host force-disables workspace upload', () => {
+    uploadWorkspaceState.current = {
+      client: { uploadWorkspaceFile: vi.fn() },
+      capabilities: { features: ['workspace_file_upload'], workspaces: [] },
+    };
+    const container = renderChatEditor({
+      customization: { fileUploadEnabled: false },
+    });
+    expect(plusButton(container)).not.toBeNull();
+    expect(
+      container.querySelector('[data-web-shell-attach-input]'),
+    ).not.toBeNull();
+  });
+
+  it('is disabled while the composer is disabled', () => {
+    const container = renderChatEditor({ disabled: true });
+    expect(plusButton(container)!.disabled).toBe(true);
   });
 });
 

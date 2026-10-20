@@ -101,6 +101,7 @@ import type {
 import { useWebShellPortalRoot } from '../portalRoot';
 import {
   dedupeAttachmentName,
+  extractFileListTransfer,
   extractFileTransfer,
   hasFileTransferPayload,
   MAX_IMAGE_ATTACHMENT_DATA_BYTES,
@@ -109,6 +110,7 @@ import {
   readTextTransfer,
   sanitizeAttachmentName,
 } from '../utils/imageIngestion';
+import type { ExtractedFileTransfer } from '../utils/imageIngestion';
 
 const TOOLTIP_STYLE_ID = 'web-shell-tooltip-styles';
 const TOOLTIP_STYLES = `
@@ -1334,6 +1336,8 @@ export interface UseComposerCoreReturn {
   imageDragActive: boolean;
   clearImageDragState: () => void;
   imageTransferHandlers: ComposerImageTransferHandlers;
+  /** Attaches files chosen with a picker, inline like a paste or a drop. */
+  attachFiles: (files: readonly File[]) => void;
   handle: EditorHandle;
   pastedImages: PromptImage[];
   removeImage: (index: number) => void;
@@ -1734,9 +1738,8 @@ export function useComposerCore(
     },
     [],
   );
-  const enqueueImageTransfer = useCallback(
-    (dataTransfer: DataTransfer, source: 'paste' | 'drop') => {
-      const transfer = extractFileTransfer(dataTransfer, source);
+  const enqueueFileTransfer = useCallback(
+    (transfer: ExtractedFileTransfer) => {
       if (!transfer.claimed) return false;
       if (disabledRef.current) return true;
 
@@ -1849,6 +1852,18 @@ export function useComposerCore(
       return true;
     },
     [emitImageIngestionNotice],
+  );
+  const enqueueImageTransfer = useCallback(
+    (dataTransfer: DataTransfer, source: 'paste' | 'drop') =>
+      enqueueFileTransfer(extractFileTransfer(dataTransfer, source)),
+    [enqueueFileTransfer],
+  );
+  // Files chosen with the composer's "+" picker: attached inline, like a paste.
+  const attachFiles = useCallback(
+    (files: readonly File[]) => {
+      enqueueFileTransfer(extractFileListTransfer(files));
+    },
+    [enqueueFileTransfer],
   );
   const imageTransferHandlers = useMemo<ComposerImageTransferHandlers>(
     () => ({
@@ -4368,6 +4383,7 @@ export function useComposerCore(
     imageDragActive,
     clearImageDragState,
     imageTransferHandlers,
+    attachFiles,
     handle,
     pastedImages,
     removeImage,
