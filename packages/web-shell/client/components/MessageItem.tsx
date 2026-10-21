@@ -23,6 +23,7 @@ import { BtwMessage } from './messages/BtwMessage';
 import { UserShellMessage } from './messages/UserShellMessage';
 import { InsightProgress } from './InsightProgress';
 import { InsightReady } from './InsightReady';
+import { AgentReplyLabel, useAgentPersona } from '../persona/AgentPresence';
 
 interface MessageItemProps {
   message: Message;
@@ -74,6 +75,7 @@ export const MessageItem = memo(function MessageItem({
     [onBranchSession, branchRecordId],
   );
   const compactMode = useContext(CompactModeContext);
+  const agentPersona = useAgentPersona();
   const isUserStyled =
     message.role === 'user' ||
     (message.role === 'system' &&
@@ -95,16 +97,19 @@ export const MessageItem = memo(function MessageItem({
         );
       case 'assistant':
         return (
-          <AssistantMessage
-            content={message.content}
-            isStreaming={message.isStreaming}
-            timestamp={message.timestamp}
-            onBranchSession={boundBranchSession}
-            showFooterActions={showAssistantActions}
-            showBranchAction={showAssistantBranch}
-            isLocateFlashing={isLocateFlashing}
-            customFooterInfo={assistantTurnFooterInfo}
-          />
+          <>
+            {agentPersona && <AgentReplyLabel persona={agentPersona} />}
+            <AssistantMessage
+              content={message.content}
+              isStreaming={message.isStreaming}
+              timestamp={message.timestamp}
+              onBranchSession={boundBranchSession}
+              showFooterActions={showAssistantActions}
+              showBranchAction={showAssistantBranch}
+              isLocateFlashing={isLocateFlashing}
+              customFooterInfo={assistantTurnFooterInfo}
+            />
+          </>
         );
       case 'thinking':
         return (

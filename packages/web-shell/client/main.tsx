@@ -14,6 +14,11 @@ import {
 import { normalizeLanguage, type WebShellLanguage } from './i18n';
 import { WebShellThemeId, type WebShellTheme } from './themeContext';
 import { buildSessionPathname, parseSessionId } from './utils/sessionPath';
+import {
+  agentPersonaFromSearch,
+  agentStatusTitle,
+  type AgentStatusLine,
+} from './persona/agentPersona';
 import 'katex/dist/katex.min.css';
 import './styles/standalone.css';
 
@@ -123,6 +128,21 @@ export function StandaloneApp({ daemonToken }: { daemonToken?: string }) {
     getWorkspaceIdFromUrl(),
   );
   const baseUrl = DAEMON_BASE_URL || window.location.origin;
+  // `?agent=<name>`: a host persona (CanopyChat's Agents pane). Read once; it
+  // stays in the URL so a reload keeps it.
+  const [agentPersona] = useState(() =>
+    agentPersonaFromSearch(window.location.search),
+  );
+  // A native host can't reach into the page, so the agent's state rides on
+  // document.title while a persona is on.
+  const handleAgentStatusChange = useCallback(
+    (line: AgentStatusLine | null) => {
+      if (agentPersona) {
+        document.title = agentStatusTitle(agentPersona.name, line);
+      }
+    },
+    [agentPersona],
+  );
   // Keep the <html> theme class and <meta name="theme-color"> in sync with
   // the React theme so mobile status bars / overscroll backgrounds stay
   // consistent when the user toggles or when ?theme= lands via URL.
@@ -182,6 +202,12 @@ export function StandaloneApp({ daemonToken }: { daemonToken?: string }) {
             },
             compactThinking: true,
             markdownTableMode: 'advanced',
+            ...(agentPersona
+              ? {
+                  agentPersona,
+                  onAgentStatusChange: handleAgentStatusChange,
+                }
+              : {}),
           }}
         />
       </DaemonWorkspaceProvider>

@@ -1,0 +1,154 @@
+/* Host agent persona (opt-in). Colours follow the Canopy oak theme: forest
+   backdrop for the avatar, copper for live work. */
+
+.avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #b7c48a, #6f8f55 55%, #3e5a34);
+  box-shadow:
+    0 0 0 1.5px var(--background, #fff),
+    0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.avatarArt {
+  position: absolute;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.avatarLoop {
+  animation: agentLoopIn 150ms ease-in-out both;
+}
+
+@keyframes agentLoopIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A copper arc riding the ring while the agent works. */
+.avatarWorking::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #b87333;
+  border-right-color: rgba(184, 115, 51, 0.35);
+  animation: agentArc 1.6s linear infinite;
+}
+
+@keyframes agentArc {
+  from {
+    transform: rotate(-30deg);
+  }
+  to {
+    transform: rotate(330deg);
+  }
+}
+
+.monogram {
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.presenceRow {
+  display: flex;
+  padding: 6px 0 10px;
+}
+
+.presence {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+.presence > .avatar {
+  z-index: 1;
+}
+
+.presencePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 30px;
+  margin-left: -12px;
+  padding: 0 14px 0 20px;
+  border-radius: 999px;
+  background: var(--card, var(--background));
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(26, 18, 8, 0.1);
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.presenceLine {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.presenceLine strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.divider {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+}
+
+.subject {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.elapsed {
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.replyLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 4px;
+}
+
+.replyName {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a7c4a;
+}
+
+:global(.dark) .replyName {
+  color: #8fbf7f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatarLoop,
+  .avatarWorking::after {
+    animation: none;
+  }
+}
